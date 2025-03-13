@@ -1,0 +1,68 @@
+# Project specific
+## reports
+reports/
+
+## workflows
+workflows/
+
+.cursorignore
+.vscode
+.cursor
+
+
+
+# compiled output
+/dist/
+/tmp/
+/out-tsc/
+
+# dependencies
+/node_modules/
+
+# IDEs and editors
+/.idea/
+.project
+.classpath
+
+# misc
+/connect.lock
+/coverage/
+/libpeerconnection.log
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnpm-debug.log
+.npm
+.yarn-integrity
+testem.log
+/typings/
+
+# Environment variables
+.env*
+!.env.example
+
+# Build files
+*.tsbuildinfo
+.eslintcache
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# AI/ML
+*.onnx
+*.tflite
+*.pb
+*.pth
+*.h5
+/models/
+/weights/
+/datasets/
+/logs/
+
+
+# Temp files
+/temp/
+

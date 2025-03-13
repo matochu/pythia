@@ -1,0 +1,51 @@
+{
+  "name": "mnemosyne",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run tools/tests/*.test.ts",
+    "docs:validate-links": "ts-node tools/linkValidator.ts",
+    "docs:fix-links": "ts-node tools/linkValidator.ts --fix",
+    "docs:check-coverage": "ts-node tools/coverageChecker.ts",
+    "docs:fix-coverage": "ts-node tools/coverageChecker.ts --fix",
+    "docs:update-map": "ts-node --esm tools/updateDocumentationMap.ts",
+    "docs:update-map-add-all": "ts-node --esm tools/updateDocumentationMap.ts --add-all",
+    "docs:update-map-interactive": "ts-node --esm tools/updateDocumentationMap.ts --interactive",
+    "docs:update-status": "ts-node tools/updateWorkItemStatus.ts",
+    "docs:setup": "ts-node tools/coreLinker.ts",
+    "docs:archive-tasks": "ts-node tools/archiveTasks.ts",
+    "docs:create-doc": "ts-node tools/createDocument.ts",
+    "docs:validate-quality": "ts-node tools/validateDocumentQuality.ts"
+  },
+  "dependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/glob": "^8.1.0",
+    "@types/inquirer": "^9.0.7",
+    "@types/lunr": "^2.3.7",
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0",
+    "compromise": "^14.12.0",
+    "date-fns": "^3.6.0",
+    "fs-extra": "^11.2.0",
+    "fuse.js": "^7.0.0",
+    "glob": "^10.3.3",
+    "gray-matter": "^4.0.3",
+    "handlebars": "^4.7.8",
+    "inquirer": "^9.2.16",
+    "lunr": "^2.3.9",
+    "markdownlint": "^0.31.1",
+    "mdast-util-to-string": "^4.0.0",
+    "natural": "^6.7.2",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.3",
+    "unist-util-visit": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}
