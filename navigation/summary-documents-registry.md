@@ -26,11 +26,11 @@ This registry serves as a central reference for all documents that summarize or 
 
 ## Registry
 
-| Document                                             | Type       | Source Documents                      | Owner              | Update Process   | Update Frequency              | Last Updated |
-| ---------------------------------------------------- | ---------- | ------------------------------------- | ------------------ | ---------------- | ----------------------------- | ------------ |
-| [Documentation Map](./documentation-map.md)          | Navigation | All documentation files               | Documentation Team | Manual           | When new documents are added  | 2025-03-11   |
-| [Work Items Status Registry](../workflows/status.md) | Aggregator | Tasks, proposals, explorations        | Documentation Team | Manual           | When work items change status | 2025-03-13   |
-| [Changelog](../CHANGELOG.md)                         | Historical | All significant documentation changes | Documentation Team | As changes occur | 2025-03-11                    |
+| Document                                           | Type       | Source Documents                      | Owner              | Update Process   | Update Frequency              | Last Updated |
+| -------------------------------------------------- | ---------- | ------------------------------------- | ------------------ | ---------------- | ----------------------------- | ------------ |
+| [Documentation Map](./documentation-map.md)        | Navigation | All documentation files               | Documentation Team | Manual           | When new documents are added  | 2025-03-11   |
+| [Work Items Status Report](../workflows/report.md) | Aggregator | Tasks, proposals, explorations        | Documentation Team | Manual           | When work items change status | 2025-03-13   |
+| [Changelog](../CHANGELOG.md)                       | Historical | All significant documentation changes | Documentation Team | As changes occur | 2025-03-11                    |
 
 ## Pending Documents
 

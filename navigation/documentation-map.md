@@ -11,7 +11,7 @@ This document serves as a central navigation hub for all architectural and syste
 | [Documentation Map](./documentation-map.md)                   | Central hub for all documentation | Architecture, Planning, Proposals                |
 | [Documentation Standards](./documentation-standards.md)       | Documentation format standards    | Document Types, Templates, Formatting Guidelines |
 | [Summary Documents Registry](./summary-documents-registry.md) | Registry of all summary documents | Document Types, Registry, Update Guidelines      |
-| [Work Items Status Registry](../workflows/status.md)          | Registry of all active work items | Tasks, Proposals, Explorations, Ideas            |
+| [Work Items Status Registry](../workflows/report.md)          | Registry of all active work items | Tasks, Proposals, Explorations, Ideas            |
 | [Changelog](../CHANGELOG.md)                                  | History of documentation changes  | Recent Changes, Quarterly Summaries              |
 | [Project Documentation](../README.md)                         | Project overview and structure    | Project Goals, Documentation Organization        |
 
@@ -126,7 +126,7 @@ This document serves as a central navigation hub for all architectural and syste
 | [Update Changelog](../commands/update-changelog.md)                 | Guide for updating the project changelog      | Change Categorization, Entry Formatting, Verification       |
 | [Archive Tasks](../commands/archive-tasks.md)                       | Guide for archiving completed tasks           | Identification, Verification, Archiving Process, References |
 | [Update Documentation Map](../commands/update-documentation-map.md) | Guide for updating the documentation map      | Missing Documents, Categorization, Recent Document Tracking |
-| [Update Status](../commands/update-status.md)                       | Command for updating work item statuses       | Status Updates, Work Items                                  |
+| [Report Workflows](../commands/report-workflows.md)                 | Command for reporting on work item statuses   | Status Reports, Work Items                                  |
 
 ## Ideas and Early Concepts
 

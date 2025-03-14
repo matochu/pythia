@@ -163,7 +163,7 @@ If this task should never be archived (e.g., it's an ongoing process or serves a
 
 ## References
 
-- [Active Work Items Registry](../workflows/status.md)
+- [Workflows Status Report](../workflows/report.md)
 - [Llm Task Workflow](../rules/llm-task-workflow.md)
 - [Create Task](../commands/create-task.md)
 - [Task Archiving Rules](../rules/task-archiving-rules.md)

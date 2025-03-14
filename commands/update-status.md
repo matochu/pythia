@@ -150,7 +150,7 @@ npm run docs:add-blocking-info --id proposal-redux-to-zustand-migration --blocke
 
 ## References
 
-- [Active Work Items Registry](../workflows/status.md)
+- [Workflows Status Report](../workflows/report.md)
 - [Documentation Map](../navigation/documentation-map.md)
 - [Task Archiving Rules](../rules/task-archiving-rules.md)
 - [Documentation Guidelines](../methodology/documentation-guidelines.md)

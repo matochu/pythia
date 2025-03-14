@@ -1,8 +1,9 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import { WorkItem, WorkItemMetrics } from './types/workItem';
+import { execSync } from 'child_process';
 
-const REGISTRY_PATH = path.resolve(process.cwd(), 'workflows/status.md');
+const REGISTRY_PATH = path.resolve(process.cwd(), 'workflows/report.md');
 
 export async function updateActiveWorkItemsRegistry(
   updatedItem: WorkItem

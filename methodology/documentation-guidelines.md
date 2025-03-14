@@ -204,8 +204,8 @@ Document these key resources in your documentation files:
 
 ## References
 
-- [Update Status](../commands/update-status.md)
-- [Work Items Status Registry](../workflows/status.md)
+- [Report Workflows](../commands/report-workflows.md)
+- [Work Items Status Report](../workflows/report.md)
 - [Archive Tasks](../commands/archive-tasks.md)
 - [Task Archiving Rules](../rules/task-archiving-rules.md)
 - [Update Changelog](../commands/update-changelog.md)
@@ -223,7 +223,7 @@ Document these key resources in your documentation files:
 
    - Documents outside of the `/docs/workflows/` directory should only reference the workflow category directories (e.g., `/docs/workflows/tasks/`) or specific documents within them, but not subdirectories.
    - Always reference specific work items (tasks, proposals, etc.) by their full path including the workflows directory (e.g., `../workflows/tasks/task-2025-03-topic.md`).
-   - The work items status registry is maintained in `/docs/workflows/status.md` and serves as the central reference point for all active work items.
+   - The work items status report is maintained in `/docs/workflows/report.md` and serves as the central reference point for all active work items.
 
 2. **Internal Workflow References**:
    - Work items can freely reference other items within the `/docs/workflows/` directory structure.

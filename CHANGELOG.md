@@ -1,30 +1,147 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to the Thea project documentation will be documented in this file.
 
-## [Unreleased]
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [2025-03-14]
+
+### Changed
+
+- Added new tasks and ideas to the status report
+- Updated metrics and visualizations in the workflows report
+
+## [2025-03-13]
 
 ### Added
 
-- Added initial documentation map (`/docs/navigation/documentation-map.md`)
+- Created new command for generating workflows reports
+- Added more comprehensive reporting capabilities for work items
+- Added decision tracking to workflows reporting
+
+### Changed
+
+- Renamed workflows status tracking files to better reflect their purpose
+- Improved workflow reporting with better metrics and visualization
+- Enhanced dependencies tracking in workflow reports
+- Updated all cross-references to renamed files
+
+### Fixed
+
+- Fixed inconsistent references in documentation map
+- Corrected file paths in tool configuration files
+- Unified terminology for workflow status tracking
+
+## [2025-03-12]
+
+### Added
+
+- Implemented ideas management system with templates and workflow documentation
+- Added exploration document system for idea research
+- Created new commands for idea and exploration document generation
+- Enhanced documentation automation with improved test coverage and map update features
+- Added Templates Guide for structured document creation
+- Added "Decision Criteria Checklist" to exploration completion process
+- Created guide on using LLM for effective documentation workflow
+
+### Changed
+
+- Improved validation and archiving scripts with better edge case handling
+- Reorganized documentation structure for better navigation
+- Enhanced documentation workflow integration between proposals and ideas
+- Translated documentation from Ukrainian to English where needed
+
+### Fixed
+
+- Fixed various broken links and references throughout documentation
+- Updated documentation map to ensure complete coverage
+- Fixed bidirectional links between related documents
+
+### Removed
+
+- Removed duplicate and obsolete documentation after restructuring
+- Removed example entries from ideas backlog
+
+## [2025-03-11]
+
+### Added
+
+- Created task archiving system with the following components:
+  - Added task archiving rules
+  - Created command documentation for task archiving
+  - Implemented task archiving TypeScript script
+  - Added "Archived Tasks" section to the Documentation Map
+  - Updated task template with archiving information
+- Added instructions for manual error fixing by LLMs
+- Moved documentation changelog to a standardized format
+- Created command documentation for task creation
+- Created command documentation for proposal creation
+- Created command documentation for updating Summary Documents Registry
+- Created command documentation for updating Changelog
+- Added tests for documentation validation scripts
+- Added npm script for testing documentation validation tools
+
+### Changed
+
+- Updated task template to include archiving information and guidelines
+- Updated Documentation Map to reference task archiving documents and include an Archived Tasks section
+- Fixed incorrect links in various documents
+- Removed links to non-existent files
+- Modified scripts in `package.json` to store documentation reports in `/reports` directory
+- Updated documentation guidelines with reference to the new location of changelog
+- Updated README.md with improved directory structure and references to validation tools
+- Renamed documentation files to follow command naming convention
+- Improved linkValidator.ts script to avoid adding duplicate references and to handle formatting better
+- Modified documentation scripts to ignore specific files that contain example references
+- Improved reference format in documentation files by removing redundant "See also:" prefix
+- Enhanced linkValidator.ts to extract document titles from headings for better link text
+- Enhanced `linkValidator.ts` script to use Title Case for reciprocal links
+- Applied Title Case formatting to links in all documentation files
+
+### Removed
+
+- Removed outdated changelog file (replaced with standardized format)
+
+## [2025-03-10]
+
+### Added
+
+- Created central navigation document for project documentation
+- Created documentation standards and guidelines
+
+### Changed
+
+- Added progress tracking and updated implementation status in documentation structure
+
+## [2025-03-09]
+
+### Added
+
+- Created analysis of current API integration approaches
+
+## [2025-03-08]
+
+### Added
+
+- Created template for task documentation
+- Created template for technical debt assessment
+- Created documentation guidelines
+
+## Quarterly Summary - Q1 2025
+
+### Major Accomplishments
+
+- Established standardized documentation structure
+- Created task and technical debt templates
+- Implemented documentation navigation system
+- Created initial architecture analysis documents
+- Established technical debt tracking system
+- Implemented documentation automation tools for link validation and coverage checking
+- Created LLM guide for documentation automation
+- Added npm scripts for documentation validation
+- Improved documentation integrity with automated validation
 
 ## References
-
-- [Create Exploration](commands/create-exploration.md)
-- [Create Idea](commands/create-idea.md)
-- [Documentation Structure](navigation/documentation-structure.md)
-- [Archive Tasks](commands/archive-tasks.md)
-- [Create Proposal](commands/create-proposal.md)
-- [Create Task](commands/create-task.md)
-- [Update Changelog](commands/update-changelog.md)
-- [Update Documentation Map](commands/update-documentation-map.md)
-- [Update Summary Registry](commands/update-summary-registry.md)
-- [Validate Documentation](commands/validate-documentation.md)
-- [Summary Documents Registry](navigation/summary-documents-registry.md)
-- [README](./README.md)
-- [Documentation Map](./navigation/documentation-map.md)
-- [Documentation Standards](./navigation/documentation-standards.md)
-- [Documentation Guidelines](./methodology/documentation-guidelines.md)
 
 ---
 
