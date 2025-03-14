@@ -19,10 +19,23 @@ import { vi } from 'vitest';
 /**
  * Factory for creating fs mock
  */
-export const createFsMock = () => {
-  return {
-    existsSync: vi.fn(),
-    readFileSync: vi.fn(),
+export function createFsMock() {
+  const promises = {
+    readFile: vi.fn().mockResolvedValue('Mock content'),
+    writeFile: vi.fn().mockResolvedValue(undefined),
+    mkdir: vi.fn().mockResolvedValue(undefined),
+    readdir: vi.fn().mockResolvedValue(['doc1.md', 'doc2.md']),
+    stat: vi.fn().mockResolvedValue({
+      isFile: () => true,
+      isDirectory: () => false,
+      mtime: new Date(),
+      birthtime: new Date()
+    })
+  };
+
+  const fsModule = {
+    existsSync: vi.fn().mockReturnValue(true),
+    readFileSync: vi.fn().mockReturnValue('Mock content'),
     writeFileSync: vi.fn(),
     mkdirSync: vi.fn(),
     renameSync: vi.fn(),
@@ -32,133 +45,151 @@ export const createFsMock = () => {
       mtime: new Date(),
       birthtime: new Date()
     }),
-    promises: {
-      readFile: vi.fn(),
-      writeFile: vi.fn(),
-      mkdir: vi.fn(),
-      readdir: vi.fn().mockResolvedValue([]),
-      stat: vi.fn().mockResolvedValue({
-        isFile: () => true,
-        isDirectory: () => false
-      })
-    }
+    promises
   };
-};
+
+  return {
+    __esModule: true,
+    ...fsModule,
+    default: fsModule
+  };
+}
 
 /**
  * Factory for creating path mock
  */
-export const createPathMock = () => {
-  return {
-    resolve: vi.fn((...paths: string[]) => paths.join('/')),
-    join: vi.fn((...paths: string[]) => paths.join('/')),
-    dirname: vi.fn((p: string) => p.split('/').slice(0, -1).join('/')),
-    basename: vi.fn((p: string, ext?: string) => {
+export function createPathMock() {
+  const pathFns = {
+    resolve: vi.fn((...args) => args.join('/')),
+    join: vi.fn((...args) => args.join('/')),
+    dirname: vi.fn((p) => p.split('/').slice(0, -1).join('/')),
+    basename: vi.fn((p, ext) => {
       const base = p.split('/').pop() || '';
       if (!ext) return base;
       return base.endsWith(ext) ? base.slice(0, -ext.length) : base;
     }),
-    extname: vi.fn((p: string) => {
+    extname: vi.fn((p) => {
       const parts = p.split('.');
-      return parts.length > 1 ? `.${parts.pop()}` : '';
+      return parts.length > 1 ? `.${parts.pop() || ''}` : '';
     }),
-    relative: vi.fn((from: string, to: string) => {
+    relative: vi.fn((from, to) => {
       return to.replace(from + '/', '../');
     }),
     sep: '/'
   };
-};
+
+  return {
+    __esModule: true,
+    ...pathFns,
+    default: pathFns
+  };
+}
 
 /**
  * Factory for creating child_process mock
  */
-export const createChildProcessMock = () => {
+export function createChildProcessMock() {
+  const execFn = vi.fn((cmd, options, callback) => {
+    if (callback) {
+      callback(null, { stdout: 'mocked stdout', stderr: '' });
+    }
+    return {};
+  });
+
   return {
-    exec: vi.fn((cmd: string, options: any, callback?: any) => {
-      if (callback) {
-        callback(null, { stdout: 'mocked stdout', stderr: '' });
-      }
-      return {} as any;
-    }),
+    __esModule: true,
+    exec: execFn,
     default: {
-      exec: vi.fn((cmd: string, options: any, callback?: any) => {
-        if (callback) {
-          callback(null, { stdout: 'mocked stdout', stderr: '' });
-        }
-        return {} as any;
-      })
+      exec: execFn
     }
   };
-};
+}
 
 /**
  * Factory for creating glob mock
  */
-export const createGlobMock = () => {
+export function createGlobMock() {
+  const globFn = vi.fn().mockResolvedValue(['doc1.md', 'doc2.md']);
+
   return {
-    glob: vi.fn().mockResolvedValue(['doc1.md', 'doc2.md']),
+    __esModule: true,
+    glob: globFn,
+    globSync: vi.fn().mockReturnValue(['doc1.md', 'doc2.md']),
     default: {
-      glob: vi.fn().mockResolvedValue(['doc1.md', 'doc2.md'])
+      glob: globFn,
+      globSync: vi.fn().mockReturnValue(['doc1.md', 'doc2.md'])
     }
   };
-};
+}
 
 /**
  * Factory for creating gray-matter mock
  */
-export const createMatterMock = () => {
+export function createMatterMock() {
+  const matterFn = vi.fn().mockReturnValue({
+    data: { title: 'Test Document' },
+    content: 'Mock content',
+    orig: 'Original content',
+    language: 'markdown',
+    matter: 'frontmatter content',
+    excerpt: '',
+    isEmpty: false,
+    stringify: () => 'stringified content'
+  });
+
   return {
-    default: vi.fn().mockReturnValue({
-      data: { title: 'Mock Title' },
-      content: 'Mock content'
-    })
+    __esModule: true,
+    default: matterFn
   };
-};
+}
 
 /**
  * Factory for creating lunr mock
  */
-export const createLunrMock = () => {
-  return {
-    default: vi.fn((builder: any) => {
-      builder && builder();
-      return {
-        search: vi.fn().mockReturnValue([
-          {
-            ref: 'doc1.md',
-            score: 0.8,
-            matchData: {
-              metadata: {
-                term1: {
-                  plainText: {
-                    position: [
-                      [0, 10],
-                      [20, 30]
-                    ]
-                  }
+export function createLunrMock() {
+  const lunrFn = vi.fn((builder) => {
+    builder && builder();
+    return {
+      search: vi.fn().mockReturnValue([
+        {
+          ref: 'doc1.md',
+          score: 0.8,
+          matchData: {
+            metadata: {
+              term1: {
+                plainText: {
+                  position: [
+                    [0, 10],
+                    [20, 30]
+                  ]
                 }
               }
             }
           }
-        ]),
-        Index: {
-          load: vi.fn()
         }
-      };
-    })
+      ]),
+      Index: {
+        load: vi.fn()
+      }
+    };
+  });
+
+  return {
+    __esModule: true,
+    default: lunrFn
   };
-};
+}
 
 /**
  * Factory for creating natural mock
  */
-export const createNaturalMock = () => {
-  return {
+export function createNaturalMock() {
+  const naturalModule = {
     PorterStemmer: {
       stem: vi.fn((word) => word)
     },
     WordTokenizer: vi.fn().mockImplementation(() => ({
-      tokenize: vi.fn().mockReturnValue(['word1', 'word2', 'word3'])
+      tokenize: vi.fn().mockReturnValue(['word1', 'word2', 'word3', 'word4'])
     })),
     TfIdf: vi.fn().mockImplementation(() => ({
       addDocument: vi.fn(),
@@ -172,53 +203,87 @@ export const createNaturalMock = () => {
       getSentiment: vi.fn().mockReturnValue(0.2)
     }))
   };
-};
+
+  return {
+    __esModule: true,
+    ...naturalModule,
+    default: naturalModule
+  };
+}
 
 /**
  * Factory for creating mdast-util-to-string mock
  */
-export const createMdastUtilMock = () => {
+export function createMdastUtilMock() {
+  const toStringFn = vi.fn().mockReturnValue('Mock plain text');
+
   return {
-    toString: vi.fn().mockReturnValue('Mock plain text')
+    __esModule: true,
+    toString: toStringFn,
+    default: toStringFn
   };
-};
+}
 
 /**
  * Factory for creating unified mock
  */
-export const createUnifiedMock = () => {
-  return {
-    unified: vi.fn().mockReturnValue({
-      use: vi.fn().mockReturnThis(),
-      parse: vi.fn().mockReturnValue({
-        type: 'root',
-        children: [
-          {
-            type: 'heading',
-            depth: 1,
-            children: [{ type: 'text', value: 'Title' }],
-            position: {
-              start: { line: 1, column: 1, offset: 0 },
-              end: { line: 1, column: 10, offset: 9 }
-            }
+export function createUnifiedMock() {
+  const unifiedFn = vi.fn().mockReturnValue({
+    use: vi.fn().mockReturnThis(),
+    parse: vi.fn().mockReturnValue({
+      type: 'root',
+      children: [
+        {
+          type: 'heading',
+          depth: 1,
+          children: [{ type: 'text', value: 'Title' }],
+          position: {
+            start: { line: 1, column: 1, offset: 0 },
+            end: { line: 1, column: 10, offset: 9 }
           }
-        ]
-      }),
-      stringify: vi.fn().mockReturnValue('Stringified markdown')
-    })
+        }
+      ]
+    }),
+    stringify: vi.fn().mockReturnValue('Stringified markdown')
+  });
+
+  return {
+    __esModule: true,
+    unified: unifiedFn,
+    default: {
+      unified: unifiedFn
+    }
   };
-};
+}
 
 /**
  * Factory for creating util mock
  */
-export const createUtilMock = () => {
+export function createUtilMock() {
+  const promisifyFn = vi.fn((fn) => {
+    return async (...args: any[]) => ({
+      stdout: 'mocked stdout',
+      stderr: ''
+    });
+  });
+
   return {
-    promisify: vi.fn().mockImplementation((fn) => {
-      return async (...args: any[]) => ({
-        stdout: 'mocked stdout',
-        stderr: ''
-      });
-    })
+    __esModule: true,
+    promisify: promisifyFn,
+    default: {
+      promisify: promisifyFn
+    }
   };
-};
+}
+
+// Pre-created mock instances for direct importing in test files
+export const fsMock = createFsMock();
+export const pathMock = createPathMock();
+export const childProcessMock = createChildProcessMock();
+export const globMock = createGlobMock();
+export const matterMock = createMatterMock();
+export const lunrMock = createLunrMock();
+export const naturalMock = createNaturalMock();
+export const mdastUtilMock = createMdastUtilMock();
+export const unifiedMock = createUnifiedMock();
+export const utilMock = createUtilMock();

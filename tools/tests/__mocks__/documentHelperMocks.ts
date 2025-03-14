@@ -163,3 +163,45 @@ export const setupDocumentHelperMocks = () => {
   vi.mock('mdast-util-to-string', () => mockMdastUtil);
   vi.mock('unified', () => mockUnified);
 };
+
+// Mock workItem for testing
+export const createMockWorkItem = (customProps: any = {}) => {
+  return {
+    id: 'task-2025-03-test',
+    title: 'Test Task',
+    type: 'task',
+    status: 'Not Started',
+    priority: 'High',
+    owner: 'John',
+    lastUpdated: '2025-03-13',
+    createdDate: '2025-03-10',
+    ...customProps
+  };
+};
+
+// Mock workItem content for testing
+export const createMockWorkItemContent = (
+  workItem: any = createMockWorkItem()
+) => {
+  return `---
+id: ${workItem.id}
+title: ${workItem.title}
+type: ${workItem.type}
+status: ${workItem.status}
+priority: ${workItem.priority}
+owner: ${workItem.owner}
+createdDate: ${workItem.createdDate}
+lastUpdated: ${workItem.lastUpdated}
+---
+
+# ${workItem.title}
+
+This is a test task.
+
+## Status: ${workItem.status}
+
+## Priority: ${workItem.priority}
+
+## Owner: ${workItem.owner}
+`;
+};

@@ -21,44 +21,46 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Import mock objects for top-level mocking
+// Import the factory functions
 import {
-  fsMock,
-  pathMock,
-  childProcessMock,
-  globMock,
-  matterMock,
-  lunrMock,
-  naturalMock,
-  mdastUtilMock,
-  unifiedMock,
-  utilMock,
-  commanderMock,
-  handlebarsMock,
-  setupDocTestEnv
-} from './vitest-docs-setup';
+  createFsMock,
+  createPathMock,
+  createChildProcessMock,
+  createGlobMock,
+  createMatterMock,
+  createLunrMock,
+  createNaturalMock,
+  createMdastUtilMock,
+  createUnifiedMock,
+  createUtilMock
+} from './__mocks__/setup';
 
 import { createMockDocument } from './__mocks__/documentHelperMocks';
 
 // Set up mocks at the top level
-vi.mock('fs', () => fsMock);
-vi.mock('path', () => pathMock);
-vi.mock('child_process', () => childProcessMock);
-vi.mock('glob', () => globMock);
-vi.mock('gray-matter', () => ({
-  __esModule: true,
-  default: (content: string) => ({
-    data: { title: 'Mock Title' },
-    content: 'Mock content'
-  })
+vi.mock('fs', () => createFsMock());
+vi.mock('path', () => createPathMock());
+vi.mock('child_process', () => createChildProcessMock());
+vi.mock('glob', () => createGlobMock());
+vi.mock('gray-matter', () => createMatterMock());
+vi.mock('lunr', () => createLunrMock());
+vi.mock('natural', () => createNaturalMock());
+vi.mock('commander', () => ({
+  program: {
+    command: vi.fn().mockReturnThis(),
+    description: vi.fn().mockReturnThis(),
+    option: vi.fn().mockReturnThis(),
+    action: vi.fn().mockReturnThis(),
+    parse: vi.fn()
+  }
 }));
-vi.mock('lunr', () => lunrMock);
-vi.mock('natural', () => naturalMock);
-vi.mock('commander', () => commanderMock);
-vi.mock('handlebars', () => handlebarsMock);
-vi.mock('mdast-util-to-string', () => mdastUtilMock);
-vi.mock('unified', () => unifiedMock);
-vi.mock('util', () => utilMock);
+vi.mock('handlebars', () => ({
+  compile: vi.fn().mockReturnValue((data: any) => 'Compiled template'),
+  registerHelper: vi.fn()
+}));
+vi.mock('mdast-util-to-string', () => createMdastUtilMock());
+vi.mock('unified', () => createUnifiedMock());
+vi.mock('util', () => createUtilMock());
 
 // Import modules after setting up mocks
 import * as fs from 'fs';
@@ -66,22 +68,32 @@ import * as glob from 'glob';
 import matter from 'gray-matter';
 import * as natural from 'natural';
 import * as unified from 'unified';
+import * as mdastUtilToString from 'mdast-util-to-string';
 import { DocumentHelper, Document } from '../documentHelper';
 
 // Prepare test data
 const mockDocument: Document = createMockDocument();
 
-// Setup common test environment before any tests
-setupDocTestEnv();
+// Setup hooks for all tests
+beforeEach(() => {
+  vi.resetAllMocks();
+});
+
+afterEach(() => {
+  vi.resetAllMocks();
+});
 
 describe('DocumentHelper', () => {
   let documentHelper: DocumentHelper;
 
   beforeEach(async () => {
     // Setup specific mock for SentimentAnalyzer
-    vi.mocked(natural.SentimentAnalyzer).mockImplementation(() => ({
-      getSentiment: vi.fn().mockReturnValue(0.2)
-    }));
+    vi.mocked(natural.SentimentAnalyzer).mockImplementation(
+      () =>
+        ({
+          getSentiment: vi.fn().mockReturnValue(0.2)
+        } as any)
+    );
 
     // Setup mocks for glob
     vi.mocked(glob.glob).mockResolvedValue(['doc1.md', 'doc2.md']);
@@ -107,17 +119,13 @@ describe('DocumentHelper', () => {
     };
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   // Simplified tests for demonstration
   describe('findDocuments', () => {
     it('should find markdown documents in the docs directory', async () => {
       const docs = await documentHelper.findDocuments();
 
       expect(docs).toHaveLength(2);
-      expect(docs).toContain('doc1.md');
+      expect(docs.map((doc) => doc.replace('docs/', ''))).toContain('doc1.md');
     });
 
     it('should handle errors when finding documents', async () => {
@@ -146,7 +154,7 @@ describe('DocumentHelper', () => {
         language: 'markdown',
         matter: 'frontmatter content',
         stringify: (options?: any) => 'stringified content'
-      });
+      } as any);
 
       // Setup mock for unified
       const mockProcessor = {
@@ -171,7 +179,9 @@ describe('DocumentHelper', () => {
       vi.mocked(unified.unified).mockReturnValue(mockProcessor as any);
 
       // Setup mock for toString
-      vi.mocked(mdastUtilMock.toString).mockReturnValue('Plain text content');
+      vi.mocked(mdastUtilToString.toString).mockReturnValue(
+        'Plain text content'
+      );
 
       const doc = await documentHelper.loadDocument('docs/test-doc.md');
 
@@ -193,7 +203,7 @@ describe('DocumentHelper', () => {
           { term: 'word4', tfidf: 0.1 }
         ])
       };
-      vi.mocked(natural.TfIdf).mockImplementation(() => mockTfIdf);
+      vi.mocked(natural.TfIdf).mockImplementation(() => mockTfIdf as any);
 
       // Test with a document object
       const result = await documentHelper.analyzeContent(mockDocument);

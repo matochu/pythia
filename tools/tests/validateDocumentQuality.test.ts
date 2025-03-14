@@ -24,7 +24,7 @@ import {
   childProcessMock,
   chalkMock,
   globMock
-} from './vitest-docs-setup';
+} from './setup';
 
 // Set up mocks at the top level
 vi.mock('fs', () => fsMock);

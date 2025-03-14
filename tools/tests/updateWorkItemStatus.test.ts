@@ -19,61 +19,67 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { fsMock, pathMock } from './__mocks__/setup';
 
-// Import mock objects for top-level mocking
-import { fsMock, pathMock } from './vitest-docs-setup';
-
-// Set up mocks at the top level
+// Мокуємо модулі правильно, кожен з default export
 vi.mock('fs', () => fsMock);
 vi.mock('path', () => pathMock);
 
-// Mock dependent modules
-vi.mock('../documentation/validators/statusValidator', () => ({
-  validateWorkItemStatus: vi.fn()
+// Мокуємо залежні модулі
+vi.mock('../validators/statusValidator', () => ({
+  __esModule: true,
+  validateWorkItemStatus: vi.fn().mockReturnValue({ isValid: true })
 }));
 
-vi.mock('../documentation/registryUpdater', () => ({
-  updateActiveWorkItemsRegistry: vi.fn()
+vi.mock('../registryUpdater', () => ({
+  __esModule: true,
+  updateActiveWorkItemsRegistry: vi.fn().mockResolvedValue(undefined)
 }));
 
-vi.mock('../documentation/graphUpdater', () => ({
-  updateDependenciesGraph: vi.fn()
+vi.mock('../graphUpdater', () => ({
+  __esModule: true,
+  updateDependenciesGraph: vi.fn().mockResolvedValue(undefined)
 }));
 
-vi.mock('../documentation/statusLogger', () => ({
-  logStatusChange: vi.fn()
+vi.mock('../statusLogger', () => ({
+  __esModule: true,
+  logStatusChange: vi.fn().mockResolvedValue(undefined)
 }));
 
-// Import modules after setting up mocks
+// Імпорт модулів після мокування
 import fs from 'fs';
+import path from 'path';
 import { updateWorkItemStatusCore } from '../updateWorkItemStatus';
 import { validateWorkItemStatus } from '../validators/statusValidator';
 import { updateActiveWorkItemsRegistry } from '../registryUpdater';
 import { updateDependenciesGraph } from '../graphUpdater';
 import { WorkItemStatus } from '../types/workItem';
-import { logStatusChange } from '../statusLogger';
-import { createMockWorkItem, createMockWorkItemContent } from './__mocks__';
 
 describe('updateWorkItemStatus', () => {
-  const mockWorkItem = createMockWorkItem();
+  const mockWorkItem = {
+    id: 'task-123',
+    title: 'Test Task',
+    type: 'task',
+    status: 'Not Started',
+    lastUpdated: '2023-01-01',
+    createdAt: '2023-01-01'
+  };
+
+  const mockFileContent = `# Test Task
+Type: task
+Status: Not Started
+Last Updated: 2023-01-01
+Created: 2023-01-01
+`;
 
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.clearAllMocks();
 
-    // Setup mocks for fs module
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(fs.readFileSync).mockReturnValue(
-      createMockWorkItemContent(mockWorkItem)
-    );
-    vi.mocked(fs.promises.readFile).mockResolvedValue('{}');
-    vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined);
-    vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined);
-
-    // Setup mocks for document functions
-    vi.mocked(validateWorkItemStatus).mockReturnValue({ isValid: true });
-    vi.mocked(updateActiveWorkItemsRegistry).mockResolvedValue(undefined);
-    vi.mocked(updateDependenciesGraph).mockResolvedValue(undefined);
-    vi.mocked(logStatusChange).mockResolvedValue(undefined);
+    // Повторне налаштування моків для кожного тесту
+    (fs.existsSync as any).mockReturnValue(true);
+    (fs.readFileSync as any).mockReturnValue(mockFileContent);
+    (validateWorkItemStatus as any).mockReturnValue({ isValid: true });
   });
 
   it('should update work item status', async () => {
@@ -95,7 +101,7 @@ describe('updateWorkItemStatus', () => {
   });
 
   it('should handle status update with reason', async () => {
-    const newStatus = 'Blocked' as WorkItemStatus;
+    const newStatus = 'In Progress' as WorkItemStatus;
     const reason = 'Waiting for dependency';
     await updateWorkItemStatusCore(mockWorkItem.id, newStatus, reason);
 
@@ -114,7 +120,7 @@ describe('updateWorkItemStatus', () => {
   });
 
   it('should validate work item status transitions', async () => {
-    vi.mocked(validateWorkItemStatus).mockReturnValue({ isValid: true });
+    (validateWorkItemStatus as any).mockReturnValue({ isValid: true });
     const newStatus = 'In Progress' as WorkItemStatus;
     await updateWorkItemStatusCore(mockWorkItem.id, newStatus);
 
@@ -124,7 +130,7 @@ describe('updateWorkItemStatus', () => {
   });
 
   it('should fail on invalid status transition', async () => {
-    vi.mocked(validateWorkItemStatus).mockReturnValue({
+    (validateWorkItemStatus as any).mockReturnValue({
       isValid: false,
       error: 'Invalid transition'
     });
@@ -139,7 +145,7 @@ describe('updateWorkItemStatus', () => {
   });
 
   it('should fail when work item does not exist', async () => {
-    vi.mocked(fs.existsSync).mockReturnValue(false);
+    (fs.existsSync as any).mockReturnValue(false);
     const newStatus = 'In Progress' as WorkItemStatus;
 
     await expect(

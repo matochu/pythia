@@ -22,7 +22,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Import mock objects for top-level mocking
-import { fsMock, pathMock, handlebarsMock } from './vitest-docs-setup';
+import { fsMock, pathMock, handlebarsMock } from './setup';
 
 // Set up mocks at the top level
 vi.mock('fs', () => fsMock);
