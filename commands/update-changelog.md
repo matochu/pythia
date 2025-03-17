@@ -17,7 +17,7 @@ Before updating the Changelog, ensure you have:
 
 1. Knowledge of recent significant changes to the documentation or codebase
 2. The current date for proper changelog timestamping
-3. Reviewed the existing Changelog (`/docs/CHANGELOG.md`)
+3. Reviewed the existing Changelog (`../CHANGELOG.md`)
 4. Understood the categorization of changes (Added, Changed, Removed, Fixed)
 
 ## Command Checklist
@@ -41,7 +41,7 @@ Before proceeding with the changelog update, complete this checklist:
 
 First, review the current state of the Changelog:
 
-1. Open `/docs/CHANGELOG.md`
+1. Open `../CHANGELOG.md`
 2. Understand the current organization and format of entries
 3. Note the most recent date entry and its contents
 4. Familiarize yourself with how changes are categorized and described
@@ -90,24 +90,24 @@ For each change, add an entry to the appropriate category:
 1. **Added**: New documents, features, or significant content additions
 
    ```markdown
-   - Added new task documentation for [topic] (`/docs/workflows/tasks/task-yyyy-mm-topic.md`)
+   - Added new task documentation for [topic] (`../workflows/tasks/task-yyyy-mm-topic.md`)
    ```
 
 2. **Changed**: Updates to existing documents or content
 
    ```markdown
-   - Updated architecture diagram in `/docs/architecture/analysis-general-architecture.md`
+   - Updated architecture diagram in `../architecture/analysis-general-architecture.md`
    ```
 
 3. **Removed**: Documents or content that have been removed
 
    ```markdown
-   - Removed obsolete performance analysis from `/docs/architecture/analysis-performance.md`
+   - Removed obsolete performance analysis from `../architecture/analysis-performance.md`
    ```
 
 4. **Fixed**: Corrections to errors in existing documents
    ```markdown
-   - Fixed incorrect links in `/docs/navigation/documentation-map.md`
+   - Fixed incorrect links in `../navigation/documentation-map.md`
    ```
 
 ## Step 5: Formatting Guidelines
@@ -197,18 +197,18 @@ Here's an example of a well-formed changelog entry:
 
 ### Added
 
-- Created command documentation for updating the changelog (`/docs/commands/update-changelog.md`)
-- Added WebGL performance metrics section to TV performance analysis (`/docs/architecture/analysis-tv-performance.md`)
+- Created command documentation for updating the changelog (`./update-changelog.md`)
+- Added WebGL performance metrics section to TV performance analysis (`../architecture/analysis-tv-performance.md`)
 
 ### Changed
 
-- Updated documentation map with new command documents (`/docs/navigation/documentation-map.md`)
-- Improved API integration documentation with more detailed examples (`/docs/architecture/analysis-api-integration.md`)
+- Updated documentation map with new command documents (`../navigation/documentation-map.md`)
+- Improved API integration documentation with more detailed examples (`../architecture/analysis-api-integration.md`)
 
 ### Fixed
 
-- Fixed broken links in WebGL component system analysis (`/docs/architecture/analysis-webgl-component-system.md`)
-- Corrected outdated information in state management analysis (`/docs/architecture/analysis-state-management.md`)
+- Fixed broken links in WebGL component system analysis (`../architecture/analysis-webgl-component-system.md`)
+- Corrected outdated information in state management analysis (`../architecture/analysis-state-management.md`)
 ```
 
 ## Related Documents

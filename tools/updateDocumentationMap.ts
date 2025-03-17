@@ -56,8 +56,6 @@
  *      ```
  */
 
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import * as fs from 'fs';
 import * as path from 'path';
 import { exec } from 'child_process';
@@ -65,16 +63,18 @@ import { promisify } from 'util';
 import * as readline from 'readline';
 import { createHash } from 'crypto';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Get current file path and directory for both ESM and CommonJS
+const __filename = process.argv[1] || '';
+const __dirname = path.dirname(__filename);
 
 const execAsync = promisify(exec);
-const DOCS_ROOT = path.join(process.cwd(), 'docs');
-const MAP_PATH = path.join(DOCS_ROOT, 'navigation', 'documentation-map.md');
+// Use project root instead of docs subfolder
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+const MAP_PATH = path.join(PROJECT_ROOT, 'navigation', 'documentation-map.md');
 
 // Configuration
-const VISUALIZATION_DIR = 'docs/visualizations';
-const CACHE_DIR = '.cache/docs';
+const VISUALIZATION_DIR = path.join(PROJECT_ROOT, 'visualizations');
+const CACHE_DIR = path.join(PROJECT_ROOT, '.cache/docs');
 
 // Command line arguments
 const ADD_ALL = process.argv.includes('--add-all');
@@ -125,8 +125,8 @@ interface SearchResult {
 // Normalize path for comparison
 function normalizePath(filePath: string): string {
   // Convert absolute path to relative from docs directory
-  if (filePath.startsWith(DOCS_ROOT)) {
-    filePath = path.relative(DOCS_ROOT, filePath);
+  if (filePath.startsWith(PROJECT_ROOT)) {
+    filePath = path.relative(PROJECT_ROOT, filePath);
   }
 
   // Handle relative paths
@@ -140,7 +140,9 @@ function normalizePath(filePath: string): string {
 
 // Find all documentation files
 async function findAllDocuments(): Promise<string[]> {
-  const { stdout } = await execAsync(`find ${DOCS_ROOT} -name "*.md" -type f`);
+  const { stdout } = await execAsync(
+    `find ${PROJECT_ROOT} -name "*.md" -type f`
+  );
   return stdout
     .split('\n')
     .filter(Boolean)
@@ -187,7 +189,7 @@ async function buildDocumentEntries(): Promise<DocumentEntry[]> {
   const entries: DocumentEntry[] = [];
 
   for (const file of files) {
-    const fullPath = path.join(DOCS_ROOT, file);
+    const fullPath = path.join(PROJECT_ROOT, file);
     const content = fs.readFileSync(fullPath, 'utf8');
     const titleMatch = content.match(/^#\s+(.+)$/m);
     const descriptionMatch = content.match(
@@ -253,10 +255,10 @@ checkDocumentationMap();
  */
 export async function getAllDocuments(): Promise<string[]> {
   try {
-    console.log(`Searching for markdown documents in ${DOCS_ROOT}`);
+    console.log(`Searching for markdown documents in ${PROJECT_ROOT}`);
 
     // First, get all directories
-    const { stdout } = await execAsync(`find ${DOCS_ROOT} -type d`);
+    const { stdout } = await execAsync(`find ${PROJECT_ROOT} -type d`);
     const dirs = stdout.split('\n').filter(Boolean);
 
     // Then, find all markdown files in each directory
@@ -286,7 +288,10 @@ export function categorizeDocuments(
   const categories: Record<string, string[]> = {};
 
   for (const document of documents) {
-    const dir = document.split('/')[1]; // Gets the directory after 'docs/'
+    // Split path to get category (first level directory)
+    const parts = document.split('/');
+    const dir = parts.length > 0 ? parts[0] : 'other';
+
     if (!categories[dir]) {
       categories[dir] = [];
     }
@@ -1202,9 +1207,13 @@ async function main() {
   }
 }
 
-// Run the script if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
+// Check if file is being run directly
+const isMainModule = process.argv[1] === __filename;
+if (isMainModule) {
+  main().catch((error) => {
+    console.error(`❌ Error: ${error.message}`);
+    process.exit(1);
+  });
 }
 
 // Export for testing

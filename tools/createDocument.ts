@@ -77,7 +77,7 @@
  *      });
  *
  *      // Register partials
- *      const headerPartial = fs.readFileSync('docs/templates/partials/header.hbs', 'utf8');
+ *      const headerPartial = fs.readFileSync('../templates/partials/header.hbs', 'utf8');
  *      Handlebars.registerPartial('header', headerPartial);
  *
  *      // Compile and render template
@@ -103,15 +103,15 @@ import { semanticSearch } from './updateDocumentationMap';
 const execAsync = promisify(exec);
 
 // Configuration
-const DOCS_DIR = 'docs';
-const TEMPLATES_DIR = 'docs/templates';
+const DOCS_DIR = './';
+const TEMPLATES_DIR = 'templates';
 const DEFAULT_TEMPLATES: Record<string, string> = {
-  task: 'docs/templates/task-template.md',
-  analysis: 'docs/templates/analysis-template.md',
-  command: 'docs/templates/command-template.md',
-  rule: 'docs/templates/rule-template.md',
-  guide: 'docs/templates/guide-template.md',
-  general: 'docs/templates/general-template.md',
+  task: 'templates/task-template.md',
+  analysis: 'templates/analysis-template.md',
+  command: 'templates/command-template.md',
+  rule: 'templates/rule-template.md',
+  guide: 'templates/guide-template.md',
+  general: 'templates/general-template.md'
 };
 
 // Command line arguments
@@ -174,7 +174,7 @@ interface RelatedDocument {
 function createReadlineInterface(): readline.Interface {
   return readline.createInterface({
     input: process.stdin,
-    output: process.stdout,
+    output: process.stdout
   });
 }
 
@@ -337,7 +337,7 @@ async function gatherDocumentDetails(): Promise<DocumentMetadata | null> {
     tags: tags
       .split(',')
       .map((tag) => tag.trim())
-      .filter(Boolean),
+      .filter(Boolean)
   };
 }
 
@@ -467,7 +467,7 @@ async function findRelatedDocuments(
       .map((result) => ({
         path: result.path,
         title: result.title,
-        relevance: result.relevance,
+        relevance: result.relevance
       }));
   } catch (error) {
     console.error('Error finding related documents:', error);
@@ -552,7 +552,7 @@ async function createDocument(): Promise<void> {
       owner: 'Documentation Team',
       status: 'Draft',
       priority: 'Medium',
-      tags: [],
+      tags: []
     };
   }
 
@@ -574,7 +574,7 @@ async function createDocument(): Promise<void> {
     filename: docData.filename,
     tags: docData.tags.join(', '),
     year: docData.createdDate.split('-')[0],
-    month: docData.createdDate.split('-')[1],
+    month: docData.createdDate.split('-')[1]
   };
 
   // Process the template
@@ -857,7 +857,7 @@ Document conclusions.
 ---
 
 **Last Updated**: {{date}}
-`,
+`
   };
 
   // Create each default template if it doesn't exist
@@ -902,5 +902,5 @@ export {
   findTemplate,
   processTemplate,
   findRelatedDocuments,
-  slugify,
+  slugify
 };

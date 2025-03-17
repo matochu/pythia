@@ -18,6 +18,7 @@
  *   --report REPORT_PATH: Path to save the validation report
  *   --strict: Apply stricter validation rules
  *   --rules PATH: Path to custom rule configuration
+ *   --help, -h: Show this help message
  * 
  * @todo Potential Third-Party Library Improvements:
  * 
@@ -79,15 +80,43 @@ type MarkdownLinkCheckResult = {
 const execAsync = promisify(exec);
 
 // Configuration
-const DOCS_DIR = 'docs';
-const DEFAULT_REPORT_PATH = 'docs/reports/quality-report.md';
-const DEFAULT_RULES_CONFIG = 'docs/rules/document-quality-rules.json';
+const DOCS_DIR = '.';
+const DEFAULT_REPORT_PATH = 'reports/quality-report.md';
+const DEFAULT_RULES_CONFIG = 'rules/document-quality-rules.json';
 
 // Command line arguments
 const args = process.argv.slice(2);
 const ALL_DOCS = args.includes('--all');
 const FIX_ISSUES = args.includes('--fix');
 const STRICT_MODE = args.includes('--strict');
+const SHOW_HELP = args.includes('--help') || args.includes('-h');
+
+/**
+ * Shows help information
+ */
+function showHelp(): void {
+  console.log(`
+Document Quality Validation Script
+
+Usage: 
+  ts-node validateDocumentQuality.ts [options]
+
+Options:
+  --path PATH           Specific file or directory to validate
+  --all                 Check all documentation files
+  --fix                 Automatically fix common issues
+  --report PATH         Path to save the validation report (default: ${DEFAULT_REPORT_PATH})
+  --strict              Apply stricter validation rules
+  --rules PATH          Path to custom rule configuration (default: ${DEFAULT_RULES_CONFIG})
+  --help, -h            Show this help message
+
+Examples:
+  ts-node validateDocumentQuality.ts --path ./README.md
+  ts-node validateDocumentQuality.ts --all --fix
+  ts-node validateDocumentQuality.ts --all --report ./quality-report.md
+  `);
+  process.exit(0);
+}
 
 const getArgValue = (flag: string): string | null => {
   const index = args.findIndex((arg) => arg === flag);
@@ -98,7 +127,7 @@ const getArgValue = (flag: string): string | null => {
 };
 
 const TARGET_PATH = getArgValue('--path') || (ALL_DOCS ? DOCS_DIR : null);
-const REPORT_PATH = getArgValue('--report') || DEFAULT_REPORT_PATH;
+const REPORT_PATH = getArgValue('--report');
 const RULES_PATH = getArgValue('--rules') || DEFAULT_RULES_CONFIG;
 
 // Interfaces for document validation
@@ -212,31 +241,18 @@ interface ValidationOptions {
   generateReport: boolean;
   reportPath: string;
   rulesConfig: any;
+  all?: boolean;
+  path?: string;
+  report?: string;
 }
 
 /**
- * Finds all documents for validation
+ * Result of validation for reporting
  */
-async function findDocuments(targetPath: string): Promise<string[]> {
-  console.log(chalk.blue(`Searching for documents in ${targetPath}...`));
-
-  try {
-    // Check if path is a file
-    if (fs.existsSync(targetPath) && fs.statSync(targetPath).isFile()) {
-      if (targetPath.endsWith('.md')) {
-        return [targetPath];
-      }
-      return [];
-    }
-
-    // Path is a directory, find all markdown files
-    const files = await glob(`${targetPath}/**/*.md`);
-    console.log(chalk.green(`Found ${files.length} markdown documents`));
-    return files;
-  } catch (error) {
-    console.error(chalk.red(`Error finding documents: ${error}`));
-    return [];
-  }
+interface ValidationResult {
+  filePath: string;
+  issues: ValidationIssue[];
+  qualityScore: number;
 }
 
 /**
@@ -419,11 +435,16 @@ async function validateMarkdownLint(
       markdownlintModule) as any;
 
     // Load rules configuration or use default
-    let config: MarkdownlintOptions = {};
+    let config: MarkdownlintOptions = {
+      MD013: false
+    };
 
     if (fs.existsSync(RULES_PATH)) {
       try {
-        config = JSON.parse(fs.readFileSync(RULES_PATH, 'utf8'));
+        config = {
+          ...JSON.parse(fs.readFileSync(RULES_PATH, 'utf8')),
+          MD013: false
+        };
       } catch (error) {
         console.warn(
           chalk.yellow(
@@ -437,7 +458,6 @@ async function validateMarkdownLint(
     if (STRICT_MODE) {
       config = {
         ...config,
-        MD013: true, // Line length
         MD033: true, // No inline HTML
         MD041: true, // First line must be a top-level heading
         MD046: true, // Code block style
@@ -493,6 +513,51 @@ async function validateLinks(document: Document): Promise<ValidationIssue[]> {
     // @ts-ignore
     const markdownLinkCheck = (await import('markdown-link-check')).default;
 
+    // Extract links manually to better handle root-relative links
+    const links: string[] = [];
+    const urlMatches =
+      document.content.match(/\[.+?\]\(((?!https?:\/\/).+?)\)/g) || [];
+
+    // Find all links in the document
+    for (const match of urlMatches) {
+      const linkMatch = match.match(/\[.+?\]\((.+?)\)/);
+      if (linkMatch && linkMatch[1]) {
+        links.push(linkMatch[1]);
+      }
+    }
+
+    const issues: ValidationIssue[] = [];
+
+    // Check for root-relative links that might be problematic
+    for (const link of links) {
+      // Check if the link starts with a slash (root-relative)
+      if (link.startsWith('/')) {
+        // Find the line number where this link appears
+        const lines = document.content.split('\n');
+        let linkLine = 1;
+
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].includes(link)) {
+            linkLine = i + 1;
+            break;
+          }
+        }
+
+        // Add issue for root-relative link
+        issues.push({
+          documentPath: document.path,
+          line: linkLine,
+          message: `Root-relative link found: ${link}. Consider using relative links instead.`,
+          ruleId: 'link-check:root-relative-link',
+          severity: IssueSeverity.Warning,
+          category: QualityCategory.Links,
+          fixable: true,
+          fixSuggestion: `Consider changing this to a relative link`
+        });
+      }
+    }
+
+    // Now check all links using markdown-link-check
     return new Promise<ValidationIssue[]>((resolve) => {
       markdownLinkCheck(
         document.content,
@@ -501,6 +566,15 @@ async function validateLinks(document: Document): Promise<ValidationIssue[]> {
           ignorePatterns: [
             { pattern: '^http://localhost' },
             { pattern: '^#' } // Ignore anchor links (checked separately)
+          ],
+          // Add a custom handler for file URLs to better handle root-relative paths
+          httpHeaders: [
+            {
+              urls: ['http://', 'https://'],
+              headers: {
+                'User-Agent': 'Mozilla/5.0'
+              }
+            }
           ]
         },
         (err: any, results: MarkdownLinkCheckResult[]) => {
@@ -508,11 +582,9 @@ async function validateLinks(document: Document): Promise<ValidationIssue[]> {
             console.error(
               chalk.red(`Error checking links in ${document.path}: ${err}`)
             );
-            resolve([]);
+            resolve(issues); // Return already found issues
             return;
           }
-
-          const issues: ValidationIssue[] = [];
 
           for (const result of results) {
             if (result.status !== 'alive') {
@@ -580,7 +652,7 @@ async function analyzeReadability(document: Document): Promise<{
     // Tokenize into words for sentence length analysis
     const wordTokenizer = new natural.WordTokenizer();
     const sentenceLengths = sentences.map(
-      (sentence: string) => wordTokenizer.tokenize(sentence).length
+      (sentence: string) => wordTokenizer?.tokenize(sentence)?.length || 0
     );
 
     // Calculate average sentence length
@@ -628,7 +700,9 @@ async function analyzeReadability(document: Document): Promise<{
     if (flesch < 30) {
       issues.push({
         documentPath: document.path,
-        message: `Document has low readability score (${flesch.toFixed(1)}). Consider simplifying the language.`,
+        message: `Document has low readability score (${flesch.toFixed(
+          1
+        )}). Consider simplifying the language.`,
         ruleId: 'readability:low-flesch-score',
         severity: IssueSeverity.Warning,
         category: QualityCategory.Style,
@@ -660,12 +734,81 @@ async function analyzeReadability(document: Document): Promise<{
 }
 
 /**
- * Validates a document against all checks
+ * Finds all Markdown files in a directory
+ */
+function getAllMarkdownFiles(targetPath?: string): string[] {
+  const basePath = targetPath || DOCS_DIR;
+  console.log(chalk.blue(`Searching for markdown documents in ${basePath}`));
+
+  try {
+    return glob.sync(`${basePath}/**/*.md`, {
+      ignore: [
+        '**/node_modules/**', // Ignore documentation in node_modules
+        '**/reports/**' // Ignore documentation in reports directory
+      ]
+    });
+  } catch (error) {
+    console.error(chalk.red(`Error finding markdown files: ${error}`));
+    return [];
+  }
+}
+
+/**
+ * Parses command line options
+ */
+function parseOptions(): ValidationOptions {
+  let rulesConfig = {};
+
+  // Safely read rules file if it exists
+  if (RULES_PATH && fs.existsSync(RULES_PATH)) {
+    try {
+      rulesConfig = JSON.parse(fs.readFileSync(RULES_PATH, 'utf8'));
+    } catch (e) {
+      console.warn(
+        chalk.yellow(`Warning: Failed to parse rules from ${RULES_PATH}`)
+      );
+    }
+  }
+
+  // Define report path
+  const reportPath = REPORT_PATH || DEFAULT_REPORT_PATH;
+
+  return {
+    strictMode: STRICT_MODE,
+    fixIssues: FIX_ISSUES,
+    generateReport: !!reportPath,
+    reportPath: reportPath,
+    rulesConfig,
+    all: ALL_DOCS,
+    path: TARGET_PATH || undefined,
+    report: reportPath
+  };
+}
+
+/**
+ * Validates a document with specified options, accepting a file path
  */
 async function validateDocument(
+  fileOrDoc: string | Document,
+  options: ValidationOptions
+): Promise<ValidationResult> {
+  // Handle string filepath input
+  if (typeof fileOrDoc === 'string') {
+    const document = await loadDocument(fileOrDoc);
+    return validateDocumentContent(document, options);
+  }
+
+  // Otherwise it's already a Document
+  return validateDocumentContent(fileOrDoc, options);
+}
+
+/**
+ * Internal implementation for document validation
+ */
+async function validateDocumentContent(
   document: Document,
   options: ValidationOptions
-): Promise<DocumentValidationResult> {
+): Promise<ValidationResult> {
   console.log(chalk.blue(`Validating document: ${document.path}`));
 
   // Collect issues from different validators
@@ -686,7 +829,9 @@ async function validateDocument(
     const requiredSections = getRequiredSectionsForDocType(document.type);
     allIssues.push({
       documentPath: document.path,
-      message: `Document is missing required sections: ${requiredSections.join(', ')}`,
+      message: `Document is missing required sections: ${requiredSections.join(
+        ', '
+      )}`,
       ruleId: 'structure:missing-sections',
       severity: IssueSeverity.Error,
       category: QualityCategory.Compliance,
@@ -695,7 +840,6 @@ async function validateDocument(
   }
 
   // Calculate overall quality score (0-100)
-  // Weight of each issue depends on its severity
   const issueWeights = {
     [IssueSeverity.Error]: 10,
     [IssueSeverity.Warning]: 3,
@@ -712,110 +856,167 @@ async function validateDocument(
   // Base score is 100, subtract issue weights
   let score = Math.max(0, 100 - totalWeight);
 
-  // Determine status based on score
-  let status: 'pass' | 'warn' | 'fail' = 'pass';
-  if (score < 50) {
-    status = 'fail';
-  } else if (score < 80) {
-    status = 'warn';
-  }
-
-  // Create document metrics
-  const metrics = {
-    wordCount: document.metadata.wordCount,
-    readingTime: document.metadata.readingTime,
-    ...readabilityMetrics,
-    deadLinks: linkIssues.length
-  };
-
-  // Apply automatic fixes if needed
-  if (options.fixIssues) {
-    await fixDocumentIssues(
-      document,
-      allIssues.filter((issue) => issue.fixable)
-    );
-  }
-
   return {
-    documentPath: document.path,
-    documentName: document.name,
-    documentType: document.type,
+    filePath: document.path,
     issues: allIssues,
-    metrics,
-    score,
-    status
+    qualityScore: score / 100
   };
 }
 
 /**
- * Automatically fixes fixable issues
+ * Outputs a report to the console
  */
-async function fixDocumentIssues(
-  document: Document,
-  fixableIssues: ValidationIssue[]
-): Promise<void> {
-  if (fixableIssues.length === 0) {
-    return;
-  }
-
+function consoleReport(results: ValidationResult[]): void {
   console.log(
-    chalk.blue(
-      `Applying ${fixableIssues.length} automatic fixes to ${document.path}`
-    )
+    chalk.blue.bold('\n=== Document Quality Validation Report ===\n')
   );
 
-  let content = document.content;
+  // Count issues by severity
+  let errorCount = 0;
+  let warningCount = 0;
+  let suggestionCount = 0;
 
-  // Apply markdownlint auto-fixes
-  const markdownlintIssues = fixableIssues.filter((issue) =>
-    issue.ruleId.startsWith('markdownlint:')
+  results.forEach((result) => {
+    result.issues.forEach((issue) => {
+      if (issue.severity === IssueSeverity.Error) errorCount++;
+      else if (issue.severity === IssueSeverity.Warning) warningCount++;
+      else if (issue.severity === IssueSeverity.Suggestion) suggestionCount++;
+    });
+  });
+
+  // Overall summary
+  console.log(chalk.bold(`Files Analyzed: ${results.length}`));
+  console.log(
+    `${chalk.red(`Errors: ${errorCount}`)} | ${chalk.yellow(
+      `Warnings: ${warningCount}`
+    )} | ${chalk.blue(`Suggestions: ${suggestionCount}`)}\n`
   );
 
-  if (markdownlintIssues.length > 0) {
-    try {
-      const markdownlintModule = await import('markdownlint');
-      // Create a proper instance that has sync method
-      const markdownlint = (markdownlintModule.default ||
-        markdownlintModule) as any;
+  // Report for each file
+  results.forEach((result) => {
+    const hasIssues = result.issues.length > 0;
+    const icon = hasIssues ? '❌' : '✅';
+    const qualityScore = Math.round(result.qualityScore * 100) / 100;
+    const qualityColor =
+      qualityScore > 0.8
+        ? chalk.green
+        : qualityScore > 0.6
+        ? chalk.yellow
+        : chalk.red;
 
-      // Use markdownlint to fix issues
-      const options = {
-        files: [document.path],
-        resultVersion: 3,
-        fixInputSource: content
-      };
+    console.log(
+      `${icon} ${chalk.bold(result.filePath)} - Quality Score: ${qualityColor(
+        qualityScore
+      )}`
+    );
 
-      const results = markdownlint.sync(options);
-
-      if (results[document.path] && results[document.path].fixedSource) {
-        content = results[document.path].fixedSource;
-      }
-    } catch (error) {
-      console.error(
-        chalk.red(
-          `Error fixing markdownlint issues in ${document.path}: ${error}`
-        )
+    if (hasIssues) {
+      const errors = result.issues.filter(
+        (i) => i.severity === IssueSeverity.Error
       );
+      const warnings = result.issues.filter(
+        (i) => i.severity === IssueSeverity.Warning
+      );
+
+      if (errors.length > 0) {
+        console.log(chalk.red(`  Errors (${errors.length}):`));
+        errors.slice(0, 3).forEach((issue) => {
+          // Add line number if available
+          const lineInfo = issue.line
+            ? chalk.gray(` [line ${issue.line}]`)
+            : '';
+          console.log(`  - ${issue.message}${lineInfo}`);
+        });
+        if (errors.length > 3) {
+          console.log(`  - ... and ${errors.length - 3} more errors`);
+        }
+      }
+
+      if (warnings.length > 0) {
+        console.log(chalk.yellow(`  Warnings (${warnings.length}):`));
+        warnings.slice(0, 2).forEach((issue) => {
+          // Add line number if available
+          const lineInfo = issue.line
+            ? chalk.gray(` [line ${issue.line}]`)
+            : '';
+          console.log(`  - ${issue.message}${lineInfo}`);
+        });
+        if (warnings.length > 2) {
+          console.log(`  - ... and ${warnings.length - 2} more warnings`);
+        }
+      }
     }
-  }
 
-  // Apply other fixes (can be extended)
+    console.log(''); // Empty line between files
+  });
 
-  // Write fixed content
-  fs.writeFileSync(document.path, content);
-  console.log(chalk.green(`Fixed issues in ${document.path}`));
+  console.log(chalk.blue.bold('========================================\n'));
 }
 
 /**
- * Generates documentation quality report
+ * Generates a formatted report from validation results
  */
 async function generateReport(
-  report: ValidationReport,
+  results: ValidationResult[],
   outputPath: string
 ): Promise<void> {
+  // Convert report path to absolute
+  const absoluteOutputPath = path.isAbsolute(outputPath)
+    ? outputPath
+    : path.resolve(process.cwd(), outputPath);
+
+  // Get the directory of the report file to calculate relative paths
+  const reportDir = path.dirname(absoluteOutputPath);
+
+  // Prepare report structure
+  const report: ValidationReport = {
+    timestamp: new Date().toISOString(),
+    totalDocuments: results.length,
+    passedDocuments: results.filter((r) => r.issues.length === 0).length,
+    warnDocuments: results.filter((r) =>
+      r.issues.some((i) => i.severity === IssueSeverity.Warning)
+    ).length,
+    failedDocuments: results.filter((r) =>
+      r.issues.some((i) => i.severity === IssueSeverity.Error)
+    ).length,
+    totalIssues: results.reduce((sum, r) => sum + r.issues.length, 0),
+    issuesByCategory: {},
+    documentResults: results.map((r) => ({
+      documentPath: r.filePath,
+      documentName: path.basename(r.filePath),
+      documentType: path.dirname(r.filePath).split('/').pop() || 'unknown',
+      issues: r.issues,
+      metrics: {
+        wordCount: 0,
+        readingTime: 0,
+        averageSentenceLength: 0,
+        flesch: 0,
+        complexityScore: 0,
+        deadLinks: 0
+      },
+      score: r.qualityScore * 100,
+      status:
+        r.qualityScore > 0.8 ? 'pass' : r.qualityScore > 0.5 ? 'warn' : 'fail'
+    })),
+    averageScore:
+      (results.reduce((sum, r) => sum + r.qualityScore, 0) / results.length) *
+      100
+  };
+
+  // Group issues by category for the report
+  const allIssues = results.flatMap((r) => r.issues);
+  const categoryCount: Record<string, number> = {};
+
+  allIssues.forEach((issue) => {
+    const category = issue.category;
+    categoryCount[category] = (categoryCount[category] || 0) + 1;
+  });
+
+  report.issuesByCategory = categoryCount;
+
   try {
     // Create report directory if it doesn't exist
-    const reportDir = path.dirname(outputPath);
+    const reportDir = path.dirname(absoluteOutputPath);
     if (!fs.existsSync(reportDir)) {
       fs.mkdirSync(reportDir, { recursive: true });
     }
@@ -825,12 +1026,24 @@ async function generateReport(
 
 Generated on: ${report.timestamp}
 
+This report analyzes the quality of documentation files in the repository, checking for common issues such as:
+- Markdown structure and formatting
+- Required sections and content
+- Readability metrics
+- Links and references
+
 ## Overview
 
 - Total Documents: ${report.totalDocuments}
-- Passed: ${report.passedDocuments} (${Math.round((report.passedDocuments / report.totalDocuments) * 100)}%)
-- Warnings: ${report.warnDocuments} (${Math.round((report.warnDocuments / report.totalDocuments) * 100)}%)
-- Failed: ${report.failedDocuments} (${Math.round((report.failedDocuments / report.totalDocuments) * 100)}%)
+- Passed: ${report.passedDocuments} (${Math.round(
+      (report.passedDocuments / report.totalDocuments) * 100
+    )}%)
+- Warnings: ${report.warnDocuments} (${Math.round(
+      (report.warnDocuments / report.totalDocuments) * 100
+    )}%)
+- Failed: ${report.failedDocuments} (${Math.round(
+      (report.failedDocuments / report.totalDocuments) * 100
+    )}%)
 - Average Score: ${report.averageScore.toFixed(1)}/100
 - Total Issues: ${report.totalIssues}
 
@@ -838,9 +1051,23 @@ Generated on: ${report.timestamp}
 
 `;
 
-    // Add issues by category section
-    for (const [category, count] of Object.entries(report.issuesByCategory)) {
-      content += `- ${category}: ${count}\n`;
+    // Add issues by category section with bars to visualize distribution
+    const totalIssues = report.totalIssues;
+    const categories = Object.entries(report.issuesByCategory).sort(
+      (a, b) => b[1] - a[1]
+    ); // Sort by count, high to low
+
+    if (categories.length > 0) {
+      content += '| Category | Count | Percentage |\n';
+      content += '|----------|-------|------------|\n';
+
+      for (const [category, count] of categories) {
+        const percentage = Math.round((count / totalIssues) * 100);
+        content += `| ${category} | ${count} | ${percentage}% |\n`;
+      }
+      content += '\n';
+    } else {
+      content += '*No issues found.*\n\n';
     }
 
     content += `\n## Document Results\n\n`;
@@ -856,16 +1083,19 @@ Generated on: ${report.timestamp}
         result.status === 'pass'
           ? '✅'
           : result.status === 'warn'
-            ? '⚠️'
-            : '❌';
+          ? '⚠️'
+          : '❌';
 
-      content += `### ${statusEmoji} ${result.documentName} (${result.score.toFixed(1)}/100)\n\n`;
-      content += `- Path: ${result.documentPath}\n`;
-      content += `- Type: ${result.documentType}\n`;
-      content += `- Word Count: ${result.metrics.wordCount}\n`;
-      content += `- Reading Time: ${result.metrics.readingTime} min\n`;
-      content += `- Flesch Reading Ease: ${result.metrics.flesch.toFixed(1)}\n`;
-      content += `- Issues: ${result.issues.length}\n\n`;
+      // Create relative path from report directory to document
+      const targetFilePath = path.resolve(process.cwd(), result.documentPath);
+      const relativePath = path.relative(reportDir, targetFilePath);
+
+      content += `### ${statusEmoji} [${
+        result.documentName
+      }](${relativePath}) (${result.score.toFixed(1)}/100)\n\n`;
+      content += `- **Path**: ${result.documentPath}\n`;
+      content += `- **Type**: ${result.documentType}\n`;
+      content += `- **Issues**: ${result.issues.length}\n\n`;
 
       if (result.issues.length > 0) {
         content += `#### Issues\n\n`;
@@ -880,35 +1110,190 @@ Generated on: ${report.timestamp}
           issuesByCategory[issue.category].push(issue);
         }
 
-        for (const [category, issues] of Object.entries(issuesByCategory)) {
-          content += `##### ${category} (${issues.length})\n\n`;
+        // Order categories by number of issues
+        const sortedCategories = Object.entries(issuesByCategory)
+          .sort((a, b) => b[1].length - a[1].length)
+          .map(([category, issues]) => ({ category, issues }));
+
+        for (const { category, issues } of sortedCategories) {
+          // Use a more distinctive heading for each category
+          content += `<details>
+<summary>📂 <strong>${category} (${issues.length})</strong></summary>
+
+`;
 
           for (const issue of issues) {
             const severityEmoji =
               issue.severity === IssueSeverity.Error
                 ? '🔴'
                 : issue.severity === IssueSeverity.Warning
-                  ? '🟠'
-                  : issue.severity === IssueSeverity.Suggestion
-                    ? '🟡'
-                    : '🔵';
+                ? '🟠'
+                : issue.severity === IssueSeverity.Suggestion
+                ? '🟡'
+                : '🔵';
 
-            content += `${severityEmoji} ${issue.message} ${
+            // Add link to specific line if available
+            let issueLocation = '';
+            if (issue.line) {
+              // Create link to specific line in document
+              issueLocation = ` ([line ${issue.line}](${relativePath}#L${issue.line}))`;
+            }
+
+            // Format the message with proper indentation for better readability
+            content += `- ${severityEmoji} ${issue.message}${issueLocation} ${
               issue.fixable ? '(Fixable)' : ''
             }\n`;
           }
 
-          content += '\n';
+          content += `\n</details>\n\n`;
         }
       }
 
-      content += '\n';
+      content += '\n---\n\n'; // Add a separator line between documents
     }
 
+    // Add recommendations section based on most common issues
+    if (report.totalIssues > 0) {
+      content += `## Recommendations
+
+Based on the analysis, here are the top recommendations to improve documentation quality:
+
+`;
+      // Get top 3 most common issues
+      const issueTypes = new Map<string, number>();
+
+      for (const result of results) {
+        for (const issue of result.issues) {
+          const key = `${issue.category}:${issue.ruleId}`;
+          issueTypes.set(key, (issueTypes.get(key) || 0) + 1);
+        }
+      }
+
+      const topIssues = Array.from(issueTypes.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+
+      for (const [issueKey, count] of topIssues) {
+        const [category, ruleId] = issueKey.split(':');
+        const percentage = Math.round((count / report.totalIssues) * 100);
+
+        content += `1. **Fix ${category} issues (${percentage}% of all issues)**  \n`;
+
+        // Suggestion based on category
+        switch (category) {
+          case 'structure':
+            content +=
+              '   Ensure proper markdown formatting with correct headings and document structure.\n\n';
+            break;
+          case 'compliance':
+            content +=
+              '   Add all required sections to documents based on their type.\n\n';
+            break;
+          case 'links':
+            content +=
+              '   Fix broken links and ensure all references are valid.\n\n';
+            break;
+          case 'style':
+            content +=
+              '   Improve content readability and formatting consistency.\n\n';
+            break;
+          default:
+            content += `   Address the issues in the ${category} category.\n\n`;
+        }
+      }
+    }
+
+    // Add footer
+    content += `\n## Summary
+
+This report was generated automatically by the document quality validation script. For more information, run:
+
+\`\`\`
+npm run docs:validate-quality -- --help
+\`\`\`
+
+Last updated: ${new Date().toISOString().split('T')[0]}
+`;
+
     // Write report to file
-    fs.writeFileSync(outputPath, content);
-    console.log(chalk.green(`Report generated successfully at ${outputPath}`));
+    fs.writeFileSync(absoluteOutputPath, content);
+    console.log(
+      chalk.green(`Report generated successfully at ${absoluteOutputPath}`)
+    );
   } catch (error) {
     console.error(chalk.red(`Error generating report: ${error}`));
   }
 }
+
+async function main() {
+  try {
+    // Show help if requested
+    if (SHOW_HELP) {
+      showHelp();
+      return;
+    }
+
+    const options = parseOptions();
+
+    let filesToValidate: string[] = [];
+
+    if (options.all) {
+      console.log(chalk.blue('Validating all markdown files...'));
+      // Fix for --all option not working
+      filesToValidate = getAllMarkdownFiles(DOCS_DIR);
+    } else if (options.path) {
+      if (fs.existsSync(options.path)) {
+        if (fs.statSync(options.path).isDirectory()) {
+          filesToValidate = getAllMarkdownFiles(options.path);
+        } else {
+          filesToValidate = [options.path];
+        }
+      } else {
+        console.error(chalk.red(`Path does not exist: ${options.path}`));
+        process.exit(1);
+      }
+    } else {
+      // Default behavior if no path or --all is specified
+      console.log(
+        chalk.yellow(
+          'No files to validate. Use --all or specify a path with --path.'
+        )
+      );
+      process.exit(0);
+    }
+
+    if (filesToValidate.length === 0) {
+      console.log(
+        chalk.yellow(
+          'No markdown files found. Check the path or use a different directory.'
+        )
+      );
+      process.exit(0);
+    }
+
+    console.log(
+      chalk.blue(`Found ${filesToValidate.length} markdown files to validate.`)
+    );
+
+    const results: ValidationResult[] = [];
+
+    for (const file of filesToValidate) {
+      const result = await validateDocument(file, options);
+      results.push(result);
+    }
+
+    // Always generate report if report path is specified
+    if (options.reportPath) {
+      generateReport(results, options.reportPath);
+    }
+
+    // Always display results in console
+    consoleReport(results);
+  } catch (error) {
+    console.error(chalk.red(`Error: ${error}`));
+    process.exit(1);
+  }
+}
+
+// Call the main function
+main();

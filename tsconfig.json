@@ -19,14 +19,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "files": [],
   "include": ["**/*.ts"],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    }
-  ]
+  "references": []
 }

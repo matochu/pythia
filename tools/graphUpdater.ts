@@ -27,7 +27,7 @@ export async function updateDependenciesGraph(): Promise<void> {
 
 async function extractWorkItems(): Promise<WorkItem[]> {
   const items: WorkItem[] = [];
-  const docsPath = path.resolve(process.cwd(), 'docs');
+  const docsPath = path.resolve(process.cwd());
 
   // Scan directories for work items
   const directories = [

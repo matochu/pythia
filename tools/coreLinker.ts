@@ -614,7 +614,7 @@ _No ideas have been transformed into proposals yet._
 
 ### Adding a New Idea
 
-1. Create a new file in the format \`idea-YYYY-MM-{topic}.md\` in the \`/docs/workflows/ideas/\` directory based on the [idea template](../../templates/idea-template.md)
+1. Create a new file in the format \`idea-YYYY-MM-{topic}.md\` in the \`/../workflows/ideas/\` directory based on the [idea template](../../templates/idea-template.md)
 2. Fill in all necessary sections of the document
 3. Add the idea to the appropriate category in this registry with a unique ID
 4. Add the idea to the "Recently Updated Ideas" section
@@ -628,7 +628,7 @@ _No ideas have been transformed into proposals yet._
 ### Transforming an Idea into a Proposal
 
 1. Change the idea status to "Transformed"
-2. Create a new proposal based on the idea in the format \`proposal-{topic}.md\` in the \`/docs/workflows/proposals/\` directory
+2. Create a new proposal based on the idea in the format \`proposal-{topic}.md\` in the \`/../workflows/proposals/\` directory
 3. Add an entry to the "Ideas Transformed into Proposals" section
 4. Add a link to the idea in the proposal document
 

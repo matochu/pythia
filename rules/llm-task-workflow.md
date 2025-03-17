@@ -48,7 +48,7 @@ Before implementing any changes:
 
 Document your plan:
 
-- Create a task file in `docs/tasks` following the naming convention `task-YYYY-MM-{topic}.md`, using the current date
+- Create a task file in `../workflows/tasks` following the naming convention `task-YYYY-MM-{topic}.md`, using the current date
 - Use the structure from [Task Template](../templates/task-template.md)
 - Emphasize context, objectives, and implementation plan
 - Link to related documents and dependencies
@@ -143,7 +143,7 @@ Example:
 
 **LLM Response**:
 
-1. **Create task document** in `docs/tasks/task-2025-03-offline-data-handling.md`
+1. **Create task document** in `../workflows/tasks/task-2025-03-offline-data-handling.md`
 2. **Document plan** including research on caching strategies, implementation phases, and success criteria
 3. **Implement solution** according to plan
 4. **Document results** including challenges encountered and solutions found

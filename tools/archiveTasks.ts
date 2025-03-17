@@ -73,9 +73,9 @@ const execAsync = promisify(exec);
 
 // Configuration
 const ARCHIVE_AGE_DAYS = 7; // Number of days a task must be completed before archiving if using --check-age
-const TASKS_DIR = 'docs/tasks';
-const ARCHIVE_DIR = 'docs/archive/tasks';
-const DOCUMENTATION_MAP = 'docs/navigation/documentation-map.md';
+const TASKS_DIR = 'workflows/tasks';
+const ARCHIVE_DIR = 'workflows/archive/tasks';
+const DOCUMENTATION_MAP = 'navigation/documentation-map.md';
 
 // Command line arguments
 const FORCE_ARCHIVE = process.argv.includes('--force');
@@ -224,19 +224,16 @@ async function archiveTask(taskPath: string): Promise<void> {
  * Update all references to the task in other documents
  */
 async function updateReferences(taskPath: string): Promise<void> {
-  if (DRY_RUN) {
-    console.log(`[DRY RUN] Would update references to: ${taskPath}`);
-    return;
-  }
-
   const taskFilename = path.basename(taskPath);
+  console.log(`Checking references to ${taskFilename}`);
 
-  // Find all references to the task
   try {
-    const { stdout } = await execAsync(
-      `grep -r "\\[.*\\](.*${taskFilename})" docs/ --include="*.md"`
+    // Find all references to this task in the documentation
+    const { stdout: grepOutput } = await execAsync(
+      `grep -r "\\[.*\\](.*${taskFilename})" . --include="*.md"`
     );
-    const references = stdout.split('\n').filter(Boolean);
+
+    const references = grepOutput.split('\n').filter(Boolean);
 
     for (const reference of references) {
       const [filePath, ...rest] = reference.split(':');

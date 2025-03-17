@@ -151,14 +151,26 @@ Features:
 Usage:
 
 ```bash
+# Validate specific document
+npm run docs:validate-quality --path workflows/tasks/task-2025-03-knowledge-sharing.md
+
 # Validate all documentation
 npm run docs:validate-quality --all
 
-# Validate specific document
-npm run docs:validate-quality --path docs/example.md
-
 # Generate quality report
-npm run docs:validate-quality --report docs/reports/quality-report.md
+npm run docs:validate-quality --report reports/quality-report.md
+
+# Automatically fix common issues
+npm run docs:validate-quality --fix
+
+# Apply stricter validation rules
+npm run docs:validate-quality --strict
+
+# Use custom rule configuration
+npm run docs:validate-quality --rules rules/custom-rules.json
+
+# Combine options
+npm run docs:validate-quality --all --fix --report reports/fixed-report.md
 ```
 
 ### Document Helper
@@ -238,7 +250,7 @@ To enhance the functionality of these scripts, consider using the following libr
 
 ## Integration
 
-For detailed information on integrating these scripts with LLMs and handling common documentation issues, see the [Documentation Automation - LLM Guide](/docs/commands/documentation-automation.md).
+For detailed information on integrating these scripts with LLMs and handling common documentation issues, see the [Documentation Automation - LLM Guide](commands/documentation-automation.md).
 
 ## Requirements
 

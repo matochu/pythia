@@ -36,7 +36,7 @@ Before proceeding with the proposal creation, complete this checklist:
 
 ## Step 1: Create the Proposal File
 
-Create a new file in the `/docs/proposals/` directory using the naming convention:
+Create a new file in the `../workflows/proposals/` directory using the naming convention:
 `proposal-{topic}.md`
 
 For example:
@@ -69,7 +69,7 @@ If the proposal is based on an idea document:
 
 ## Step 4: Update the Ideas Backlog
 
-Update the ideas backlog in `/docs/ideas/ideas-backlog.md`:
+Update the ideas backlog in `../workflows/ideas/ideas-backlog.md`:
 
 1. Change the status of the idea to "Transformed"
 2. Add the idea to the "Ideas Transformed into Proposals" section with a link to the new proposal
@@ -104,7 +104,7 @@ Ensure that references are bidirectional - update any related documents to refer
 
 ## Step 7: Update Documentation Map
 
-Update `/docs/navigation/documentation-map.md` to include the new proposal:
+Update `../navigation/documentation-map.md` to include the new proposal:
 
 1. Find the "Proposals" section in the documentation map
 2. Add a new entry with a link to the proposal document and brief description
@@ -112,12 +112,12 @@ Update `/docs/navigation/documentation-map.md` to include the new proposal:
 
 ## Step 8: Update Changelog
 
-Add an entry to `/docs/CHANGELOG.md` about the new proposal document:
+Add an entry to `../CHANGELOG.md` about the new proposal document:
 
 1. Under the current date section (or create a new one if needed)
 2. Add to the "Added" subsection:
    ```markdown
-   - Created proposal for [topic] (`/docs/proposals/proposal-{topic}.md`)
+   - Created proposal for [topic] (`../proposals/proposal-{topic}.md`)
    ```
 
 ## Step 9: Verification Checklist

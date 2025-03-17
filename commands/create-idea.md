@@ -31,7 +31,7 @@ Before proceeding with the idea creation, complete this checklist:
 
 ## Step 1: Create the Idea File
 
-Create a new file in the `/docs/ideas/` directory using the naming convention:
+Create a new file in the `../workflows/ideas/` directory using the naming convention:
 `idea-YYYY-MM-{topic}.md`
 
 For example:
@@ -68,7 +68,7 @@ Copy the content from the [Idea Template](../templates/idea-template.md) and fil
 
 ## Step 3: Update the Ideas Backlog
 
-Update the ideas backlog in `/docs/ideas/ideas-backlog.md`:
+Update the ideas backlog in `../workflows/ideas/ideas-backlog.md`:
 
 1. Add a new entry to the appropriate category section with a unique ID
 2. Fill in the status, priority, impact/effort, and link to the detailed document
@@ -97,17 +97,17 @@ Also consider updating related documents to reference this new idea if appropria
 
 If this is a significant idea that should be highlighted in the documentation map:
 
-1. Update `/docs/navigation/documentation-map.md` in the "Ideas and Early Concepts" section
+1. Update `../navigation/documentation-map.md` in the "Ideas and Early Concepts" section
 2. Add a new entry with a link to the idea document and brief description
 
 ## Step 6: Update Changelog
 
-Add an entry to `/docs/CHANGELOG.md` about the new idea document:
+Add an entry to `../CHANGELOG.md` about the new idea document:
 
 1. Under the current date section (or create a new one if needed)
 2. Add to the "Added" subsection:
    ```markdown
-   - Created idea document for [topic] (`/docs/ideas/idea-YYYY-MM-{topic}.md`)
+   - Created idea document for [topic] (`../workflows/ideas/idea-YYYY-MM-{topic}.md`)
    ```
 
 ## Step 7: Verification Checklist
@@ -156,7 +156,7 @@ For simple ideas that don't require detailed documentation yet, you can add them
 
 ### Step 1: Update Ideas Backlog Only
 
-Add the idea directly to `/docs/ideas/ideas-backlog.md`:
+Add the idea directly to `../workflows/ideas/ideas-backlog.md`:
 
 1. Add a new entry to the appropriate category section with a unique ID
 2. Provide a concise description (2-3 sentences maximum)
@@ -187,7 +187,7 @@ Add the quick idea to the "Recently Updated Ideas" section:
 
 ### Step 3: Update Changelog
 
-Add a simple entry to `/docs/CHANGELOG.md`:
+Add a simple entry to `../CHANGELOG.md`:
 
 ```markdown
 - Added quick idea for [brief description] to ideas backlog

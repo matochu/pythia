@@ -1,21 +1,21 @@
 {
   "name": "mnemosyne",
   "version": "0.0.1",
-  "type": "module",
   "scripts": {
     "test": "vitest run tools/tests/*.test.ts",
     "docs:validate-links": "ts-node tools/linkValidator.ts",
     "docs:fix-links": "ts-node tools/linkValidator.ts --fix",
     "docs:check-coverage": "ts-node tools/coverageChecker.ts",
     "docs:fix-coverage": "ts-node tools/coverageChecker.ts --fix",
-    "docs:update-map": "ts-node --esm tools/updateDocumentationMap.ts",
-    "docs:update-map-add-all": "ts-node --esm tools/updateDocumentationMap.ts --add-all",
-    "docs:update-map-interactive": "ts-node --esm tools/updateDocumentationMap.ts --interactive",
+    "docs:update-map": "ts-node tools/updateDocumentationMap.ts",
+    "docs:update-map-add-all": "ts-node tools/updateDocumentationMap.ts --add-all",
+    "docs:update-map-interactive": "ts-node tools/updateDocumentationMap.ts --interactive",
     "docs:update-status": "ts-node tools/updateWorkItemStatus.ts",
     "docs:setup": "ts-node tools/coreLinker.ts",
     "docs:archive-tasks": "ts-node tools/archiveTasks.ts",
     "docs:create-doc": "ts-node tools/createDocument.ts",
-    "docs:validate-quality": "ts-node tools/validateDocumentQuality.ts"
+    "docs:validate-quality": "ts-node tools/validateDocumentQuality.ts",
+    "docs:check-quality": "ts-node tools/checkDocQuality.ts"
   },
   "dependencies": {
     "@types/fs-extra": "^11.0.4",
@@ -48,6 +48,7 @@
     "@types/cosmiconfig": "^5.0.3",
     "@types/natural": "^5.1.5",
     "@types/node": "^22.13.10",
+    "markdown-link-check": "^3.13.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"

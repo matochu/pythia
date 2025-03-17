@@ -40,8 +40,8 @@ The task archiving process helps:
 ## Step 1: Identify Eligible Tasks
 
 ```bash
-# Find all tasks with "Status: Completed" in the docs/tasks directory
-find docs/tasks -type f -name "*.md" -exec grep -l "**Status**: Completed" {} \;
+# Find all tasks with "Status: Completed" in the workflows/tasks directory
+find ../workflows/tasks -type f -name "*.md" -exec grep -l "**Status**: Completed" {} \;
 ```
 
 This command will list all task files that have their status explicitly set to "Completed".
@@ -72,18 +72,18 @@ For each eligible task:
 
 ```bash
 # Create a copy of the task in the archive directory
-cp [task_file_path] docs/workflows/archive/tasks/
+cp [task_file_path] ../workflows/archive/tasks/
 ```
 
 2. Modify the archived task file:
 
 ```bash
 # Add ARCHIVED prefix to the title
-sed -i '' '1s/^# /# ARCHIVED: /' docs/workflows/archive/tasks/[task_filename]
+sed -i '' '1s/^# /# ARCHIVED: /' ../workflows/archive/tasks/[task_filename]
 
 # Add Archive Date after Date Created
 sed -i '' '/\*\*Date Created\*\*:/a\\
-**Archive Date**: YYYY-MM-DD  ' docs/workflows/archive/tasks/[task_filename]
+**Archive Date**: YYYY-MM-DD  ' ../workflows/archive/tasks/[task_filename]
 ```
 
 3. Add Archive Note section before References:
@@ -101,7 +101,7 @@ sed -i '' '/^## References
 This task was archived on YYYY-MM-DD after successful completion of all objectives.\
 All references to this task have been updated to point to this archived version.\
 \
-' docs/workflows/archive/tasks/[task_filename]
+'../workflows/archive/tasks/[task_filename]
 ```
 
 ## Step 4: Update References
@@ -110,7 +110,7 @@ Use the Link Validator to identify all references to the original task:
 
 ```bash
 # Find all references to the task
-grep -r "\[.*\](.*tasks/[task_filename])" docs/ --include="*.md"
+grep -r "\[.*\](.*tasks/[task_filename])" ../workflows/ --include="*.md"
 ```
 
 For each reference:
@@ -158,16 +158,16 @@ Here's an example of archiving a completed task:
 
 ```bash
 # Step 1: Identify completed task
-grep -l "**Status**: Completed" docs/workflows/tasks/task-2025-03-documentation-structure.md
+grep -l "**Status**: Completed" ../workflows/tasks/task-2025-03-documentation-structure.md
 
 # Step 2: Verify last modification date
-stat -f "%Sm" -t "%Y-%m-%d" docs/workflows/tasks/task-2025-03-documentation-structure.md
+stat -f "%Sm" -t "%Y-%m-%d" ../workflows/tasks/task-2025-03-documentation-structure.md
 # Output: 2025-03-11 (more than 7 days ago)
 
 # Step 3: Archive the task
-cp docs/workflows/tasks/task-2025-03-documentation-structure.md docs/archive/tasks/
-sed -i '' '1s/^# /# ARCHIVED: /' docs/workflows/archive/tasks/task-2025-03-documentation-structure.md
+cp ../workflows/tasks/task-2025-03-documentation-structure.md ../workflows/archive/tasks/
+sed -i '' '1s/^# /# ARCHIVED: /' ../workflows/archive/tasks/task-2025-03-documentation-structure.md
 sed -i '' '/\*\*Date Created\*\*:/a\\
-**Archive Date**: 2025-03-18  ' docs/workflows/archive/tasks/task-2025-03-documentation-structure.md
+**Archive Date**: 2025-03-18  ' ../workflows/archive/tasks/task-2025-03-documentation-structure.md
 sed -i '' '/^
 ```

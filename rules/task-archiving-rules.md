@@ -19,7 +19,7 @@ Additional optional criteria:
 
 ### Location
 
-Archived tasks are stored in the `/docs/archive/tasks/` directory, maintaining their original filename.
+Archived tasks are stored in the `workflows/archive/tasks/` directory, maintaining their original filename.
 
 ### File Modifications
 
@@ -85,9 +85,9 @@ The automated archiving script supports several options:
 For manual archiving, follow these steps:
 
 1. Verify the task meets all archiving criteria
-2. Create a copy of the task in the `/docs/archive/tasks/` directory
+2. Create a copy of the task in the `workflows/archive/tasks/` directory
 3. Make the required modifications to the archived file
-4. Remove the original file from `/docs/tasks/`
+4. Remove the original file from `workflows/tasks/`
 5. Update all references to the task
 
 ## Exclusions

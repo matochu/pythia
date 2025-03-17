@@ -80,7 +80,7 @@ For detailed instructions on using these tools, see the [commands directory](com
 ## Directory Structure
 
 ```
-/docs/
+/
 ├── architecture/              # Analytical documents about architecture
 ├── methodology/               # Development methodologies and processes
 ├── rules/                     # Guidelines and standards for LLMs

@@ -1,0 +1,51 @@
+# Editor specific directories
+.nx/
+node_modules/
+dist/
+.next/
+out/
+.cache/
+coverage/
+build/
+*.tsbuildinfo
+
+# Logs and temporary files
+logs/
+tmp/
+temp/
+*.log
+
+# Local environment files
+.env*
+!.env.example
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# AI/ML models and datasets
+models/
+weights/
+datasets/
+*.onnx
+*.tflite
+*.pb
+*.pth
+*.h5
+
+# Terraform/OpenTofu
+.terraform/
+.tofu/
+*.tfstate
+*.tfstate.backup
+*.tfvars 

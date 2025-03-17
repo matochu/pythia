@@ -33,7 +33,7 @@ Before proceeding with the exploration creation, complete this checklist:
 
 ## Step 1: Create the Exploration File
 
-Create a new file in the `/docs/ideas/explorations/` directory using the naming convention:
+Create a new file in the `../workflows/explorations/` directory using the naming convention:
 `exploration-{topic}.md`
 
 For example:
@@ -89,7 +89,7 @@ Update the related idea document:
 
 ## Step 4: Update the Ideas Backlog
 
-Update the ideas backlog in `/docs/ideas/ideas-backlog.md`:
+Update the ideas backlog in `../workflows/ideas/ideas-backlog.md`:
 
 1. Change the status of the idea to "In analysis"
 2. Add the idea to the "Recently Updated Ideas" section with the current date
@@ -108,12 +108,12 @@ Ensure that your exploration document references related documents:
 
 ## Step 6: Update Changelog
 
-Add an entry to `/docs/CHANGELOG.md` about the new exploration document:
+Add an entry to `../CHANGELOG.md` about the new exploration document:
 
 1. Under the current date section (or create a new one if needed)
 2. Add to the "Added" subsection:
    ```markdown
-   - Created exploration document for [topic] (`/docs/ideas/explorations/exploration-{topic}.md`)
+   - Created exploration document for [topic] (`../workflows/explorations/exploration-{topic}.md`)
    ```
 
 ## Step 7: Verification Checklist

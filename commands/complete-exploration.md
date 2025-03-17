@@ -148,8 +148,8 @@ Include this assessment in the "Path Forward" section to provide objective justi
 
 Based on the decision in Step 4, create either:
 
-- A proposal document: `docs/workflows/proposals/proposal-{topic}.md` using the [Create Proposal](./create-proposal.md) instructions
-- A task document: `docs/workflows/tasks/task-YYYY-MM-{topic}.md` using the [Create Task](./create-task.md) instructions
+- A proposal document: `../workflows/proposals/proposal-{topic}.md` using the [Create Proposal](./create-proposal.md) instructions
+- A task document: `../workflows/tasks/task-YYYY-MM-{topic}.md` using the [Create Task](./create-task.md) instructions
 
 The decision on which path to take is ultimately made by the user or team lead, with the exploration document providing a recommendation based on the research findings.
 

@@ -107,7 +107,7 @@ async function updateWorkItemStatus(): Promise<void> {
 }
 
 async function loadWorkItem(itemId: string): Promise<WorkItem | null> {
-  const itemPath = path.resolve(process.cwd(), 'docs', getWorkItemPath(itemId));
+  const itemPath = path.resolve(process.cwd(), getWorkItemPath(itemId));
 
   if (!fs.existsSync(itemPath)) {
     return null;
@@ -118,11 +118,7 @@ async function loadWorkItem(itemId: string): Promise<WorkItem | null> {
 }
 
 async function saveWorkItem(workItem: WorkItem): Promise<void> {
-  const itemPath = path.resolve(
-    process.cwd(),
-    'docs',
-    getWorkItemPath(workItem.id)
-  );
+  const itemPath = path.resolve(process.cwd(), getWorkItemPath(workItem.id));
 
   const content = formatWorkItemContent(workItem);
   fs.writeFileSync(itemPath, content, 'utf-8');

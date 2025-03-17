@@ -489,9 +489,9 @@ Documentation should be updated when:
 
 The basic documentation structure should include:
 
-1. **Documentation Map**: Central navigation document, kept at `/docs/navigation/documentation-map.md`
+1. **Documentation Map**: Central navigation document, kept at `navigation/documentation-map.md`
 2. **Documentation Standards**: This document, with guidelines on document formats
-3. **Changelog**: Document history tracker at `/docs/CHANGELOG.md`
+3. **Changelog**: Document history tracker at `CHANGELOG.md`
 
 ## Document History
 

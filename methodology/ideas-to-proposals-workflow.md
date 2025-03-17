@@ -34,8 +34,8 @@ flowchart TB
 
 **Key Artifacts**:
 
-- `docs/ideas/ideas-backlog.md` - central registry of all ideas
-- `docs/ideas/idea-YYYY-MM-{topic}.md` - individual documents for each idea
+- `../ideas/ideas-backlog.md` - central registry of all ideas
+- `../ideas/idea-YYYY-MM-{topic}.md` - individual documents for each idea
 
 **Process**:
 
@@ -57,7 +57,7 @@ flowchart TB
 
 **Key Artifacts**:
 
-- `docs/ideas/explorations/exploration-{topic}.md` - documents with research results
+- `../ideas/explorations/exploration-{topic}.md` - documents with research results
 
 **Process**:
 
@@ -81,7 +81,7 @@ flowchart TB
 
 **Key Artifacts**:
 
-- `docs/proposals/proposal-{topic}.md` - documents with formal proposals
+- `../proposals/proposal-{topic}.md` - documents with formal proposals
 
 **Process**:
 
@@ -104,7 +104,7 @@ flowchart TB
 
 **Key Artifacts**:
 
-- `docs/decisions/decision-YYYY-MM-{topic}.md` - documents with architectural decisions (ADRs)
+- `../decisions/decision-YYYY-MM-{topic}.md` - documents with architectural decisions (ADRs)
 
 **Process**:
 
@@ -125,7 +125,7 @@ flowchart TB
 
 **Key Artifacts**:
 
-- `docs/tasks/task-YYYY-MM-{topic}.md` - documents with task descriptions
+- `../tasks/task-YYYY-MM-{topic}.md` - documents with task descriptions
 
 **Process**:
 

@@ -87,7 +87,7 @@ interface ValidationResult {
 }
 
 // Configuration
-const DOCS_DIR = path.resolve(process.cwd(), 'docs');
+const DOCS_DIR = path.resolve(process.cwd());
 const DOC_MAP_PATH = path.join(DOCS_DIR, 'navigation', 'documentation-map.md');
 const SUMMARY_REGISTRY_PATH = path.join(
   DOCS_DIR,
@@ -433,7 +433,9 @@ function printResults(validationResult: ValidationResult): void {
   } else {
     console.log(
       chalk.red(
-        `✗ Found ${Object.keys(missingDocs).length} referenced documents that don't exist:`
+        `✗ Found ${
+          Object.keys(missingDocs).length
+        } referenced documents that don't exist:`
       )
     );
     Object.entries(missingDocs).forEach(([docPath, refs]) => {

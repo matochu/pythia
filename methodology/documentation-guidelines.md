@@ -7,7 +7,7 @@
 1. **Document Interconnections**:
 
    - Each document should be connected to other relevant documents through cross-references
-   - When creating a new document, always add a reference to it in `docs/navigation/documentation-map.md`
+   - When creating a new document, always add a reference to it in `../navigation/documentation-map.md`
    - Related documents should contain mutual references (e.g., analysis → proposal and proposal → analysis)
 
 2. **Document Structure**:
@@ -147,7 +147,7 @@ Task documentation should include:
 
 ## Notes for LLMs
 
-- Always check for the navigation map at `docs/navigation/documentation-map.md`
+- Always check for the navigation map at `../navigation/documentation-map.md`
 - Use it to understand relationships between documents
 - When modifying documents, maintain their general style and format
 - Always aim for documentation integrity by adding appropriate cross-references
@@ -187,7 +187,7 @@ The project maintains a centralized [Changelog](../CHANGELOG.md) to track signif
 
 ### Important Note on Changelog Scope
 
-**Only changes to files in the `docs/` directory should be recorded in the changelog.** Changes to code files, scripts, or other non-documentation assets should not be included, even if they are related to documentation processes.
+**Only changes to files in the `../` directory should be recorded in the changelog.** Changes to code files, scripts, or other non-documentation assets should not be included, even if they are related to documentation processes.
 
 ### How to Update the Changelog
 

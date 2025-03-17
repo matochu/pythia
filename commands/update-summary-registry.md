@@ -8,7 +8,7 @@ Before updating the Summary Documents Registry, ensure you have:
 
 1. Identified any new or modified summary documents in the project
 2. Obtained the current date for proper document timestamping
-3. Reviewed the existing Summary Documents Registry (`/docs/navigation/summary-documents-registry.md`)
+3. Reviewed the existing Summary Documents Registry (`../navigation/summary-documents-registry.md`)
 4. Understood the purpose and scope of any new summary documents
 
 ## Command Checklist
@@ -32,7 +32,7 @@ Before proceeding with registry update, complete this checklist:
 
 First, review the current state of the Summary Documents Registry:
 
-1. Open `/docs/navigation/summary-documents-registry.md`
+1. Open `../navigation/summary-documents-registry.md`
 2. Understand the current organization and categories of summary documents
 3. Note any patterns in how documents are categorized and described
 4. Check for any pending documents that may have been completed
@@ -94,12 +94,12 @@ At the bottom of the document, update the "Last Updated" date to the current dat
 
 ## Step 7: Update Changelog
 
-Add an entry to `/docs/CHANGELOG.md` about the registry update:
+Add an entry to `../CHANGELOG.md` about the registry update:
 
 1. Under the current date section (or create a new one if needed)
 2. Add to the "Changed" subsection:
    ```markdown
-   - Updated Summary Documents Registry with [specific changes] (`/docs/navigation/summary-documents-registry.md`)
+   - Updated Summary Documents Registry with [specific changes] (`../navigation/summary-documents-registry.md`)
    ```
 
 ## Step 8: Verification Checklist

@@ -56,18 +56,18 @@ Simply enter one of these commands in the chat:
 
 - `@create-task.md` – new task document with description, goals, and implementation plan.
 
-  - _What happens_: LLM analyzes the context, creates a structured document in the `/docs/workflows/tasks/` folder with name `task-YYYY-MM-{topic}.md`, fills all sections according to the template, adds cross-references and progress markers.
+  - _What happens_: LLM analyzes the context, creates a structured document in the `../workflows/tasks/` folder with name `task-YYYY-MM-{topic}.md`, fills all sections according to the template, adds cross-references and progress markers.
 
 - `@create-proposal.md` – automatically forms a proposal with benefits and risks analysis.
 
-  - _What happens_: LLM analyzes related architecture documents, creates a proposal document in `/docs/workflows/proposals/` with name `proposal-{topic}.md`, including current state analysis, proposal description, risk assessment, and implementation plan.
+  - _What happens_: LLM analyzes related architecture documents, creates a proposal document in `../workflows/proposals/` with name `proposal-{topic}.md`, including current state analysis, proposal description, risk assessment, and implementation plan.
 
 - `@create-idea.md` – creates a document for a new idea with description and rationale.
 
-  - _What happens_: LLM creates an idea document in `/docs/workflows/ideas/` with name `idea-YYYY-MM-{topic}.md`, structuring problem description, proposed solution, potential benefits, and implementation risks.
+  - _What happens_: LLM creates an idea document in `../workflows/ideas/` with name `idea-YYYY-MM-{topic}.md`, structuring problem description, proposed solution, potential benefits, and implementation risks.
 
 - `@create-exploration.md` – prepares a detailed research of ideas or technologies.
-  - _What happens_: LLM creates a research document in `/docs/workflows/explorations/` with name `exploration-{topic}.md`, including detailed technology analysis, comparison of alternatives, suitability assessment, and recommendations.
+  - _What happens_: LLM creates a research document in `../workflows/explorations/` with name `exploration-{topic}.md`, including detailed technology analysis, comparison of alternatives, suitability assessment, and recommendations.
 
 ### 🔄 Updating and Maintaining
 
@@ -89,7 +89,7 @@ Simply enter one of these commands in the chat:
   - _What happens_: LLM checks all references in the documentation, finds and fixes broken links, ensures that all documents are included in the documentation map, and that cross-references between related documents exist in both directions.
 
 - `@archive-tasks.md` – quickly archives completed tasks.
-  - _What happens_: LLM determines which tasks meet archiving criteria, moves them to the `/docs/workflows/archive/tasks/` folder, updates references in dependent documents, adds an archiving entry to CHANGELOG.md.
+  - _What happens_: LLM determines which tasks meet archiving criteria, moves them to the `../workflows/archive/tasks/` folder, updates references in dependent documents, adds an archiving entry to CHANGELOG.md.
 
 ### 🌟 Completing Research
 
@@ -109,7 +109,7 @@ Request:
 LLM automatically:
 
 - Analyzes documents about the current state of state management
-- Creates a new file `task-2025-03-redux-zustand-migration.md` in the `/docs/workflows/tasks/` folder
+- Creates a new file `task-2025-03-redux-zustand-migration.md` in the `../workflows/tasks/` folder
 - Fills all required sections following the task template
 - Adds references to related documents, including state analysis and the corresponding proposal
 - Updates the documentation map and change log
@@ -122,7 +122,7 @@ Request:
 
 LLM:
 
-- Creates a new file `exploration-feature-flags-ab-testing.md` in the `/docs/workflows/explorations/` folder
+- Creates a new file `exploration-feature-flags-ab-testing.md` in the `../workflows/explorations/` folder
 - Conducts analysis of available libraries and implementation approaches
 - Structures research according to project methodology
 - Includes a comparative table of alternatives with their advantages and disadvantages
@@ -174,7 +174,7 @@ Instead of:
 
 **❓ How do I know what parameters are needed for a command?**
 
-- You can view the instruction file directly (e.g., `docs/commands/create-task.md`) or simply ask LLM: "What parameters are needed for @create-task.md?"
+- You can view the instruction file directly (e.g., `../commands/create-task.md`) or simply ask LLM: "What parameters are needed for @create-task.md?"
 
 **❓ What if the result doesn't meet expectations?**
 

@@ -46,13 +46,13 @@
  * ts-node scripts/documentation/documentHelper.ts search "authentication" --limit 5 --fuzzy
  *
  * Create a document from a template:
- * ts-node scripts/documentation/documentHelper.ts create task docs/tasks/new-task.md --values '{"title":"New Task"}'
+ * ts-node scripts/documentation/documentHelper.ts create task workflows/tasks/new-task.md --values '{"title":"New Task"}'
  *
  * Analyze a document:
- * ts-node scripts/documentation/documentHelper.ts analyze docs/guides/api-integration.md
+ * ts-node scripts/documentation/documentHelper.ts analyze guides/api-integration.md
  *
  * Generate a relationship diagram:
- * ts-node scripts/documentation/documentHelper.ts diagram docs/diagrams/relation.mmd
+ * ts-node scripts/documentation/documentHelper.ts diagram diagrams/relation.mmd
  *
  * API Overview:
  *
@@ -374,7 +374,7 @@ class DocumentHelper {
    * @param filePath - The path to the markdown document
    * @returns A Promise resolving to the Document object or null if loading fails
    * @example
-   * const doc = await documentHelper.loadDocument('docs/guides/introduction.md');
+   * const doc = await documentHelper.loadDocument('guides/introduction.md');
    * if (doc) {
    *   console.log(`Title: ${doc.title}`);
    *   console.log(`Sections: ${doc.sections.length}`);
@@ -820,7 +820,7 @@ class DocumentHelper {
    * @example
    * const doc = await documentHelper.createDocument(
    *   'task-template',
-   *   'docs/tasks/new-feature.md',
+   *   'workflows/tasks/new-feature.md',
    *   {
    *     title: 'Implement New Feature',
    *     description: 'Add support for...',
@@ -886,7 +886,7 @@ class DocumentHelper {
    * const relationships = await documentHelper.analyzeRelationships();
    *
    * // Find all documents that link to a specific document
-   * const targetDoc = 'docs/guides/getting-started.md';
+   * const targetDoc = 'guides/getting-started.md';
    * for (const [source, targets] of relationships.entries()) {
    *   if (targets.includes(targetDoc)) {
    *     console.log(`${source} links to the getting started guide`);
@@ -1131,7 +1131,7 @@ class DocumentHelper {
    * @param limit - Maximum number of similar documents to return
    * @returns A Promise resolving to an array of documents with similarity scores
    * @example
-   * const similar = await documentHelper.findSimilarDocuments('docs/guides/authentication.md', 3);
+   * const similar = await documentHelper.findSimilarDocuments('guides/authentication.md', 3);
    * for (const { document, similarity } of similar) {
    *   console.log(`${document.title}: ${(similarity * 100).toFixed(1)}% similar`);
    * }
