@@ -30,7 +30,7 @@ Before proceeding with the task creation, complete this checklist:
 
 ## Step 1: Create the Task File
 
-Create a new file in the `/docs/tasks/` directory using the naming convention:
+Create a new file in the `../workflows/tasks/` directory using the naming convention:
 `task-YYYY-MM-{topic}.md`
 
 For example:
@@ -81,7 +81,7 @@ Ensure that references are bidirectional by checking if related documents should
 
 ## Step 4: Update Documentation Map
 
-Update `/docs/navigation/documentation-map.md` to include the new task:
+Update `../navigation/documentation-map.md` to include the new task:
 
 1. Find the appropriate section in the documentation map (Tasks section)
 2. Add a new entry with a link to the task document and brief description
@@ -89,12 +89,12 @@ Update `/docs/navigation/documentation-map.md` to include the new task:
 
 ## Step 5: Update Changelog
 
-Add an entry to `/docs/CHANGELOG.md` about the new task document:
+Add an entry to `../CHANGELOG.md` about the new task document:
 
 1. Under the current date section (or create a new one if needed)
 2. Add to the "Added" subsection:
    ```markdown
-   - Created task document for [topic] (`/docs/tasks/task-YYYY-MM-{topic}.md`)
+   - Created task document for [topic] (`../workflows/tasks/task-YYYY-MM-{topic}.md`)
    ```
 
 ## Step 6: Check Dependencies

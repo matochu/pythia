@@ -5,86 +5,74 @@ This document outlines the structure, organization, and naming conventions for t
 ## Directory Structure
 
 ```
-/docs/
-├── architecture/              # Analytical documents about architecture
-│   ├── analysis-state-management.md
-│   ├── analysis-api-integration.md
+├── workflows/                 # Documentation workflows in action
+│   ├── tasks/                 # Task records and solutions
+│   ├── decisions/             # Architecture Decision Records (ADRs)
+│   ├── ideas/                 # Initial ideas and concepts
+│   ├── proposals/             # Proposals for changes and improvements
+│   ├── archive/               # Archived documents
 │   └── ...
-├── proposals/                 # Proposals for changes and improvements
-│   ├── proposal-redux-to-zustand.md
-│   ├── proposal-api-libraries.md
+├── tools/                     # Tools for documentation management
 │   └── ...
-├── decisions/                 # Architecture Decision Records (ADRs)
-│   ├── adr-001-state-management.md
-│   ├── adr-002-api-integration.md
+├── architecture/              # Architecture documentation
 │   └── ...
-├── ideas/                     # Initial ideas before transformation into proposals
-│   ├── ideas-backlog.md
-│   ├── idea-YYYY-MM-topic.md
-│   ├── explorations/          # Research documents for ideas
-│   │   ├── exploration-topic1.md
-│   │   ├── exploration-topic2.md
-│   │   └── ...
+├── api/                       # API documentation
+│   └── ...
+├── content/                   # Main documentation content
+│   └── ...
+├── docs/                      # General documentation
+│   └── ...
+├── knowledge/                 # Knowledge base
 │   └── ...
 ├── methodology/               # Development methodologies and processes
-│   ├── implementation-approach.md
-│   ├── ideas-to-proposals-workflow.md
-│   ├── prioritization-methods.md
 │   └── ...
 ├── rules/                     # Guidelines and standards for LLMs
-│   ├── llm-development-guidelines.md
-│   ├── llm-task-workflow.md
 │   └── ...
 ├── guides/                    # Practical guides and instructions
-│   ├── onboarding-guide.md
-│   ├── code-style-guide.md
 │   └── ...
-├── tasks/                     # Context for LLM-assisted task completion
-│   ├── task-YYYY-MM-api-integration.md
-│   ├── task-YYYY-MM-state-management.md
-│   └── ...
-├── commands/                  # Instructions for creating and managing documentation
-│   ├── create-task.md
-│   ├── create-idea.md
-│   ├── create-exploration.md
-│   ├── create-proposal.md
+├── reports/                   # Reports
 │   └── ...
 ├── templates/                 # Templates for different document types
-│   ├── task-template.md
-│   ├── idea-template.md
-│   ├── exploration-template.md
-│   ├── proposal-template.md
+│   └── ...
+├── commands/                  # Instructions for creating and managing documentation
 │   └── ...
 ├── navigation/                # Navigation documents
 │   ├── documentation-map.md
 │   ├── documentation-standards.md
+│   ├── summary-documents-registry.md
 │   └── documentation-structure.md   # This document
 └── CHANGELOG.md               # Documentation changelog
 ```
 
 ## Folder Purposes
 
-1. **architecture/** - Contains analytical documents about the current state of architecture, identifying issues, patterns, and evaluation of existing solutions.
+1. **workflows/** - Contains documentation workflows in action, including tasks, decisions, ideas, proposals, and archive.
 
-2. **proposals/** - Contains proposal documents that suggest specific changes or improvements to the system based on analytical findings.
+2. **tools/** - Contains tools for documentation management and validation.
 
-3. **decisions/** - Contains Architecture Decision Records (ADRs) that document important architectural decisions, their context, and consequences.
+3. **architecture/** - Contains analytical documents about the current state of architecture, identifying issues, and solution evaluation.
 
-4. **ideas/** - Contains initial ideas and concepts before they are developed into formal proposals. Also includes research documents (explorations) that analyze the viability of ideas.
+4. **api/** - Contains project API documentation.
 
-5. **methodology/** - Contains documents describing development processes, methodologies, and approaches used in the project.
+5. **content/** - Contains main documentation content.
 
-6. **rules/** - Contains guidelines and standards for LLMs.
+6. **docs/** - Contains general project documentation.
 
-7. **guides/** - Contains practical guides, instructions, and how-to documents for various aspects of the project.
+7. **knowledge/** - Contains project knowledge base.
 
-8. **tasks/** - Contains context and notes from LLM-assisted task completion, serving as a record of problem-solving sessions.
+8. **methodology/** - Contains documents describing development processes and methodologies.
 
-9. **commands/** - Contains instructions for creating and managing different types of documentation.
+9. **rules/** - Contains guidelines and standards for LLMs.
 
-10. **templates/** - Contains templates for different document types.
+10. **guides/** - Contains practical guides and instructions for various aspects of the project.
 
-11. **navigation/** - Contains documents that help navigate through the documentation, including maps and standards.
+11. **reports/** - Contains reports about project status and components.
+
+12. **templates/** - Contains templates for different document types.
+
+13. **commands/** - Contains instructions for creating and managing documentation.
+
+14. **navigation/** - Contains documents for navigating the documentation, including maps and standards.
 
 ## File Naming Conventions
 
@@ -231,11 +219,11 @@ This document outlines the structure, organization, and naming conventions for t
 
 The project follows a structured workflow from idea to implementation:
 
-1. **Ideas**: Initial concepts are documented in the ideas directory
+1. **Ideas**: Initial concepts are documented in the workflows/ideas directory
 2. **Explorations**: Research for validating ideas
-3. **Proposals**: Formalized suggestions for system changes
-4. **Decisions**: Architectural decisions based on proposals
-5. **Tasks**: Implementation tasks derived from decisions
+3. **Proposals**: Formalized suggestions for system changes in the workflows/proposals directory
+4. **Decisions**: Architectural decisions based on proposals in the workflows/decisions directory
+5. **Tasks**: Implementation tasks derived from decisions in the workflows/tasks directory
 6. **Implementation**: The actual code implementation
 
 This workflow is detailed in the [Ideas to Proposals Workflow](../methodology/ideas-to-proposals-workflow.md) document.
@@ -261,14 +249,14 @@ This workflow is detailed in the [Ideas to Proposals Workflow](../methodology/id
 
 For documents that are no longer relevant but should be preserved:
 
-1. Move to the appropriate archive folder (e.g., `/docs/tasks/archived/`)
+1. Move to the appropriate archive folder (e.g., `/workflows/archive/`)
 2. Update cross-references in other documents
 3. Update the Documentation Map
 
 ## Related Documents
 
-- [Documentation Map](documentation-map.md)
-- [Documentation Standards](documentation-standards.md)
+- [Documentation Map](./documentation-map.md)
+- [Documentation Standards](./documentation-standards.md)
 - [Ideas to Proposals Workflow](../methodology/ideas-to-proposals-workflow.md)
 - [CHANGELOG](../CHANGELOG.md)
 
@@ -278,5 +266,5 @@ For documents that are no longer relevant but should be preserved:
 
 ## References
 
-- [Llm Task Workflow](../rules/llm-task-workflow.md)
+- [LLM Task Workflow](../rules/llm-task-workflow.md)
 - [README](../README.md)

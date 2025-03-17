@@ -72,18 +72,18 @@ For each eligible task:
 
 ```bash
 # Create a copy of the task in the archive directory
-cp [task_file_path] docs/archive/tasks/
+cp [task_file_path] docs/workflows/archive/tasks/
 ```
 
 2. Modify the archived task file:
 
 ```bash
 # Add ARCHIVED prefix to the title
-sed -i '' '1s/^# /# ARCHIVED: /' docs/archive/tasks/[task_filename]
+sed -i '' '1s/^# /# ARCHIVED: /' docs/workflows/archive/tasks/[task_filename]
 
 # Add Archive Date after Date Created
 sed -i '' '/\*\*Date Created\*\*:/a\\
-**Archive Date**: YYYY-MM-DD  ' docs/archive/tasks/[task_filename]
+**Archive Date**: YYYY-MM-DD  ' docs/workflows/archive/tasks/[task_filename]
 ```
 
 3. Add Archive Note section before References:
@@ -101,7 +101,7 @@ sed -i '' '/^## References
 This task was archived on YYYY-MM-DD after successful completion of all objectives.\
 All references to this task have been updated to point to this archived version.\
 \
-' docs/archive/tasks/[task_filename]
+' docs/workflows/archive/tasks/[task_filename]
 ```
 
 ## Step 4: Update References
@@ -121,8 +121,8 @@ For each reference:
 Example change:
 
 ```diff
-- [Task Name](../tasks/task-name.md)
-+ [Task Name (Archived)](../archive/tasks/task-name.md)
+- [Task Name](../workflows/tasks/task-name.md)
++ [Task Name (Archived)](../workflows/archive/tasks/task-name.md)
 ```
 
 ## Step 5: Update Documentation Map

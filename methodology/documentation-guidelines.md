@@ -1,4 +1,4 @@
-# Documentation Guidelines for `/docs` Directory
+# Documentation Guidelines
 
 > **Note**: All documentation should be maintained in English only.
 
@@ -23,20 +23,20 @@
 
 ## Folders and Their Purpose
 
-- `/docs/architecture/` - Analytical documents about the current state of architecture
-- `/docs/methodology/` - Development methodologies and processes
-- `/docs/guides/` - Practical guides and instructions
-- `/docs/navigation/` - Documents for navigating the documentation
-- `/docs/commands/` - Instructions for automation tools
-- `/docs/templates/` - Templates for creating new documents
-- `/docs/rules/` - Guidelines and standards for development and LLMs
-- `/docs/workflows/` - Work items and documentation workflows
-  - `/docs/workflows/tasks/` - Task documentation and context
-  - `/docs/workflows/proposals/` - Proposals for changes and improvements
-  - `/docs/workflows/decisions/` - Architecture Decision Records (ADRs)
-  - `/docs/workflows/ideas/` - Ideas and early concepts
-  - `/docs/workflows/explorations/` - Explorations of ideas
-  - `/docs/workflows/archive/` - Archived documents
+- `../architecture/` - Analytical documents about the current state of architecture
+- `../methodology/` - Development methodologies and processes
+- `../guides/` - Practical guides and instructions
+- `../navigation/` - Documents for navigating the documentation
+- `../commands/` - Instructions for automation tools
+- `../templates/` - Templates for creating new documents
+- `../rules/` - Guidelines and standards for development and LLMs
+- `../workflows/` - Work items and documentation workflows
+  - `../workflows/tasks/` - Task documentation and context
+  - `../workflows/proposals/` - Proposals for changes and improvements
+  - `../workflows/decisions/` - Architecture Decision Records (ADRs)
+  - `../workflows/ideas/` - Ideas and early concepts
+  - `../workflows/explorations/` - Explorations of ideas
+  - `../workflows/archive/` - Archived documents
 
 ## File Naming
 
@@ -72,7 +72,7 @@
 
 2. **Update Process**:
 
-   - Add a new entry to `/docs/navigation/documentation-changelog.md`
+   - Add a new entry to `../navigation/documentation-changelog.md`
    - Follow the established format with date, document path, change type, summary, author, and impact
    - For major restructuring, consider adding details about what changed and why
 
@@ -84,7 +84,7 @@
 
 1. **Registry Purpose**:
 
-   - The registry at `/docs/navigation/summary-documents-registry.md` tracks all documents that summarize or aggregate information from other sources
+   - The registry at `../navigation/summary-documents-registry.md` tracks all documents that summarize or aggregate information from other sources
    - This helps maintain consistency when source documents change
 
 2. **When to Update**:
@@ -125,7 +125,7 @@ Task documentation should include:
 ### Adding a New Proposal:
 
 1. Analyze existing analytical documents
-2. Create a new document in `/docs/proposals/` using the naming convention `proposal-{topic}.md`
+2. Create a new document in `../proposals/` using the naming convention `proposal-{topic}.md`
 3. Add references to analytical documents
 4. Update `documentation-map.md`
 5. Add references to the proposal in relevant analytical documents
@@ -133,8 +133,8 @@ Task documentation should include:
 ### Creating a New Task:
 
 1. Identify the purpose of the task (implementation, research, analysis)
-2. Choose the appropriate template from `/docs/tasks/`
-3. Create a new document in `/docs/tasks/` using the naming convention `task-YYYY-MM-{topic}.md`
+2. Choose the appropriate template from `../workflows/tasks/`
+3. Create a new document in `../workflows/tasks/` using the naming convention `task-YYYY-MM-{topic}.md`
 4. Fill in all required sections
 5. Update `documentation-map.md` with the new task
 
@@ -221,10 +221,10 @@ Document these key resources in your documentation files:
 
 1. **External References to Workflows**:
 
-   - Documents outside of the `/docs/workflows/` directory should only reference the workflow category directories (e.g., `/docs/workflows/tasks/`) or specific documents within them, but not subdirectories.
+   - Documents outside of the `../workflows/` directory should only reference the workflow category directories (e.g., `../workflows/tasks/`) or specific documents within them, but not subdirectories.
    - Always reference specific work items (tasks, proposals, etc.) by their full path including the workflows directory (e.g., `../workflows/tasks/task-2025-03-topic.md`).
-   - The work items status report is maintained in `/docs/workflows/report.md` and serves as the central reference point for all active work items.
+   - The work items status report is maintained in `../workflows/report.md` and serves as the central reference point for all active work items.
 
 2. **Internal Workflow References**:
-   - Work items can freely reference other items within the `/docs/workflows/` directory structure.
-   - When referencing archived items, always use the path with `/docs/workflows/archive/` prefix.
+   - Work items can freely reference other items within the `../workflows/` directory structure.
+   - When referencing archived items, always use the path with `../workflows/archive/` prefix.
