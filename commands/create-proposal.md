@@ -1,6 +1,10 @@
 # Command: Create Proposal Document
 
-This guide provides step-by-step instructions for Large Language Models (LLMs) to create a new proposal document in the project.
+> **IMPORTANT**: This command requires active execution of tasks, not just planning. Follow each step in the checklist by actually performing the actions, creating files, updating references, and validating the documentation.
+
+## Purpose
+
+This command provides step-by-step instructions for creating a comprehensive proposal document that transforms an idea or exploration into a formal proposal for implementation. A well-structured proposal document is essential for proper decision-making, implementation planning, and project documentation.
 
 ## Prerequisites
 
@@ -15,8 +19,6 @@ Before creating a proposal document, ensure you have:
 
 ## Command Checklist
 
-Before proceeding with the proposal creation, complete this checklist:
-
 - [ ] Get current date using `date +%Y-%m-%d`
 - [ ] Review and understand the original idea document
 - [ ] Check all research and exploration documents are complete
@@ -24,17 +26,31 @@ Before proceeding with the proposal creation, complete this checklist:
 - [ ] List all dependencies and affected components
 - [ ] Document alternative approaches considered
 - [ ] Create proposal file with correct naming convention
-- [ ] Fill in all template sections
+- [ ] Fill in all template sections completely
 - [ ] Update related idea document status
 - [ ] Update ideas backlog
-- [ ] Add cross-references
-- [ ] Update Documentation Map
-- [ ] Update Changelog
+- [ ] Update related cross-references
 - [ ] Run documentation validation
 - [ ] Fix any validation issues
-- [ ] Verify all checklist items in Step 9
+- [ ] Generate workflows report
+- [ ] Verify all checklist items are complete
 
-## Step 1: Create the Proposal File
+## Step 1: Prepare for Proposal Creation
+
+Before starting, gather all necessary information:
+
+```bash
+# Get the current date for proper timestamping
+date +%Y-%m-%d
+
+# List relevant ideas and explorations for reference
+ls -la ../workflows/ideas/
+ls -la ../workflows/ideas/explorations/
+```
+
+Review all related documents to ensure you have a comprehensive understanding of the problem space and potential solutions.
+
+## Step 2: Create the Proposal File
 
 Create a new file in the `../workflows/proposals/` directory using the naming convention:
 `proposal-{topic}.md`
@@ -43,8 +59,9 @@ For example:
 
 - `proposal-state-management-refactoring.md`
 - `proposal-api-integration-strategy.md`
+- `proposal-performance-optimization-strategy.md`
 
-## Step 2: Use the Proposal Template
+## Step 3: Use the Proposal Template
 
 Copy the content from the [Proposal Template](../templates/proposal-template.md) and fill in all sections:
 
@@ -59,15 +76,32 @@ Copy the content from the [Proposal Template](../templates/proposal-template.md)
 9. **Success Criteria**: Defined measurable criteria for successful implementation
 10. **References**: Links to related documents
 
-## Step 3: Update Related Idea Document
+Ensure that every section is completely filled in with detailed information. No template placeholders should remain in the final document.
+
+## Step 4: Update Related Documentation
+
+After creating the proposal, update all related documentation:
+
+### Update Related Idea Document
 
 If the proposal is based on an idea document:
 
-1. Update the idea status to "Transformed" in the idea document
-2. Update the "Last Update" date in the idea document
-3. Add a comment in the idea document linking to the new proposal
+1. Open the original idea document
+2. Update the idea status to "Transformed" in the idea document
+3. Update the "Last Update" date in the idea document
+4. Add a comment in the idea document linking to the new proposal
 
-## Step 4: Update the Ideas Backlog
+Example:
+
+```markdown
+## Status
+
+- **Status**: Transformed to Proposal
+- **Last Updated**: 2025-03-18
+- **Transformed To**: [Performance Optimization Strategy Proposal](../proposals/proposal-performance-optimization-strategy.md)
+```
+
+### Update Ideas Backlog
 
 Update the ideas backlog in `../workflows/ideas/ideas-backlog.md`:
 
@@ -79,11 +113,12 @@ Update the ideas backlog in `../workflows/ideas/ideas-backlog.md`:
 
 For complex proposals, include:
 
-1. **Code Examples**: Show before/after examples of how the code would change
-2. **Architecture Diagrams**: Visual representations of the proposed architecture
-3. **Migration Path**: Step-by-step guide for migrating from the current to proposed approach
-4. **Performance Considerations**: Impact on performance, load times, memory usage
-5. **API Changes**: If your proposal changes APIs, document both old and new interfaces
+1. **Implementation Phases**: Break down implementation into logical phases with clear deliverables for each
+2. **Prioritization Analysis**: Include analysis of priorities using established methods (ICE, WSJF, etc.)
+3. **Decision Points**: Identify key decision points during implementation where approach may need adjustment
+4. **Business Impact Analysis**: Show how the proposal affects key business metrics
+5. **Technical Debt Resolution**: Explain how the proposal addresses existing technical debt
+6. **Future Opportunities**: Outline potential future work enabled by this proposal
 
 ## Step 6: Add Cross-References
 
@@ -92,49 +127,25 @@ Add references to related documents at the bottom of the proposal file:
 ```markdown
 ## References
 
-- [Complete Exploration](complete-exploration.md)
-- [Guide Llm Documentation Workflow](../guides/guide-llm-documentation-workflow.md)
 - [Original Idea](../ideas/idea-YYYY-MM-topic.md)
 - [Exploration](../ideas/explorations/exploration-topic.md)
 - [Related Analysis](../architecture/analysis-topic.md)
-- [Documentation Map](../navigation/documentation-map.md)
+- [Related Proposal](../proposals/proposal-related-topic.md)
 ```
 
 Ensure that references are bidirectional - update any related documents to reference this new proposal.
 
-## Step 7: Update Documentation Map
+## Step 7: Generate Workflows Report
 
-Update `../navigation/documentation-map.md` to include the new proposal:
+Use the `report-workflows` command to update the workflows status report:
 
-1. Find the "Proposals" section in the documentation map
-2. Add a new entry with a link to the proposal document and brief description
-3. Follow the existing format and organization
+1. Follow the instructions in [Report Workflows](report-workflows.md)
+2. Ensure the new proposal is properly included in the report
+3. Update any metrics or summaries in the report
 
-## Step 8: Update Changelog
+This step ensures that the new proposal is properly tracked in the overall project workflow.
 
-Add an entry to `../CHANGELOG.md` about the new proposal document:
-
-1. Under the current date section (or create a new one if needed)
-2. Add to the "Added" subsection:
-   ```markdown
-   - Created proposal for [topic] (`../proposals/proposal-{topic}.md`)
-   ```
-
-## Step 9: Verification Checklist
-
-Before finalizing the proposal document, verify:
-
-- [ ] All sections of the template are properly filled in
-- [ ] The naming convention is followed
-- [ ] The related idea document is updated to "Transformed" status
-- [ ] The ideas backlog is updated
-- [ ] Cross-references are added to all related documents
-- [ ] The documentation map is updated
-- [ ] The changelog is updated
-- [ ] No placeholder text remains in the document
-- [ ] The proposal directly addresses issues identified in the original idea and exploration
-
-## Step 10: Run Documentation Validation
+## Step 8: Validation and Verification
 
 Run the documentation validation tools to ensure the new document is properly integrated:
 
@@ -145,15 +156,82 @@ npm run docs:check-coverage
 
 Fix any issues reported by these tools.
 
+## Examples
+
+### Creating a Basic Proposal
+
+```bash
+# Get the current date
+date +%Y-%m-%d
+# Output: 2025-03-18
+
+# Create the proposal file
+touch ../workflows/proposals/proposal-api-caching-strategy.md
+
+# Copy the template contents and fill in all sections
+# ...
+
+# Update the related idea document status to "Transformed"
+# Update ideas-backlog.md
+
+# Run validation
+npm run docs:validate-links
+```
+
+### Creating a Complex Technical Proposal
+
+For more complex proposals like architecture changes or performance optimization:
+
+```bash
+# Create a comprehensive proposal with business impact analysis
+touch ../workflows/proposals/proposal-microservices-migration.md
+
+# Include additional sections:
+# - Phased implementation approach
+# - Business impact matrix
+# - Detailed technical architecture diagrams
+# - Risk assessment matrix
+# - Timeline with key decision points
+
+# Update related documentation
+# Generate workflows report
+npm run docs:report-workflows
+```
+
+## Common Issues and Solutions
+
+1. **Incomplete Template Sections**:
+
+   - Issue: Some sections of the proposal template are left with placeholder text
+   - Solution: Review each section systematically, ensuring all placeholders are replaced with actual content
+
+2. **Missing Cross-References**:
+
+   - Issue: Related documents don't have bidirectional links to the new proposal
+   - Solution: Create a list of all related documents and methodically update each one
+
+3. **Unclear Implementation Approach**:
+
+   - Issue: The implementation approach is too vague or lacks specific phases
+   - Solution: Break down implementation into clear phases with specific deliverables for each
+
+4. **Insufficient Alternative Analysis**:
+
+   - Issue: Few or poorly analyzed alternatives
+   - Solution: Document at least three alternatives with pros/cons for each and clear reasoning for rejection
+
+5. **Missing Success Criteria**:
+   - Issue: Success criteria are subjective or unmeasurable
+   - Solution: Define specific, measurable criteria that can objectively determine success
+
 ## Related Documents
 
 - [Proposal Template](../templates/proposal-template.md)
 - [Ideas to Proposals Workflow](../methodology/ideas-to-proposals-workflow.md)
 - [Ideas Backlog](../ideas/ideas-backlog.md)
 - [Documentation Guidelines](../methodology/documentation-guidelines.md)
-- [Documentation Map](../navigation/documentation-map.md)
-- [Changelog](../CHANGELOG.md)
+- [Report Workflows](report-workflows.md)
 
 ---
 
-**Last Updated**: 2025-03-12
+**Last Updated**: 2025-03-18

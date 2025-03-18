@@ -1,160 +1,217 @@
-# Update Work Item Status Command
+# Command: Update Status
+
+> **IMPORTANT**: This command requires modifying workflow documents to reflect current progress. Follow each step precisely to maintain accurate tracking of project activities and ensure all stakeholders have access to up-to-date information.
 
 ## Purpose
 
-This command provides a standardized process for updating the status of work items in the Active Work Items Registry. It ensures consistent status tracking and proper documentation updates across the system.
+This command provides a structured process for updating the status of workflow documents (tasks, proposals, ideas, explorations) as they progress through their lifecycle. Consistent status updates ensure accurate progress tracking, enable effective resource allocation, and provide transparency across the project.
 
 ## Prerequisites
 
-- [ ] Access to the documentation repository
-- [ ] Required permissions to modify documentation
-- [ ] Understanding of work item statuses and their transitions
-- [ ] Knowledge of the work item's current state and context
+Before updating the status of a workflow document, ensure:
+
+1. You have reviewed the current state and are aware of actual progress
+2. You understand the available status values for the document type
+3. You have permissions to modify the relevant files
+4. You have any supporting information needed to justify the status change
 
 ## Command Checklist
 
-1. **Preparation**:
+- [ ] Identify the document requiring status update
+- [ ] Review the available status values for the document type
+- [ ] Make backup of document (optional but recommended)
+- [ ] Update the status field in the document
+- [ ] Update any related status fields (progress, completion %)
+- [ ] Update Last Modified date
+- [ ] Add progress notes if applicable
+- [ ] Update references to reflect new status
+- [ ] Generate workflows report
+- [ ] Validate documentation changes
 
-   - [ ] Get current date using `date +%Y-%m-%d`
-   - [ ] Verify work item exists in Active Work Items Registry
-   - [ ] Check current status and available transitions
-   - [ ] Review related documents and dependencies
+## Step 1: Review Current Status
 
-2. **Status Update**:
+First, examine the document to understand its current status:
 
-   - [ ] Update status in the work item document
-   - [ ] Update last modified date
-   - [ ] Update Active Work Items Registry entry
-   - [ ] Update related metrics and statistics
-
-3. **Dependency Check**:
-
-   - [ ] Review items that depend on this work item
-   - [ ] Update dependent items' statuses if needed
-   - [ ] Update dependencies graph if needed
-
-4. **Documentation Updates**:
-
-   - [ ] Update CHANGELOG.md with status change
-   - [ ] Update any relevant summary documents
-   - [ ] Update documentation map if needed
-
-5. **Validation**:
-   - [ ] Run documentation validation
-   - [ ] Fix any broken links or references
-   - [ ] Verify all updates are consistent
-
-## Status Transitions
-
-### Available Statuses
-
-- **Not Started**: Initial state for newly created items
-- **In Progress**: Work has begun on the item
-- **Under Review**: Item is being reviewed
-- **Blocked**: Progress is blocked by dependencies or issues
-- **Completed**: Work is finished but not yet archived
-- **Archived**: Item has been moved to archives
-
-### Valid Transitions
-
-```mermaid
-graph TD
-    A[Not Started] --> B[In Progress]
-    B --> C[Under Review]
-    B --> D[Blocked]
-    D --> B
-    C --> B
-    C --> E[Completed]
-    E --> F[Archived]
+```bash
+# View current status of a document
+grep -n "**Status**:" ../workflows/tasks/task-YYYY-MM-name.md
 ```
 
-## Status Update Rules
+## Step 2: Determine New Status
 
-1. **Not Started → In Progress**:
+Select the appropriate new status based on document type:
 
-   - Verify all prerequisites are met
-   - Ensure dependencies are available
-   - Update start date
+**Task Status Values**:
 
-2. **In Progress → Under Review**:
+- Not Started
+- In Progress (with optional % complete)
+- Blocked (with reason)
+- Ready for Review
+- Completed
+- Cancelled (with reason)
 
-   - Complete all required work
-   - Prepare for review
-   - Assign reviewers
+**Proposal Status Values**:
 
-3. **Under Review → In Progress**:
+- Draft
+- Under Review
+- Approved
+- Rejected
+- Implemented
+- Superseded
 
-   - Document review feedback
-   - Create action items for changes
+**Idea Status Values**:
 
-4. **Under Review → Completed**:
+- New
+- Under Consideration
+- Accepted
+- Rejected
+- Implemented
 
-   - Verify all requirements met
-   - Get final approval
-   - Update completion date
+**Exploration Status Values**:
 
-5. **Any Status → Blocked**:
+- Planned
+- In Progress
+- Completed
+- Abandoned
 
-   - Document blocking issues
-   - Identify dependencies
-   - Create action plan
+## Step 3: Update Status and Related Fields
 
-6. **Completed → Archived**:
-   - Verify no pending references
-   - Update all dependencies
-   - Move to archive location
+Open the document and:
+
+1. Update the Status field to the new value
+2. Update any related fields (Progress, Completion %)
+3. Update the Last Modified date to the current date
+4. Add progress notes in the Implementation/Progress section
+
+```bash
+# Get current date for Last Modified update
+date +%Y-%m-%d
+```
+
+## Step 4: Add Status Change Notes
+
+For significant status changes, add a note in the document's Progress Tracking or Implementation Notes section:
+
+```markdown
+## Progress Tracking
+
+**Update YYYY-MM-DD**: Status changed from [old status] to [new status].
+
+- [Brief explanation of progress made]
+- [Current challenges or blockers if any]
+- [Next steps or required actions]
+```
+
+## Step 5: Update References
+
+If necessary, update references in related documents to reflect the new status:
+
+1. For tasks moving to "Completed", consider updating dependent tasks
+2. For proposals moving to "Approved", update related tasks or ideas
+3. For explorations moving to "Completed", update the original idea or proposal
+
+## Step 6: Generate Workflows Report
+
+Use the `report-workflows` command to update the workflows status report:
+
+1. Follow the instructions in [Report Workflows](report-workflows.md)
+2. Ensure the updated document appears with its new status in the report
+3. Verify that all metrics and counts reflect the status change
+
+## Step 7: Validate Documentation
+
+Run documentation validation to ensure all references remain valid:
+
+```bash
+# If validation tools are available
+npm run docs:validate-links
+```
+
+Fix any issues reported by the tools.
 
 ## Examples
 
-### Updating Task Status
+### Updating a Task to In Progress
 
 ```bash
-# Check current status
-npm run docs:check-item-status --id task-2025-03-documentation-automation
+# View current task status
+grep -n "**Status**:" ../workflows/tasks/task-2025-03-refactor-component.md
+# Output: 7:**Status**: Not Started
 
-# Update status
-npm run docs:update-status --id task-2025-03-documentation-automation --status "Under Review"
+# Edit the file to update status
+# Change "Not Started" to "In Progress" and update Last Modified date
+# Add progress notes in the Implementation section
 
-# Verify update
-npm run docs:validate-status-update
+# Generate workflows report
+npm run docs:report-workflows
 ```
 
-### Marking Item as Blocked
+### Updating a Proposal to Approved
 
 ```bash
-# Update status with blocking reason
-npm run docs:update-status --id proposal-redux-to-zustand-migration --status "Blocked" --reason "Waiting for performance analysis"
+# Get current date
+date +%Y-%m-%d
+# Output: 2025-03-19
 
-# Add blocking information
-npm run docs:add-blocking-info --id proposal-redux-to-zustand-migration --blocker "task-2025-03-performance-analysis"
+# Edit proposal file
+# - Change status from "Under Review" to "Approved"
+# - Update Last Modified date to 2025-03-19
+# - Add approval notes with any conditions or modifications
+
+# Update related documents
+# - Update any tasks that were waiting on this approval
+# - Update any ideas that led to this proposal
+
+# Generate workflows report
+npm run docs:report-workflows
+```
+
+### Marking a Task as Blocked
+
+```bash
+# Edit task file
+# - Change status from "In Progress" to "Blocked"
+# - Add blocking reason: "Blocked: Waiting for API documentation from external team"
+# - Update Last Modified date
+# - Add note in Progress Tracking section
+
+# Generate workflows report to highlight the blocked item
+npm run docs:report-workflows
 ```
 
 ## Common Issues and Solutions
 
-1. **Inconsistent Status**:
+1. **Inconsistent Status Values**:
 
-   - Run validation scripts
-   - Check all related documents
-   - Update all references
+   - Issue: Using status values that don't match the established taxonomy
+   - Solution: Refer to the status values list in Step 2 for the correct terminology
 
-2. **Missing Dependencies**:
+2. **Missing Status Update Context**:
 
-   - Review dependencies graph
-   - Update missing references
-   - Add required links
+   - Issue: Changing status without explanatory notes
+   - Solution: Always add progress notes explaining why the status changed
 
-3. **Invalid Transitions**:
-   - Check valid transition paths
-   - Document reason for unusual transition
-   - Get approval if needed
+3. **Orphaned References**:
 
-## References
+   - Issue: Related documents not updated to reflect status changes
+   - Solution: Use grep to find all references and update them systematically
 
-- [Workflows Status Report](../workflows/report.md)
-- [Documentation Map](../navigation/documentation-map.md)
-- [Task Archiving Rules](../rules/task-archiving-rules.md)
-- [Documentation Guidelines](../methodology/documentation-guidelines.md)
+4. **Outdated Last Modified Date**:
+
+   - Issue: Forgetting to update the Last Modified date when changing status
+   - Solution: Always update the Last Modified date to the current date
+
+5. **Incorrect Status Progression**:
+   - Issue: Skipping logical status steps (e.g., from "Not Started" directly to "Completed")
+   - Solution: Follow the natural progression of statuses unless there's a valid reason to skip
+
+## Related Documents
+
+- [Task Template](../templates/task-template.md)
+- [Proposal Template](../templates/proposal-template.md)
+- [Idea Template](../templates/idea-template.md)
+- [Report Workflows](report-workflows.md)
 
 ---
 
-**Last Updated**: 2025-03-13
+**Last Updated**: 2025-03-19

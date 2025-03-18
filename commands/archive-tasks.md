@@ -1,173 +1,172 @@
-# Command: Archive Completed Tasks
+# Command: Archive Tasks
 
-This guide provides instructions for Large Language Models (LLMs) to identify and archive completed tasks in the project.
+> **IMPORTANT**: This command involves moving completed task documents to the archive. Execute each step carefully to maintain documentation integrity and ensure all references and reports are properly updated.
+
+## Purpose
+
+This command provides a structured process for archiving completed task documents, ensuring they are properly preserved for historical reference while keeping the active tasks directory clean and focused. Archiving completed tasks helps maintain an organized workflow repository and provides valuable historical context for future reference.
 
 ## Prerequisites
 
-Before running this command, ensure you have:
+Before archiving a task, ensure:
 
-1. Read and understood the [Task Archiving Rules](../rules/task-archiving-rules.md)
-2. Access to the repository with read and write permissions
-3. Identified tasks that may be eligible for archiving
+1. The task is genuinely complete (all objectives met, all success criteria satisfied)
+2. All implementation steps are checked off
+3. The task's status is marked as "Completed" in the document
+4. Any dependencies on this task have been resolved or updated
 
 ## Command Checklist
 
-Before proceeding with task archiving, complete this checklist:
+- [ ] Verify task is complete and status is marked as "Completed"
+- [ ] Create the archive directory if it doesn't exist
+- [ ] Move the task file to the archive location
+- [ ] Update cross-references in related documents
+- [ ] Generate updated workflows report
+- [ ] Validate all links and references
+- [ ] Verify the task no longer appears in active tasks list
 
-- [ ] Review Task Archiving Rules
-- [ ] Identify completed tasks
-- [ ] Verify completion criteria for each task
-- [ ] Check task age requirements
-- [ ] Create archive copies of tasks
-- [ ] Update task status and metadata
-- [ ] Add archive notes
-- [ ] Update all document references
-- [ ] Move tasks in Documentation Map
-- [ ] Remove original task files
-- [ ] Run documentation validation
-- [ ] Fix any validation issues
-- [ ] Verify all archives are properly documented
+## Step 1: Verify Task Completion
 
-## Command Purpose
-
-The task archiving process helps:
-
-- Keep the active tasks directory focused on ongoing work
-- Maintain a historical record of completed tasks
-- Ensure documentation references remain valid
-- Provide visibility into completed work
-
-## Step 1: Identify Eligible Tasks
+Before archiving, ensure the task is genuinely complete:
 
 ```bash
-# Find all tasks with "Status: Completed" in the workflows/tasks directory
-find ../workflows/tasks -type f -name "*.md" -exec grep -l "**Status**: Completed" {} \;
+# Open the task document to verify completion
+cat ../workflows/tasks/task-YYYY-MM-task-name.md | grep "Status"
 ```
 
-This command will list all task files that have their status explicitly set to "Completed".
+Confirm the status is "Completed" and all implementation steps are checked.
 
-## Step 2: Verify Archiving Criteria
+## Step 2: Create Archive Directory (if needed)
 
-For each completed task, verify all archiving criteria are met:
-
-1. All success criteria are checked (✅)
-2. No exclusion tags are present (no-archive, NO_ARCHIVE)
-
-Optionally, you may also check if:
-
-- The task has been completed for at least 7 days (if using age-based archiving)
-
-Use this command to check the last modified date:
+Ensure the archive directory exists:
 
 ```bash
-# Get the last modification date of the task file
-stat -f "%Sm" -t "%Y-%m-%d" [task_file_path]
+# Check if archive directory exists
+ls -la ../workflows/archive/tasks/
+
+# If it doesn't exist, create it
+mkdir -p ../workflows/archive/tasks/
 ```
 
-## Step 3: Archive the Task
+## Step 3: Move Task to Archive
 
-For each eligible task:
-
-1. Create a copy in the archive directory:
+Move the completed task to the archive:
 
 ```bash
-# Create a copy of the task in the archive directory
-cp [task_file_path] ../workflows/archive/tasks/
+# Move the task file to the archive
+mv ../workflows/tasks/task-YYYY-MM-task-name.md ../workflows/archive/tasks/
 ```
 
-2. Modify the archived task file:
+## Step 4: Update Cross-References
+
+Update all documents that reference the archived task:
+
+1. Search for references to the task using:
+
+   ```bash
+   grep -r "task-YYYY-MM-task-name.md" ../
+   ```
+
+2. For each reference found, update the link to point to the archived location:
+   - From: `../workflows/tasks/task-YYYY-MM-task-name.md`
+   - To: `../workflows/archive/tasks/task-YYYY-MM-task-name.md`
+
+## Step 5: Generate Workflows Report
+
+Update the workflows report to reflect the task archival:
+
+1. Follow the instructions in [Report Workflows](report-workflows.md)
+2. Ensure the task is properly moved from "Active Tasks" to "Archived Tasks" in the report
+3. Verify the work item summary counts are updated correctly
+
+## Step 6: Validate Links
+
+Run documentation validation to ensure all links remain valid:
 
 ```bash
-# Add ARCHIVED prefix to the title
-sed -i '' '1s/^# /# ARCHIVED: /' ../workflows/archive/tasks/[task_filename]
-
-# Add Archive Date after Date Created
-sed -i '' '/\*\*Date Created\*\*:/a\\
-**Archive Date**: YYYY-MM-DD  ' ../workflows/archive/tasks/[task_filename]
-```
-
-3. Add Archive Note section before References:
-
-```bash
-# Add Archive Note section
-sed -i '' '/^## References
-- [Guide Llm Documentation Workflow](../guides/guide-llm-documentation-workflow.md)
-- [Validate Documentation](validate-documentation.md)
-- [Documentation Guidelines](../methodology/documentation-guidelines.md)
-- [CHANGELOG](../CHANGELOG.md)
-/i\\
-## Archive Note\
-\
-This task was archived on YYYY-MM-DD after successful completion of all objectives.\
-All references to this task have been updated to point to this archived version.\
-\
-'../workflows/archive/tasks/[task_filename]
-```
-
-## Step 4: Update References
-
-Use the Link Validator to identify all references to the original task:
-
-```bash
-# Find all references to the task
-grep -r "\[.*\](.*tasks/[task_filename])" ../workflows/ --include="*.md"
-```
-
-For each reference:
-
-1. Update the path to point to the archive location
-2. Add "(Archived)" suffix to the link text
-
-Example change:
-
-```diff
-- [Task Name](../workflows/tasks/task-name.md)
-+ [Task Name (Archived)](../workflows/archive/tasks/task-name.md)
-```
-
-## Step 5: Update Documentation Map
-
-Modify the Documentation Map by:
-
-1. Moving the task from the Tasks section to a new Archived Tasks section (create if needed)
-2. Update the link to point to the archived location
-3. Add "(Archived)" suffix to the description
-
-## Step 6: Remove Original Task
-
-Once all references are updated:
-
-```bash
-# Remove the original task file
-rm [task_file_path]
-```
-
-## Step 7: Verify Changes
-
-Run documentation validation to ensure all references are correct:
-
-```bash
+# If validation tools are available
 npm run docs:validate-links
 ```
 
-Fix any issues with links before completing the process.
+Fix any issues reported by the tool.
 
-## Example Implementation
+## Examples
 
-Here's an example of archiving a completed task:
+### Archiving a Single Task
 
 ```bash
-# Step 1: Identify completed task
-grep -l "**Status**: Completed" ../workflows/tasks/task-2025-03-documentation-structure.md
+# Verify task completion status
+cat ../workflows/tasks/task-2025-03-refactor-api-endpoints.md | grep "Status"
+# Output: **Status**: Completed
 
-# Step 2: Verify last modification date
-stat -f "%Sm" -t "%Y-%m-%d" ../workflows/tasks/task-2025-03-documentation-structure.md
-# Output: 2025-03-11 (more than 7 days ago)
+# Move the task to the archive
+mv ../workflows/tasks/task-2025-03-refactor-api-endpoints.md ../workflows/archive/tasks/
 
-# Step 3: Archive the task
-cp ../workflows/tasks/task-2025-03-documentation-structure.md ../workflows/archive/tasks/
-sed -i '' '1s/^# /# ARCHIVED: /' ../workflows/archive/tasks/task-2025-03-documentation-structure.md
-sed -i '' '/\*\*Date Created\*\*:/a\\
-**Archive Date**: 2025-03-18  ' ../workflows/archive/tasks/task-2025-03-documentation-structure.md
-sed -i '' '/^
+# Update cross-references (after finding them with grep)
+# Edit each file that references this task to point to the archive location
+
+# Generate workflows report
+npm run docs:report-workflows
 ```
+
+### Archiving Multiple Tasks in Batch
+
+```bash
+# Create a list of completed tasks
+grep -r "Status.*Completed" ../workflows/tasks/ --include="*.md" > completed_tasks.txt
+
+# Process each completed task
+while read -r task; do
+  task_file=$(echo "$task" | cut -d':' -f1)
+  echo "Archiving $task_file"
+
+  # Move to archive
+  mv "$task_file" ../workflows/archive/tasks/
+
+  # Find and update references (would need manual editing)
+  task_name=$(basename "$task_file")
+  grep -r "$task_name" ../ --include="*.md"
+done < completed_tasks.txt
+
+# Clean up
+rm completed_tasks.txt
+
+# Generate workflows report
+npm run docs:report-workflows
+```
+
+## Common Issues and Solutions
+
+1. **Missing Archive Directory**:
+
+   - Issue: Archive directory doesn't exist, causing move operation to fail
+   - Solution: Create the directory structure with `mkdir -p ../workflows/archive/tasks/`
+
+2. **Broken References**:
+
+   - Issue: References to archived tasks not updated, leading to broken links
+   - Solution: Use grep to find all references and systematically update them
+
+3. **Task Not Ready for Archive**:
+
+   - Issue: Attempting to archive a task that's not fully completed
+   - Solution: Verify all checkboxes are marked and status is explicitly set to "Completed"
+
+4. **Premature Archival**:
+
+   - Issue: Archiving a task that still has dependent tasks in progress
+   - Solution: Check all dependencies and related tasks before archiving
+
+5. **Missing from Archived Tasks Report**:
+   - Issue: Archived task not appearing in the archived section of the report
+   - Solution: Run `report-workflows` to refresh the report with current archive status
+
+## Related Documents
+
+- [Task Template](../templates/task-template.md)
+- [Create Task](create-task.md)
+- [Report Workflows](report-workflows.md)
+
+---
+
+**Last Updated**: 2025-03-19

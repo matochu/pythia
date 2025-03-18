@@ -1,222 +1,197 @@
 # Command: Create Idea Document
 
-This guide provides step-by-step instructions for Large Language Models (LLMs) to create a new idea document in the project.
+> **IMPORTANT**: This command requires active execution of tasks, not just planning. Follow each step in the checklist by actually performing the actions, creating files, updating references, and validating the documentation.
+
+## Purpose
+
+This command provides step-by-step instructions for creating a new idea document that captures innovative concepts, potential solutions, or areas for improvement. A well-structured idea document serves as the foundation for project evolution, future explorations, and proposals.
 
 ## Prerequisites
 
 Before creating an idea document, ensure you have:
 
-1. Obtained the current date for proper document timestamping (use `date +%Y-%m-%d` if needed)
-2. Understood the core concept and problem the idea aims to solve
-3. Reviewed any related existing documentation
-4. Identified stakeholders and potential benefits/risks
+1. Completed initial research on the idea topic
+2. Considered the potential value and impact of the idea
+3. Identified the problem or opportunity the idea addresses
+4. Obtained the current date for proper document timestamping
 
 ## Command Checklist
 
-Before proceeding with the idea creation, complete this checklist:
-
 - [ ] Get current date using `date +%Y-%m-%d`
-- [ ] Define the core problem and solution concept
-- [ ] Review existing documentation for similar ideas
-- [ ] Identify stakeholders and impact assessment
+- [ ] Brainstorm the core concept and key points
+- [ ] Identify the problem or opportunity the idea addresses
+- [ ] Consider potential impacts and benefits
+- [ ] Validate the idea against existing documentation
 - [ ] Create idea file with correct naming convention
 - [ ] Fill in all template sections
-- [ ] Add to ideas backlog
-- [ ] Add cross-references to related documents
-- [ ] Update Documentation Map (if significant)
-- [ ] Update Changelog
+- [ ] Add cross-references to related documentation
+- [ ] Add the idea to the ideas backlog
 - [ ] Run documentation validation
-- [ ] Fix any validation issues
-- [ ] Verify all sections are properly completed
+- [ ] Generate workflows report
+- [ ] Verify all checklist items are complete
 
-## Step 1: Create the Idea File
+## Step 1: Prepare for Idea Creation
+
+Before starting, ensure you have all necessary information:
+
+```bash
+# Get the current date for proper timestamping
+date +%Y-%m-%d
+
+# List existing ideas to avoid duplication
+ls -la ../workflows/ideas/
+```
+
+## Step 2: Create the Idea File
 
 Create a new file in the `../workflows/ideas/` directory using the naming convention:
-`idea-YYYY-MM-{topic}.md`
+`idea-YYYY-MM-{descriptive-name}.md`
 
 For example:
 
-- `idea-2025-04-performance-optimization.md`
-- `idea-2025-04-offline-sync.md`
+- `idea-2025-03-performance-optimization.md`
+- `idea-2025-03-component-library.md`
+- `idea-2025-03-offline-support.md`
 
-## Step 2: Use the Idea Template
+## Step 3: Use the Idea Template
 
 Copy the content from the [Idea Template](../templates/idea-template.md) and fill in all sections:
 
 1. **Title**: Concise, descriptive title of the idea
-2. **Status Information**:
+2. **Summary**: Brief overview of what the idea is about
+3. **Problem Statement**: Description of the problem the idea aims to solve
+4. **Proposed Solution**: High-level description of the proposed solution
+5. **Potential Benefits**: List of benefits this idea could bring
+6. **Potential Drawbacks**: List of drawbacks or challenges this idea could introduce
+7. **Implementation Considerations**: High-level thoughts on implementation
+8. **Related Ideas**: Links to related ideas or concepts
+9. **Status**: Current status of the idea (New, In Exploration, Transformed, etc.)
 
-   - Current Status (typically "new" for new ideas)
-   - Creation Date (current date)
-   - Last Update (current date)
-   - Author
+Ensure that every section is filled in with detailed information.
 
-3. **Brief Description**: Concise 2-3 sentence description of the idea
-4. **Problem**: Clear description of the problem the idea aims to solve
-5. **Proposed Solution**: Conceptual description of the proposed solution
-6. **Potential Benefits**: List of potential benefits
-7. **Potential Drawbacks and Risks**: List of risks and potential issues
-8. **Alternatives**: Description of alternative approaches
-9. **Required Research**: List of research areas needed using checkboxes `- [ ]`
-10. **Related Documents**: Links to related documentation
-11. **Stakeholders**: List of parties interested in or affected by this idea
-12. **Classification**:
-    - Category (UI/UX, Performance, Architecture, etc.)
-    - Complexity (low, medium, high)
-    - Priority (low, medium, high)
-    - Impact/Effort quadrant
-
-## Step 3: Update the Ideas Backlog
+## Step 4: Update Ideas Backlog
 
 Update the ideas backlog in `../workflows/ideas/ideas-backlog.md`:
 
-1. Add a new entry to the appropriate category section with a unique ID
-2. Fill in the status, priority, impact/effort, and link to the detailed document
-3. Add the idea to the "Recently Updated Ideas" section
+1. Add the new idea to the "New Ideas" section with a link to the idea document
+2. Update the "Recently Added Ideas" section with a link to the idea and the current date
 
-Example format:
-
-```markdown
-| UI001 | Modal Dialog Improvements | New | Medium | Optimal | [Details](./idea-2025-04-modal-dialog.md) |
-```
-
-## Step 4: Add Cross-References
-
-Ensure that your idea document references related documents:
+Example:
 
 ```markdown
-## Related Documents
+## New Ideas
 
-- [Existing Analysis](../architecture/analysis-ui-components.md)
-- [Related Document](../path/to/document.md)
+- [Performance Optimization Strategy](idea-2025-03-performance-optimization.md) - Strategies for improving application performance across platforms
 ```
 
-Also consider updating related documents to reference this new idea if appropriate.
+## Step 5: Add Cross-References
 
-## Step 5: Update Documentation Map
-
-If this is a significant idea that should be highlighted in the documentation map:
-
-1. Update `../navigation/documentation-map.md` in the "Ideas and Early Concepts" section
-2. Add a new entry with a link to the idea document and brief description
-
-## Step 6: Update Changelog
-
-Add an entry to `../CHANGELOG.md` about the new idea document:
-
-1. Under the current date section (or create a new one if needed)
-2. Add to the "Added" subsection:
-   ```markdown
-   - Created idea document for [topic] (`../workflows/ideas/idea-YYYY-MM-{topic}.md`)
-   ```
-
-## Step 7: Verification Checklist
-
-Before finalizing the idea document, verify:
-
-- [ ] All sections of the template are properly filled in
-- [ ] The naming convention is followed
-- [ ] The idea is registered in the ideas backlog
-- [ ] Cross-references are added
-- [ ] No placeholder text remains in the document
-- [ ] Dates and status are correctly set
-
-## Example Implementation
-
-Here's a simplified example of filling in an idea document:
+Add references to related documents at the bottom of the idea file:
 
 ```markdown
-# Idea: Offline Data Synchronization
+## References
 
-## Status
-
-**Current Status**: new
-**Creation Date**: 2025-04-15
-**Last Update**: 2025-04-15
-**Author**: Team
-
-## Brief Description
-
-Implementation of a robust offline data synchronization system that automatically manages
-conflict resolution and ensures data integrity when reconnecting to the network.
-
-## Problem
-
-The current system doesn't handle temporary network disconnections well, leading to:
-
-1. Data loss when users perform actions offline
-2. Inconsistent state after reconnecting
-3. Poor user experience in areas with unstable connections
-   ...
+- [Related Analysis](../architecture/analysis-topic.md)
+- [Similar Idea](../ideas/idea-YYYY-MM-related.md)
+- [Relevant Documentation](../documentation/topic.md)
 ```
 
-## Alternative: Quick Idea Creation
+Ensure that references are bidirectional - update any related documents to reference this new idea.
 
-For simple ideas that don't require detailed documentation yet, you can add them directly to the ideas backlog without creating a separate document.
+## Step 6: Generate Workflows Report
 
-### Step 1: Update Ideas Backlog Only
+Use the `report-workflows` command to update the workflows status report:
 
-Add the idea directly to `../workflows/ideas/ideas-backlog.md`:
+1. Follow the instructions in [Report Workflows](report-workflows.md)
+2. Ensure the new idea is properly included in the report
+3. Update any metrics or summaries in the report
 
-1. Add a new entry to the appropriate category section with a unique ID
-2. Provide a concise description (2-3 sentences maximum)
-3. Set status as "New"
-4. Include required evaluation metrics:
-   - Priority (Low/Medium/High)
-   - Complexity (Low/Medium/High)
-   - Impact/Effort quadrant (Low Hanging Fruit/Strategic/Not Worth It/Thankless)
-5. Leave the "Details" field empty or add "TBD" (To Be Determined)
+This step ensures that the new idea is properly tracked in the overall project workflow.
 
-Example format:
+## Step 7: Validation and Verification
 
-```markdown
-| UI005 | Quick animation transitions for better UX | New | Medium | Low | Strategic | TBD |
+Run the documentation validation tools to ensure the new document is properly integrated:
+
+```bash
+# If validation tools are available
+npm run docs:validate-links
+npm run docs:check-coverage
 ```
 
-### Step 2: Add to Recently Updated Section
+Fix any issues reported by these tools.
 
-Add the quick idea to the "Recently Updated Ideas" section:
+## Examples
 
-```markdown
-## Recently Updated Ideas
+### Creating a Basic Idea
 
-| ID    | Name                               | Status | Priority | Complexity | Quadrant  | Added Date |
-| ----- | ---------------------------------- | ------ | -------- | ---------- | --------- | ---------- |
-| UI005 | Quick animation transitions for UX | New    | Medium   | Low        | Strategic | 2025-04-22 |
+```bash
+# Get the current date
+date +%Y-%m-%d
+# Output: 2025-03-19
+
+# Create the idea file
+touch ../workflows/ideas/idea-2025-03-api-caching-strategy.md
+
+# Copy the template contents and fill in all sections
+# ...
+
+# Add the idea to the ideas backlog
+# Update ideas-backlog.md
+
+# Generate workflows report
+npm run docs:report-workflows
 ```
 
-### Step 3: Update Changelog
+### Creating a Complex Idea with Deep Analysis
 
-Add a simple entry to `../CHANGELOG.md`:
+```bash
+# Create comprehensive idea with supporting research
+touch ../workflows/ideas/idea-2025-03-cross-platform-architecture.md
 
-```markdown
-- Added quick idea for [brief description] to ideas backlog
+# Include additional sections:
+# - Technical feasibility analysis
+# - Market research findings
+# - Competitive analysis
+# - Potential architectural diagrams
+
+# Update ideas backlog
+# Generate workflows report
+npm run docs:report-workflows
 ```
 
-### When to Use Quick Ideas
+## Common Issues and Solutions
 
-Use this approach when:
+1. **Vague Problem Statement**:
 
-- The idea is preliminary and needs refinement
-- You want to capture a concept before it's lost
-- The full documentation process would be excessive for the current state of the idea
-- You need to quickly establish a backlog of potential improvements
+   - Issue: The problem statement is too general or lacks specific pain points
+   - Solution: Focus on specific, observable issues that users or developers experience
 
-Quick ideas can later be expanded into full idea documents when they gain traction or require more detailed analysis.
+2. **Overlapping Ideas**:
+
+   - Issue: The new idea substantially overlaps with existing ideas
+   - Solution: Consider merging the ideas or clearly differentiate the unique aspects
+
+3. **Missing Context**:
+
+   - Issue: The idea lacks sufficient context for others to understand its value
+   - Solution: Add background information and explain the current state that prompted the idea
+
+4. **Unclear Value Proposition**:
+
+   - Issue: Benefits are not clearly articulated or are based on assumptions
+   - Solution: Quantify benefits where possible and tie them to specific user or business outcomes
+
+5. **Implementation Too Detailed**:
+   - Issue: Implementation section contains too much detail for an idea stage
+   - Solution: Keep implementation at a high level, saving details for explorations or proposals
 
 ## Related Documents
 
 - [Idea Template](../templates/idea-template.md)
-- [Ideas Backlog](../ideas/ideas-backlog.md)
-- [Ideas to Proposals Workflow](../methodology/ideas-to-proposals-workflow.md)
-- [Documentation Map](../navigation/documentation-map.md)
-- [Changelog](../CHANGELOG.md)
-
-## References
-
-- [Guide Llm Documentation Workflow](../guides/guide-llm-documentation-workflow.md)
-- [Create Exploration](create-exploration.md)
+- [Ideas Backlog](../workflows/ideas/ideas-backlog.md)
+- [Idea to Proposal Workflow](../methodology/idea-to-proposal-workflow.md)
+- [Report Workflows](report-workflows.md)
 
 ---
 
-**Last Updated**: 2025-03-12
+**Last Updated**: 2025-03-19
