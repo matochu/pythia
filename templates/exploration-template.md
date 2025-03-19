@@ -1,8 +1,16 @@
 # Exploration: {Topic Name}
 
-## Executive Summary
+## Overview
 
-**Status**: [in progress/completed]
+**Exploration ID**: exploration-descriptive-name  
+**Date Created**: YYYY-MM-DD  
+**Last Updated**: YYYY-MM-DD  
+**Status**: In Progress / Completed  
+**Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
+**Author**: {Name}  
+**Related Idea**: [Link to the idea](path/to/idea.md)
+
+## Executive Summary
 
 This exploration analyzes {brief description of what was explored}. Key findings include:
 
@@ -16,20 +24,17 @@ This exploration analyzes {brief description of what was explored}. Key findings
 
 5. **{Key Finding 5}**: [✅/⏳] {Brief description of the finding}
 
-## General Information
-
-**Creation Date**: {YYYY-MM-DD}
-**Last Update**: {YYYY-MM-DD}
-**Author(s)**: {Author Names}
-**Status**: [in progress/completed]
-
 ## Brief Description
 
 A concise description of the research in 2-3 sentences.
 
-## Related Idea
+## Business Impact
 
-[Link to the idea](path/to/idea.md) for which the research is being conducted.
+Describe how this exploration and its potential outcomes align with business goals:
+
+1. **Business Value**: How this work adds value to the organization or product
+2. **Strategic Alignment**: How this aligns with strategic initiatives
+3. **Success Metrics**: How we would measure success from a business perspective
 
 ## Research Objective
 
@@ -231,6 +236,7 @@ const exampleFunction = () => {
 **Note**: This document is the result of research and can be used as a basis for forming a proposal.
 
 ## References
+
 - [Complete Exploration](../commands/complete-exploration.md)
 - [Create Exploration](../commands/create-exploration.md)
 - [Ideas To Proposals Workflow](../methodology/ideas-to-proposals-workflow.md)

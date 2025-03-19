@@ -1,15 +1,15 @@
-# Task: [Title]
+# Task: {Title}
 
 ## Overview
 
-**Task ID**: YYYY-MM-descriptive-name  
+**Task ID**: task-YYYY-MM-descriptive-name  
 **Date Created**: YYYY-MM-DD  
-**Status**: [Not Started, In Progress, Completed, On Hold]  
-**Priority**: [Low, Medium, High]  
-**Complexity**: [Low, Medium, High]  
-**Owner**: [Name]
+**Status**: Not Started / In Progress / Completed / On Hold  
+**Priority**: High / Medium / Low  
+**Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
+**Owner**: {Name}
 
-<!-- Add no-archive tag here if the task should never be archived -->
+<!-- Add no-archive tag here if the task should never be archived: [no-archive] -->
 
 ## Context
 

@@ -1,11 +1,16 @@
 # Idea: {Idea Name}
 
-## Status
+## Overview
 
-**Current Status**: [new/in analysis/ready for proposal/rejected]
-**Creation Date**: {YYYY-MM-DD}
-**Last Update**: {YYYY-MM-DD}
-**Author**: {Author Name}
+**Idea ID**: idea-YYYY-MM-descriptive-name  
+**Date Created**: YYYY-MM-DD  
+**Last Updated**: YYYY-MM-DD  
+**Status**: New / In Analysis / Ready for Proposal / Rejected  
+**Category**: UI / UX / Performance / Architecture / Workflow / Other  
+**Priority**: ⭐⭐⭐ High / ⭐⭐ Medium / ⭐ Low  
+**Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
+**Impact/Effort**: High Impact-Low Effort / High Impact-High Effort / Low Impact-Low Effort / Low Impact-High Effort  
+**Author**: {Name}
 
 ## Brief Description
 
@@ -21,15 +26,32 @@ Conceptual description of the proposed solution without technical details. The m
 
 ## Potential Benefits
 
-- Benefit 1
-- Benefit 2
-- Benefit 3
+### Technical Benefits
+
+- Technical benefit 1
+- Technical benefit 2
+- Technical benefit 3
+
+### Business Benefits
+
+- **Revenue Impact**: How this might impact revenue or cost savings
+- **User Experience**: How this improves the user experience
+- **Strategic Alignment**: How this aligns with company strategy
+- **Competitive Advantage**: How this might give an edge over competitors
 
 ## Potential Drawbacks and Risks
 
-- Risk 1
-- Risk 2
-- Risk 3
+### Technical Risks
+
+- Technical risk 1
+- Technical risk 2
+
+### Business Risks
+
+- **Cost Risk**: Potential unexpected costs
+- **Timeline Risk**: Potential delays or complications
+- **Adoption Risk**: Challenges with user adoption
+- **Compliance Risk**: Any regulatory or compliance concerns
 
 ## Alternatives
 
@@ -58,13 +80,6 @@ Description of the second alternative.
 
 - Stakeholder 1
 - Stakeholder 2
-
-## Classification
-
-**Category**: [UI/UX/Performance/Architecture/Workflow/other]
-**Complexity**: [low/medium/high]
-**Priority**: [low/medium/high]
-**Impact/Effort**: [quadrant in the matrix (high impact/low effort, etc.)]
 
 ## Criteria for Proposal Readiness
 

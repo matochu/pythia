@@ -1,4 +1,37 @@
-# Proposal for {Title}
+# Proposal: {Title}
+
+## Overview
+
+**Proposal ID**: proposal-descriptive-name  
+**Date Created**: YYYY-MM-DD  
+**Status**: Draft / In Review / Approved / Implemented  
+**Priority**: High / Medium / Low  
+**Impact**: High / Medium / Low  
+**Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
+**Author**: {Name}
+
+<!-- Add comment tags here if needed -->
+
+## Executive Summary
+
+| Key Dimension   | Current State                          | Target State                         | Business Impact           |
+| --------------- | -------------------------------------- | ------------------------------------ | ------------------------- |
+| **Dimension 1** | Brief description of current situation | Brief description of desired outcome | ↑/↓ Impact on key metrics |
+| **Dimension 2** | Brief description of current situation | Brief description of desired outcome | ↑/↓ Impact on key metrics |
+| **Dimension 3** | Brief description of current situation | Brief description of desired outcome | ↑/↓ Impact on key metrics |
+| **Dimension 4** | Brief description of current situation | Brief description of desired outcome | ↑/↓ Impact on key metrics |
+| **Dimension 5** | Brief description of current situation | Brief description of desired outcome | ↑/↓ Impact on key metrics |
+
+This proposal presents a comprehensive strategy for {brief one-sentence description of what this proposal addresses}. The proposal focuses on {list 2-3 key areas of focus or problems being solved}.
+
+**Key Recommendations:**
+
+1. {First key recommendation}
+2. {Second key recommendation}
+3. {Third key recommendation}
+4. {Fourth key recommendation}
+
+**Decision Requested:** {What specific decision or approval is being requested}
 
 ## Summary
 
@@ -55,21 +88,33 @@ const exampleComponentTwo = () => {
 
 Outline the implementation strategy, timeline, and phases. Include:
 
-### Phase 1: {Description} (X weeks)
+### Phase 1: {Description}
+
+**Complexity: 🟢 Low / 🟡 Medium / 🔴 High**
 
 - Task 1
 - Task 2
 - Task 3
-- Deliverables
-- Success criteria for this phase
 
-### Phase 2: {Description} (X weeks)
+**Deliverables**:
+
+- Deliverable 1
+- Deliverable 2
+- Deliverable 3
+
+### Phase 2: {Description}
+
+**Complexity: 🟢 Low / 🟡 Medium / 🔴 High**
 
 - Task 1
 - Task 2
 - Task 3
-- Deliverables
-- Success criteria for this phase
+
+**Deliverables**:
+
+- Deliverable 1
+- Deliverable 2
+- Deliverable 3
 
 ### Dependencies and Prerequisites
 
@@ -84,47 +129,63 @@ Describe other approaches that were considered and why they were rejected. For e
 
 ### Alternative 1: {Description}
 
-- Pros
+- **Pros**
   - Pro 1
   - Pro 2
-- Cons
+- **Cons**
   - Con 1
   - Con 2
-- Reason for rejection
+- **Reason for rejection**: Explanation of why this alternative was not chosen.
 
 ### Alternative 2: {Description}
 
-- Pros
+- **Pros**
   - Pro 1
   - Pro 2
-- Cons
+- **Cons**
   - Con 1
   - Con 2
-- Reason for rejection
+- **Reason for rejection**: Explanation of why this alternative was not chosen.
 
 ## Risks and Mitigation
 
 Identify potential risks of making these changes and strategies to mitigate them.
 
-| Risk   | Impact          | Likelihood      | Mitigation Strategy            |
-| ------ | --------------- | --------------- | ------------------------------ |
-| Risk 1 | High/Medium/Low | High/Medium/Low | Strategy to mitigate this risk |
-| Risk 2 | High/Medium/Low | High/Medium/Low | Strategy to mitigate this risk |
-| Risk 3 | High/Medium/Low | High/Medium/Low | Strategy to mitigate this risk |
+| Risk                    | Impact | Likelihood | Mitigation Strategy                                  |
+| ----------------------- | ------ | ---------- | ---------------------------------------------------- |
+| {Description of Risk 1} | High   | Medium     | {Detailed approach to mitigate or address this risk} |
+| {Description of Risk 2} | Medium | High       | {Detailed approach to mitigate or address this risk} |
+| {Description of Risk 3} | Low    | High       | {Detailed approach to mitigate or address this risk} |
 
 ## Success Criteria
 
 Define measurable criteria that indicate successful implementation:
 
-1. Criterion 1
-   - Measurement method
-   - Target value
-2. Criterion 2
-   - Measurement method
-   - Target value
-3. Criterion 3
-   - Measurement method
-   - Target value
+1. **{Criterion Category 1}**
+
+   - {Specific measurable outcome}
+   - {Measurement method}
+   - {Target value or state}
+
+2. **{Criterion Category 2}**
+
+   - {Specific measurable outcome}
+   - {Measurement method}
+   - {Target value or state}
+
+3. **{Criterion Category 3}**
+   - {Specific measurable outcome}
+   - {Measurement method}
+   - {Target value or state}
+
+## Technical Debt Resolution
+
+This proposal addresses several key technical debt issues:
+
+1. **{Technical Debt Issue 1}**: {How this proposal resolves or addresses this issue}
+2. **{Technical Debt Issue 2}**: {How this proposal resolves or addresses this issue}
+3. **{Technical Debt Issue 3}**: {How this proposal resolves or addresses this issue}
+4. **{Technical Debt Issue 4}**: {How this proposal resolves or addresses this issue}
 
 ## References
 
@@ -139,7 +200,6 @@ Define measurable criteria that indicate successful implementation:
 
 ---
 
-**Creation Date**: {YYYY-MM-DD}  
-**Last Updated**: {YYYY-MM-DD}  
-**Author**: {Author Name}  
-**Status**: {Draft/In Review/Approved/Implemented}
+**Creation Date**: YYYY-MM-DD  
+**Last Updated**: YYYY-MM-DD  
+**Status**: Draft
