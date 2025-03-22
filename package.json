@@ -15,7 +15,9 @@
     "docs:archive-tasks": "ts-node tools/archiveTasks.ts",
     "docs:create-doc": "ts-node tools/createDocument.ts",
     "docs:validate-quality": "ts-node tools/validateDocumentQuality.ts",
-    "docs:check-quality": "ts-node tools/checkDocQuality.ts"
+    "docs:check-quality": "ts-node tools/checkDocQuality.ts",
+    "docs:sync-confluence": "markdown-confluence",
+    "docs:sync-confluence:dry": "markdown-confluence --dry-run"
   },
   "dependencies": {
     "@types/fs-extra": "^11.0.4",
@@ -45,6 +47,7 @@
     "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
+    "@markdown-confluence/cli": "^5.5.2",
     "@types/cosmiconfig": "^5.0.3",
     "@types/natural": "^5.1.5",
     "@types/node": "^22.13.10",
