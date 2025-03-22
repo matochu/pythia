@@ -1,6 +1,13 @@
 # Command: Create Task Document
 
 > **IMPORTANT**: This command requires active execution of tasks, not just planning. Follow each step in the checklist by actually performing the actions, creating files, updating references, and validating the documentation.
+>
+> **NOTE ON FILE PATHS**: This document uses paths defined in the project configuration file. Before using this command, ensure you have the latest version of [Configuration](../config.json). There are two important path concepts:
+>
+> 1. `project_root` - path to the root of the main code project
+> 2. `docs_path` - path within the project where documentation is stored
+>
+> All folder paths in the configuration are relative to the documentation root.
 
 ## Purpose
 
@@ -38,16 +45,42 @@ Before starting, gather all necessary information:
 # Get the current date for proper timestamping
 date +%Y-%m-%d
 
+# Read the project configuration to get the tasks directory
+CONFIG_PATH="../config.json"
+PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
+DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
+TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
+TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
+
 # List existing tasks to avoid duplication
-ls -la ../workflows/tasks/
+ls -la $TASKS_PATH
 ```
 
 ## Step 2: Create the Task File
 
-Create a new file in the `../workflows/tasks/` directory using the naming convention:
+Create a new file in the tasks directory (defined in project configuration) using the naming convention:
 `task-YYYY-MM-{descriptive-name}.md`
 
-For example:
+```bash
+# Read configuration
+CONFIG_PATH="../config.json"
+PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
+DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
+TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
+
+# Get current date for filename
+CURRENT_DATE=$(date +%Y-%m-%d)
+MONTH=${CURRENT_DATE:0:7}
+
+# Create filename using date pattern
+TASK_NAME="task-${MONTH}-implement-caching-layer.md"
+
+# Create the file
+TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
+touch "$TASKS_PATH/$TASK_NAME"
+```
+
+For example, this might create:
 
 - `task-2025-03-implement-caching-layer.md`
 - `task-2025-03-refactor-authentication.md`
@@ -55,7 +88,23 @@ For example:
 
 ## Step 3: Use the Task Template
 
-Copy the content from the [Task Template](../templates/task-template.md) and fill in all sections:
+```bash
+# Get paths from configuration
+CONFIG_PATH="../config.json"
+PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
+DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
+TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
+TEMPLATES_FOLDER=$(jq -r '.folders.templates' $CONFIG_PATH)
+
+# Build full paths
+TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
+TEMPLATES_PATH="$PROJECT_ROOT$DOCS_PATH/$TEMPLATES_FOLDER"
+
+# Copy template content
+cat "$TEMPLATES_PATH/task-template.md" > "$TASKS_PATH/$TASK_NAME"
+```
+
+Then edit the template and fill in all sections:
 
 1. **Title**: Concise, descriptive title of the task
 2. **Status Information**: Current status, dates, assignee
@@ -104,25 +153,40 @@ Break down the implementation into clear, manageable steps with checkboxes:
 
 ## Step 5: Add Cross-References
 
-Add references to related documents at the bottom of the task file:
+Add references to related documents at the bottom of the task file. Use the project configuration to ensure correct paths:
+
+```bash
+# Get directories from configuration
+CONFIG_PATH="../config.json"
+PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
+DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
+PROPOSALS_FOLDER=$(jq -r '.folders.proposals' $CONFIG_PATH)
+ARCHITECTURE_FOLDER=$(jq -r '.folders.architecture' $CONFIG_PATH)
+
+# Build full paths
+PROPOSALS_PATH="$PROJECT_ROOT$DOCS_PATH/$PROPOSALS_FOLDER"
+ARCHITECTURE_PATH="$PROJECT_ROOT$DOCS_PATH/$ARCHITECTURE_FOLDER"
+```
+
+Then add references like:
 
 ```markdown
 ## References
 
-- [Related Proposal](../proposals/proposal-topic.md)
-- [Technical Analysis](../architecture/analysis-topic.md)
-- [Design Document](../design/design-topic.md)
+- [Related Proposal](${PROPOSALS_PATH}/proposal-topic.md)
+- [Technical Analysis](${ARCHITECTURE_PATH}/analysis-topic.md)
 ```
 
-Ensure that references are bidirectional - update any related documents to reference this new task.
+Ensure that references are bidirectional - update any related documents to reference this new task. Remember to use the configuration-based paths for consistency.
 
 ## Step 6: Generate Workflows Report
 
 Use the `report-workflows` command to update the workflows status report:
 
-1. Follow the instructions in [Report Workflows](report-workflows.md)
-2. Ensure the new task is properly included in the report
-3. Update any metrics or summaries in the report
+```bash
+# Assuming the report command is defined in your project
+npm run docs:report-workflows
+```
 
 This step ensures that the new task is properly tracked in the overall project workflow.
 
@@ -131,7 +195,7 @@ This step ensures that the new task is properly tracked in the overall project w
 Run the documentation validation tools to ensure the new document is properly integrated:
 
 ```bash
-# If validation tools are available
+# Assuming validation commands are defined in your project
 npm run docs:validate-links
 npm run docs:check-coverage
 ```
@@ -147,8 +211,15 @@ Fix any issues reported by these tools.
 date +%Y-%m-%d
 # Output: 2025-03-19
 
+# Get paths from configuration
+CONFIG_PATH="../config.json"
+PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
+DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
+TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
+TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
+
 # Create the task file
-touch ../workflows/tasks/task-2025-03-implement-form-validation.md
+touch "$TASKS_PATH/task-2025-03-implement-form-validation.md"
 
 # Copy the template contents and fill in all sections
 # ...
@@ -163,8 +234,15 @@ npm run docs:report-workflows
 ### Creating a Complex Development Task
 
 ```bash
+# Get paths from configuration
+CONFIG_PATH="../config.json"
+PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
+DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
+TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
+TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
+
 # Create a comprehensive task document for a major feature
-touch ../workflows/tasks/task-2025-03-implement-offline-mode.md
+touch "$TASKS_PATH/task-2025-03-implement-offline-mode.md"
 
 # Include additional planning elements:
 # - Phased implementation approach with milestones
@@ -205,8 +283,11 @@ npm run docs:report-workflows
 
 ## Related Documents
 
-- [Task Template](../templates/task-template.md)
-- [Task Management Workflow](../methodology/task-management-workflow.md)
+All paths are defined in the project configuration file:
+
+- [Configuration](../config.json)
+- [Task Template](task-template.md)
+- [Task Management Workflow](task-management-workflow.md)
 - [Report Workflows](report-workflows.md)
 
 ---
