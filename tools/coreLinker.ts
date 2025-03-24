@@ -57,6 +57,7 @@ const DEFAULT_LINK_CONFIG: LinkConfig = {
   ],
   files: [
     'README.md',
+    'CONCEPT.md',
     'package.json',
     'package-lock.json',
     'CHANGELOG.md',

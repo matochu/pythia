@@ -68,6 +68,7 @@ This document serves as a central navigation hub for all architectural and syste
 | [Prioritization Methods](../methodology/prioritization-methods.md)               | Decision-making frameworks                         | ICE, RICE, User Pain vs Dev Effort, WSJF         |
 | [Implementation Approach](../methodology/implementation-approach.md)             | Standardized approach to implementing improvements | R&D, Preparation, Full Integration, Optimization |
 | [Technical Debt Prioritization](../methodology/technical-debt-prioritization.md) | Technical debt prioritization methodology          | Assessment Criteria, Scoring System, Workflow    |
+| [Context Documentation](../methodology/context-documentation.md)                 | Methodology for context documents                  | Document Types, Structure, Usage, Examples       |
 
 ## Architecture Decisions
 
@@ -150,8 +151,9 @@ This document serves as a central navigation hub for all architectural and syste
 | [Proposal Template](../templates/proposal-template.md)                          | Template for proposal documentation    | Problem Statement, Solution Design, Implementation |
 | [Idea Template](../templates/idea-template.md)                                  | Template for idea documentation        | Idea Description, Benefits, Risks                  |
 | [Exploration Template](../templates/exploration-template.md)                    | Template for exploration documentation | Research Goals, Methodology, Findings              |
+| [Context Template](../templates/context-template.md)                            | Template for context documentation     | Context Type, Key Information, Relationships       |
 | [Technical Debt Assessment](../templates/technical-debt-assessment-template.md) | Template for technical debt assessment | Impact Analysis, Effort Estimation, Priority Score |
 
 ---
 
-**Last Updated**: 2025-03-13
+**Last Updated**: 2025-03-22

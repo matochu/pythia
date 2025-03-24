@@ -1,81 +1,206 @@
-# Mnemosyne Project Documentation
+# Pythia Project Documentation
 
-Welcome to the Mnemosyne project documentation. This README provides an overview of the documentation structure and guidelines for working with it.
+Welcome to the Pythia project documentation. This README provides an overview of the documentation structure and guidelines for working with it.
+
+## Quick Installation
+
+The installation consists of three key steps, which can be automated by an LLM or performed manually:
+
+1. Installing Pythia Core
+2. Installing dependencies and configuring settings
+3. Setting up project directories and structure
+
+### Method 1: LLM-Assisted Installation (Recommended)
+
+This is the simplest approach. The LLM will analyze your project's current state and execute all necessary steps:
+
+```
+Execute the setup.md command to install Pythia in my project at [path].
+```
+
+Or with a direct link to the command file:
+
+```
+Execute this command for Pythia installation: https://github.com/your-org/pythia/blob/main/commands/setup.md
+My project is located at [path], using [OS].
+```
+
+> **Note**: The `setup.md` file is not just documentation but a _special command designed for LLMs_. It's essentially a program that the LLM interprets and executes automatically, analyzing your project context.
+
+The LLM will:
+
+1. **Analyze your project's state**
+
+   - Check if Pythia core is already installed
+   - If not, add it as a git submodule (or symbolic link if specified)
+
+2. **Configure the environment**
+
+   - Install required npm dependencies (if missing)
+   - Create or update the configuration file
+
+3. **Set up project structure**
+   - Configure necessary documentation directories
+   - Generate baseline README files for navigation
+
+You can customize the installation by adding to your request:
+
+```
+I'd like to use these settings:
+- Installation method: [git/symlink]
+- Project name: [Your project name]
+- Repository: [Your repository URL]
+- Workflow directory: [path to workflow directories]
+```
+
+### Method 2: Manual Step-by-Step Installation
+
+If you prefer full control over the installation process:
+
+#### Step 1: Install Pythia Core
+
+Using Git Submodule:
+
+```bash
+# Navigate to your project root
+cd /path/to/your-project
+
+# Create docs directory if it doesn't exist
+mkdir -p docs
+
+# Add Pythia core as a git submodule
+git submodule add https://github.com/your-org/pythia-core.git docs/core
+git submodule update --init --recursive
+```
+
+Or using Symbolic Link (for developers):
+
+```bash
+# Navigate to your project root
+cd /path/to/your-project
+
+# Create docs directory if it doesn't exist
+mkdir -p docs
+
+# Create symbolic link to the Pythia core
+ln -s /path/to/pythia-core docs/core
+```
+
+#### Step 2: Install Dependencies and Configure
+
+```bash
+# Install dependencies
+cd docs/core
+npm install
+
+# Configure settings
+vi config.json
+```
+
+#### Step 3: Set Up Project Structure
+
+```bash
+# Create necessary directories
+cd /path/to/your-project/docs
+mkdir -p workflows/tasks workflows/proposals workflows/decisions workflows/ideas
+mkdir -p contexts/project contexts/technical contexts/meetings
+```
+
+### Method 3: Using installCore.js Script
+
+After adding Pythia core (step 1 above), you can use the automated script to complete setup:
+
+```bash
+# Navigate to the core directory
+cd /path/to/your-project/docs/core
+
+# Run the installation script
+node tools/installCore.js .. --method=git
+
+# Or with custom configuration:
+node tools/installCore.js .. --method=git --config=./my-config.json
+```
+
+For detailed installation instructions, see our [Installation Guide](guides/installing-pythia.md).
+
+## Testing Your Installation
+
+After installation, verify that everything works correctly:
+
+```bash
+# Check the core installation
+ls -la docs/core
+
+# Verify project structure
+ls -la docs/workflows
+ls -la docs/contexts
+
+# Validate documentation structure
+cd docs/core/tools
+node validateDocumentation.js ../..
+```
+
+If the validation passes without errors, your installation is working correctly.
 
 ## Documentation Overview
 
 Our documentation is organized into several categories to make information easy to find and maintain:
 
-- **Architecture Analysis**: Detailed analysis of current architecture components
-- **Proposals**: Suggestions for improvements based on analysis findings
-- **Architecture Decisions**: Records of important architectural decisions
-- **Methodology**: Development processes and approaches
-- **Rules**: Guidelines and standards for LLMs and development
+- **Commands**: Automated commands for documentation management
+- **Concept**: Core concept and architecture of the Pythia system
 - **Guides**: Practical how-to instructions
-- **Tasks**: Context and records from LLM-assisted task completion
+- **Methodology**: Development processes and approaches
 - **Navigation**: Tools to help navigate the documentation
+- **Rules**: Guidelines and standards for LLMs and development
+- **Contexts**: Context documents for specific projects
+- **Workflows**: Workflows for specific projects
 - **Templates**: Templates for creating new documentation
 
 ## Key Documents
 
-- [Documentation Map](navigation/documentation-map.md): Central navigation hub for all documentation
-- [Changelog](CHANGELOG.md): Records of all significant documentation changes
-- [Documentation Guidelines](methodology/documentation-guidelines.md): Guidelines for working with documentation
-- [Technical Debt](architecture/tech-debt.md): Analysis of technical debt
-- [Validate Documentation](commands/validate-documentation.md): Guide for using documentation automation tools
-- [Commands](commands/): Automated commands for documentation management
+- [CONCEPT](CONCEPT.md): Детальний опис концепції та архітектури системи Pythia, принципи класифікації документів та їх взаємодії
+- [Documentation Map](navigation/documentation-map.md): Центральний навігаційний хаб для всієї документації, що забезпечує швидкий доступ до потрібної інформації
+- [Documentation Guidelines](methodology/documentation-guidelines.md): Основні правила та стандарти роботи з документацією, включаючи вимоги до форматування та структури
 
-## Documentation Tools and Enhancements
+## Working with Commands
 
-We've enhanced our documentation system with modern tools and libraries to improve productivity and document quality:
+Commands are a central component of the Pythia system, providing structured instructions for LLMs to execute specific tasks. Unlike traditional documentation, commands follow a precise format that both humans and LLMs can understand and reference.
 
-### Enhanced Features
+### Key Command Categories
 
-1. **Interactive Document Creation**
+- **Document Creation**: Commands like [create-task](commands/create-task.md), [create-proposal](commands/create-proposal.md), and [create-idea](commands/create-idea.md) for generating new workflow documents
+- **Documentation Management**: Commands like [update-changelog](commands/update-changelog.md) and [update-documentation-map](commands/update-documentation-map.md) for maintaining metadata
+- **Integration**: Commands like [sync-confluence](commands/sync-confluence.md) and [gen-pr-description](commands/gen-pr-description.md) for connecting with external systems
+- **Workflow Management**: Commands like [update-status](commands/update-status.md) and [complete-exploration](commands/complete-exploration.md) for tracking progress
 
-   - Create new documents through guided prompts with [Inquirer.js](https://github.com/SBoudrias/Inquirer.js/)
-   - Use `npm run docs:create-doc --interactive` for step-by-step guidance
+### Using Commands with LLMs
 
-2. **Powerful Document Templates**
+To effectively use commands with LLMs:
 
-   - Template rendering with [Handlebars](https://handlebarsjs.com/)
-   - Dynamic content generation with conditional sections and helpers
+1. **Reference the command file**: Direct the LLM to the appropriate command file in the `/commands` directory
+2. **Provide necessary context**: Ensure the LLM has access to relevant information needed for the command
+3. **Request execution**: Ask the LLM to execute the command according to its documentation
+4. **Review and iterate**: Check the output and refine as needed
 
-3. **Advanced Search**
+Example interaction:
 
-   - Fuzzy-search across all documentation with [Fuse.js](https://fusejs.io/)
-   - Search by content, title, or tags: `npm run docs:search "your search terms"`
+```
+User: Please create a new task for implementing feature X
+LLM: I'll help you create a new task. I'll use the create-task command.
+     [References create-task.md and follows its structure]
+     [Creates the task document in the proper location with proper format]
+```
 
-4. **Quality Validation**
+### Command Structure
 
-   - Automated validation of document structure and links
-   - Document quality metrics and improvement recommendations
+Most commands follow a consistent structure:
 
-5. **Date and Time Utilities**
-
-   - Date manipulation and archiving with [date-fns](https://date-fns.org/)
-   - Accurate age calculations for document lifecycle management
-
-6. **Documentation Core Management**
-   - Easy reuse of documentation structure across projects
-   - Create symlinks, directory structures, and configuration with comprehensive options
-   - Use `npm run docs:setup` within the docs directory to set up in other projects
-   - Supports various options for flexibility in deployment
-
-### Documentation Scripts
-
-Key scripts for working with documentation:
-
-| Script               | Purpose                   | Enhanced With           |
-| -------------------- | ------------------------- | ----------------------- |
-| `docs:create-doc`    | Create new documents      | Inquirer.js, Handlebars |
-| `docs:search`        | Search documentation      | Fuse.js                 |
-| `docs:validate`      | Validate document quality | unified/remark          |
-| `docs:archive-tasks` | Archive completed tasks   | date-fns, fs-extra      |
-| `docs:update-map`    | Update documentation map  | Fuse.js, Commander      |
-| `docs:setup`         | Set up documentation core | fs, path, TypeScript    |
-
-For detailed instructions on using these tools, see the [commands directory](commands/).
+- **Purpose**: What the command accomplishes
+- **Usage**: How to invoke the command
+- **Parameters**: Required and optional inputs
+- **Output**: Expected results and file changes
+- **Examples**: Sample usage patterns
+- **Related Commands**: Other relevant commands
 
 ## Directory Structure
 
@@ -94,10 +219,16 @@ For detailed instructions on using these tools, see the [commands directory](com
 ├── navigation/                # Navigation documents
 ├── templates/                 # Templates for creating new documents
 ├── commands/                  # Instructions for automation tools
+├── tools/                     # Automation scripts and utilities
 ├── VALIDATION_IMPROVEMENTS.md # Guide for enhancing validation
 ├── CHANGELOG.md               # Record of documentation changes
+├── CONCEPT.md                 # Core concept and architecture of the Pythia system
 └── README.md                  # This file
 ```
+
+## Documentation Tools and Enhancements
+
+Pythia uses a collection of documentation commands to facilitate effective interaction between humans and LLMs. For information about automation scripts and utilities that support these commands, see [Documentation Automation Scripts](tools/README.md).
 
 ## Working with Documentation
 
@@ -129,58 +260,24 @@ npm run docs:check-coverage
 
 Reports from these tools are saved in the `/reports` directory.
 
-### Reusing Documentation Core in Other Projects
+### Integrating Pythia Core in Other Projects
 
-Our documentation core can be easily reused in other projects through the `docs:setup` command located in the `docs` directory. This command is designed to streamline the process of transferring our documentation structure, templates, and tools to other projects.
+The Pythia system is designed to be integrated into multiple projects while maintaining a single source of truth for core documentation structures and methodologies. As described in [CONCEPT](CONCEPT.md), the core system components are maintained in a separate repository and integrated into projects.
 
-#### Installation
+For detailed instructions on integrating Pythia into your project, see our [Installation Guide](guides/installing-pythia.md), which describes:
 
-The `docs:setup` command is located in the docs package to ensure portability:
+1. Three ways to install Pythia core:
 
-```bash
-# Navigate to the docs directory first
-cd docs
+   - LLM-assisted installation
+   - Manual Git Submodule installation
+   - Symbolic link installation (for core developers)
 
-# Then run the setup command with appropriate options
-npm run docs:setup -- [target-path] [options]
-```
+2. Three ways to set up your project after installing the core:
+   - LLM-assisted setup
+   - Using the installCore.js script
+   - Manual configuration
 
-#### Available Options
-
-The command supports several options for flexible deployment:
-
-- `--check-only`: Checks if the command is running in the main repository without making changes
-- `--force`: Overwrites existing files without confirmation
-- `--install-deps`: Automatically runs npm install after setup
-- `--ignore-check`: Skips checking if running in the main repository
-- `--create-structure`: Creates only the directory structure without symbolic links
-- `--no-setup`: Skips creating the directory structure
-- `--help`: Displays all available options and usage examples
-
-#### Usage Examples
-
-```bash
-# Basic usage to create structure in another project
-cd docs
-npm run docs:setup -- ../other-project/docs
-
-# Check if running in main repository
-npm run docs:setup -- --check-only
-
-# Create structure and run npm install
-npm run docs:setup -- ../other-project/docs --install-deps
-
-# Create structure without symlinks
-npm run docs:setup -- --create-structure
-
-# Force overwrite existing files and install dependencies
-npm run docs:setup -- ../other-project/docs --force --install-deps
-
-# Show all available options
-npm run docs:setup -- --help
-```
-
-This allows for consistent documentation structure across multiple projects, ensuring that best practices are maintained across your organization's repositories.
+The guide provides step-by-step instructions for each approach, along with troubleshooting tips and next steps after installation.
 
 ### Documentation Principles
 
@@ -226,6 +323,7 @@ These tests ensure that our documentation validation tools work correctly, parti
 
 ## References
 
+- [CONCEPT](CONCEPT.md)
 - [Improvement Roadmap](architecture/improvement-roadmap.md)
 - [Documentation Structure](navigation/documentation-structure.md)
 - [Documentation Map](navigation/documentation-map.md)

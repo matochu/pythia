@@ -4,6 +4,40 @@ All notable changes to the Thea project documentation will be documented in this
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2025-03-24]
+
+### Added
+
+- Created new command documentation files:
+  - `commands/create-command.md`
+  - `commands/setup.md`
+  - `commands/update-command.md`
+- Added guide for installing Pythia (`guides/installing-pythia.md`)
+- Added command template (`templates/command-template.md`)
+- Added configuration file (`config.json`)
+- Added new tool for core installation (`tools/installCore.ts`)
+- Created concept documentation (`CONCEPT.md`)
+
+### Changed
+
+- Enhanced core linker tool functionality (`tools/coreLinker.ts`)
+- Updated README.md with new project information
+
+### Removed
+
+- Removed architecture README.md (will be replaced with new structure)
+
+## [2025-03-22]
+
+### Added
+
+- Created command documentation for generating PR descriptions (`./commands/gen-pr-description.md`)
+
+### Changed
+
+- Updated task template with improved formatting and additional fields (`./templates/task-template.md`)
+- Enhanced create-task command documentation (`./commands/create-task.md`)
+
 ## [2025-03-14]
 
 ### Changed
@@ -145,4 +179,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-**Last Updated**: 2025-03-13
+**Last Updated**: 2025-03-24
