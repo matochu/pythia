@@ -2,214 +2,214 @@
 
 ## System Overview
 
-Pythia є платформою-посередником, яка зберігає, керує та розвиває набір документів, правил та контекстів для ефективної взаємодії між людиною та LLM. Вона виступає одночасно як пам'ять, комунікаційний канал і чітко структурована основа для співпраці двох сторін.
+Pythia is a mediator platform that stores, manages, and develops a set of documents, rules, and contexts for effective interaction between humans and LLM. It serves simultaneously as memory, a communication channel, and a clearly structured foundation for collaboration between the two parties.
 
 ## Key Components
 
-### 1. Документи-правила (Rules)
+### 1. Rule Documents (Rules)
 
-- Чітко визначають поведінку та межі роботи LLM
-- Забезпечують стабільні, передбачувані результати роботи AI
+- Clearly define the behavior and boundaries of LLM operation
+- Ensure stable, predictable AI results
 
-### 2. Документи-інструкції (Commands)
+### 2. Command Documents (Commands)
 
-- Точні команди чи вказівки, що передаються від людини до LLM
-- Описують, що саме і як потрібно зробити в конкретних задачах
+- Precise commands or instructions transmitted from human to LLM
+- Describe what exactly needs to be done and how in specific tasks
 
-### 3. Документи-контексти (Context)
+### 3. Context Documents (Context)
 
-- Зберігають інформацію про поточну взаємодію
-- Містять всю необхідну інформацію для виконання задачі, що доступна і людині, і LLM
+- Store information about current interaction
+- Contain all necessary information for task execution, accessible to both human and LLM
 
-### 4. Документи-воркфлоу (Workflow)
+### 4. Workflow Documents (Workflow)
 
-- Аналітичні та структуровані документи, які фіксують процес розробки ідей, пропозицій, аналізу, створення тасок тощо
-- Дозволяють і людині, і LLM мати однакове бачення цілі, стану та наступних кроків виконання задач
+- Analytical and structured documents that capture the process of developing ideas, proposals, analysis, task creation, etc.
+- Allow both human and LLM to have the same vision of the goal, status, and next steps in task execution
 
 ## System Role
 
-- **Посередник**: Забезпечує зрозумілість і ясність у взаємодії, усуває неточності та двозначності
-- **Структурована пам'ять**: Зберігає й дозволяє легко знаходити всю важливу інформацію, що використовувалася в роботі
-- **Засіб взаємодії**: Документи є живим полем співпраці, через яке людина та LLM можуть коригувати завдання, уточнювати їх, а також вести продуктивний діалог
+- **Mediator**: Ensures clarity and understanding in interaction, eliminates inaccuracies and ambiguities
+- **Structured Memory**: Stores and allows easy access to all important information used in work
+- **Interaction Tool**: Documents are a living field of collaboration through which human and LLM can adjust tasks, clarify them, and conduct productive dialogue
 
 ## Key Participants
 
-- **Людина (користувач)**: Має завдання і хоче чітко та без зайвих зусиль взаємодіяти з LLM
-- **LLM (модель)**: Потенційно дуже потужна, але її відповідь залежить від того, як саме поставлено питання і який контекст їй надали
-- **Платформа (Pythia)**: Виступає в ролі посередника між людиною та LLM:
-  - Забезпечує чіткість та структурованість взаємодії
-  - Має прозорі правила, які формують контекст запиту
-  - Керує передачею та обробкою інформації
-  - Гарантує стабільну якість та передбачуваність результату
-  - Документує та автоматично контролює дотримання правил
-  - Є свого роду оракулом чи провідником, який «передбачає» або «прораховує», що саме потрібно запитати та як, щоб отримати найкращу відповідь
-  - Інтегрує мудрість із сучасним технологічним підходом (AI)
+- **Human (user)**: Has tasks and wants to interact clearly and effortlessly with LLM
+- **LLM (model)**: Potentially very powerful, but its response depends on how exactly the question is posed and what context it is given
+- **Platform (Pythia)**: Acts as a mediator between human and LLM:
+  - Ensures clarity and structure in interaction
+  - Has transparent rules that form the context of the request
+  - Manages information transmission and processing
+  - Guarantees stable quality and predictability of results
+  - Documents and automatically controls compliance with rules
+  - Acts as a kind of oracle or guide that "predicts" or "calculates" exactly what to ask and how to get the best response
+  - Integrates wisdom with modern technological approach (AI)
 
 ## Central Idea
 
-Pythia — це «проміжний світ» чи «середній шар», що поєднує хаотичний людський запит із суворо логічним, але не завжди зрозумілим штучним інтелектом, гармонізує їх взаємодію через правила та контексти.
+Pythia is an "intermediate world" or "middle layer" that connects chaotic human requests with strictly logical but not always understandable artificial intelligence, harmonizing their interaction through rules and contexts.
 
 ## System Architecture
 
-Система складається з двох рівнів:
+The system consists of two levels:
 
-### 1. Ядро системи (Core)
+### 1. System Core
 
-Ядро розробляється як окремий репозиторій. Його складові:
+The core is developed as a separate repository. Its components:
 
-- **Rules**: Базові правила взаємодії, вимоги до формату відповідей, контролю якості тощо
-- **Commands**: Команди, що можуть використовуватись як інструкції чи дії, які виконує LLM
-- **Tools**: Автоматизовані скрипти для роботи з документами, генерації контекстів, конвертації форматів, валідації
-- **Guides**: Стандарти й рекомендації щодо створення документів, воркфлоу та взаємодії з LLM
-- **Methodology**: Набір підходів і принципів, що регулюють процес генерації та валідації документації
-- **Navigation**: Засоби навігації та організації контенту (наприклад, автоматична індексація, тегування, пошук)
+- **Rules**: Basic interaction rules, response format requirements, quality control, etc.
+- **Commands**: Commands that can be used as instructions or actions performed by LLM
+- **Tools**: Automated scripts for working with documents, generating contexts, format conversion, validation
+- **Guides**: Standards and recommendations for creating documents, workflows, and interacting with LLM
+- **Methodology**: Set of approaches and principles that regulate the process of documentation generation and validation
+- **Navigation**: Content navigation and organization tools (e.g., automatic indexing, tagging, search)
 
-**Особливості ядра**:
+**Core features**:
 
-- Незалежне та самодостатнє
-- Регулярно вдосконалюється
-- Можна оновлювати з будь-якого проєкту, який його використовує
+- Independent and self-sufficient
+- Regularly improved
+- Can be updated from any project that uses it
 
-### 2. Проєктна реалізація (Project-specific Implementation)
+### 2. Project-specific Implementation
 
-Кожен проєкт, який використовує систему, інтегрує ядро (через symlink чи git submodule). На рівні проєкту створюються власні специфічні документи й контексти:
+Each project using the system integrates the core (via symlink or git submodule). Project-specific documents and contexts are created at the project level:
 
-- **Документи-контексти (Context)**: Відповідають за підтримку взаєморозуміння між користувачем та LLM. Вони зберігають специфічну інформацію про проєкт чи завдання та можуть оновлюватися динамічно.
-- **Документи-воркфлоу (Workflow)**: Зберігають інформацію про поточний статус виконання задачі, використовуються для створення структурованих артефактів (аналітика, пропозиції, звіти).
-- **Команди (Commands)**: Проєкт може визначати додаткові специфічні команди чи розширювати існуючі для точнішої роботи з LLM.
+- **Context Documents**: Responsible for maintaining mutual understanding between user and LLM. They store project or task-specific information and can be updated dynamically.
+- **Workflow Documents**: Store information about current task execution status, used for creating structured artifacts (analytics, proposals, reports).
+- **Commands**: The project can define additional specific commands or extend existing ones for more precise work with LLM.
 
-## Класифікація та управління документами
+## Document Classification and Management
 
-### Таксономія документів
+### Document Taxonomy
 
-Усі документи в системі Pythia можна класифікувати за двома ключовими вимірами:
+All documents in the Pythia system can be classified along two key dimensions:
 
-1. **За типом** (функціональним призначенням):
+1. **By Type** (functional purpose):
 
-   - Документи-правила (Rules)
-   - Документи-інструкції (Commands)
-   - Документи-контексти (Context)
-   - Документи-воркфлоу (Workflow)
+   - Rule Documents (Rules)
+   - Command Documents (Commands)
+   - Context Documents (Context)
+   - Workflow Documents (Workflow)
 
-2. **За рівнем належності**:
-   - **Базові (Core)**: Документи, що входять до основного репозиторію системи і формують її ядро. Вони стабільні, універсальні та можуть використовуватись у будь-якому проєкті
-   - **Робочі (Working)**: Документи, що генеруються в контексті конкретного проєкту для вирішення практичних задач. Вони людино-специфічні, оскільки користувач вирішує, яка інформація потрапляє в документ і в якому вигляді. Ці документи можуть інтегруватися з іншими системами (Jira, Confluence) для створення proposals, decisions, context
-   - **Проєктні (Project)**: Документація, яка генерується на основі контекстних документів і стає частиною самого проєкту (зберігається в репозиторії проєкту). Ці документи формують інституційну пам'ять проєкту
+2. **By Level of Belonging**:
+   - **Core**: Documents that are part of the system's main repository and form its core. They are stable, universal, and can be used in any project
+   - **Working**: Documents generated in the context of a specific project for solving practical tasks. They are human-specific, as the user decides what information goes into the document and in what form. These documents can integrate with other systems (Jira, Confluence) for creating proposals, decisions, context
+   - **Project**: Documentation generated based on context documents and becomes part of the project itself (stored in the project repository). These documents form the project's institutional memory
 
-### Життєвий цикл документів
+### Document Lifecycle
 
-Документи в системі Pythia проходять через такі етапи:
+Documents in the Pythia system go through the following stages:
 
-1. **Створення**: Через визначені команди або шаблони
-2. **Використання**: Інтеграція з іншими документами та застосування у взаємодії
-3. **Оновлення**: Коригування вмісту на основі нових вимог чи знань
-4. **Архівування**: Збереження неактуальних версій для історії та аналізу
+1. **Creation**: Through defined commands or templates
+2. **Usage**: Integration with other documents and application in interaction
+3. **Update**: Content adjustment based on new requirements or knowledge
+4. **Archiving**: Preservation of outdated versions for history and analysis
 
-### Взаємодія між типами документів
+### Interaction Between Document Types
 
-Взаємодія між різними типами документів будується на таких принципах:
+Interaction between different document types is built on these principles:
 
-1. **Розширення замість модифікації**: Робочі та проєктні документи розширюють функціональність базових, але не модифікують їх безпосередньо
-2. **Успадкування структури**: Усі документи дотримуються структурних стандартів, визначених у базових документах
-3. **Контекстне збагачення**: Робочі документи додають специфічний контекст для вирішення поточних задач
-4. **Переходи між рівнями**: Успішні практики з робочих документів можуть бути формалізовані в проєктних документах, а згодом інтегровані в базові
+1. **Extension Instead of Modification**: Working and project documents extend the functionality of core ones but don't modify them directly
+2. **Structure Inheritance**: All documents follow structural standards defined in core documents
+3. **Context Enrichment**: Working documents add specific context for solving current tasks
+4. **Level Transitions**: Successful practices from working documents can be formalized in project documents and later integrated into core ones
 
-### Механізми синхронізації та оновлення
+### Synchronization and Update Mechanisms
 
-Для підтримки актуальності документів застосовуються:
+To maintain document relevance, the following are applied:
 
-1. **Аудит відповідності**: Регулярна перевірка документів на відповідність стандартам
-2. **Автоматична валідація**: Скрипти для виявлення відхилень від стандартів
-3. **Механізми апгрейду**: Процедури безпечного оновлення базових документів та їх інтеграції з робочими та проєктними
+1. **Compliance Audit**: Regular document checking for standards compliance
+2. **Automatic Validation**: Scripts for detecting deviations from standards
+3. **Upgrade Mechanisms**: Procedures for safely updating core documents and integrating them with working and project ones
 
-## Процес трансформації документів
+## Document Transformation Process
 
-Важливим аспектом системи Pythia є процес трансформації знань між рівнями документів:
+An important aspect of the Pythia system is the process of knowledge transformation between document levels:
 
-1. **Від базових до робочих**: Застосування універсальних принципів та шаблонів до конкретних робочих задач
-2. **Від робочих до проєктних**: Виділення цінних практик та знань з робочих документів та їх формалізація у проєктну документацію
-3. **Від проєктних до базових**: Узагальнення успішних проєктних практик до рівня універсальних принципів
+1. **From Core to Working**: Application of universal principles and templates to specific work tasks
+2. **From Working to Project**: Extraction of valuable practices and knowledge from working documents and their formalization into project documentation
+3. **From Project to Core**: Generalization of successful project practices to the level of universal principles
 
-Ця циклічна трансформація забезпечує постійне вдосконалення системи з збереженням стабільності базових компонентів.
+This cyclic transformation ensures continuous system improvement while maintaining stability of core components.
 
-## Фізична структура репозиторіїв
+## Physical Repository Structure
 
-### Структура ядра (Core)
+### Core Structure
 
-Ядро системи Pythia організовано в окремий репозиторій з наступною структурою:
+The Pythia system core is organized in a separate repository with the following structure:
 
 ```
 pythia-core/
-├── rules/               # Базові правила взаємодії з LLM
-├── commands/            # Інструкції та команди для роботи з документами
-├── methodology/         # Методологічні підходи та принципи
-├── templates/           # Шаблони для створення документів
-├── tools/               # Інструменти для автоматизації роботи з документами
-├── navigation/          # Інструменти для навігації між документами
-├── CONCEPT.md           # Концептуальний опис системи
-└── README.md            # Загальна інформація та інструкції
+├── rules/               # Basic rules for LLM interaction
+├── commands/            # Instructions and commands for working with documents
+├── methodology/         # Methodological approaches and principles
+├── templates/          # Templates for document creation
+├── tools/              # Tools for document automation
+├── navigation/         # Tools for navigation between documents
+├── CONCEPT.md          # Conceptual system description
+└── README.md           # General information and instructions
 ```
 
-### Структура проекту з інтегрованим ядром
+### Project Structure with Integrated Core
 
-Коли ядро Pythia інтегрується в конкретний проект, структура виглядає так:
+When Pythia core is integrated into a specific project, the structure looks like this:
 
 ```
 project/
-├── docs/                     # Документація проекту з інтегрованим ядром Pythia
-│   ├── core/                 # #ядро Pythia (через git-підмодуль або symlink)
-│   │                         # містить rules, commands, methodology, templates...
-│   ├── contexts/             # Документи-контексти (#проектні)
-│   │   ├── project/          # Проектні контексти (огляди, описи систем)
-│   │   ├── technical/        # Технічні контексти (аналіз технологій)
-│   │   ├── decisions/        # Контексти рішень (обґрунтування вибору)
-│   │   └── research/         # Дослідницькі контексти (аналіз даних)
-│   ├── workflows/            # Робочі документи
-│   │   ├── tasks/            # Завдання та їх виконання
-│   │   ├── proposals/        # Пропозиції щодо змін
-│   │   ├── decisions/        # Запис рішень (ADR)
-│   │   └── ideas/            # Ідеї та концепції
-│   │       └── explorations/ # Дослідження ідей
-│   ├── architecture/         # Архітектурна документація проекту
-│   ├── guides/               # Практичні інструкції
-│   └── reports/              # Звіти з аналізу документації
-├── src/                      # Вихідний код проекту
-└── ... (інші директорії проекту)
+├── docs/                     # Project documentation with integrated Pythia core
+│   ├── core/                # Pythia core (via git submodule or symlink)
+│   │                        # contains rules, commands, methodology, templates...
+│   ├── contexts/            # Context documents (#project)
+│   │   ├── project/         # Project contexts (overviews, system descriptions)
+│   │   ├── technical/       # Technical contexts (technology analysis)
+│   │   ├── decisions/       # Decision contexts (choice justification)
+│   │   └── research/        # Research contexts (data analysis)
+│   ├── workflows/           # Working documents
+│   │   ├── tasks/           # Tasks and their execution
+│   │   ├── proposals/       # Change proposals
+│   │   ├── decisions/       # Decision records (ADR)
+│   │   └── ideas/           # Ideas and concepts
+│   │       └── explorations/# Idea research
+│   ├── architecture/        # Project architectural documentation
+│   ├── guides/             # Practical instructions
+│   └── reports/            # Documentation analysis reports
+├── src/                     # Project source code
+└── ... (other project directories)
 ```
 
-### Класифікація документів за розташуванням
+### Document Classification by Location
 
-Документи в системі Pythia розподіляються за трьома рівнями, кожен з яких має своє фізичне розташування:
+Documents in the Pythia system are distributed across three levels, each with its physical location:
 
-1. **Базові документи (Core)**:
+1. **Core Documents**:
 
-   - Розташування: ядро Pythia в директорії `/__folder__/core`
-   - Включають: правила, команди, методологію, шаблони, інструменти навігації
-   - Особливості: універсальні, стабільні, спільні для всіх проектів
-   - Приклади: правила форматування, команди для створення документів, методологічні підходи
+   - Location: Pythia core in `/__folder__/core` directory
+   - Include: rules, commands, methodology, templates, navigation tools
+   - Features: universal, stable, common across all projects
+   - Examples: formatting rules, document creation commands, methodological approaches
 
-2. **Робочі документи (Working)**:
+2. **Working Documents**:
 
-   - Розташування: директорія `/__folder__/workflows/` в проектній документації
-   - Включають: завдання, пропозиції, рішення, ідеї та їх дослідження
-   - Особливості: специфічні для проекту, динамічні, відображають поточний процес
-   - Приклади: опис завдання, пропозиція змін, запис прийнятого рішення
+   - Location: `/__folder__/workflows/` directory in project documentation
+   - Include: tasks, proposals, decisions, ideas and their research
+   - Features: project-specific, dynamic, reflect current process
+   - Examples: task description, change proposal, decision record
 
-3. **Проектні документи (Project)**:
-   - Розташування: директорії `/__folder__/contexts/`, `/__folder__/architecture/`, `/__folder__/guides/` в проектній документації
-   - Включають: контексти, архітектурну документацію, інструкції
-   - Особливості: формалізовані, структуровані, зберігають важливу інформацію про проект
-   - Приклади: огляд проекту, технічний контекст, рішення про вибір технології
+3. **Project Documents**:
+   - Location: `/__folder__/contexts/`, `/__folder__/architecture/`, `/__folder__/guides/` directories in project documentation
+   - Include: contexts, architectural documentation, instructions
+   - Features: formalized, structured, store important project information
+   - Examples: project overview, technical context, technology choice decision
 
-## Інтеграція компонентів
+## Component Integration
 
-Для ефективної роботи системи важливою є інтеграція всіх компонентів у єдиний "екосистемний" підхід:
+For effective system operation, integration of all components into a unified "ecosystem" approach is important:
 
-1. **Крос-посилання між документами**: Система взаємозв'язків, що дозволяє переходити між пов'язаними документами
-2. **Автоматична агрегація контексту**: Механізми збору релевантної інформації з різних документів
-3. **Контекстна навігація**: Можливість знаходити пов'язані документи за контекстом завдання
-4. **Тегування та метадані**: Структурована інформація для класифікації та пошуку
+1. **Cross-references Between Documents**: System of interconnections allowing navigation between related documents
+2. **Automatic Context Aggregation**: Mechanisms for collecting relevant information from different documents
+3. **Contextual Navigation**: Ability to find related documents by task context
+4. **Tagging and Metadata**: Structured information for classification and search
 
 ---
 
-**Last Updated**: 2025-03-23
+**Last Updated**: 2025-03-24

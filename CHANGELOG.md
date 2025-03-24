@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - `commands/create-command.md`
   - `commands/setup.md`
   - `commands/update-command.md`
+- Added new methodology document for context documentation (`methodology/context-documentation.md`)
 - Added guide for installing Pythia (`guides/installing-pythia.md`)
 - Added command template (`templates/command-template.md`)
 - Added configuration file (`config.json`)
