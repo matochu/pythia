@@ -173,8 +173,6 @@ Key implementation decisions:
 - Used pattern X because of Y
 - Implemented caching strategy Z
 
-````
-
 ## Step 6: Document Testing Information
 
 In the Testing section, describe:
@@ -203,10 +201,32 @@ Include links to:
 - API documentation
 - Relevant discussions
 
+## Output Format
+
+Always provide the final PR description in two formats:
+
+1. As properly formatted Markdown directly in the output
+2. As a code block enclosed in triple backticks for easy copying:
+
+````
+```markdown
+# Title of the PR
+
+## Summary
+...
+
+## Changes
+...
+```
+````
+
+This ensures that the description can be easily copied and pasted into GitHub, GitLab, or other repository management systems without losing formatting.
+
 ## Examples
 
 ### Basic Feature PR Description
 
+````
 ```markdown
 # Add Favorite Apps Management
 
@@ -247,10 +267,12 @@ The implementation uses Redux for state management with a custom middleware for 
 
 - Resolves #123: User-requested feature for favorites management
 - Related to #456: Performance improvements for app listings
+```
 ````
 
 ### Bug Fix PR Description
 
+````
 ```markdown
 # Fix Player Memory Leak on Navigation
 
@@ -285,10 +307,12 @@ Added explicit destruction of player instances when the component unmounts or wh
 
 - Fixes #789: Memory leak when navigating from video player
 ```
+````
 
 ### Library Implementation PR Description
 
-````markdown
+````
+```markdown
 # Signal Library Implementation
 
 ## Summary
@@ -325,7 +349,6 @@ This PR adds a complete Signal library implementation that introduces reactive s
   "test": "vitest --watch=false",
   "test:dev": "vitest --watch",
   ```
-````
 
 ### Documentation
 
@@ -386,8 +409,8 @@ The signal library provides a React-friendly API with familiar patterns while le
 
 - Implements feature request #234: Reactive state management
 - Related to performance improvement issue #345
-
 ```
+````
 
 ## Common Issues and Solutions
 
@@ -431,9 +454,10 @@ The signal library provides a React-friendly API with familiar patterns while le
    - Issue: Complex implementations described without examples
    - Solution: Include relevant code snippets to illustrate key changes
 
-## Output Format
+9. **Results Not Copyable**:
 
-Always create PR descriptions in proper Markdown format (`.md`). This ensures the description renders correctly in GitHub, GitLab, or other repository management systems, with appropriate headings, lists, code blocks, and other formatting elements.
+   - Issue: PR description is rendered and not easily copyable as formatted text
+   - Solution: Always provide the completed PR description enclosed in triple backticks as a markdown code block for easy copying
 
 ## Related Documents
 
@@ -444,4 +468,7 @@ Always create PR descriptions in proper Markdown format (`.md`). This ensures th
 ---
 
 **Last Updated**: 2024-06-20
+
+```
+
 ```

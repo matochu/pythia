@@ -1,21 +1,21 @@
 {
-  "folders": {
-    "workflows": "workflows",
-    "tasks": "workflows/tasks",
-    "ideas": "workflows/ideas",
-    "expositions": "workflows/expositions",
-    "proposals": "workflows/proposals",
-    "decisions": "workflows/decisions",
+  "paths": {
+    "workflows": "../workflows",
+    "tasks": "../workflows/tasks",
+    "ideas": "../workflows/ideas",
+    "explorations": "../workflows/ideas/explorations",
+    "proposals": "../workflows/proposals",
+    "decisions": "../workflows/decisions",
+    "contexts": "../contexts",
     "commands": "commands",
     "templates": "templates",
     "methodology": "methodology",
     "reports": "reports",
     "navigation": "navigation",
-    "rules": "rules",
-    "contexts": "contexts"
+    "rules": "rules"
   },
-  "project_root": ".",
-  "docs_path": "/",
+  "docs_path": "/docs",
+  "core_path": "/docs/core",
   "description": {
     "folders": "All paths within folders are relative to documentation root",
     "project_root": "Path from this config to the main project root",

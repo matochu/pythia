@@ -2,12 +2,7 @@
 
 > **IMPORTANT**: This command requires active execution of tasks, not just planning. Follow each step in the checklist by actually performing the actions, creating files, updating references, and validating the documentation.
 >
-> **NOTE ON FILE PATHS**: This document uses paths defined in the project configuration file. Before using this command, ensure you have the latest version of [Configuration](../config.json). There are two important path concepts:
->
-> 1. `project_root` - path to the root of the main code project
-> 2. `docs_path` - path within the project where documentation is stored
->
-> All folder paths in the configuration are relative to the documentation root.
+> **NOTE ON FILE PATHS**: This document uses paths defined in the project configuration file. Before using this command, ensure you have the latest version of [Configuration](../config.json).
 
 ## Purpose
 
@@ -17,15 +12,19 @@ This command provides step-by-step instructions for creating a comprehensive tas
 
 Before creating a task document, ensure you have:
 
-1. A clear understanding of the work that needs to be done
-2. Identified the objectives and deliverables
-3. Determined the scope and boundaries of the task
-4. Obtained the current date for proper document timestamping
-5. Reviewed any related documentation, ideas, or proposals
+1. [ ] A clear understanding of the work that needs to be done
+2. [ ] Identified the objectives and deliverables
+3. [ ] Determined the scope and boundaries of the task
+4. [ ] Obtained the current date for proper document timestamping
+5. [ ] Reviewed any related documentation, ideas, or proposals
+6. [ ] Validated the task uniqueness against existing documentation
+7. [ ] Prepared metadata for proper categorization
+8. [ ] Prepared to write the task in English (all documentation must be in English)
 
 ## Command Checklist
 
 - [ ] Get current date using `date +%Y-%m-%d`
+- [ ] Validate task uniqueness against existing documentation
 - [ ] Define scope and objectives clearly
 - [ ] Break down work into manageable steps
 - [ ] Identify dependencies and related tasks
@@ -45,42 +44,35 @@ Before starting, gather all necessary information:
 # Get the current date for proper timestamping
 date +%Y-%m-%d
 
-# Read the project configuration to get the tasks directory
+# Read configuration to access paths
 CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
-TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
+TASKS_PATH=$(jq -r '.paths.tasks' $CONFIG_PATH)
 
 # List existing tasks to avoid duplication
-ls -la $TASKS_PATH
+ls -la "$TASKS_PATH"
+
+# Search for similar tasks
+grep -r "keyword" "$TASKS_PATH"
 ```
 
 ## Step 2: Create the Task File
 
-Create a new file in the tasks directory (defined in project configuration) using the naming convention:
+Create a new file in the tasks directory (path from config.json) using the naming convention:
 `task-YYYY-MM-{descriptive-name}.md`
 
 ```bash
 # Read configuration
 CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
+TASKS_PATH=$(jq -r '.paths.tasks' $CONFIG_PATH)
 
-# Get current date for filename
-CURRENT_DATE=$(date +%Y-%m-%d)
-MONTH=${CURRENT_DATE:0:7}
-
-# Create filename using date pattern
-TASK_NAME="task-${MONTH}-implement-caching-layer.md"
-
-# Create the file
-TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
-touch "$TASKS_PATH/$TASK_NAME"
+# Create new task file
+TASK_NAME="implement-feature"
+CURRENT_DATE=$(date +%Y-%m)
+TASK_FILE="$TASKS_PATH/task-$CURRENT_DATE-$TASK_NAME.md"
+touch "$TASK_FILE"
 ```
 
-For example, this might create:
+For example:
 
 - `task-2025-03-implement-caching-layer.md`
 - `task-2025-03-refactor-authentication.md`
@@ -88,26 +80,16 @@ For example, this might create:
 
 ## Step 3: Use the Task Template
 
-```bash
-# Get paths from configuration
-CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
-TEMPLATES_FOLDER=$(jq -r '.folders.templates' $CONFIG_PATH)
+Copy the content from the [Task Template](../templates/task-template.md) and fill in all sections:
 
-# Build full paths
-TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
-TEMPLATES_PATH="$PROJECT_ROOT$DOCS_PATH/$TEMPLATES_FOLDER"
-
-# Copy template content
-cat "$TEMPLATES_PATH/task-template.md" > "$TASKS_PATH/$TASK_NAME"
-```
-
-Then edit the template and fill in all sections:
-
-1. **Title**: Concise, descriptive title of the task
-2. **Status Information**: Current status, dates, assignee
+1. **Metadata**:
+   - Creation Date
+   - Last Updated
+   - Status
+   - Type
+   - Priority
+   - Complexity
+2. **Title**: Concise, descriptive title of the task
 3. **Summary**: Brief overview of what needs to be done
 4. **Objectives**: Clear list of what this task aims to accomplish
 5. **Context**: Background information and why this task is needed
@@ -127,25 +109,25 @@ Break down the implementation into clear, manageable steps with checkboxes:
 ```markdown
 ## Implementation Steps
 
-- [ ] **Step 1: Research and Analysis**
+- [ ] **Phase 1: Research and Analysis**
 
   - [ ] Review existing codebase
   - [ ] Identify areas requiring changes
   - [ ] Document current architecture
 
-- [ ] **Step 2: Design**
+- [ ] **Phase 2: Design**
 
   - [ ] Create architecture diagram
   - [ ] Design component interfaces
   - [ ] Get design approved
 
-- [ ] **Step 3: Implementation**
+- [ ] **Phase 3: Implementation**
 
   - [ ] Implement core functionality
   - [ ] Add unit tests
   - [ ] Review code against standards
 
-- [ ] **Step 4: Validation**
+- [ ] **Phase 4: Validation**
   - [ ] Run integration tests
   - [ ] Fix any discovered issues
   - [ ] Document test results
@@ -153,31 +135,24 @@ Break down the implementation into clear, manageable steps with checkboxes:
 
 ## Step 5: Add Cross-References
 
-Add references to related documents at the bottom of the task file. Use the project configuration to ensure correct paths:
-
-```bash
-# Get directories from configuration
-CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-PROPOSALS_FOLDER=$(jq -r '.folders.proposals' $CONFIG_PATH)
-ARCHITECTURE_FOLDER=$(jq -r '.folders.architecture' $CONFIG_PATH)
-
-# Build full paths
-PROPOSALS_PATH="$PROJECT_ROOT$DOCS_PATH/$PROPOSALS_FOLDER"
-ARCHITECTURE_PATH="$PROJECT_ROOT$DOCS_PATH/$ARCHITECTURE_FOLDER"
-```
-
-Then add references like:
+Add references to related documents at the bottom of the task file:
 
 ```markdown
 ## References
 
-- [Related Proposal](${PROPOSALS_PATH}/proposal-topic.md)
-- [Technical Analysis](${ARCHITECTURE_PATH}/analysis-topic.md)
+- [Related Analysis](../architecture/analysis-topic.md)
+- [Similar Task](../tasks/task-YYYY-MM-related.md)
+- [Relevant Documentation](../documentation/topic.md)
+
+## Status History
+
+| Date       | Status    | Notes                   |
+| ---------- | --------- | ----------------------- |
+| YYYY-MM-DD | New       | Initial creation        |
+| YYYY-MM-DD | In Review | Team discussion planned |
 ```
 
-Ensure that references are bidirectional - update any related documents to reference this new task. Remember to use the configuration-based paths for consistency.
+Ensure that references are bidirectional - update any related documents to reference this new task.
 
 ## Step 6: Generate Workflows Report
 
@@ -195,9 +170,17 @@ This step ensures that the new task is properly tracked in the overall project w
 Run the documentation validation tools to ensure the new document is properly integrated:
 
 ```bash
-# Assuming validation commands are defined in your project
+# Validate task uniqueness
+npm run docs:validate-uniqueness
+
+# Validate documentation links
 npm run docs:validate-links
+
+# Check documentation coverage
 npm run docs:check-coverage
+
+# Validate metadata format
+npm run docs:validate-metadata
 ```
 
 Fix any issues reported by these tools.
@@ -209,24 +192,33 @@ Fix any issues reported by these tools.
 ```bash
 # Get the current date
 date +%Y-%m-%d
-# Output: 2025-03-19
+# Output: 2025-03-24
 
-# Get paths from configuration
+# Read configuration
 CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
-TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
+TASKS_PATH=$(jq -r '.paths.tasks' $CONFIG_PATH)
 
 # Create the task file
-touch "$TASKS_PATH/task-2025-03-implement-form-validation.md"
+TASK_FILE="$TASKS_PATH/task-2025-03-implement-form-validation.md"
+touch "$TASK_FILE"
 
-# Copy the template contents and fill in all sections
-# ...
+# Prepare metadata
+cat << EOF > task-metadata.yaml
+---
+title: Form Validation Implementation
+created: 2025-03-24
+status: New
+type: Feature
+priority: High
+complexity: Medium
+---
+EOF
 
-# Break down implementation steps with checkboxes
-# Create cross-references to related documents
+# Copy metadata and template contents
+cat task-metadata.yaml > "$TASK_FILE"
+rm task-metadata.yaml
 
+# Fill in all sections
 # Generate workflows report
 npm run docs:report-workflows
 ```
@@ -234,22 +226,20 @@ npm run docs:report-workflows
 ### Creating a Complex Development Task
 
 ```bash
-# Get paths from configuration
+# Read configuration
 CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-TASKS_FOLDER=$(jq -r '.folders.tasks' $CONFIG_PATH)
-TASKS_PATH="$PROJECT_ROOT$DOCS_PATH/$TASKS_FOLDER"
+TASKS_PATH=$(jq -r '.paths.tasks' $CONFIG_PATH)
 
-# Create a comprehensive task document for a major feature
-touch "$TASKS_PATH/task-2025-03-implement-offline-mode.md"
+# Create comprehensive task with supporting research
+TASK_FILE="$TASKS_PATH/task-2025-03-implement-offline-mode.md"
+touch "$TASK_FILE"
 
-# Include additional planning elements:
-# - Phased implementation approach with milestones
-# - Risk assessment with mitigation strategies
-# - Resource and time estimations
+# Include additional sections:
 # - Technical architecture diagrams
-# - Integration points with existing systems
+# - Risk assessment
+# - Performance considerations
+# - Security implications
+# - Testing strategy
 
 # Generate workflows report
 npm run docs:report-workflows
@@ -278,18 +268,26 @@ npm run docs:report-workflows
    - Solution: Define specific, observable outcomes that can be verified objectively
 
 5. **Missing Dependencies**:
+
    - Issue: Dependencies on other tasks or systems are not identified
    - Solution: Review the task in the context of the broader system and explicitly list all dependencies
 
+6. **Incomplete Metadata**:
+
+   - Issue: Required metadata fields are missing or incomplete
+   - Solution: Use metadata template and validation tools to ensure all required fields are present
+
+7. **Poor Categorization**:
+   - Issue: Task is not properly categorized or tagged
+   - Solution: Review existing categories and tags, ensure consistent categorization
+
 ## Related Documents
 
-All paths are defined in the project configuration file:
-
-- [Configuration](../config.json)
-- [Task Template](task-template.md)
+- [Task Template](../templates/task-template.md)
 - [Task Management Workflow](task-management-workflow.md)
 - [Report Workflows](report-workflows.md)
+- [Configuration](../config.json)
 
 ---
 
-**Last Updated**: 2025-03-19
+**Last Updated**: 2025-03-25

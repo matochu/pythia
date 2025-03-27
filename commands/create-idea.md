@@ -10,24 +10,29 @@ This command provides step-by-step instructions for creating a new idea document
 
 Before creating an idea document, ensure you have:
 
-1. Completed initial research on the idea topic
-2. Considered the potential value and impact of the idea
-3. Identified the problem or opportunity the idea addresses
-4. Obtained the current date for proper document timestamping
+1. [ ] Completed initial research on the idea topic
+2. [ ] Considered the potential value and impact of the idea
+3. [ ] Identified the problem or opportunity the idea addresses
+4. [ ] Validated the uniqueness of the idea against existing documentation
+5. [ ] Prepared metadata for proper categorization
+6. [ ] Gathered any relevant metrics or data points
+7. [ ] Obtained the current date for proper document timestamping
 
 ## Command Checklist
 
 - [ ] Get current date using `date +%Y-%m-%d`
+- [ ] Validate idea uniqueness against existing documentation
 - [ ] Brainstorm the core concept and key points
 - [ ] Identify the problem or opportunity the idea addresses
 - [ ] Consider potential impacts and benefits
-- [ ] Validate the idea against existing documentation
+- [ ] Prepare idea metadata and categorization
 - [ ] Create idea file with correct naming convention
 - [ ] Fill in all template sections
 - [ ] Add cross-references to related documentation
 - [ ] Add the idea to the ideas backlog
 - [ ] Run documentation validation
 - [ ] Generate workflows report
+- [ ] Update idea status tracking
 - [ ] Verify all checklist items are complete
 
 ## Step 1: Prepare for Idea Creation
@@ -38,14 +43,33 @@ Before starting, ensure you have all necessary information:
 # Get the current date for proper timestamping
 date +%Y-%m-%d
 
+# Read configuration to access paths
+CONFIG_PATH="../config.json"
+IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
+
 # List existing ideas to avoid duplication
-ls -la ../workflows/ideas/
+ls -la "$IDEAS_PATH"
+
+# Search for similar ideas
+grep -r "keyword" "$IDEAS_PATH"
 ```
 
 ## Step 2: Create the Idea File
 
-Create a new file in the `../workflows/ideas/` directory using the naming convention:
+Create a new file in the ideas directory (path from config.json) using the naming convention:
 `idea-YYYY-MM-{descriptive-name}.md`
+
+```bash
+# Read configuration
+CONFIG_PATH="../config.json"
+IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
+
+# Create new idea file
+IDEA_NAME="performance-optimization"
+CURRENT_DATE=$(date +%Y-%m)
+IDEA_FILE="$IDEAS_PATH/idea-$CURRENT_DATE-$IDEA_NAME.md"
+touch "$IDEA_FILE"
+```
 
 For example:
 
@@ -57,32 +81,69 @@ For example:
 
 Copy the content from the [Idea Template](../templates/idea-template.md) and fill in all sections:
 
-1. **Title**: Concise, descriptive title of the idea
-2. **Summary**: Brief overview of what the idea is about
-3. **Problem Statement**: Description of the problem the idea aims to solve
-4. **Proposed Solution**: High-level description of the proposed solution
-5. **Potential Benefits**: List of benefits this idea could bring
-6. **Potential Drawbacks**: List of drawbacks or challenges this idea could introduce
-7. **Implementation Considerations**: High-level thoughts on implementation
-8. **Related Ideas**: Links to related ideas or concepts
-9. **Status**: Current status of the idea (New, In Exploration, Transformed, etc.)
+1. **Metadata**:
+   - Creation Date
+   - Author
+   - Category
+   - Tags
+   - Impact Level (High/Medium/Low)
+   - Dependencies
+2. **Title**: Concise, descriptive title of the idea
+3. **Summary**: Brief overview of what the idea is about
+4. **Problem Statement**: Description of the problem the idea aims to solve
+5. **Proposed Solution**: High-level description of the proposed solution
+6. **Potential Benefits**: List of benefits this idea could bring
+   - Business Impact
+   - User Impact
+   - Technical Impact
+7. **Potential Drawbacks**: List of drawbacks or challenges this idea could introduce
+8. **Implementation Considerations**: High-level thoughts on implementation
+9. **Related Ideas**: Links to related ideas or concepts
+10. **Status Tracking**:
+    - Current Status
+    - Status History
+    - Next Steps
+    - Blockers
 
 Ensure that every section is filled in with detailed information.
 
 ## Step 4: Update Ideas Backlog
 
-Update the ideas backlog in `../workflows/ideas/ideas-backlog.md`:
+Update the ideas backlog:
 
-1. Add the new idea to the "New Ideas" section with a link to the idea document
-2. Update the "Recently Added Ideas" section with a link to the idea and the current date
+```bash
+# Read configuration
+CONFIG_PATH="../config.json"
+IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
+
+# Update ideas backlog
+BACKLOG_FILE="$IDEAS_PATH/ideas-backlog.md"
+```
+
+Add the new idea to the appropriate category section (Architecture Ideas, Development Workflow Ideas, Testing & QA Ideas) and update the "Recently Updated Ideas" section. Each idea should have a unique ID based on its category.
 
 Example:
 
 ```markdown
-## New Ideas
+## Development Workflow Ideas
 
-- [Performance Optimization Strategy](idea-2025-03-performance-optimization.md) - Strategies for improving application performance across platforms
+| ID     | Name                        | Status | Priority | Complexity | Quadrant  | Details                                          |
+| ------ | --------------------------- | ------ | -------- | ---------- | --------- | ------------------------------------------------ |
+| DEV002 | Memory-Based Logging System | New    | High     | Medium     | Strategic | [Details](idea-2025-03-memory-logging-system.md) |
+
+## Recently Updated Ideas
+
+| ID     | Name                        | Status | Priority | Complexity | Quadrant  | Added Date |
+| ------ | --------------------------- | ------ | -------- | ---------- | --------- | ---------- |
+| DEV002 | Memory-Based Logging System | New    | High     | Medium     | Strategic | 2025-03-24 |
 ```
+
+Note: Follow these rules for ID generation:
+
+- ARCH### for Architecture Ideas
+- DEV### for Development Workflow Ideas
+- QA### for Testing & QA Ideas
+- Use the next available number in the sequence for the chosen category
 
 ## Step 5: Add Cross-References
 
@@ -94,6 +155,13 @@ Add references to related documents at the bottom of the idea file:
 - [Related Analysis](../architecture/analysis-topic.md)
 - [Similar Idea](../ideas/idea-YYYY-MM-related.md)
 - [Relevant Documentation](../documentation/topic.md)
+
+## Status History
+
+| Date       | Status    | Notes                   |
+| ---------- | --------- | ----------------------- |
+| YYYY-MM-DD | New       | Initial creation        |
+| YYYY-MM-DD | In Review | Team discussion planned |
 ```
 
 Ensure that references are bidirectional - update any related documents to reference this new idea.
@@ -113,9 +181,17 @@ This step ensures that the new idea is properly tracked in the overall project w
 Run the documentation validation tools to ensure the new document is properly integrated:
 
 ```bash
-# If validation tools are available
+# Validate idea uniqueness
+npm run docs:validate-uniqueness
+
+# Validate documentation links
 npm run docs:validate-links
+
+# Check documentation coverage
 npm run docs:check-coverage
+
+# Validate metadata format
+npm run docs:validate-metadata
 ```
 
 Fix any issues reported by these tools.
@@ -127,17 +203,39 @@ Fix any issues reported by these tools.
 ```bash
 # Get the current date
 date +%Y-%m-%d
-# Output: 2025-03-19
+# Output: 2025-03-24
+
+# Read configuration
+CONFIG_PATH="../config.json"
+IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
 
 # Create the idea file
-touch ../workflows/ideas/idea-2025-03-api-caching-strategy.md
+IDEA_FILE="$IDEAS_PATH/idea-2025-03-api-caching-strategy.md"
+touch "$IDEA_FILE"
 
-# Copy the template contents and fill in all sections
-# ...
+# Prepare metadata
+cat << EOF > idea-metadata.yaml
+---
+title: API Caching Strategy
+created: 2025-03-24
+author: John Doe
+category: Performance
+tags:
+  - caching
+  - api
+  - performance
+impact: High
+dependencies:
+  - Current API Architecture
+---
+EOF
 
-# Add the idea to the ideas backlog
-# Update ideas-backlog.md
+# Copy metadata and template contents
+cat idea-metadata.yaml > "$IDEA_FILE"
+rm idea-metadata.yaml
 
+# Fill in all sections
+# Update ideas backlog
 # Generate workflows report
 npm run docs:report-workflows
 ```
@@ -145,8 +243,13 @@ npm run docs:report-workflows
 ### Creating a Complex Idea with Deep Analysis
 
 ```bash
+# Read configuration
+CONFIG_PATH="../config.json"
+IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
+
 # Create comprehensive idea with supporting research
-touch ../workflows/ideas/idea-2025-03-cross-platform-architecture.md
+IDEA_FILE="$IDEAS_PATH/idea-2025-03-cross-platform-architecture.md"
+touch "$IDEA_FILE"
 
 # Include additional sections:
 # - Technical feasibility analysis
@@ -182,8 +285,18 @@ npm run docs:report-workflows
    - Solution: Quantify benefits where possible and tie them to specific user or business outcomes
 
 5. **Implementation Too Detailed**:
+
    - Issue: Implementation section contains too much detail for an idea stage
    - Solution: Keep implementation at a high level, saving details for explorations or proposals
+
+6. **Incomplete Metadata**:
+
+   - Issue: Required metadata fields are missing or incomplete
+   - Solution: Use metadata template and validation tools to ensure all required fields are present
+
+7. **Poor Categorization**:
+   - Issue: Idea is not properly categorized or tagged
+   - Solution: Review existing categories and tags, ensure consistent categorization
 
 ## Related Documents
 
@@ -194,4 +307,4 @@ npm run docs:report-workflows
 
 ---
 
-**Last Updated**: 2025-03-19
+**Last Updated**: 2025-03-24
