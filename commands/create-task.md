@@ -3,6 +3,8 @@
 > **IMPORTANT**: This command requires active execution of tasks, not just planning. Follow each step in the checklist by actually performing the actions, creating files, updating references, and validating the documentation.
 >
 > **NOTE ON FILE PATHS**: This document uses paths defined in the project configuration file. Before using this command, ensure you have the latest version of [Configuration](../config.json).
+>
+> **LANGUAGE REQUIREMENT**: All task documents MUST be written in English, regardless of the implementation language of the project or the language used in team communications. This ensures consistent documentation that is accessible to all team members and future contributors.
 
 ## Purpose
 
@@ -34,6 +36,8 @@ Before creating a task document, ensure you have:
 - [ ] Add cross-references to related documentation
 - [ ] Run documentation validation
 - [ ] Generate workflows report
+- [ ] Verify that all content is written in English
+- [ ] Perform self-review using the Self-Validation Checklist
 - [ ] Verify all checklist items are complete
 
 ## Step 1: Prepare for Task Creation
@@ -51,8 +55,39 @@ TASKS_PATH=$(jq -r '.paths.tasks' $CONFIG_PATH)
 # List existing tasks to avoid duplication
 ls -la "$TASKS_PATH"
 
-# Search for similar tasks
+# Search for similar tasks - basic keyword search
 grep -r "keyword" "$TASKS_PATH"
+```
+
+### Enhanced Search Methods
+
+For more effective task discovery to prevent duplication and identify related work:
+
+```bash
+# Search by topic across all tasks
+find "$TASKS_PATH" -type f -name "*.md" -exec grep -l "search term" {} \;
+
+# Search by feature area
+grep -r --include="*feature-name*.md" "" "$TASKS_PATH"
+
+# Find recent tasks in a specific area
+find "$TASKS_PATH" -type f -name "*feature-name*.md" -mtime -30 | sort
+
+# Search in both task title and content
+find "$TASKS_PATH" -type f -name "*.md" -exec sh -c 'grep -l "term" {} && grep -l "another term" {}' \;
+
+# Check for tasks with similar dependencies
+grep -r --include="*.md" "dependency-name" "$TASKS_PATH"
+```
+
+Consider using more advanced search tools if available, such as:
+
+```bash
+# Using ripgrep for faster searching with context
+rg -C 2 "search term" "$TASKS_PATH"
+
+# Using fzf for interactive filtering of tasks
+find "$TASKS_PATH" -type f -name "*.md" | fzf --preview "cat {}"
 ```
 
 ## Step 2: Create the Task File
@@ -185,6 +220,38 @@ npm run docs:validate-metadata
 
 Fix any issues reported by these tools.
 
+### Self-Validation Checklist
+
+Before finalizing the task document, verify that it meets these quality criteria:
+
+- [ ] **Language Check**: Document is written entirely in English with clear, professional language
+  - [ ] Verify all section headings are in English
+  - [ ] Verify all descriptive content is in English
+  - [ ] Check that no non-English terms remain in the document
+  - [ ] Review automatically translated content for accuracy if applicable
+- [ ] **Completeness**: All required sections are filled with meaningful content
+- [ ] **Scope Clarity**: Clear boundaries between what is in-scope and out-of-scope
+- [ ] **Actionable Steps**: Implementation steps are specific and actionable
+- [ ] **Success Criteria**: Success criteria are measurable and objective
+- [ ] **Dependencies**: All dependencies are identified with links to relevant documentation
+- [ ] **Risk Assessment**: Potential risks and mitigations are documented
+- [ ] **Consistency**: Task aligns with existing project standards and approaches
+- [ ] **Formatting**: Document uses consistent Markdown formatting
+- [ ] **Grammar and Spelling**: Document is free of typos and grammatical errors
+
+Use tools to assist with validation:
+
+```bash
+# Check grammar and spelling (if aspell is available)
+aspell --lang=en_US --mode=markdown check "$TASK_FILE"
+
+# Check Markdown formatting consistency
+npx markdownlint "$TASK_FILE"
+
+# Validate task against template structure
+npx task-validator "$TASK_FILE"
+```
+
 ## Examples
 
 ### Creating a Basic Task
@@ -278,8 +345,19 @@ npm run docs:report-workflows
    - Solution: Use metadata template and validation tools to ensure all required fields are present
 
 7. **Poor Categorization**:
+
    - Issue: Task is not properly categorized or tagged
    - Solution: Review existing categories and tags, ensure consistent categorization
+
+8. **Non-English Content**:
+
+   - Issue: Task document contains non-English content
+   - Solution: Translate all content to English, including comments and metadata
+   - Validation: Use language detection tools to verify content is in English
+
+9. **Duplicated Task Objectives**:
+   - Issue: Task duplicates objectives from existing tasks
+   - Solution: Use the enhanced search methods to find similar tasks and either merge or clearly differentiate
 
 ## Related Documents
 
@@ -290,4 +368,4 @@ npm run docs:report-workflows
 
 ---
 
-**Last Updated**: 2025-03-25
+**Last Updated**: 2025-03-29
