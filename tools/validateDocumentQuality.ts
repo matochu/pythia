@@ -854,7 +854,7 @@ async function validateDocumentContent(
   );
 
   // Base score is 100, subtract issue weights
-  let score = Math.max(0, 100 - totalWeight);
+  const score = Math.max(0, 100 - totalWeight);
 
   return {
     filePath: document.path,

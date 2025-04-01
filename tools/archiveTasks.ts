@@ -243,7 +243,7 @@ async function updateReferences(taskPath: string): Promise<void> {
       if (filePath === path.join(ARCHIVE_DIR, taskFilename)) continue;
 
       // Read file content
-      let content = fs.readFileSync(filePath, 'utf8');
+      const content = fs.readFileSync(filePath, 'utf8');
 
       // Update reference
       const taskBasename = taskFilename.replace('.md', '');

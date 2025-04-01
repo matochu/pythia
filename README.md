@@ -158,9 +158,9 @@ Our documentation is organized into several categories to make information easy 
 
 ## Key Documents
 
-- [CONCEPT](CONCEPT.md): Детальний опис концепції та архітектури системи Pythia, принципи класифікації документів та їх взаємодії
-- [Documentation Map](navigation/documentation-map.md): Центральний навігаційний хаб для всієї документації, що забезпечує швидкий доступ до потрібної інформації
-- [Documentation Guidelines](methodology/documentation-guidelines.md): Основні правила та стандарти роботи з документацією, включаючи вимоги до форматування та структури
+- [CONCEPT](CONCEPT.md): Detailed description of the Pythia system concept and architecture, principles of document classification and their interaction
+- [Documentation Map](navigation/documentation-map.md): Central navigation hub for all documentation, providing quick access to the necessary information
+- [Documentation Guidelines](methodology/documentation-guidelines.md): Main rules and standards for working with documentation, including formatting and structure requirements
 
 ## Working with Commands
 

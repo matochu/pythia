@@ -1,10 +1,10 @@
 # Command: Improve TypeScript Files
 
-> **IMPORTANT**: This command provides a systematic approach to enhancing TypeScript files by fixing errors, improving typings, cleaning up comments, and optimizing file organization. It's designed to ensure code quality and maintainability across the Thea project.
+> **IMPORTANT**: This command provides a systematic approach to enhancing TypeScript files by fixing errors, improving typings, cleaning up comments, optimizing file organization, and applying best coding practices like DRY (Don't Repeat Yourself) principles.
 
 ## Purpose
 
-This command provides a structured approach to improving TypeScript files, focusing on enhancing type safety, readability, and maintainability. It helps standardize code quality by fixing TypeScript errors, improving type definitions, translating comments to English, and recommending file splitting for overly large modules.
+This command provides a structured approach to improving TypeScript files, focusing on enhancing type safety, readability, maintainability, and code quality. It helps standardize code quality by fixing TypeScript errors, improving type definitions, translating comments to English, recommending file splitting for overly large modules, and eliminating code duplication through DRY principles.
 
 ## Prerequisites
 
@@ -13,6 +13,7 @@ Before executing this command, ensure you have:
 1. [ ] Identified the TypeScript files that need improvement
 2. [ ] Backed up or committed the current state of these files
 3. [ ] Run TypeScript compiler to identify existing errors
+4. [ ] Installed necessary code quality tools (jscpd, ESLint, etc.)
 
 ## Command Checklist
 
@@ -20,6 +21,8 @@ Before executing this command, ensure you have:
 - [ ] Fix TypeScript errors
 - [ ] Clean up and translate comments
 - [ ] Improve type definitions
+- [ ] Apply DRY principles and identify duplicated code
+- [ ] Implement SOLID practices where applicable
 - [ ] Consider file splitting for large modules
 - [ ] Validate improvements
 
@@ -109,7 +112,85 @@ For each instance:
 4. Convert type assertions to proper type guards when possible
 5. Use TypeScript utility types (Partial, Pick, Omit) when appropriate
 
-## Step 5: Consider File Splitting
+## Step 5: Apply DRY Principles
+
+Identify and eliminate code duplication to improve maintainability and reduce the chance of bugs:
+
+```bash
+# Install jscpd (Copy/Paste Detector) if not already installed
+npm install -g jscpd
+
+# Run jscpd to detect duplicated code
+jscpd path/to/directory/ --pattern "**/*.ts" --ignore "node_modules/**"
+
+# Check for similar functions or methods
+grep -r "function" --include="*.ts" path/to/directory/ | sort
+```
+
+For each duplicated code section:
+
+1. Extract common functionality into reusable functions, hooks, or utilities
+2. Create shared abstractions for similar components or services
+3. Implement parameterization for functions with similar structure but different values
+4. Use TypeScript generics to create reusable type-safe components
+5. Consider design patterns like Strategy or Factory to eliminate conditional duplication
+
+Examples of code to extract:
+
+- Duplicate validation logic
+- Repeated API call patterns
+- Similar component rendering logic
+- Duplicate type guards or type assertions
+- Repeated configuration setup
+
+### DRY Refactoring Strategies
+
+| Pattern                 | Original Problem                    | Refactored Solution                             |
+| ----------------------- | ----------------------------------- | ----------------------------------------------- |
+| Extract Function        | Repeated code blocks                | Single function called from multiple places     |
+| Higher-Order Components | Similar component logic             | HOC that wraps multiple components              |
+| Custom Hooks            | Repeated stateful logic             | Single hook used across components              |
+| Utility Classes         | Duplicate helper functions          | Shared utility modules                          |
+| Generics                | Type-specific duplicate functions   | Generic functions that work with multiple types |
+| Composition             | Large classes with similar features | Small, composable objects or functions          |
+
+## Step 6: Implement SOLID Principles
+
+Review code for violations of SOLID principles and refactor accordingly:
+
+1. **Single Responsibility**: Ensure each class or function does only one thing
+
+   - Split large classes or functions into smaller, focused units
+   - Extract unrelated functionality into separate modules
+
+2. **Open/Closed**: Make code open for extension but closed for modification
+
+   - Use interfaces and abstract classes
+   - Implement extension points through composition
+
+3. **Liskov Substitution**: Ensure subtypes can be used in place of their parent types
+
+   - Check inheritance relationships for proper behavior
+   - Use interfaces to define contracts
+
+4. **Interface Segregation**: Create specific, client-focused interfaces
+
+   - Split large interfaces into smaller ones
+   - Avoid forcing clients to depend on methods they don't use
+
+5. **Dependency Inversion**: Depend on abstractions, not concretions
+   - Use dependency injection
+   - Reference interfaces rather than concrete implementations
+
+```bash
+# Look for large classes/interfaces that might violate Single Responsibility
+grep -r "class " --include="*.ts" path/to/directory/ | xargs wc -l | sort -nr | head -10
+
+# Find methods with many parameters (potential SOLID violations)
+grep -r "function" --include="*.ts" path/to/directory/ | grep -E "\([^)]{80,}" | sort
+```
+
+## Step 7: Consider File Splitting
 
 For files exceeding approximately 400 lines, evaluate if splitting is appropriate:
 
@@ -126,7 +207,7 @@ When splitting files:
 4. Ensure proper imports and exports
 5. Maintain type consistency across files
 
-## Step 6: Validate Improvements
+## Step 8: Validate Improvements
 
 Verify that the improvements maintain or enhance functionality:
 
@@ -202,16 +283,42 @@ npx tsc --noEmit
 npm test
 ```
 
+### Advanced Example: Applying DRY Principles
+
+```bash
+# Identify duplicated code
+jscpd src/services/ --pattern "**/*.ts"
+# Output shows 15% duplication, focusing on API call patterns
+
+# Extract common patterns
+mkdir -p src/utils/api
+touch src/utils/api/base-service.ts
+
+# Create a reusable service pattern
+code src/utils/api/base-service.ts
+
+# Refactor individual services to use the base service
+code src/services/user-service.ts
+code src/services/product-service.ts
+
+# Verify changes maintain functionality
+npm test
+```
+
 ## Common Issues and Solutions
 
-| Issue                                                       | Solution                                                                                                            |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Cannot determine appropriate type to replace `any`          | Use TypeScript's `unknown` type initially, then narrow with type guards. Or create a union type of possible values. |
-| Type assertions (`as`) are necessary for external libraries | Create type declaration files (`.d.ts`) for external libraries or use type guards to validate types at runtime.     |
-| Breaking changes when improving types                       | Implement changes incrementally, use the TypeScript compiler to identify affected areas, and update dependent code. |
-| Non-English comments contain domain-specific terms          | Maintain these terms in the translation but provide additional context in English when necessary.                   |
-| Large file needs splitting but has tight coupling           | Refactor to reduce coupling first, extract interfaces to separate files, then split implementation files.           |
-| Circular dependencies after file splitting                  | Refactor code to extract shared interfaces to a separate file that both can import.                                 |
+| Issue                                                       | Solution                                                                                                                    |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Cannot determine appropriate type to replace `any`          | Use TypeScript's `unknown` type initially, then narrow with type guards. Or create a union type of possible values.         |
+| Type assertions (`as`) are necessary for external libraries | Create type declaration files (`.d.ts`) for external libraries or use type guards to validate types at runtime.             |
+| Breaking changes when improving types                       | Implement changes incrementally, use the TypeScript compiler to identify affected areas, and update dependent code.         |
+| Non-English comments contain domain-specific terms          | Maintain these terms in the translation but provide additional context in English when necessary.                           |
+| Large file needs splitting but has tight coupling           | Refactor to reduce coupling first, extract interfaces to separate files, then split implementation files.                   |
+| Circular dependencies after file splitting                  | Refactor code to extract shared interfaces to a separate file that both can import.                                         |
+| Excessive code duplication                                  | Extract shared functionality into utility functions, custom hooks, or base classes. Use generics to handle type variations. |
+| Violations of SOLID principles                              | Refactor using dependency injection, interface segregation, and composition over inheritance.                               |
+| Overused type assertions                                    | Replace with proper type guards, discriminated unions, or generics.                                                         |
+| Complex type definitions                                    | Break down into smaller, reusable type components. Use utility types and type composition.                                  |
 
 ## Related Documents
 
@@ -219,6 +326,8 @@ npm test
 - [Code Review Checklist](../guides/code-review-checklist.md)
 - [Refactoring Guide](../guides/refactoring-guide.md)
 - [Documentation Map](../navigation/documentation-map.md)
+- [Code Quality Standards](../methodology/code-quality-standards.md)
+- [TypeScript Design Patterns](../guides/typescript-design-patterns.md)
 
 ---
 

@@ -479,7 +479,7 @@ class DocumentHelper {
         const level = node.depth;
 
         // Find content until next heading of same or higher level
-        let contentNodes = [];
+        const contentNodes = [];
         let j = i + 1;
         while (
           j < ast.children.length &&
@@ -913,15 +913,12 @@ class DocumentHelper {
         .map((link) => {
           if (!link.targetDocument) return null;
 
-          // Handle relative paths
           let targetPath = link.targetDocument;
 
-          // Використовуємо функції з модуля path, а не зі змінної path
           if (!targetPath.startsWith('/')) {
             targetPath = path.resolve(path.dirname(document.path), targetPath);
           }
 
-          // Ensure .md extension
           if (!targetPath.endsWith('.md')) {
             targetPath += '.md';
           }
