@@ -3,8 +3,6 @@
 > **IMPORTANT**: This command requires active execution of tasks, not just planning. Follow each step in the checklist by actually performing the actions, creating files, updating references, and validating the documentation.
 >
 > **NOTE ON FILE PATHS**: This document uses paths defined in the project configuration file. Before using this command, ensure you have the latest version of [Configuration](../config.json).
->
-> **LANGUAGE REQUIREMENT**: All task documents MUST be written in English, regardless of the implementation language of the project or the language used in team communications. This ensures consistent documentation that is accessible to all team members and future contributors.
 
 ## Purpose
 
@@ -36,7 +34,6 @@ Before creating a task document, ensure you have:
 - [ ] Add cross-references to related documentation
 - [ ] Run documentation validation
 - [ ] Generate workflows report
-- [ ] Verify that all content is written in English
 - [ ] Perform self-review using the Self-Validation Checklist
 - [ ] Verify all checklist items are complete
 

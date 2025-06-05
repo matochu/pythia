@@ -1,7 +1,5 @@
 # Documentation Guidelines
 
-> **Note**: All documentation should be maintained in English only.
-
 ## General Principles
 
 1. **Document Interconnections**:
