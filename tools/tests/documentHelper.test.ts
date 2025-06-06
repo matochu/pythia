@@ -92,7 +92,7 @@ describe('DocumentHelper', () => {
       () =>
         ({
           getSentiment: vi.fn().mockReturnValue(0.2)
-        } as any)
+        }) as any
     );
 
     // Setup mocks for glob

@@ -175,8 +175,8 @@ function main() {
           issue.severity === 'error'
             ? '❌'
             : issue.severity === 'warning'
-            ? '⚠️'
-            : 'ℹ️';
+              ? '⚠️'
+              : 'ℹ️';
         console.log(`  ${icon} ${issue.message}`);
       }
     }

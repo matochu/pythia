@@ -224,11 +224,14 @@ async function checkDocumentationMap(): Promise<void> {
     }
 
     console.log('Missing documents found:');
-    const groupedByCategory = missingDocuments.reduce((acc, doc) => {
-      acc[doc.category] = acc[doc.category] || [];
-      acc[doc.category].push(doc);
-      return acc;
-    }, {} as Record<string, DocumentEntry[]>);
+    const groupedByCategory = missingDocuments.reduce(
+      (acc, doc) => {
+        acc[doc.category] = acc[doc.category] || [];
+        acc[doc.category].push(doc);
+        return acc;
+      },
+      {} as Record<string, DocumentEntry[]>
+    );
 
     for (const [category, docs] of Object.entries(groupedByCategory)) {
       console.log(`\n${category}:`);
@@ -386,9 +389,8 @@ export async function updateDocumentationMap(
             const relativePath = path.relative(path.dirname(mapPath), doc);
 
             // Try to extract a better title and description from the document
-            const { title, description } = await extractTitleAndDescription(
-              doc
-            );
+            const { title, description } =
+              await extractTitleAndDescription(doc);
             const displayName = title || formatDisplayName(basename);
 
             newEntries += `| [${displayName}](${relativePath}) | ${

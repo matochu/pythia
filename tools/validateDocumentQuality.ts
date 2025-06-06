@@ -901,8 +901,8 @@ function consoleReport(results: ValidationResult[]): void {
       qualityScore > 0.8
         ? chalk.green
         : qualityScore > 0.6
-        ? chalk.yellow
-        : chalk.red;
+          ? chalk.yellow
+          : chalk.red;
 
     console.log(
       `${icon} ${chalk.bold(result.filePath)} - Quality Score: ${qualityColor(
@@ -1083,8 +1083,8 @@ This report analyzes the quality of documentation files in the repository, check
         result.status === 'pass'
           ? '✅'
           : result.status === 'warn'
-          ? '⚠️'
-          : '❌';
+            ? '⚠️'
+            : '❌';
 
       // Create relative path from report directory to document
       const targetFilePath = path.resolve(process.cwd(), result.documentPath);
@@ -1127,10 +1127,10 @@ This report analyzes the quality of documentation files in the repository, check
               issue.severity === IssueSeverity.Error
                 ? '🔴'
                 : issue.severity === IssueSeverity.Warning
-                ? '🟠'
-                : issue.severity === IssueSeverity.Suggestion
-                ? '🟡'
-                : '🔵';
+                  ? '🟠'
+                  : issue.severity === IssueSeverity.Suggestion
+                    ? '🟡'
+                    : '🔵';
 
             // Add link to specific line if available
             let issueLocation = '';

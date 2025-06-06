@@ -8,7 +8,7 @@ These guides provide step-by-step instructions and best practices for common tas
 
 ## Available Guides
 
-*No guides available yet. Add your guides here.*
+_No guides available yet. Add your guides here._
 
 ## Creating New Guides
 

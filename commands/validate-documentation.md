@@ -181,6 +181,7 @@ If you identify potential improvements to these scripts:
 For more complex issues, examine the TypeScript source code in the `scripts/documentation` directory.
 
 ## References
+
 - [Guide Llm Documentation Workflow](../guides/guide-llm-documentation-workflow.md)
 - [Archive Tasks](archive-tasks.md)
 - [README](../README.md)
