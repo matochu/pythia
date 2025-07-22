@@ -17,6 +17,7 @@ Before creating a PR description:
 
 ## Command Checklist
 
+- [ ] The PR Title and Summary clearly state the main purpose and intent of the PR.
 - [ ] Review the diff between your branch and target branch
 - [ ] Identify key components and features modified
 - [ ] Categorize changes into logical sections
@@ -75,6 +76,13 @@ Links to related tickets or issues.
 
 ## Writing Guidelines
 
+### General Principles
+
+- The PR Title and Summary must always clearly and unambiguously state the primary purpose and intent of the PR, regardless of the type of change (feature, fix, refactor, workflow, documentation, etc.).
+- Avoid generic or vague titles/summaries. The main change or goal should be immediately clear to reviewers.
+- In the Features/Changes section, describe the main change in detail, including its purpose, how it works, and its impact.
+- If the PR contains multiple unrelated changes, group them by logical category and ensure each group’s purpose is clear.
+
 ### Summary Section
 
 - Explain what problem this PR solves
@@ -131,6 +139,8 @@ Always provide the PR description:
 ````
 
 ## Examples
+
+> These are examples only. Always tailor the Title and Summary to the actual main purpose of your PR.
 
 ### Basic Feature PR Description
 
