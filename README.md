@@ -1,61 +1,116 @@
-# Pythia Project Documentation
+# Pythia - Shared Documentation Base
 
-Welcome to the Pythia project documentation. This README provides an overview of the documentation structure and guidelines for working with it.
+Welcome to Pythia, a comprehensive **shared documentation base** designed for workspace integration. Pythia provides standardized documentation templates, commands, and methodologies that can be used across multiple projects via modern editors like Cursor and VSCode.
 
-## Quick Installation
+## What is Pythia?
 
-The installation consists of three key steps, which can be automated by an LLM or performed manually:
+Pythia is a **shared documentation framework** that provides:
 
-1. Installing Pythia Core
-2. Installing dependencies and configuring settings
-3. Setting up project directories and structure
+- **Standardized Commands**: Pre-built commands for common documentation tasks
+- **Documentation Templates**: Consistent templates for various document types
+- **Methodologies**: Proven approaches for documentation management
+- **Workspace Integration**: Seamless integration with Cursor, VSCode, and other editors
 
-### Method 1: LLM-Assisted Installation (Recommended)
+## Quick Start
 
-This is the simplest approach. The LLM will analyze your project's current state and execute all necessary steps:
+### Workspace Integration (Recommended)
+
+Pythia is designed for **workspace integration** rather than standalone installation. Simply reference commands in your chat:
+
+```bash
+# Create a new task
+@create-task.md
+
+# Analyze project architecture
+@analyze-project.md
+
+# Create a new proposal
+@create-proposal.md
+```
+
+### Key Features
+
+- **@Command Syntax**: Reference commands using `@command-name.md`
+- **mdc: Links**: Use `mdc:` prefix for workspace-aware file references
+- **Project Adaptation**: Commands automatically adapt to your project structure
+- **Cross-Project Compatibility**: Works with any project documentation structure
+
+## Workspace Integration
+
+### Using Pythia Commands
+
+Pythia commands are designed for **workspace integration**. Simply reference them in your chat:
+
+```bash
+# Basic command usage
+@create-task.md
+
+# With project context
+Execute this command for my project at /path/to/your-project
+
+# With specific requirements
+Create a task for improving user navigation in my React TypeScript application
+```
+
+### Project Context
+
+Commands automatically adapt to your project's structure:
+
+```bash
+# Specify your project structure
+My project is a React TypeScript web application
+My docs are in ./docs directory
+My project uses Redux for state management
+
+# Commands will adapt accordingly
+@analyze-project.md
+```
+
+### Navigation and Links
+
+Use `mdc:` links for workspace-aware file references:
+
+```markdown
+# Reference project files
+
+[Project Architecture](mdc:docs/architecture/overview.md)
+
+# Reference Pythia commands
+
+[Create Task](mdc:commands/create-task.md)
+```
+
+## Legacy Installation (Deprecated)
+
+> **Note**: The following installation methods are deprecated. Pythia is now designed for workspace integration rather than standalone installation.
+
+### Method 1: LLM-Assisted Installation
+
+This approach is for legacy installations only:
 
 ```
 Execute the setup.md command to install Pythia in my project at [path].
 ```
-
-Or with a direct link to the command file:
-
-```
-Execute this command for Pythia installation: https://github.com/your-org/pythia/blob/main/commands/setup.md
-My project is located at [path], using [OS].
-```
-
-> **Note**: The `setup.md` file is not just documentation but a _special command designed for LLMs_. It's essentially a program that the LLM interprets and executes automatically, analyzing your project context.
 
 The LLM will:
 
 1. **Analyze your project's state**
 
    - Check if Pythia core is already installed
-   - If not, add it as a git submodule (or symbolic link if specified)
+   - If not, add it as a git submodule
 
 2. **Configure the environment**
 
-   - Install required npm dependencies (if missing)
+   - Install required npm dependencies
    - Create or update the configuration file
 
 3. **Set up project structure**
    - Configure necessary documentation directories
    - Generate baseline README files for navigation
 
-You can customize the installation by adding to your request:
-
-```
-I'd like to use these settings:
-- Installation method: [git/symlink]
-- Project name: [Your project name]
-- Repository: [Your repository URL]
-- Workflow directory: [path to workflow directories]
-```
-
 ### Method 2: Manual Step-by-Step Installation
 
-If you prefer full control over the installation process:
+> **Deprecated**: This method is for legacy installations only. Use workspace integration instead.
 
 #### Step 1: Install Pythia Core
 
@@ -73,19 +128,6 @@ git submodule add https://github.com/your-org/pythia-core.git docs/core
 git submodule update --init --recursive
 ```
 
-Or using Symbolic Link (for developers):
-
-```bash
-# Navigate to your project root
-cd /path/to/your-project
-
-# Create docs directory if it doesn't exist
-mkdir -p docs
-
-# Create symbolic link to the Pythia core
-ln -s /path/to/pythia-core docs/core
-```
-
 #### Step 2: Install Dependencies and Configure
 
 ```bash
@@ -98,6 +140,174 @@ vi config.json
 ```
 
 #### Step 3: Set Up Project Structure
+
+## Available Commands
+
+### Document Creation
+
+- `@create-task.md` - Create task documentation
+- `@create-proposal.md` - Create proposal documents
+- `@create-idea.md` - Create idea documentation
+- `@create-exploration.md` - Create research documents
+
+### Analysis and Review
+
+- `@analyze-project.md` - Comprehensive project analysis
+- `@analyze-architecture.md` - Architecture analysis
+- `@improve-typescript-files.md` - TypeScript file improvements
+- `@review-pull-request.md` - PR review and analysis
+
+### Documentation Management
+
+- `@update-documentation-map.md` - Update navigation
+- `@update-status.md` - Update document status
+- `@validate-documentation.md` - Validate documentation integrity
+- `@archive-tasks.md` - Archive completed tasks
+
+### System Commands
+
+- `@setup.md` - Project setup and configuration
+- `@update-command.md` - Update existing commands
+- `@sync-confluence.md` - Sync with Confluence
+- `@report-workflows.md` - Generate workflow reports
+
+## Examples
+
+### Real Project Usage
+
+#### Web Application Example
+
+```bash
+# Create task for feature improvement
+@create-task.md
+
+# Context: React TypeScript web application
+# Objective: Improve user navigation system
+# Priority: High
+# Timeline: 2 weeks
+```
+
+#### API Documentation Example
+
+```bash
+# Analyze API integration
+@analyze-architecture.md
+
+# Focus: API communication patterns
+# Context: REST API with authentication
+# Requirements: Offline support, error handling
+```
+
+## Getting Started
+
+### 1. Choose Your Approach
+
+**Recommended**: Use workspace integration
+
+- Reference commands directly: `@command-name.md`
+- Provide project context
+- Use workspace navigation
+
+**Legacy**: Use installation methods
+
+- Follow deprecated installation steps
+- Limited to single project usage
+- Requires manual setup
+
+### 2. Provide Project Context
+
+```bash
+# Essential project information
+My project is a React TypeScript application
+My docs are in ./docs directory
+My project uses Redux for state management
+
+# Optional: Specific requirements
+I need to improve user navigation
+I want to add offline support
+I need to optimize performance
+```
+
+### 3. Execute Commands
+
+```bash
+# Basic command execution
+@create-task.md
+
+# With specific requirements
+Create a task for improving user navigation in my React TypeScript application
+
+# With project context
+Execute this command for my project at /path/to/your-project
+```
+
+## Documentation Structure
+
+Pythia works with any documentation structure:
+
+### Standard Structure
+
+```
+your-project/
+├── docs/
+│   ├── architecture/
+│   ├── workflows/
+│   ├── commands/
+│   ├── guides/
+│   └── navigation/
+└── README.md
+```
+
+### Flexible Structure
+
+```
+your-project/
+├── documentation/
+│   ├── design/
+│   ├── processes/
+│   └── decisions/
+├── docs/
+│   └── api/
+└── README.md
+```
+
+## Support and Resources
+
+### Documentation
+
+- [Workspace Integration Guide](guides/workspace-integration.md) - Complete guide for workspace usage
+- [Command Reference](commands/) - All available commands
+- [Methodology](methodology/) - Documentation methodologies
+- [Templates](templates/) - Document templates
+
+### Getting Help
+
+1. **Check Command List**: Review available commands above
+2. **Provide Context**: Give clear project information
+3. **Use Examples**: Reference similar successful usage
+4. **Adapt Commands**: Modify for your specific needs
+
+### Migration from Legacy Usage
+
+If you previously used Pythia as a git submodule:
+
+1. **Remove Old Installation**:
+
+   ```bash
+   git submodule deinit docs/pythia
+   git rm docs/pythia
+   ```
+
+2. **Use Workspace Integration**:
+
+   - Reference commands directly: `@command-name.md`
+   - Use workspace navigation: `mdc:` links
+   - Adapt to your project structure
+
+3. **Update References**:
+   - Change `../pythia/commands/` to `@command-name.md`
+   - Update file paths to use `mdc:` syntax
+   - Adapt to your project's documentation structure
 
 ```bash
 # Create necessary directories

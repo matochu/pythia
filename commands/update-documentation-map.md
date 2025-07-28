@@ -4,13 +4,31 @@ This command provides instructions for Large Language Models (LLMs) to effective
 
 ## Description
 
-The Documentation Map (`../navigation/documentation-map.md`) serves as the central navigation document for the project. It needs regular updates to include new documents, remove obsolete ones, and maintain an accurate representation of the project's documentation structure.
+The Documentation Map (`docs/navigation/documentation-map.md`) serves as the central navigation document for the project. It needs regular updates to include new documents, remove obsolete ones, and maintain an accurate representation of the project's documentation structure.
 
 This command outlines the steps to scan the documentation repository, identify missing documents, and update the Documentation Map accordingly.
 
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@update-documentation-map.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@update-documentation-map.md
+Context: My project documentation needs map updates
+Focus: Add new documents, update links, maintain navigation
+Requirements: Keep documentation map current and organized
+```
+
 ## Prerequisites
 
-- Access to the Documentation Map file: `../navigation/documentation-map.md`
+- Access to the Documentation Map file: `docs/navigation/documentation-map.md`
 - Knowledge of document categories and their organization in the map
 - Understanding of the relative paths between documents
 
@@ -37,7 +55,7 @@ Before proceeding with the documentation map update, complete this checklist:
 First, review the current state of the Documentation Map to understand its structure and existing content:
 
 ```bash
-cat ../navigation/documentation-map.md
+cat docs/navigation/documentation-map.md
 ```
 
 Take note of:
@@ -53,7 +71,11 @@ Take note of:
 Identify documents that exist in the repository but are not included in the Documentation Map:
 
 ```bash
+# For projects with Pythia tools installed
 ts-node scripts/documentation/updateDocumentationMap.ts
+
+# For workspace integration (manual approach)
+find docs -name "*.md" -type f | sort
 ```
 
 This script will:
@@ -188,12 +210,21 @@ Note: Interactive mode is currently under development and may have limited funct
 
 ## References
 
-- [Guide Llm Documentation Workflow](../guides/guide-llm-documentation-workflow.md)
-- [CHANGELOG](../CHANGELOG.md)
-- [Documentation Map](../navigation/documentation-map.md)
-- [Documentation Standards](../navigation/documentation-standards.md)
-- [Task Archiving Rules](../rules/task-archiving-rules.md)
-- [Archive Tasks](./archive-tasks.md)
+- [Guide Llm Documentation Workflow](mdc:guides/guide-llm-documentation-workflow.md)
+- [CHANGELOG](mdc:CHANGELOG.md)
+- [Documentation Map](mdc:navigation/documentation-map.md)
+- [Documentation Standards](mdc:navigation/documentation-standards.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+- [Archive Tasks](mdc:commands/archive-tasks.md)
+
+## Workspace Integration Notes
+
+This command is designed for workspace integration and adapts to your project's structure:
+
+- **Documentation Map**: Works with any project's documentation structure
+- **Navigation Updates**: Maintains central navigation for your project
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@update-documentation-map.md` in your workspace
 
 ---
 

@@ -13,12 +13,30 @@ This command provides a standardized process for generating comprehensive report
 - [ ] Understanding of work item statuses and categories
 - [ ] Knowledge of the Workflows Status Report structure
 
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@report-workflows.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@report-workflows.md
+Context: My project needs a comprehensive workflows report
+Focus: Generate status report for all work items
+Requirements: Update metrics, identify blockers, suggest next actions
+```
+
 ## Command Checklist
 
 1. **Preparation**:
 
    - [ ] Get current date using `date +%Y-%m-%d`
-   - [ ] Review existing Workflows Report `../workflows/report.md`
+   - [ ] Review existing Workflows Report `docs/workflows/report.md`
    - [ ] Identify all work items that need to be included
    - [ ] Gather status information from each work item document
    - [ ] Review dependencies between items
@@ -27,7 +45,7 @@ This command provides a standardized process for generating comprehensive report
 2. **Report Updates by Item Type**:
 
    - [ ] **Tasks**: Update the Active Tasks section with current status
-   - [ ] **Archived Tasks**: Update the Archived Tasks section from the `../workflows/archive/tasks/` directory
+   - [ ] **Archived Tasks**: Update the Archived Tasks section from the `docs/workflows/archive/tasks/` directory
    - [ ] **Proposals**: Update the Active Proposals section with current status
    - [ ] **Ideas**: Update the New Ideas section with current status
    - [ ] **Explorations**: Update the Active Explorations section with current status
@@ -152,13 +170,13 @@ npm run docs:report-workflows --compare-previous
 
 ```bash
 # List archived tasks
-ls -la ../workflows/archive/tasks/
+ls -la docs/workflows/archive/tasks/
 
 # Count archived proposals
-ls -la ../workflows/archive/proposals/ | wc -l
+ls -la docs/workflows/archive/proposals/ | wc -l
 
 # Incorporate archived items into total counts
-echo "Total tasks: $(( $(ls -la ../workflows/tasks/ | wc -l) + $(ls -la ../workflows/archive/tasks/ | wc -l) - 2 ))"
+echo "Total tasks: $(( $(ls -la docs/workflows/tasks/ | wc -l) + $(ls -la docs/workflows/archive/tasks/ | wc -l) - 2 ))"
 ```
 
 ## Common Issues and Solutions
@@ -195,10 +213,18 @@ echo "Total tasks: $(( $(ls -la ../workflows/tasks/ | wc -l) + $(ls -la ../workf
 
 ## References
 
-- [Workflows Report](../workflows/report.md)
-- [Documentation Map](../navigation/documentation-map.md)
-- [Task Archiving Rules](../rules/task-archiving-rules.md)
-- [Documentation Guidelines](../methodology/documentation-guidelines.md)
+- [Workflows Report](mdc:docs/workflows/report.md)
+- [Documentation Map](mdc:navigation/documentation-map.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+
+## Workspace Integration Notes
+
+This command is designed for workspace integration and adapts to your project's structure:
+
+- **Workflows Reporting**: Works with any project's documentation structure
+- **Status Tracking**: Maintains comprehensive project status visibility
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@report-workflows.md` in your workspace
 
 ---
 

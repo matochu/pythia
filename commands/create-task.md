@@ -2,7 +2,7 @@
 
 > **IMPORTANT**: This command requires active execution of tasks, not just planning. Follow each step in the checklist by actually performing the actions, creating files, updating references, and validating the documentation.
 >
-> **NOTE ON FILE PATHS**: This document uses paths defined in the project configuration file. Before using this command, ensure you have the latest version of [Configuration](../config.json).
+> **NOTE ON FILE PATHS**: This command adapts to your project's documentation structure. It will create tasks in your project's `docs/workflows/tasks/` directory or equivalent.
 
 ## Purpose
 
@@ -20,6 +20,25 @@ Before creating a task document, ensure you have:
 6. [ ] Validated the task uniqueness against existing documentation
 7. [ ] Prepared metadata for proper categorization
 8. [ ] Prepared to write the task in English (all documentation must be in English)
+
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@create-task.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@create-task.md
+Context: My React TypeScript application needs user authentication
+Objective: Implement secure login/logout functionality
+Priority: High
+Timeline: 2 weeks
+```
 
 ## Command Checklist
 
@@ -45,9 +64,13 @@ Before starting, gather all necessary information:
 # Get the current date for proper timestamping
 date +%Y-%m-%d
 
-# Read configuration to access paths
-CONFIG_PATH="../config.json"
-TASKS_PATH=$(jq -r '.paths.tasks' $CONFIG_PATH)
+# Determine tasks directory based on project structure
+# For standard Pythia structure: docs/workflows/tasks/
+# For custom structure: adapt to your project's documentation layout
+TASKS_PATH="docs/workflows/tasks"
+
+# Create directory if it doesn't exist
+mkdir -p "$TASKS_PATH"
 
 # List existing tasks to avoid duplication
 ls -la "$TASKS_PATH"
@@ -89,13 +112,12 @@ find "$TASKS_PATH" -type f -name "*.md" | fzf --preview "cat {}"
 
 ## Step 2: Create the Task File
 
-Create a new file in the tasks directory (path from config.json) using the naming convention:
+Create a new file in the tasks directory using the naming convention:
 `task-YYYY-MM-{descriptive-name}.md`
 
 ```bash
-# Read configuration
-CONFIG_PATH="../config.json"
-TASKS_PATH=$(jq -r '.paths.tasks' $CONFIG_PATH)
+# Determine tasks directory based on project structure
+TASKS_PATH="docs/workflows/tasks"
 
 # Create new task file
 TASK_NAME="implement-feature"
@@ -112,7 +134,7 @@ For example:
 
 ## Step 3: Use the Task Template
 
-Copy the content from the [Task Template](../templates/task-template.md) and fill in all sections:
+Copy the content from the [Task Template](mdc:templates/task-template.md) and fill in all sections:
 
 1. **Metadata**:
    - Creation Date
@@ -172,9 +194,9 @@ Add references to related documents at the bottom of the task file:
 ```markdown
 ## References
 
-- [Related Analysis](../architecture/analysis-topic.md)
-- [Similar Task](../tasks/task-YYYY-MM-related.md)
-- [Relevant Documentation](../documentation/topic.md)
+- [Related Analysis](mdc:docs/architecture/analysis-topic.md)
+- [Similar Task](mdc:docs/workflows/tasks/task-YYYY-MM-related.md)
+- [Relevant Documentation](mdc:docs/documentation/topic.md)
 
 ## Status History
 
@@ -188,11 +210,14 @@ Ensure that references are bidirectional - update any related documents to refer
 
 ## Step 6: Generate Workflows Report
 
-Use the `report-workflows` command to update the workflows status report:
+Use the `@report-workflows.md` command to update the workflows status report:
 
 ```bash
-# Assuming the report command is defined in your project
-npm run docs:report-workflows
+# Reference the command
+@report-workflows.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
 ```
 
 This step ensures that the new task is properly tracked in the overall project workflow.
@@ -358,10 +383,18 @@ npm run docs:report-workflows
 
 ## Related Documents
 
-- [Task Template](../templates/task-template.md)
-- [Task Management Workflow](task-management-workflow.md)
-- [Report Workflows](report-workflows.md)
-- [Configuration](../config.json)
+- [Task Template](mdc:templates/task-template.md)
+- [Report Workflows](mdc:commands/report-workflows.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+
+## Workspace Integration Notes
+
+This command is designed for workspace integration and adapts to your project's structure:
+
+- **Standard Structure**: Creates tasks in `docs/workflows/tasks/`
+- **Custom Structure**: Adapts to your project's documentation layout
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@create-task.md` in your workspace
 
 ---
 

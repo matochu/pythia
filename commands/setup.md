@@ -1,51 +1,52 @@
-# Command: Setup Pythia
+# Command: Setup Pythia Workspace Integration
 
 > **IMPORTANT**: This is a command file for LLM execution. This is not an instruction for humans.
 
 ## Purpose
 
-This command provides a systematic process for installing and configuring Pythia in a project. It analyzes the current project state, installs Pythia using the appropriate method, and sets up the necessary configuration and directory structure for effective documentation management.
+This command provides a systematic process for setting up Pythia workspace integration in a project. It analyzes the current project state and creates the necessary documentation structure for effective workspace-based documentation management using declarative markdown files instead of configuration files.
 
 ## Prerequisites
 
-Before setting up Pythia, ensure you have:
+Before setting up Pythia workspace integration, ensure you have:
 
-1. [ ] Git (version 2.20+) for the Git submodule installation method
-2. [ ] Node.js (version 14+) and npm (version 6+)
-3. [ ] Write permissions for the target project directory
-4. [ ] Project path information
-5. [ ] Basic project information (name, description, repository URL)
+1. [ ] Write permissions for the target project directory
+2. [ ] Project path information
+3. [ ] Basic project information (name, description, technology stack)
+4. [ ] Cursor or VSCode workspace access
+5. [ ] Understanding of project's documentation needs
 
 ## Command Checklist
 
 - [ ] Determine the current project state
 - [ ] Collect necessary project information
-- [ ] Select the appropriate installation method
-- [ ] Install Pythia core files
-- [ ] Create configuration file
-- [ ] Set up directory structure
+- [ ] Create documentation directory structure
+- [ ] Create project structure declaration file
+- [ ] Create workspace integration guide
+- [ ] Set up Cursor rules for documentation
 - [ ] Create initial workflow files
-- [ ] Install dependencies
-- [ ] Verify installation
+- [ ] Verify workspace integration
 - [ ] Handle any errors encountered
 
-## Project Analysis and Pythia Installation
+## Project Analysis and Workspace Integration Setup
 
 When a user asks to execute the setup command, the LLM should determine:
 
-1. The current state of the project - whether Pythia is already installed
+1. The current state of the project - whether documentation structure already exists
 2. The desired documentation structure that the user wants
-3. The installation method (git submodule or direct copying)
+3. The project's technology stack and requirements
+4. The workspace environment (Cursor, VSCode, or other)
 
 ### Step 1: Determining the Current Project State
 
-The LLM should examine the project structure. Key indicators of an installed Pythia:
+The LLM should examine the project structure. Key indicators of existing documentation setup:
 
-- Presence of a configuration file (usually config.json)
-- Presence of a typical directory structure for documentation
-- Presence of a core directory with Pythia code
+- Presence of a `docs/` directory with documentation structure
+- Presence of `docs/project-structure.md` file
+- Presence of `.cursor/rules/` directory with documentation rules
+- Presence of workspace integration files
 
-Do not use hardcoded paths like "$PROJECT_PATH/docs/core", as the user may use any names for documentation directories and system core.
+Do not use hardcoded paths, as the user may use any names for documentation directories.
 
 ### Step 2: Obtaining Information from the User
 
@@ -53,140 +54,365 @@ The LLM should ask the user for:
 
 1. The path to the project
 2. The desired name for the documentation directory (default "docs")
-3. The desired name for the core directory (default "core")
-4. The name and description of the project for configuration
-5. The URL of the Pythia repository (default https://github.com/matochu/pythia)
+3. The name and description of the project
+4. The technology stack and key features
+5. The workspace environment (Cursor, VSCode, or other)
+6. Any specific documentation requirements or preferences
 
-### Step 3: Installation Methods
+### Step 3: Workspace Integration Setup
 
-#### Method A: Git Submodule (Recommended)
+#### Method A: Standard Documentation Structure (Recommended)
 
-The main installation method:
-
-1. Check if the project is a Git repository (presence of .git directory)
-2. Create the documentation directory if it doesn't exist
-3. Add Pythia as a submodule:
-   ```bash
-   git submodule add REPOSITORY_URL PATH_TO_CORE_DIRECTORY
-   git submodule update --init --recursive
-   ```
-4. Install dependencies:
-   ```bash
-   cd PATH_TO_CORE_DIRECTORY
-   npm install
-   ```
-
-#### Method B: Direct Copying
-
-If the user wants to copy the repository without using git submodules:
+The main setup method:
 
 1. Create the documentation directory if it doesn't exist
-2. Clone the repository temporarily:
-   ```bash
-   git clone REPOSITORY_URL temp_pythia
-   ```
-3. Copy the files to the target directory:
-   ```bash
-   cp -r temp_pythia/* PATH_TO_CORE_DIRECTORY/
-   ```
-4. Delete the temporary directory:
-   ```bash
-   rm -rf temp_pythia
-   ```
-5. Install dependencies:
-   ```bash
-   cd PATH_TO_CORE_DIRECTORY
-   npm install
-   ```
+2. Create the project structure declaration file
+3. Create workspace integration guide
+4. Set up Cursor rules for documentation
+5. Create initial workflow files
 
-### Step 4: Project Configuration
+#### Method B: Custom Documentation Structure
 
-Create config.json in the documentation directory:
+If the user wants a custom documentation structure:
 
-```json
-{
-  "project": {
-    "name": "PROJECT_NAME",
-    "description": "PROJECT_DESCRIPTION",
-    "repository": "PROJECT_REPOSITORY_URL",
-    "docRoot": "DOCUMENTATION_DIRECTORY_NAME"
-  },
-  "workflows": {
-    "enabled": ["tasks", "proposals", "decisions", "ideas"]
-  },
-  "contexts": {
-    "enabled": ["project", "technical", "meetings"]
-  },
-  "folders": {
-    "workflows": "workflows",
-    "tasks": "workflows/tasks",
-    "ideas": "workflows/ideas",
-    "explorations": "workflows/ideas/explorations",
-    "proposals": "workflows/proposals",
-    "decisions": "workflows/decisions",
-    "commands": "commands",
-    "templates": "templates",
-    "methodology": "methodology",
-    "reports": "reports",
-    "navigation": "navigation",
-    "rules": "rules",
-    "contexts": "contexts"
-  },
-  "project_root": ".",
-  "docs_path": "/"
-}
+1. Create the documentation directory if it doesn't exist
+2. Adapt the structure to user's specific needs
+3. Create customized project structure declaration
+4. Set up workspace integration for the custom structure
+5. Create appropriate Cursor rules
+
+### Step 4: Create Project Structure Declaration
+
+Create `docs/project-structure.md` with project-specific information:
+
+```markdown
+# [Project Name] Project Structure
+
+## Project Overview
+
+[Project description and purpose]
+
+## Directory Structure
+
+### Core Documentation
+```
+
+docs/
+├── architecture/ # System design and technical analysis
+├── workflows/ # Project processes and management
+│ ├── tasks/ # Task documentation and tracking
+│ ├── proposals/ # Change proposals and improvements
+│ ├── decisions/ # Architecture Decision Records
+│ └── ideas/ # Early concepts and brainstorming
+├── commands/ # LLM automation and scripts
+├── contexts/ # Project context and background
+├── tutorials/ # How-to guides and tutorials
+├── requirements/ # Project requirements and specifications
+└── reports/ # Analysis reports and findings
+
+```
+
+## Key Information Sources
+
+### Architecture & Design
+- **System Design**: `docs/architecture/` - System design and technical analysis
+- **Project Management**: `docs/workflows/` - Project processes and management
+- **Automation**: `docs/commands/` - LLM automation and scripts
+
+## Project Context
+
+### Technology Stack
+- **Framework**: [Framework information]
+- **Build Tools**: [Build tools information]
+- **Styling**: [Styling approach]
+- **Testing**: [Testing framework]
+
+### Key Features
+- **[Feature 1]**: [Description]
+- **[Feature 2]**: [Description]
+- **[Feature 3]**: [Description]
+
+## Quick Reference
+
+### Where to Find Information
+- **System Architecture**: `docs/architecture/`
+- **Active Tasks**: `docs/workflows/tasks/`
+- **Change Proposals**: `docs/workflows/proposals/`
+- **Decisions**: `docs/workflows/decisions/`
+- **Automation**: `docs/commands/`
+- **Tutorials**: `docs/tutorials/`
+
+---
+
+**Last Updated**: [Current Date]
 ```
 
 ### Step 5: Creating Directory Structure
 
-Create the basic directory structure according to the configuration:
+Create the basic directory structure for workspace integration:
 
 ```
 [DOC_DIR]/
+├── architecture/          # System design and technical analysis
 ├── workflows/
-│   ├── tasks/
-│   ├── proposals/
-│   ├── decisions/
-│   └── ideas/
-│       └── explorations/
-├── contexts/
-│   ├── project/
-│   ├── technical/
-│   └── meetings/
-├── navigation/
-├── templates/
-├── methodology/
-├── commands/
-├── reports/
-└── rules/
+│   ├── tasks/            # Task documentation and tracking
+│   ├── proposals/        # Change proposals and improvements
+│   ├── decisions/        # Architecture Decision Records
+│   └── ideas/           # Early concepts and brainstorming
+├── commands/             # LLM automation and scripts
+├── contexts/             # Project context and background
+├── tutorials/            # How-to guides and tutorials
+├── requirements/        # Project requirements and specifications
+└── reports/             # Analysis reports and findings
 ```
 
 You can generate this structure with commands like:
 
-```bash
+`````bash
 # Create main directories
+mkdir -p [DOC_DIR]/architecture
 mkdir -p [DOC_DIR]/workflows/tasks
 mkdir -p [DOC_DIR]/workflows/proposals
 mkdir -p [DOC_DIR]/workflows/decisions
-mkdir -p [DOC_DIR]/workflows/ideas/explorations
-mkdir -p [DOC_DIR]/contexts/project
-mkdir -p [DOC_DIR]/contexts/technical
-mkdir -p [DOC_DIR]/contexts/meetings
-mkdir -p [DOC_DIR]/navigation
-mkdir -p [DOC_DIR]/templates
-mkdir -p [DOC_DIR]/methodology
+mkdir -p [DOC_DIR]/workflows/ideas
 mkdir -p [DOC_DIR]/commands
+mkdir -p [DOC_DIR]/contexts
+mkdir -p [DOC_DIR]/tutorials
+mkdir -p [DOC_DIR]/requirements
 mkdir -p [DOC_DIR]/reports
-mkdir -p [DOC_DIR]/rules
 
 # Create placeholder READMEs for navigation
+touch [DOC_DIR]/architecture/README.md
 touch [DOC_DIR]/workflows/README.md
+touch [DOC_DIR]/commands/README.md
 touch [DOC_DIR]/contexts/README.md
-touch [DOC_DIR]/navigation/README.md
-# ... and so on for other directories
+touch [DOC_DIR]/tutorials/README.md
+touch [DOC_DIR]/requirements/README.md
+touch [DOC_DIR]/reports/README.md
+
+# Create Cursor rules directory and file
+mkdir -p .cursor/rules
+touch .cursor/rules/documentation.mdc
+
+### Step 6: Create Workspace Integration Files
+
+#### Create Workspace Integration Guide
+
+Create `docs/workspace-integration.md`:
+
+````markdown
+# Workspace Integration Guide
+
+## Pythia Commands Usage
+
+### Available Commands
+
+- `@create-task.md` - Create task documentation
+- `@analyze-project.md` - Comprehensive project analysis
+- `@create-proposal.md` - Create change proposals
+- `@improve-typescript-files.md` - TypeScript improvements
+- `@validate-documentation.md` - Validate documentation integrity
+- `@update-documentation-map.md` - Update navigation
+
+### Project-Specific Usage
+
+#### Example Usage
+
+```bash
+# Create task for feature improvement
+@create-task.md
+
+# Context: [Project description]
+# Objective: [Specific objective]
+# Priority: [High/Medium/Low]
+# Timeline: [Time estimate]
+`````
+
 ```
 
-### Step 6: Creating Initial Workflow Files
+### File References
+
+Use `mdc:` links for workspace navigation:
+
+- `[Architecture](mdc:docs/architecture/)`
+- `[Tasks](mdc:docs/workflows/tasks/)`
+- `[Proposals](mdc:docs/workflows/proposals/)`
+
+## Project Context for LLM
+
+### Technology Stack
+
+- **Framework**: [Framework information]
+- **Build Tools**: [Build tools information]
+- **Styling**: [Styling approach]
+- **Testing**: [Testing framework]
+
+### Key Features
+
+- **[Feature 1]**: [Description]
+- **[Feature 2]**: [Description]
+- **[Feature 3]**: [Description]
+
+## LLM Guidelines
+
+### When Working with [Project Name]
+
+1. **Always consider project context** - key considerations for the specific project type
+2. **Reference existing architecture** before proposing changes
+3. **Use established patterns** for the project's technology stack
+4. **Consider project requirements** of all changes
+5. **Follow project guidelines** for the development environment
+
+---
+
+**Last Updated**: [Current Date]
+
+```
+
+### Step 7: Set Up Cursor Rules
+
+Create `.cursor/rules/documentation.mdc` with AI-friendly navigation:
+
+**IMPORTANT**: After creating this file, you need to manually add it to your Cursor workspace:
+
+1. Create the `.cursor/rules/` directory in your project root
+2. Copy the generated content below into `documentation.mdc`
+3. Restart Cursor to load the new rules
+4. The rules will provide AI with project structure understanding and navigation
+
+````markdown
+---
+description: Documentation process and project structure
+globs: docs/**/*.md
+alwaysApply: true
+---
+
+# [Project Name] Documentation Guidelines
+
+> **Note**: All documentation should be maintained in English only.
+
+## Quick Reference
+
+### Where to Find Information
+
+- **System Architecture**: [docs/architecture/](mdc:docs/architecture/) - System design and technical analysis
+- **Active Tasks**: [docs/workflows/tasks/](mdc:docs/workflows/tasks/) - Current and completed task documentation
+- **Change Proposals**: [docs/workflows/proposals/](mdc:docs/workflows/proposals/) - Proposed changes and improvements
+- **Decisions**: [docs/workflows/decisions/](mdc:docs/workflows/decisions/) - Architecture Decision Records (ADRs)
+- **Automation**: [docs/commands/](mdc:docs/commands/) - LLM automation scripts
+- **Tutorials**: [docs/tutorials/](mdc:docs/tutorials/) - How-to guides and implementation tutorials
+
+### Project Context
+
+- **Type**: [Project type]
+- **Framework**: [Framework information]
+- **Target**: [Target environment]
+- **Key Features**: [Key features]
+- **Special Requirements**: [Special requirements]
+
+## Document Navigation
+
+### Architecture Documents
+
+- [System Design](mdc:docs/architecture/system-design.md) - System architecture and design patterns
+- [API Design](mdc:docs/architecture/api-design.md) - API design and integration patterns
+- [Data Architecture](mdc:docs/architecture/data-architecture.md) - Data modeling and storage patterns
+
+### Workflow Documents
+
+- [Tasks](mdc:docs/workflows/tasks/) - Task documentation and tracking
+- [Proposals](mdc:docs/workflows/proposals/) - Change proposals and improvements
+- [Decisions](mdc:docs/workflows/decisions/) - Architecture Decision Records (ADRs)
+- [Ideas](mdc:docs/workflows/ideas/) - Early concepts and brainstorming
+
+### Automation Commands
+
+- [Analyze PR Impact](mdc:docs/commands/analyze-pull-request-impact.md) - Automated PR impact analysis
+- [Review PR](mdc:docs/commands/review-pull-request.md) - Automated PR review process
+
+### Context Documents
+
+- [Project Context](mdc:docs/contexts/) - Background information and project context
+- [Tutorials](mdc:docs/tutorials/) - How-to guides and implementation tutorials
+- [Requirements](mdc:docs/requirements/) - Project requirements and specifications
+- [Reports](mdc:docs/reports/) - Analysis reports and findings
+
+## General Principles
+
+1. **Document Interconnections**:
+
+   - Each document should be connected to other relevant documents through cross-references
+   - When creating a new document, always add a reference to it in the documentation map
+   - Related documents should contain mutual references
+
+2. **Document Structure**:
+
+   - Each document should begin with a "Summary" section describing the main content
+   - The Summary should be followed by a "Current State" section to provide context
+   - Table of contents is mandatory for documents longer than 3 sections
+
+3. **Change Context**:
+   - When updating an existing document, maintain its general structure and format
+   - New proposals should be based on existing analytical documents
+   - When creating a new proposal, first identify all related analytical documents
+
+## Folders and Their Purpose
+
+- [docs/architecture/](mdc:docs/architecture/) - System design and technical analysis
+- [docs/workflows/](mdc:docs/workflows/) - Project processes and management
+  - [docs/workflows/tasks/](mdc:docs/workflows/tasks/) - Task documentation and tracking
+  - [docs/workflows/proposals/](mdc:docs/workflows/proposals/) - Change proposals and improvements
+  - [docs/workflows/decisions/](mdc:docs/workflows/decisions/) - Architecture Decision Records
+  - [docs/workflows/ideas/](mdc:docs/workflows/ideas/) - Early concepts and brainstorming
+- [docs/commands/](mdc:docs/commands/) - LLM automation and scripts
+- [docs/contexts/](mdc:docs/contexts/) - Project context and background
+- [docs/tutorials/](mdc:docs/tutorials/) - How-to guides and tutorials
+- [docs/requirements/](mdc:docs/requirements/) - Project requirements and specifications
+- [docs/reports/](mdc:docs/reports/) - Analysis reports and findings
+
+## LLM Usage Guidelines
+
+### When Working with [Project Name]
+
+1. **Always consider project context** - key considerations for the specific project type
+2. **Reference existing architecture** before proposing changes
+3. **Use established patterns** for the project's technology stack
+4. **Consider project requirements** of all changes
+5. **Follow project guidelines** for the development environment
+
+### Command Usage Examples
+
+```bash
+# Create task for feature improvement
+@create-task.md
+
+# Context: [Project description]
+# Objective: [Specific objective]
+# Priority: [High/Medium/Low]
+# Timeline: [Time estimate]
+
+# Analyze project architecture
+@analyze-project.md
+
+# Focus: [specific focus area]
+# Context: [project context]
+# Requirements: [project requirements]
+```
+````
+
+### File References
+
+Use `mdc:` links for workspace navigation:
+
+- [System Design](mdc:docs/architecture/system-design.md)
+- [API Design](mdc:docs/architecture/api-design.md)
+- [Data Architecture](mdc:docs/architecture/data-architecture.md)
+- [Tasks](mdc:docs/workflows/tasks/)
+- [Proposals](mdc:docs/workflows/proposals/)
+
+`````
+
+### Step 8: Creating Initial Workflow Files
 
 Create essential workflow files to enable immediate use of the workflow system:
 
@@ -366,7 +592,7 @@ This report provides a centralized view of all active work items in the project 
 ```mermaid
 graph TD
     %% Add tasks and dependencies here when they are created
-````
+`````
 
 ## Progress Metrics
 
@@ -410,47 +636,76 @@ EOL
 
 ````
 
-### Step 7: Installation Verification
+### Step 9: Workspace Integration Verification
 
-After installation, verify:
+After setup, verify:
 
-1. Presence of the core directory:
+1. Presence of the documentation directory:
    ```bash
-   [ -d "PATH_TO_CORE_DIRECTORY" ] && echo "Core directory exists" || echo "Core directory missing"
+   [ -d "PATH_TO_DOC_DIR" ] && echo "Documentation directory exists" || echo "Documentation directory missing"
 ````
 
-2. Presence of the configuration file:
+2. Presence of the project structure declaration:
 
    ```bash
-   [ -f "PATH_TO_DOC_DIR/config.json" ] && echo "Config file exists" || echo "Config file missing"
+   [ -f "PATH_TO_DOC_DIR/project-structure.md" ] && echo "Project structure file exists" || echo "Project structure file missing"
    ```
 
-3. Correctness of the directory structure:
+3. Presence of workspace integration guide:
+
+   ```bash
+   [ -f "PATH_TO_DOC_DIR/workspace-integration.md" ] && echo "Workspace integration guide exists" || echo "Workspace integration guide missing"
+   ```
+
+4. Presence of Cursor rules:
+
+   ```bash
+   [ -f ".cursor/rules/documentation.mdc" ] && echo "Cursor rules exist" || echo "Cursor rules missing"
+   ```
+
+5. Correctness of the directory structure:
 
    ```bash
    ls -la PATH_TO_DOC_DIR
    ```
 
-4. Installation of npm dependencies:
-
-   ```bash
-   cd PATH_TO_CORE_DIRECTORY && npm list --depth=0
-   ```
-
-5. Presence of essential workflow files:
+6. Presence of essential workflow files:
    ```bash
    [ -f "PATH_TO_DOC_DIR/workflows/ideas/ideas-backlog.md" ] && echo "Ideas backlog exists" || echo "Ideas backlog missing"
    [ -f "PATH_TO_DOC_DIR/workflows/report.md" ] && echo "Workflows report exists" || echo "Workflows report missing"
    ```
 
+### Step 10: User Instructions
+
+After successful setup, provide the user with these instructions:
+
+#### For Human Users:
+
+1. **Read `docs/project-structure.md`** - Contains human-readable project structure with regular markdown links
+2. **Use `docs/workspace-integration.md`** - Guide for using Pythia commands in your project
+3. **Navigate using relative links** - All links in project-structure.md work in any markdown viewer
+
+#### For AI Assistant (Cursor):
+
+1. **Add Cursor rules** - Copy the generated `.cursor/rules/documentation.mdc` content to your Cursor workspace
+2. **Restart Cursor** - To load the new rules and enable AI navigation
+3. **Use `@command` syntax** - Reference Pythia commands directly in chat
+4. **Navigate with `mdc:` links** - AI can use the mdc: links in Cursor rules for navigation
+
+#### File Usage:
+
+- **`docs/project-structure.md`** - For human navigation (regular markdown links)
+- **`.cursor/rules/documentation.mdc`** - For AI navigation (mdc: links)
+- **`docs/workspace-integration.md`** - For both humans and AI (command usage guide)
+
 ### Success Criteria
 
-The installation is successful when:
+The workspace integration setup is successful when:
 
-1. The Pythia core files are properly installed (via git submodule or direct copy)
-2. The config.json file contains correct project information
-3. The directory structure is created according to configuration
-4. Dependencies are installed and available
+1. The documentation directory structure is properly created
+2. The project-structure.md file contains correct project information
+3. The workspace-integration.md file is created with project-specific content
+4. The Cursor rules are set up for documentation
 5. Essential workflow files (ideas-backlog.md and report.md) are created
 6. Basic verification steps pass without errors
 
@@ -458,97 +713,87 @@ The installation is successful when:
 
 The LLM should detect and resolve common errors:
 
-1. Missing Git (for git submodule method)
-
-   - Error message: "git: command not found"
-   - Solution: Suggest installing Git or using the direct copying method
-
-2. Project is not a Git repository (for git submodule method)
-
-   - Error message: "fatal: not a git repository"
-   - Solution: Initialize git repository with `git init` or use direct copying
-
-3. Missing Node.js/npm
-
-   - Error message: "npm: command not found"
-   - Solution: Suggest installing Node.js and npm
-
-4. Insufficient write permissions for directories
+1. Insufficient write permissions for directories
 
    - Error message: "Permission denied"
    - Solution: Suggest running with elevated permissions or changing directory ownership
 
-5. Problems accessing the Pythia repository
+2. Missing Cursor or VSCode workspace
 
-   - Error message: "Could not resolve host" or "Repository not found"
-   - Solution: Verify internet connection and repository URL
+   - Error message: "Cannot find workspace"
+   - Solution: Ensure the project is opened in Cursor or VSCode workspace
 
-6. Git conflicts
+3. Directory already exists
 
-   - Error message: "Automatic merge failed; fix conflicts and then commit the result"
-   - Solution: Suggest resolving conflicts manually or choosing a different path
+   - Error message: "Directory already exists"
+   - Solution: Check if setup was already completed, suggest backup if needed
 
-7. npm errors during dependency installation
-   - Error message: Various npm error messages
-   - Solution: Check npm log for details, ensure Node.js version compatibility
+4. File creation fails
+
+   - Error message: "Cannot create file"
+   - Solution: Check file permissions, verify disk space
+
+5. Invalid project information
+
+   - Error message: "Invalid project details"
+   - Solution: Request correct project information from user
 
 ## Troubleshooting
 
-| Problem                        | Symptoms                                 | Solution                                           |
-| ------------------------------ | ---------------------------------------- | -------------------------------------------------- |
-| Installation stuck             | No progress for several minutes          | Interrupt with Ctrl+C and retry with verbose flags |
-| Core installation fails        | Error messages about git or permissions  | Try direct copying method instead of git submodule |
-| Config file creation fails     | Error creating or writing to config.json | Check file permissions, verify JSON format         |
-| Directory structure incomplete | Missing directories after setup          | Run directory creation commands manually           |
-| npm install fails              | Error messages from npm                  | Check Node.js version, clear npm cache, retry      |
-| Workflow files not created     | Missing ideas-backlog.md or report.md    | Manually create the files using templates          |
+| Problem                      | Symptoms                                | Solution                                              |
+| ---------------------------- | --------------------------------------- | ----------------------------------------------------- |
+| Setup stuck                  | No progress for several minutes         | Interrupt with Ctrl+C and retry with verbose flags    |
+| Directory creation fails     | Error messages about permissions        | Check directory permissions, try with elevated access |
+| Project structure file fails | Error creating project-structure.md     | Check file permissions, verify markdown format        |
+| Workspace integration fails  | Error creating workspace-integration.md | Check file permissions, verify content format         |
+| Cursor rules setup fails     | Error creating .cursor/rules/           | Check directory permissions, create manually          |
+| Workflow files not created   | Missing ideas-backlog.md or report.md   | Manually create the files using templates             |
 
 ## Interaction Examples
 
-### Example 1: Basic Installation with Git
+### Example 1: Basic Workspace Integration Setup
 
-User: "Install Pythia in my project /home/user/myproject"
+User: "Set up Pythia workspace integration in my project /home/user/myproject"
 
-LLM: "To install Pythia, I need additional information:
+LLM: "To set up Pythia workspace integration, I need additional information:
 
 1. What name do you want for the documentation directory? (default 'docs')
-2. What name do you want for the core directory? (default 'core')
-3. What is the name and description of your project?"
+2. What is the name and description of your project?
+3. What is your technology stack and key features?
+4. What workspace environment are you using? (Cursor, VSCode, or other)"
 
-User: "Use the default names and the project name 'My Project'"
-
-LLM performs:
-
-1. Git repository verification
-2. Creation of the docs directory
-3. Addition of git submodule docs/core from https://github.com/matochu/pythia
-4. Installation of dependencies
-5. Creation of configuration and directory structure
-6. Creation of initial workflow files (ideas-backlog.md and report.md)
-
-### Example 2: Installation with Custom Directory Names
-
-User: "Install Pythia, but place the documentation in the 'documentation' directory, and name the core 'pythia'"
-
-LLM asks for additional information and after receiving it performs the installation with the specified directory names.
-
-### Example 3: Direct Copying without Git Submodule
-
-User: "Install Pythia in my project /home/user/myproject, but don't use git submodule, just copy the files"
+User: "Use the default name 'docs' and the project name 'My Web App', it's a React TypeScript application with Redux"
 
 LLM performs:
 
-1. Cloning a temporary copy of the repository
-2. Copying files to the specified directory
-3. Deleting the temporary directory
-4. Installing dependencies and configuring the structure
-5. Creating initial workflow files
+1. Creation of the docs directory structure
+2. Creation of project-structure.md with React TypeScript context
+3. Creation of workspace-integration.md with project-specific examples
+4. Setup of Cursor rules for documentation
+5. Creation of initial workflow files (ideas-backlog.md and report.md)
+
+### Example 2: Custom Documentation Structure
+
+User: "Set up Pythia workspace integration, but place the documentation in the 'documentation' directory"
+
+LLM asks for additional information and after receiving it performs the setup with the specified directory name.
+
+### Example 3: Project-Specific Setup
+
+User: "Set up Pythia workspace integration for my Node.js API project"
+
+LLM performs:
+
+1. Creation of documentation directory structure
+2. Creation of project-structure.md with Node.js API context
+3. Creation of workspace-integration.md with API-specific examples
+4. Setup of Cursor rules for API documentation
+5. Creation of initial workflow files
 
 ## Related Documents
 
-- [Installing Pythia Guide](../guides/installing-pythia.md)
-- [Pythia Documentation Structure](../navigation/documentation-structure.md)
-- [Configuration Reference](../guides/configuration.md)
+- [Workspace Integration Guide](../guides/workspace-integration.md)
+- [Documentation Guidelines](../methodology/documentation-guidelines.md)
 - [Update Documentation Map](../commands/update-documentation-map.md)
 
 ---

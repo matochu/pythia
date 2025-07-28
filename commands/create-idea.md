@@ -18,6 +18,25 @@ Before creating an idea document, ensure you have:
 6. [ ] Gathered any relevant metrics or data points
 7. [ ] Obtained the current date for proper document timestamping
 
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@create-idea.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@create-idea.md
+Context: My application needs performance improvements
+Objective: Create idea for caching strategy implementation
+Priority: High
+Impact: Significant user experience improvement
+```
+
 ## Command Checklist
 
 - [ ] Get current date using `date +%Y-%m-%d`
@@ -43,9 +62,13 @@ Before starting, ensure you have all necessary information:
 # Get the current date for proper timestamping
 date +%Y-%m-%d
 
-# Read configuration to access paths
-CONFIG_PATH="../config.json"
-IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
+# Determine ideas directory based on project structure
+# For standard Pythia structure: docs/workflows/ideas/
+# For custom structure: adapt to your project's documentation layout
+IDEAS_PATH="docs/workflows/ideas"
+
+# Create directory if it doesn't exist
+mkdir -p "$IDEAS_PATH"
 
 # List existing ideas to avoid duplication
 ls -la "$IDEAS_PATH"
@@ -56,13 +79,12 @@ grep -r "keyword" "$IDEAS_PATH"
 
 ## Step 2: Create the Idea File
 
-Create a new file in the ideas directory (path from config.json) using the naming convention:
+Create a new file in the ideas directory using the naming convention:
 `idea-YYYY-MM-{descriptive-name}.md`
 
 ```bash
-# Read configuration
-CONFIG_PATH="../config.json"
-IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
+# Determine ideas directory based on project structure
+IDEAS_PATH="docs/workflows/ideas"
 
 # Create new idea file
 IDEA_NAME="performance-optimization"
@@ -79,7 +101,7 @@ For example:
 
 ## Step 3: Use the Idea Template
 
-Copy the content from the [Idea Template](../templates/idea-template.md) and fill in all sections:
+Copy the content from the [Idea Template](mdc:templates/idea-template.md) and fill in all sections:
 
 1. **Metadata**:
    - Creation Date
@@ -152,9 +174,9 @@ Add references to related documents at the bottom of the idea file:
 ```markdown
 ## References
 
-- [Related Analysis](../architecture/analysis-topic.md)
-- [Similar Idea](../ideas/idea-YYYY-MM-related.md)
-- [Relevant Documentation](../documentation/topic.md)
+- [Related Analysis](mdc:docs/architecture/analysis-topic.md)
+- [Similar Idea](mdc:docs/workflows/ideas/idea-YYYY-MM-related.md)
+- [Relevant Documentation](mdc:docs/documentation/topic.md)
 
 ## Status History
 
@@ -300,9 +322,18 @@ npm run docs:report-workflows
 
 ## Related Documents
 
-- [Idea Template](../templates/idea-template.md)
-- [Ideas Backlog](../workflows/ideas/ideas-backlog.md)
-- [Idea to Proposal Workflow](../methodology/idea-to-proposal-workflow.md)
+- [Idea Template](mdc:templates/idea-template.md)
+- [Ideas Backlog](mdc:docs/workflows/ideas/ideas-backlog.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+
+## Workspace Integration Notes
+
+This command is designed for workspace integration and adapts to your project's structure:
+
+- **Idea Management**: Works with any project's documentation structure
+- **Innovation Tracking**: Maintains organized idea development for your project
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@create-idea.md` in your workspace
 - [Report Workflows](report-workflows.md)
 
 ---

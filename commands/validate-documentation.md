@@ -2,6 +2,24 @@
 
 This guide explains how to use the documentation automation scripts with Large Language Models (LLMs) and how to address common issues found by these tools.
 
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@validate-documentation.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@validate-documentation.md
+Context: My project documentation needs validation
+Focus: Check links, coverage, and documentation integrity
+Requirements: Fix broken links and update documentation map
+```
+
 ## Command Checklist
 
 Before proceeding with documentation validation, complete this checklist:
@@ -99,7 +117,7 @@ npm run docs:fix-coverage
 - Before major documentation releases
 - As part of regular documentation maintenance
 - When onboarding new team members to ensure they have a complete view of the documentation
-- After making changes that should be recorded in the [Changelog](../CHANGELOG.md)
+- After making changes that should be recorded in the [Changelog](mdc:CHANGELOG.md)
 
 ### Automated CI/CD Integration
 
@@ -182,11 +200,20 @@ For more complex issues, examine the TypeScript source code in the `scripts/docu
 
 ## References
 
-- [Guide Llm Documentation Workflow](../guides/guide-llm-documentation-workflow.md)
-- [Archive Tasks](archive-tasks.md)
-- [README](../README.md)
-- [Documentation Map](../navigation/documentation-map.md)
-- [Documentation Guidelines](../methodology/documentation-guidelines.md)
+- [Guide Llm Documentation Workflow](mdc:guides/guide-llm-documentation-workflow.md)
+- [Archive Tasks](mdc:commands/archive-tasks.md)
+- [README](mdc:README.md)
+- [Documentation Map](mdc:navigation/documentation-map.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+
+## Workspace Integration Notes
+
+This command is designed for workspace integration and adapts to your project's structure:
+
+- **Documentation Validation**: Works with any project's documentation structure
+- **Automated Scripts**: Uses npm scripts for validation and fixing
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@validate-documentation.md` in your workspace
 
 ---
 

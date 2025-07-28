@@ -20,6 +20,24 @@ Before analyzing a project, ensure you have:
 8. [ ] Knowledge of business domain and stakeholders
 9. [ ] Information about user types and their needs
 
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@analyze-project.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@analyze-project.md
+Context: My React TypeScript application needs comprehensive analysis
+Focus: Architecture, performance, and scalability
+Requirements: Document current state and identify improvement opportunities
+```
+
 ## Command Checklist
 
 - [ ] Gather general project information and context
@@ -691,10 +709,18 @@ Document your reasoning process as you analyze, noting observations, inferences,
 
 ## Related Documents
 
-- [Create Documentation Map](./update-documentation-map.md)
-- [Create Technical Overview](../templates/technical-overview-template.md)
-- [Documentation Guidelines](../methodology/documentation-guidelines.md)
-- [Project Onboarding Guide](../contexts/project/onboarding-guide.md)
+- [Create Documentation Map](mdc:commands/update-documentation-map.md)
+- [Create Technical Overview](mdc:templates/technical-overview-template.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+
+## Workspace Integration Notes
+
+This command is designed for workspace integration and adapts to your project's structure:
+
+- **Project Analysis**: Works with any project structure and technology stack
+- **Documentation Output**: Creates analysis documents in your project's docs structure
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@analyze-project.md` in your workspace
 
 ---
 

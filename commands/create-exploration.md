@@ -15,6 +15,24 @@ Before creating an exploration document, ensure you have:
 3. Identified key questions that need to be answered
 4. Obtained the current date for proper document timestamping
 
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@create-exploration.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@create-exploration.md
+Context: My idea needs technical feasibility analysis
+Objective: Create exploration for caching strategy implementation
+Focus: Technical investigation, performance analysis, implementation approaches
+```
+
 ## Command Checklist
 
 - [ ] Get current date using `date +%Y-%m-%d`
@@ -38,12 +56,14 @@ Before starting, gather all necessary information:
 date +%Y-%m-%d
 
 # Review the original idea document
-ls -la ../workflows/ideas/
+# For standard Pythia structure: docs/workflows/ideas/
+# For custom structure: adapt to your project's documentation layout
+ls -la docs/workflows/ideas/
 ```
 
 ## Step 2: Create the Exploration File
 
-Create a new file in the `../workflows/ideas/explorations/` directory using the naming convention:
+Create a new file in the `docs/workflows/ideas/explorations/` directory using the naming convention:
 `exploration-{topic}.md`
 
 For example:
@@ -54,7 +74,7 @@ For example:
 
 ## Step 3: Use the Exploration Template
 
-Copy the content from the [Exploration Template](../templates/exploration-template.md) and fill in all sections:
+Copy the content from the [Exploration Template](mdc:templates/exploration-template.md) and fill in all sections:
 
 1. **Title**: Concise, descriptive title of the exploration
 2. **Summary**: Brief overview of what is being explored
@@ -141,7 +161,7 @@ date +%Y-%m-%d
 # Output: 2025-03-19
 
 # Create the exploration file
-touch ../workflows/ideas/explorations/exploration-caching-strategy.md
+touch docs/workflows/ideas/explorations/exploration-caching-strategy.md
 
 # Copy the template contents and fill in all sections
 # ...
@@ -157,7 +177,7 @@ npm run docs:report-workflows
 
 ```bash
 # Create a comprehensive exploration with code samples
-touch ../workflows/ideas/explorations/exploration-state-management.md
+touch docs/workflows/ideas/explorations/exploration-state-management.md
 
 # Include additional technical content:
 # - Proof of concept implementation
@@ -199,9 +219,18 @@ npm run docs:report-workflows
 
 ## Related Documents
 
-- [Exploration Template](../templates/exploration-template.md)
-- [Ideas to Proposals Workflow](../methodology/ideas-to-proposals-workflow.md)
-- [Report Workflows](report-workflows.md)
+- [Exploration Template](mdc:templates/exploration-template.md)
+- [Report Workflows](mdc:commands/report-workflows.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+
+## Workspace Integration Notes
+
+This command is designed for workspace integration and adapts to your project's structure:
+
+- **Exploration Management**: Works with any project's documentation structure
+- **Technical Investigation**: Maintains organized research and analysis for your project
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@create-exploration.md` in your workspace
 
 ---
 

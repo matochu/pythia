@@ -1,274 +1,453 @@
-# Встановлення Pythia: Простий гайд
+# Workspace Integration: Pythia Documentation System
 
-Цей гайд пояснює як встановити систему документації Pythia у вашому проекті. Процес складається з **трьох кроків**:
+This guide explains how to integrate the Pythia documentation system into your workspace (Cursor, VSCode). The process consists of **two steps**:
 
-1. Завантаження і встановлення Pythia Core у проект
-2. Встановлення залежностей та налаштування конфігурації
-3. Створення проектних робочих папок
+1. Setting up workspace integration
+2. Creating project documentation structure
 
-## Передумови
+## Prerequisites
 
-Перед встановленням переконайтеся, що у вас є:
+Before integration, ensure you have:
 
-- Git (версія 2.20+) встановлений та налаштований
-- Node.js (версія 14+) та npm (версія 6+) встановлені
-- Проект з Git-репозиторієм (якщо використовуєте Git submodule)
-- Права на запис у директорію проекту
-- Доступ до репозиторію Pythia core (локально чи через GitHub)
+- Cursor or VSCode with workspace integration support
+- Write permissions in the project directory
+- Basic understanding of your project structure
+- Access to Pythia documentation system (via workspace integration)
 
-## Спосіб 1: Встановлення за допомогою LLM (рекомендовано)
+## Method 1: Workspace Integration via LLM (Recommended)
 
-LLM може автоматично виконати всі етапи встановлення в одному сеансі, аналізуючи поточний стан вашого проекту:
+LLM can automatically configure workspace integration in one session, analyzing your project's current state:
 
 ```
-Виконай команду setup.md для встановлення Pythia в мій проект за шляхом [шлях].
+Execute command @setup.md for Pythia workspace integration in my project at [path].
 ```
 
-Або з посиланням на файл команди:
+Or with command file reference:
 
 ```
-Виконай цю команду для встановлення Pythia: https://github.com/your-org/pythia/blob/main/commands/setup.md
-Мій проект знаходиться в [шлях], використовую [ОС].
+Execute this command for workspace integration: @setup.md
+My project is located at [path], using [Cursor/VSCode].
 ```
 
-> **Примітка**: Файл `setup.md` — це не просто документація, а _спеціальна команда, призначена для LLM_. Це програма, яку LLM інтерпретує і виконує автоматично, аналізуючи контекст вашого проекту.
+> **Note**: The `setup.md` file is not just documentation, but a _special command designed for LLM_. It's a program that LLM interprets and executes automatically, analyzing your project's context.
 
-LLM автоматично:
+LLM automatically:
 
-1. **Проаналізує стан вашого проекту**
+1. **Analyzes your project's state**
 
-   - Перевірить, чи Pythia core вже встановлено
-   - Якщо ні - додасть його як git-підмодуль (або symbolic link за вказівкою)
+   - Checks if documentation structure already exists
+   - If not - creates necessary directory structure
 
-2. **Налаштує середовище**
+2. **Configures workspace integration**
 
-   - Встановить необхідні npm-залежності (якщо їх немає)
-   - Створить або оновить файл конфігурації
+   - Creates `docs/project-structure.md` with project structure description
+   - Creates `docs/workspace-integration.md` with usage instructions
+   - Sets up Cursor rules for AI-assisted navigation
 
-3. **Створить структуру проекту**
-   - Налаштує необхідні директорії для документації
-   - Генерує базові README файли для навігації
+3. **Creates documentation structure**
+   - Sets up necessary documentation directories
+   - Generates basic navigation files
 
-Ви можете налаштувати встановлення, додавши до запиту:
+You can customize the integration by adding to your request:
 
 ```
-Я хочу використати такі налаштування:
-- Метод встановлення: [git/symlink]
-- Назва проекту: [Назва вашого проекту]
-- Репозиторій: [URL вашого репозиторію]
-- Шлях до робочих папок: [шлях до робочих директорій]
+I want to use these settings:
+- Project name: [Your project name]
+- Technology stack: [React/Node.js/Python/etc]
+- Key features: [TV navigation/API/UI/etc]
+- Workspace: [Cursor/VSCode]
 ```
 
-## Спосіб 2: Ручне встановлення крок за кроком
+## Method 2: Manual Workspace Integration Setup
 
-Якщо ви бажаєте мати повний контроль над процесом встановлення, ви можете виконати всі етапи вручну:
+If you want full control over the integration process, you can perform all steps manually:
 
-### Крок 1: Встановлення Pythia Core
-
-#### Через Git Submodule
+### Step 1: Create Documentation Structure
 
 ```bash
-# Перейдіть у корінь вашого проекту
-cd /шлях/до/вашого-проекту
+# Navigate to your project root
+cd /path/to/your-project
 
-# Створіть директорію docs, якщо вона не існує
+# Create docs directory if it doesn't exist
 mkdir -p docs
 
-# Додайте Pythia core як git підмодуль
-git submodule add https://github.com/your-org/pythia-core.git docs/core
-git submodule update --init --recursive
+# Create documentation structure
+mkdir -p docs/architecture
+mkdir -p docs/workflows/tasks
+mkdir -p docs/workflows/proposals
+mkdir -p docs/workflows/decisions
+mkdir -p docs/workflows/ideas
+mkdir -p docs/commands
+mkdir -p docs/contexts
+mkdir -p docs/tutorials
+mkdir -p docs/requirements
+mkdir -p docs/reports
 ```
 
-#### Через символічне посилання (для розробників)
+### Step 2: Create Workspace Integration Files
 
 ```bash
-# Перейдіть у корінь вашого проекту
-cd /шлях/до/вашого-проекту
+# Create project-structure.md
+cat > docs/project-structure.md << 'EOF'
+# [Project Name] Project Structure
 
-# Створіть директорію docs, якщо вона не існує
-mkdir -p docs
+## Project Overview
 
-# Створіть символічне посилання на вже існуюче ядро Pythia
-# Для macOS/Linux:
-ln -s /шлях/до/pythia-core docs/core
+[Project description and purpose]
 
-# Для Windows (від імені Адміністратора):
-# mklink /D C:\шлях\до\вашого-проекту\docs\core C:\шлях\до\pythia-core
+## Directory Structure
+
+### Core Documentation
 ```
 
-### Крок 2: Встановлення залежностей та налаштування
+docs/
+├── architecture/ # System design and technical analysis
+├── workflows/ # Project processes and management
+│ ├── tasks/ # Task documentation and tracking
+│ ├── proposals/ # Change proposals and improvements
+│ ├── decisions/ # Architecture Decision Records
+│ └── ideas/ # Early concepts and brainstorming
+├── commands/ # LLM automation and scripts
+├── contexts/ # Project context and background
+├── tutorials/ # How-to guides and tutorials
+├── requirements/ # Project requirements and specifications
+└── reports/ # Analysis reports and findings
 
-```bash
-# Встановіть залежності
-cd docs/core
-npm install
+````
 
-# Налаштуйте config.json
-vi config.json
-```
+## Key Information Sources
 
-Приклад базового config.json:
+### Architecture & Design
+- **System Design**: `docs/architecture/` - System design and technical analysis
+- **Project Management**: `docs/workflows/` - Project processes and management
+- **Automation**: `docs/commands/` - LLM automation and scripts
 
-```json
-{
-  "project": {
-    "name": "Назва вашого проекту",
-    "description": "Короткий опис вашого проекту",
-    "repository": "https://github.com/your-org/your-project",
-    "docRoot": "docs"
-  },
-  "workflows": {
-    "enabled": ["tasks", "proposals", "decisions", "ideas"]
-  },
-  "contexts": {
-    "enabled": ["project", "technical", "meetings"]
-  }
-}
-```
+## Project Context
 
-### Крок 3: Створення структури проекту
+### Technology Stack
+- **Framework**: [Framework information]
+- **Build Tools**: [Build tools information]
+- **Styling**: [Styling approach]
+- **Testing**: [Testing framework]
 
-```bash
-# Перейдіть у директорію docs
-cd /шлях/до/вашого-проекту/docs
+### Key Features
+- **[Feature 1]**: [Description]
+- **[Feature 2]**: [Description]
+- **[Feature 3]**: [Description]
 
-# Створіть необхідні директорії вручну
-mkdir -p workflows/tasks workflows/proposals workflows/decisions workflows/ideas
-mkdir -p contexts/project contexts/technical contexts/meetings
-```
+## Quick Reference
 
-## Спосіб 3: Автоматизоване встановлення через installCore.js
-
-Скрипт `installCore.js` автоматизує процес налаштування:
-
-```bash
-# Перейдіть в директорію core (після додавання її через git або symlink)
-cd /шлях/до/вашого-проекту/docs/core
-
-# Запустіть скрипт встановлення
-# Для Git Submodule:
-node tools/installCore.js .. --method=git
-
-# Для символічного посилання:
-node tools/installCore.js .. --method=symlink --core-path=/шлях/до/pythia-core
-
-# З власним файлом конфігурації:
-node tools/installCore.js .. --method=git --config=./моя-конфігурація.json
-```
-
-Приклад власного файлу конфігурації (моя-конфігурація.json):
-
-```json
-{
-  "project": {
-    "name": "Мій проект",
-    "description": "Проект з власною конфігурацією",
-    "repository": "https://github.com/your-org/custom-project"
-  },
-  "paths": {
-    "workflows": {
-      "base": "documentation/workflows",
-      "tasks": "documentation/workflows/tasks"
-    }
-  },
-  "features": {
-    "createReadmes": true,
-    "minimal": true
-  }
-}
-```
-
-#### Додаткові опції installCore.js
-
-Скрипт підтримує різні параметри для гнучкого налаштування:
-
-| Опція                     | Опис                                                        |
-| ------------------------- | ----------------------------------------------------------- |
-| `--method=<git\|symlink>` | Метод встановлення (git підмодуль або символічне посилання) |
-| `--core-path=<шлях>`      | Шлях до існуючого Pythia core (для методу symlink)          |
-| `--repo-url=<url>`        | URL репозиторію Pythia core (для методу git)                |
-| `--branch=<гілка>`        | Конкретна гілка для використання (для методу git)           |
-| `--config=<шлях>`         | Шлях до власного файлу конфігурації                         |
-| `--force`                 | Перезаписати існуючі файли без запиту                       |
-| `--no-deps`               | Пропустити встановлення залежностей                         |
-| `--minimal`               | Створити мінімальну структуру без прикладів                 |
-
-## Тестування встановлення
-
-Після встановлення перевірте, чи все працює коректно:
-
-```bash
-# Перевірте встановлення core
-ls -la docs/core
-
-# Перевірте структуру проекту
-ls -la docs/workflows
-ls -la docs/contexts
-
-# Перевірте структуру документації
-cd docs/core/tools
-node validateDocumentation.js ../..
-```
-
-Якщо перевірка проходить без помилок, ваше встановлення працює коректно.
-
-## Оновлення Pythia Core
-
-### Для встановлення через Git Submodule
-
-```bash
-# Перейдіть у ваш проект
-cd /шлях/до/вашого-проекту
-
-# Оновіть підмодуль до останньої версії
-git submodule update --remote docs/core
-
-# Зробіть коміт змін
-git add docs/core
-git commit -m "Оновлення Pythia core до останньої версії"
-```
-
-### Для встановлення через символічне посилання
-
-```bash
-# Перейдіть у директорію Pythia core
-cd /шлях/до/pythia-core
-
-# Отримайте останні зміни
-git pull origin main
-
-# Додаткові кроки не потрібні, оскільки символічне посилання вказує на оновлене ядро
-```
-
-## Вирішення поширених проблем
-
-| Проблема                                     | Рішення                                                                         |
-| -------------------------------------------- | ------------------------------------------------------------------------------- |
-| "git submodule add" не вдається              | Переконайтеся, що Git правильно налаштований, і у вас є доступ до репозиторію   |
-| Помилки дозволів із символічними посиланнями | У Windows переконайтеся, що запускаєте командний рядок від імені Адміністратора |
-| Помилки Node.js під час ініціалізації        | Перевірте вашу версію Node: `node --version` (має бути 14+)                     |
-| Відсутні директорії після налаштування       | Вручну створіть необхідні директорії, дотримуючись структури в цьому гайді      |
-| Команди "npm run" не знайдено                | Переконайтеся, що ви в правильній директорії і залежності були встановлені      |
-| Конфлікти Git при оновленні core             | Зробіть коміт або stash локальних змін перед оновленням підмодуля               |
-| Помилка скрипту installCore.js               | Переконайтеся, що встановлено пакет `chalk` — `npm install chalk`               |
-| Валідація документації не проходить          | Перевірте повідомлення про помилки і виправте структуру відповідно до вимог     |
-
-## Наступні кроки
-
-Після встановлення ось кілька рекомендованих дій:
-
-1. Перегляньте документ [CONCEPT](../CONCEPT.md), щоб зрозуміти принципи Pythia
-2. Дослідіть [карту документації](../navigation/documentation-map.md) для навігації
-3. Спробуйте створити свій перший документ робочого процесу за допомогою команд в директорії [commands](../commands)
-4. Перегляньте доступні [гайди](README.md) для додаткової інформації
-
-## Пов'язані документи
-
-- [Команда Setup](../commands/setup.md) - Деталі автоматизованого скрипта налаштування
-- [Скрипт installCore.js](../tools/installCore.js) - Скрипт для автоматичного встановлення ядра
-- [CONCEPT](../CONCEPT.md) - Огляд основної концепції та архітектури
-- [README](../README.md) - Основний огляд документації
+### Where to Find Information
+- **System Architecture**: `docs/architecture/`
+- **Active Tasks**: `docs/workflows/tasks/`
+- **Change Proposals**: `docs/workflows/proposals/`
+- **Decisions**: `docs/workflows/decisions/`
+- **Automation**: `docs/commands/`
+- **Tutorials**: `docs/tutorials/`
 
 ---
 
-**Останнє оновлення**: 2024-03-23
+**Last Updated**: [Current Date]
+EOF
+
+# Create workspace-integration.md
+cat > docs/workspace-integration.md << 'EOF'
+# Workspace Integration Guide
+
+## Pythia Commands Usage
+
+### Available Commands
+- `@create-task.md` - Create task documentation
+- `@analyze-project.md` - Comprehensive project analysis
+- `@create-proposal.md` - Create change proposals
+- `@improve-typescript-files.md` - TypeScript improvements
+- `@validate-documentation.md` - Validate documentation integrity
+- `@update-documentation-map.md` - Update navigation
+
+### Project-Specific Usage
+
+#### Example Usage
+```bash
+# Create task for feature improvement
+@create-task.md
+
+# Context: [Project description]
+# Objective: [Specific objective]
+# Priority: [High/Medium/Low]
+# Timeline: [Time estimate]
+````
+
+## Project Context for LLM
+
+### Technology Stack
+
+- **Framework**: [Framework information]
+- **Build Tools**: [Build tools information]
+- **Styling**: [Styling approach]
+- **Testing**: [Testing framework]
+
+### Key Features
+
+- **[Feature 1]**: [Description]
+- **[Feature 2]**: [Description]
+- **[Feature 3]**: [Description]
+
+## LLM Guidelines
+
+### When Working with [Project Name]
+
+1. **Always consider project context** - key considerations for the specific project type
+2. **Reference existing architecture** before proposing changes
+3. **Use established patterns** for the project's technology stack
+4. **Consider project requirements** of all changes
+5. **Follow project guidelines** for the development environment
+
+---
+
+**Last Updated**: [Current Date]
+EOF
+
+# Create Cursor rules
+
+mkdir -p .cursor/rules
+cat > .cursor/rules/documentation.mdc << 'EOF'
+
+---
+
+description: Documentation process and project structure
+globs: docs/\*_/_.md
+alwaysApply: true
+
+---
+
+# [Project Name] Documentation Guidelines
+
+> **Note**: All documentation should be maintained in English only.
+
+## Quick Reference
+
+### Where to Find Information
+
+- **System Architecture**: `docs/architecture/` - System design and technical analysis
+- **Active Tasks**: `docs/workflows/tasks/` - Current and completed task documentation
+- **Change Proposals**: `docs/workflows/proposals/` - Proposed changes and improvements
+- **Decisions**: `docs/workflows/decisions/` - Architecture Decision Records (ADRs)
+- **Automation**: `docs/commands/` - LLM automation scripts
+- **Tutorials**: `docs/tutorials/` - How-to guides and implementation tutorials
+
+### Key Files by Category
+
+- **System Design**: `docs/architecture/system-design.md`
+- **API Design**: `docs/architecture/api-design.md`
+- **Data Architecture**: `docs/architecture/data-architecture.md`
+- **PR Analysis**: `docs/commands/analyze-pull-request-impact.md`
+- **PR Review**: `docs/commands/review-pull-request.md`
+
+### Project Context
+
+- **Type**: [Project type]
+- **Framework**: [Framework information]
+- **Target**: [Target environment]
+- **Key Features**: [Key features]
+- **Special Requirements**: [Special requirements]
+
+## General Principles
+
+1. **Document Interconnections**:
+
+   - Each document should be connected to other relevant documents through cross-references
+   - When creating a new document, always add a reference to it in the documentation map
+   - Related documents should contain mutual references
+
+2. **Document Structure**:
+
+   - Each document should begin with a "Summary" section describing the main content
+   - The Summary should be followed by a "Current State" section to provide context
+   - Table of contents is mandatory for documents longer than 3 sections
+
+3. **Change Context**:
+   - When updating an existing document, maintain its general structure and format
+   - New proposals should be based on existing analytical documents
+   - When creating a new proposal, first identify all related analytical documents
+
+## Folders and Their Purpose
+
+- `docs/architecture/` - System design and technical analysis
+- `docs/workflows/` - Project processes and management
+  - `docs/workflows/tasks/` - Task documentation and tracking
+  - `docs/workflows/proposals/` - Change proposals and improvements
+  - `docs/workflows/decisions/` - Architecture Decision Records
+  - `docs/workflows/ideas/` - Early concepts and brainstorming
+- `docs/commands/` - LLM automation and scripts
+- `docs/contexts/` - Project context and background
+- `docs/tutorials/` - How-to guides and tutorials
+- `docs/requirements/` - Project requirements and specifications
+- `docs/reports/` - Analysis reports and findings
+
+## LLM Usage Guidelines
+
+### When Working with [Project Name]
+
+1. **Always consider project context** - key considerations for the specific project type
+2. **Reference existing architecture** before proposing changes
+3. **Use established patterns** for the project's technology stack
+4. **Consider project requirements** of all changes
+5. **Follow project guidelines** for the development environment
+
+### Command Usage Examples
+
+```bash
+# Create task for feature improvement
+@create-task.md
+
+# Context: [Project description]
+# Objective: [Specific objective]
+# Priority: [High/Medium/Low]
+# Timeline: [Time estimate]
+
+# Analyze project architecture
+@analyze-project.md
+
+# Focus: [specific focus area]
+# Context: [project context]
+# Requirements: [project requirements]
+```
+
+EOF
+
+````
+
+### Step 3: Verification and Setup
+
+```bash
+# Check that all files are created
+ls -la docs/
+ls -la .cursor/rules/
+
+# Restart Cursor to load new rules
+# (close and reopen Cursor)
+
+# Test workspace integration
+# In Cursor, try using the command:
+# @create-task.md
+````
+
+## Method 3: Advanced Workspace Integration
+
+For more complex projects, you can configure additional capabilities:
+
+### Setting up Additional Cursor Rules
+
+```bash
+# Create additional rules for specific file types
+cat > .cursor/rules/typescript.mdc << 'EOF'
+---
+description: TypeScript development guidelines
+globs: src/**/*.ts,src/**/*.tsx
+alwaysApply: true
+---
+
+# TypeScript Development Guidelines
+
+## Code Standards
+- Use strict TypeScript configuration
+- Prefer interfaces over types for object shapes
+- Use proper error handling with try-catch blocks
+- Follow naming conventions consistently
+
+## Project-Specific Patterns
+- [Add your project-specific patterns here]
+EOF
+
+# Create testing rules
+cat > .cursor/rules/testing.mdc << 'EOF'
+---
+description: Testing guidelines and patterns
+globs: **/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx
+alwaysApply: true
+---
+
+# Testing Guidelines
+
+## Test Structure
+- Use descriptive test names
+- Follow AAA pattern (Arrange, Act, Assert)
+- Mock external dependencies appropriately
+- Test both success and error scenarios
+
+## Project-Specific Testing
+- [Add your project-specific testing patterns here]
+EOF
+```
+
+### Setting up Automation
+
+```bash
+# Create script for automatic documentation updates
+cat > scripts/update-docs.sh << 'EOF'
+#!/bin/bash
+# Automatic documentation updates
+
+echo "Updating documentation..."
+
+# Update documentation map
+@update-documentation-map.md
+
+# Validate documentation
+@validate-documentation.md
+
+# Generate report
+@report-workflows.md
+
+echo "Documentation updated successfully!"
+EOF
+
+chmod +x scripts/update-docs.sh
+```
+
+## Testing the Integration
+
+After setup, verify everything works correctly:
+
+```bash
+# Check that all files are created
+ls -la docs/
+ls -la .cursor/rules/
+
+# Test workspace integration
+# In Cursor, try using commands:
+# @create-task.md
+# @analyze-project.md
+```
+
+If the test passes without errors, your integration is working correctly.
+
+## Troubleshooting Common Issues
+
+| Issue                           | Solution                                       |
+| ------------------------------- | ---------------------------------------------- |
+| Cursor rules not loading        | Restart Cursor completely                      |
+| Commands not recognized         | Check that `.cursor/rules/` directory exists   |
+| Documentation structure missing | Run the manual setup steps                     |
+| Permission errors               | Check write permissions in project directory   |
+| Path issues                     | Ensure you're in the correct project directory |
+
+## Next Steps
+
+After integration, here are some recommended actions:
+
+1. Review the [Workspace Integration Guide](mdc:guides/workspace-integration.md) for usage details
+2. Explore the [documentation map](mdc:navigation/documentation-map.md) for navigation
+3. Try creating your first workflow document using commands in the [commands](mdc:commands) directory
+4. Review available [guides](mdc:guides) for additional information
+
+## Related Documents
+
+- [Setup Command](mdc:commands/setup.md) - Details of the automated setup script
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md) - Comprehensive usage guide
+- [CONCEPT](mdc:CONCEPT.md) - Overview of core concepts and architecture
+- [README](mdc:README.md) - Main documentation overview
+
+---
+
+**Last Updated**: 2025-01-27

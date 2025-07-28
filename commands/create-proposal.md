@@ -17,6 +17,25 @@ Before creating a proposal document, ensure you have:
 5. Identified dependencies and potential impacts
 6. Considered alternatives to your proposed approach
 
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@create-proposal.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@create-proposal.md
+Context: My application needs better state management
+Objective: Propose Redux implementation strategy
+Priority: High
+Timeline: 3 weeks
+```
+
 ## Command Checklist
 
 - [ ] Get current date using `date +%Y-%m-%d`
@@ -44,15 +63,17 @@ Before starting, gather all necessary information:
 date +%Y-%m-%d
 
 # List relevant ideas and explorations for reference
-ls -la ../workflows/ideas/
-ls -la ../workflows/ideas/explorations/
+# For standard Pythia structure: docs/workflows/ideas/
+# For custom structure: adapt to your project's documentation layout
+ls -la docs/workflows/ideas/
+ls -la docs/workflows/ideas/explorations/
 ```
 
 Review all related documents to ensure you have a comprehensive understanding of the problem space and potential solutions.
 
 ## Step 2: Create the Proposal File
 
-Create a new file in the `../workflows/proposals/` directory using the naming convention:
+Create a new file in the `docs/workflows/proposals/` directory using the naming convention:
 `proposal-{topic}.md`
 
 For example:
@@ -63,7 +84,7 @@ For example:
 
 ## Step 3: Use the Proposal Template
 
-Copy the content from the [Proposal Template](../templates/proposal-template.md) and fill in all sections:
+Copy the content from the [Proposal Template](mdc:templates/proposal-template.md) and fill in all sections:
 
 1. **Title**: Concise, descriptive title of the proposal
 2. **Summary**: Brief overview of what is being proposed and why
@@ -103,7 +124,7 @@ Example:
 
 ### Update Ideas Backlog
 
-Update the ideas backlog in `../workflows/ideas/ideas-backlog.md`:
+Update the ideas backlog in `docs/workflows/ideas/ideas-backlog.md`:
 
 1. Change the status of the idea to "Transformed"
 2. Add the idea to the "Ideas Transformed into Proposals" section with a link to the new proposal
@@ -166,7 +187,7 @@ date +%Y-%m-%d
 # Output: 2025-03-18
 
 # Create the proposal file
-touch ../workflows/proposals/proposal-api-caching-strategy.md
+touch docs/workflows/proposals/proposal-api-caching-strategy.md
 
 # Copy the template contents and fill in all sections
 # ...
@@ -184,7 +205,7 @@ For more complex proposals like architecture changes or performance optimization
 
 ```bash
 # Create a comprehensive proposal with business impact analysis
-touch ../workflows/proposals/proposal-microservices-migration.md
+touch docs/workflows/proposals/proposal-microservices-migration.md
 
 # Include additional sections:
 # - Phased implementation approach
@@ -226,11 +247,18 @@ npm run docs:report-workflows
 
 ## Related Documents
 
-- [Proposal Template](../templates/proposal-template.md)
-- [Ideas to Proposals Workflow](../methodology/ideas-to-proposals-workflow.md)
-- [Ideas Backlog](../ideas/ideas-backlog.md)
-- [Documentation Guidelines](../methodology/documentation-guidelines.md)
-- [Report Workflows](report-workflows.md)
+- [Proposal Template](mdc:templates/proposal-template.md)
+- [Report Workflows](mdc:commands/report-workflows.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+
+## Workspace Integration Notes
+
+This command is designed for workspace integration and adapts to your project's structure:
+
+- **Standard Structure**: Creates proposals in `docs/workflows/proposals/`
+- **Custom Structure**: Adapts to your project's documentation layout
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@create-proposal.md` in your workspace
 
 ---
 

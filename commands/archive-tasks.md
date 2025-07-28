@@ -15,6 +15,24 @@ Before archiving a task, ensure:
 3. The task's status is marked as "Completed" in the document
 4. Any dependencies on this task have been resolved or updated
 
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@archive-tasks.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@archive-tasks.md
+Context: My project has completed tasks that need archiving
+Focus: Move completed tasks to archive, update references
+Requirements: Maintain documentation integrity and update reports
+```
+
 ## Command Checklist
 
 - [ ] Verify task is complete and status is marked as "Completed"
@@ -31,7 +49,9 @@ Before archiving, ensure the task is genuinely complete:
 
 ```bash
 # Open the task document to verify completion
-cat ../workflows/tasks/task-YYYY-MM-task-name.md | grep "Status"
+# For standard Pythia structure: docs/workflows/tasks/
+# For custom structure: adapt to your project's documentation layout
+cat docs/workflows/tasks/task-YYYY-MM-task-name.md | grep "Status"
 ```
 
 Confirm the status is "Completed" and all implementation steps are checked.
@@ -42,10 +62,12 @@ Ensure the archive directory exists:
 
 ```bash
 # Check if archive directory exists
-ls -la ../workflows/archive/tasks/
+# For standard Pythia structure: docs/workflows/archive/tasks/
+# For custom structure: adapt to your project's documentation layout
+ls -la docs/workflows/archive/tasks/
 
 # If it doesn't exist, create it
-mkdir -p ../workflows/archive/tasks/
+mkdir -p docs/workflows/archive/tasks/
 ```
 
 ## Step 3: Move Task to Archive
@@ -54,7 +76,7 @@ Move the completed task to the archive:
 
 ```bash
 # Move the task file to the archive
-mv ../workflows/tasks/task-YYYY-MM-task-name.md ../workflows/archive/tasks/
+mv docs/workflows/tasks/task-YYYY-MM-task-name.md docs/workflows/archive/tasks/
 ```
 
 ## Step 4: Update Cross-References
@@ -64,18 +86,18 @@ Update all documents that reference the archived task:
 1. Search for references to the task using:
 
    ```bash
-   grep -r "task-YYYY-MM-task-name.md" ../
+   grep -r "task-YYYY-MM-task-name.md" docs/
    ```
 
 2. For each reference found, update the link to point to the archived location:
-   - From: `../workflows/tasks/task-YYYY-MM-task-name.md`
-   - To: `../workflows/archive/tasks/task-YYYY-MM-task-name.md`
+   - From: `docs/workflows/tasks/task-YYYY-MM-task-name.md`
+   - To: `docs/workflows/archive/tasks/task-YYYY-MM-task-name.md`
 
 ## Step 5: Generate Workflows Report
 
 Update the workflows report to reflect the task archival:
 
-1. Follow the instructions in [Report Workflows](report-workflows.md)
+1. Follow the instructions in [Report Workflows](mdc:commands/report-workflows.md)
 2. Ensure the task is properly moved from "Active Tasks" to "Archived Tasks" in the report
 3. Verify the work item summary counts are updated correctly
 
@@ -96,11 +118,11 @@ Fix any issues reported by the tool.
 
 ```bash
 # Verify task completion status
-cat ../workflows/tasks/task-2025-03-refactor-api-endpoints.md | grep "Status"
+cat docs/workflows/tasks/task-2025-03-refactor-api-endpoints.md | grep "Status"
 # Output: **Status**: Completed
 
 # Move the task to the archive
-mv ../workflows/tasks/task-2025-03-refactor-api-endpoints.md ../workflows/archive/tasks/
+mv docs/workflows/tasks/task-2025-03-refactor-api-endpoints.md docs/workflows/archive/tasks/
 
 # Update cross-references (after finding them with grep)
 # Edit each file that references this task to point to the archive location
@@ -113,7 +135,7 @@ npm run docs:report-workflows
 
 ```bash
 # Create a list of completed tasks
-grep -r "Status.*Completed" ../workflows/tasks/ --include="*.md" > completed_tasks.txt
+grep -r "Status.*Completed" docs/workflows/tasks/ --include="*.md" > completed_tasks.txt
 
 # Process each completed task
 while read -r task; do
@@ -121,7 +143,7 @@ while read -r task; do
   echo "Archiving $task_file"
 
   # Move to archive
-  mv "$task_file" ../workflows/archive/tasks/
+  mv "$task_file" docs/workflows/archive/tasks/
 
   # Find and update references (would need manual editing)
   task_name=$(basename "$task_file")
@@ -140,7 +162,7 @@ npm run docs:report-workflows
 1. **Missing Archive Directory**:
 
    - Issue: Archive directory doesn't exist, causing move operation to fail
-   - Solution: Create the directory structure with `mkdir -p ../workflows/archive/tasks/`
+   - Solution: Create the directory structure with `mkdir -p docs/workflows/archive/tasks/`
 
 2. **Broken References**:
 
@@ -163,9 +185,18 @@ npm run docs:report-workflows
 
 ## Related Documents
 
-- [Task Template](../templates/task-template.md)
-- [Create Task](create-task.md)
-- [Report Workflows](report-workflows.md)
+- [Task Template](mdc:templates/task-template.md)
+- [Create Task](mdc:commands/create-task.md)
+- [Report Workflows](mdc:commands/report-workflows.md)
+
+## Workspace Integration Notes
+
+This command is designed for workspace integration and adapts to your project's structure:
+
+- **Task Archiving**: Works with any project's documentation structure
+- **Archive Management**: Maintains organized task history for your project
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@archive-tasks.md` in your workspace
 
 ---
 
