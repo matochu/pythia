@@ -42,6 +42,7 @@ Before setting up Pythia workspace integration, ensure you have:
 
 - `docs/project-structure.md` - Project overview and directory structure
 - `docs/workspace-integration.md` - Usage guide for the workspace
+- `docs/.gitignore` - Prevents accidental commits of generated docs
 - `.cursor/rules/documentation.mdc` - AI navigation rules
 - `docs/workflows/` - Task, proposal, and idea directories
 
@@ -231,6 +232,9 @@ touch [DOC_DIR]/contexts/README.md
 touch [DOC_DIR]/tutorials/README.md
 touch [DOC_DIR]/requirements/README.md
 touch [DOC_DIR]/reports/README.md
+
+# Create .gitignore in docs directory
+echo "*" > [DOC_DIR]/.gitignore
 
 # Create Cursor rules directory and file
 mkdir -p .cursor/rules
@@ -712,9 +716,15 @@ After setup, verify:
    ```
 
 6. Presence of essential workflow files:
+
    ```bash
    [ -f "PATH_TO_DOC_DIR/workflows/ideas/ideas-backlog.md" ] && echo "Ideas backlog exists" || echo "Ideas backlog missing"
    [ -f "PATH_TO_DOC_DIR/workflows/report.md" ] && echo "Workflows report exists" || echo "Workflows report missing"
+   ```
+
+7. Presence of .gitignore:
+   ```bash
+   [ -f "PATH_TO_DOC_DIR/.gitignore" ] && echo ".gitignore exists" || echo ".gitignore missing"
    ```
 
 ### Step 10: User Instructions
@@ -749,7 +759,8 @@ The workspace integration setup is successful when:
 3. The workspace-integration.md file is created with project-specific content
 4. The Cursor rules are set up for documentation
 5. Essential workflow files (ideas-backlog.md and report.md) are created
-6. Basic verification steps pass without errors
+6. The .gitignore file is created to prevent accidental commits
+7. Basic verification steps pass without errors
 
 ## Error Handling
 
