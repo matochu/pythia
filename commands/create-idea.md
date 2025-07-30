@@ -134,9 +134,10 @@ Ensure that every section is filled in with detailed information.
 Update the ideas backlog:
 
 ```bash
-# Read configuration
-CONFIG_PATH="../config.json"
-IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
+# Determine ideas directory based on project structure
+# For standard Pythia structure: docs/workflows/ideas/
+# For custom structure: adapt to your project's documentation layout
+IDEAS_PATH="docs/workflows/ideas"
 
 # Update ideas backlog
 BACKLOG_FILE="$IDEAS_PATH/ideas-backlog.md"
@@ -227,9 +228,10 @@ Fix any issues reported by these tools.
 date +%Y-%m-%d
 # Output: 2025-03-24
 
-# Read configuration
-CONFIG_PATH="../config.json"
-IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
+# Determine ideas directory based on project structure
+# For standard Pythia structure: docs/workflows/ideas/
+# For custom structure: adapt to your project's documentation layout
+IDEAS_PATH="docs/workflows/ideas"
 
 # Create the idea file
 IDEA_FILE="$IDEAS_PATH/idea-2025-03-api-caching-strategy.md"
@@ -265,9 +267,10 @@ npm run docs:report-workflows
 ### Creating a Complex Idea with Deep Analysis
 
 ```bash
-# Read configuration
-CONFIG_PATH="../config.json"
-IDEAS_PATH=$(jq -r '.paths.ideas' $CONFIG_PATH)
+# Determine ideas directory based on project structure
+# For standard Pythia structure: docs/workflows/ideas/
+# For custom structure: adapt to your project's documentation layout
+IDEAS_PATH="docs/workflows/ideas"
 
 # Create comprehensive idea with supporting research
 IDEA_FILE="$IDEAS_PATH/idea-2025-03-cross-platform-architecture.md"
@@ -320,21 +323,58 @@ npm run docs:report-workflows
    - Issue: Idea is not properly categorized or tagged
    - Solution: Review existing categories and tags, ensure consistent categorization
 
+## Self-Check Points
+
+Before completing this command, verify:
+
+- [ ] **Idea Uniqueness**: No duplicate ideas exist with similar concepts
+- [ ] **Clear Problem Statement**: Specific, observable problem is identified
+- [ ] **Complete Metadata**: All required fields are filled (title, category, impact, etc.)
+- [ ] **Proper Categorization**: Idea is correctly categorized and tagged
+- [ ] **Value Proposition**: Clear benefits and value are articulated
+- [ ] **Context Provided**: Sufficient background and context included
+- [ ] **Implementation Scope**: Implementation details are at appropriate level (not too detailed)
+- [ ] **Cross-References**: All related documents are properly linked
+- [ ] **English Content**: All content is in English
+- [ ] **File Naming**: Idea file follows naming convention `idea-YYYY-MM-topic.md`
+
+## Integration Guidelines
+
+This command integrates with other Pythia components:
+
+### Related Commands
+
+- **`@create-exploration.md`** - For ideas requiring research first
+- **`@create-proposal.md`** - For ideas ready for proposal development
+- **`@report-workflows.md`** - To generate workflow status reports
+- **`@validate-documentation.md`** - To validate idea documentation
+
+### Template Integration
+
+- Uses `templates/idea-template.md` for consistent structure
+- Follows metadata standards for proper categorization
+- Integrates with ideas backlog system
+
+### Workspace Integration
+
+- **Standard Structure**: Creates ideas in `docs/workflows/ideas/`
+- **Custom Structure**: Adapts to your project's documentation layout
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@create-idea.md` in your workspace
+
+### Methodology Integration
+
+- **Ideas to Proposals Workflow**: This command is the first step in the structured workflow for transforming ideas into implemented features. The typical flow is:
+  1. **Idea** → 2. **Exploration** → 3. **Proposal** → 4. **Decision** → 5. **Task** → 6. **Implementation**
+- Ideas should be clearly documented, explored, and formalized according to this workflow. See [Ideas to Proposals Workflow](mdc:methodology/ideas-to-proposals-workflow.md).
+- **Context Documentation**: For background, rationale, and domain knowledge, reference or create context documents as described in [Context Documentation](mdc:methodology/context-documentation.md).
+
 ## Related Documents
 
 - [Idea Template](mdc:templates/idea-template.md)
 - [Ideas Backlog](mdc:docs/workflows/ideas/ideas-backlog.md)
 - [Workspace Integration Guide](mdc:guides/workspace-integration.md)
-
-## Workspace Integration Notes
-
-This command is designed for workspace integration and adapts to your project's structure:
-
-- **Idea Management**: Works with any project's documentation structure
-- **Innovation Tracking**: Maintains organized idea development for your project
-- **Cross-References**: Uses `mdc:` links for workspace navigation
-- **Command Usage**: Reference with `@create-idea.md` in your workspace
-- [Report Workflows](report-workflows.md)
+- [Report Workflows](mdc:commands/report-workflows.md)
 
 ---
 

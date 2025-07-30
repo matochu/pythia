@@ -2,14 +2,36 @@
 
 This guide provides step-by-step instructions for Large Language Models (LLMs) to update the Summary Documents Registry in the project.
 
+## Purpose
+
+This command provides a structured approach to maintaining the Summary Documents Registry, ensuring proper tracking of summary documents and their maintenance schedules across the project.
+
 ## Prerequisites
 
 Before updating the Summary Documents Registry, ensure you have:
 
 1. Identified any new or modified summary documents in the project
 2. Obtained the current date for proper document timestamping
-3. Reviewed the existing Summary Documents Registry (`../navigation/summary-documents-registry.md`)
+3. Reviewed the existing Summary Documents Registry (`docs/navigation/summary-documents-registry.md`)
 4. Understood the purpose and scope of any new summary documents
+
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@update-summary-registry.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@update-summary-registry.md
+Context: My project has new summary documents
+Objective: Update registry with new summary documents
+Documents: Added architecture overview, updated component analysis
+```
 
 ## Command Checklist
 
@@ -32,7 +54,7 @@ Before proceeding with registry update, complete this checklist:
 
 First, review the current state of the Summary Documents Registry:
 
-1. Open `../navigation/summary-documents-registry.md`
+1. Open `docs/navigation/summary-documents-registry.md`
 2. Understand the current organization and categories of summary documents
 3. Note any patterns in how documents are categorized and described
 4. Check for any pending documents that may have been completed
@@ -64,7 +86,7 @@ For each document that needs to be added or updated:
 For example:
 
 ```markdown
-| [Component Analysis](../architecture/component-analysis.md) | Aggregator | Component implementations | UI Team | Manual | When patterns change | 2025-03-15 |
+| [Component Analysis](mdc:docs/architecture/component-analysis.md) | Aggregator | Component implementations | UI Team | Manual | When patterns change | 2025-03-15 |
 ```
 
 ## Step 4: Update Pending Documents Section
@@ -94,7 +116,7 @@ At the bottom of the document, update the "Last Updated" date to the current dat
 
 ## Step 7: Update Changelog
 
-Add an entry to `../CHANGELOG.md` about the registry update:
+Add an entry to `CHANGELOG.md` about the registry update:
 
 1. Under the current date section (or create a new one if needed)
 2. Add to the "Changed" subsection:

@@ -63,12 +63,18 @@ This document serves as a central navigation hub for all architectural and syste
 
 ### Methodologies
 
-| Document                                                                         | Description                                        | Key Sections                                     |
-| -------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------ |
-| [Prioritization Methods](../methodology/prioritization-methods.md)               | Decision-making frameworks                         | ICE, RICE, User Pain vs Dev Effort, WSJF         |
-| [Implementation Approach](../methodology/implementation-approach.md)             | Standardized approach to implementing improvements | R&D, Preparation, Full Integration, Optimization |
-| [Technical Debt Prioritization](../methodology/technical-debt-prioritization.md) | Technical debt prioritization methodology          | Assessment Criteria, Scoring System, Workflow    |
-| [Context Documentation](../methodology/context-documentation.md)                 | Methodology for context documents                  | Document Types, Structure, Usage, Examples       |
+| Document                                                                                     | Description                                        | Key Sections                                       |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------- |
+| [Prioritization Methods](../guides/prioritization-methods.md)                                | Decision-making frameworks                         | ICE, RICE, User Pain vs Dev Effort, WSJF           |
+| [Implementation Approach](../processes/implementation-approach.md)                           | Standardized approach to implementing improvements | R&D, Preparation, Full Integration, Optimization   |
+| [Technical Debt Prioritization](../guides/technical-debt-prioritization.md)                  | Technical debt prioritization methodology          | Assessment Criteria, Scoring System, Workflow      |
+| [Context Documentation](../methodology/context-documentation.md)                             | Methodology for context documents                  | Document Types, Structure, Usage, Examples         |
+| [Methodology Integration Guide](../methodology/methodology-integration-guide.md)             | Unified methodology integration framework          | Integration Patterns, Usage Guidelines, Examples   |
+| [Methodology Usage Guide](../methodology/methodology-usage-guide.md)                         | Practical guide for applying methodologies         | Application Patterns, Decision Frameworks, Tools   |
+| [Methodology Application Patterns](../methodology/methodology-application-patterns.md)       | Standardized patterns for methodology application  | Pattern Types, Usage Examples, Best Practices      |
+| [Methodology Consistency Checker](../methodology/methodology-consistency-checker.md)         | Framework for validating methodology consistency   | Validation Criteria, Quality Metrics, Tools        |
+| [Methodology Effectiveness Framework](../methodology/methodology-effectiveness-framework.md) | Framework for measuring methodology effectiveness  | Measurement Criteria, Success Metrics, Tools       |
+| [Documentation Guidelines](../methodology/documentation-guidelines.md)                       | Guidelines for LLMs working with documentation     | Documentation Standards, Cross-References, Quality |
 
 ## Architecture Decisions
 
@@ -82,14 +88,33 @@ This document serves as a central navigation hub for all architectural and syste
 
 ## Guides
 
-| Document                                                                    | Description                                             |
-| --------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [LLM Documentation Workflow](../guides/guide-llm-documentation-workflow.md) | Guide on using LLM for effective documentation workflow |
+| Document                                                                    | Description                                              |
+| --------------------------------------------------------------------------- | -------------------------------------------------------- |
+| [LLM Documentation Workflow](../guides/guide-llm-documentation-workflow.md) | Guide on using LLM for effective documentation workflow  |
+| [Workspace Integration](../guides/workspace-integration.md)                 | Guide for integrating Pythia into project workspaces     |
+| [Installing Pythia](../guides/installing-pythia.md)                         | Guide for setting up Pythia in a project workspace       |
+| [Prioritization Methods](../guides/prioritization-methods.md)               | Decision-making frameworks and prioritization methods    |
+| [Technical Debt Prioritization](../guides/technical-debt-prioritization.md) | Technical debt assessment and prioritization methodology |
+
+## Processes
+
+| Document                                                                   | Description                                        |
+| -------------------------------------------------------------------------- | -------------------------------------------------- |
+| [Implementation Approach](../processes/implementation-approach.md)         | Standardized approach to implementing improvements |
+| [Ideas to Proposals Workflow](../processes/ideas-to-proposals-workflow.md) | Workflow from ideas to implementation              |
 
 ## Tasks
 
-| Document | Description |
-| -------- | ----------- |
+| Document                                                                                                    | Description                                               |
+| ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| [Commands and Methodology Improvement](../workflows/tasks/task-2025-07-commands-methodology-improvement.md) | Task for improving commands and methodology integration   |
+| [Command-Methodology Integration](../workflows/tasks/task-2025-07-command-methodology-integration.md)       | Task for integrating methodologies into existing commands |
+| [Documentation Validation Fixes](../workflows/tasks/task-2025-07-documentation-validation-fixes.md)         | Task for fixing documentation validation issues           |
+| [Fix Coordination Logic TODOs](../workflows/tasks/task-2025-06-08-fix-coordination-logic-todos.md)          | Task for fixing coordination logic TODO items             |
+| [Implement Context Documents](../workflows/tasks/task-2025-03-implement-context-documents.md)               | Task for implementing context document system             |
+| [Knowledge Sharing](../workflows/tasks/task-2025-03-knowledge-sharing.md)                                   | Task for implementing knowledge sharing system            |
+| [Documentation Base Update](../workflows/tasks/task-2025-03-documentation-base-update.md)                   | Task for updating documentation base                      |
+| [Documentation Automation](../workflows/tasks/task-2025-03-documentation-automation.md)                     | Task for implementing documentation automation            |
 
 ## LLM Rules and Guidelines
 
@@ -116,18 +141,33 @@ This document serves as a central navigation hub for all architectural and syste
 
 ### Documentation Automation
 
-| Document                                                            | Description                                   | Key Sections                                                |
-| ------------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------- |
-| [Validate Documentation](../commands/validate-documentation.md)     | Guide for documentation validation tools      | Link Validation, Coverage Checking, Manual Fixing           |
-| [Create Task](../commands/create-task.md)                           | Guide for creating task documents             | File Creation, Template Usage, Cross-References, Validation |
-| [Create Proposal](../commands/create-proposal.md)                   | Guide for creating proposal documents         | Proposal Structure, Implementation Guidance, Validation     |
-| [Create Idea](../commands/create-idea.md)                           | Guide for creating idea documents             | Idea Structure, Classification, References                  |
-| [Create Exploration](../commands/create-exploration.md)             | Guide for creating exploration documents      | Research Structure, Methodology, Findings                   |
-| [Update Summary Registry](../commands/update-summary-registry.md)   | Guide for updating summary documents registry | Registry Maintenance, Document Categorization, Verification |
-| [Update Changelog](../commands/update-changelog.md)                 | Guide for updating the project changelog      | Change Categorization, Entry Formatting, Verification       |
-| [Archive Tasks](../commands/archive-tasks.md)                       | Guide for archiving completed tasks           | Identification, Verification, Archiving Process, References |
-| [Update Documentation Map](../commands/update-documentation-map.md) | Guide for updating the documentation map      | Missing Documents, Categorization, Recent Document Tracking |
-| [Report Workflows](../commands/report-workflows.md)                 | Command for reporting on work item statuses   | Status Reports, Work Items                                  |
+| Document                                                              | Description                                      | Key Sections                                                |
+| --------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------- |
+| [Validate Documentation](../commands/validate-documentation.md)       | Guide for documentation validation tools         | Link Validation, Coverage Checking, Manual Fixing           |
+| [Create Task](../commands/create-task.md)                             | Guide for creating task documents                | File Creation, Template Usage, Cross-References, Validation |
+| [Create Proposal](../commands/create-proposal.md)                     | Guide for creating proposal documents            | Proposal Structure, Implementation Guidance, Validation     |
+| [Create Idea](../commands/create-idea.md)                             | Guide for creating idea documents                | Idea Structure, Classification, References                  |
+| [Create Exploration](../commands/create-exploration.md)               | Guide for creating exploration documents         | Research Structure, Methodology, Findings                   |
+| [Update Summary Registry](../commands/update-summary-registry.md)     | Guide for updating summary documents registry    | Registry Maintenance, Document Categorization, Verification |
+| [Update Changelog](../commands/update-changelog.md)                   | Guide for updating the project changelog         | Change Categorization, Entry Formatting, Verification       |
+| [Archive Tasks](../commands/archive-tasks.md)                         | Guide for archiving completed tasks              | Identification, Verification, Archiving Process, References |
+| [Update Documentation Map](../commands/update-documentation-map.md)   | Guide for updating the documentation map         | Missing Documents, Categorization, Recent Document Tracking |
+| [Report Workflows](../commands/report-workflows.md)                   | Command for reporting on work item statuses      | Status Reports, Work Items                                  |
+| [Validate Command](../commands/validate-command.md)                   | Guide for validating command quality             | Quality Rubric, Safety Checks, Production Standards         |
+| [Maintain Documentation](../commands/maintain-documentation.md)       | Guide for ongoing documentation maintenance      | Maintenance Schedule, Quality Checks, Updates               |
+| [Collaborate Documentation](../commands/collaborate-documentation.md) | Guide for team-based documentation collaboration | Team Workflows, Review Processes, Integration               |
+| [Create Command](../commands/create-command.md)                       | Guide for creating new commands                  | Command Structure, Quality Standards, Validation            |
+| [Analyze Architecture](../commands/analyze-architecture.md)           | Guide for analyzing system architecture          | Architecture Review, Component Analysis, Recommendations    |
+| [Analyze Project](../commands/analyze-project.md)                     | Guide for comprehensive project analysis         | Project Assessment, Technical Debt, Improvement Areas       |
+| [Sync Confluence](../commands/sync-confluence.md)                     | Guide for synchronizing with Confluence          | Confluence Integration, Content Sync, Best Practices        |
+| [Setup](../commands/setup.md)                                         | Guide for setting up Pythia in a project         | Installation, Configuration, Workspace Integration          |
+| [Complete Exploration](../commands/complete-exploration.md)           | Guide for completing exploration documents       | Exploration Closure, Findings Summary, Next Steps           |
+| [Generate PR Description](../commands/gen-pr-description.md)          | Guide for generating pull request descriptions   | PR Templates, Change Summaries, Review Guidelines           |
+| [Update Command](../commands/update-command.md)                       | Guide for updating existing commands             | Command Updates, Quality Checks, Validation                 |
+| [Improve Instruction Spark](../commands/improve-instruction-spark.md) | Guide for improving instructions using Spark     | Spark Principles, Quality Enhancement, Best Practices       |
+| [Improve Instruction](../commands/improve-instruction.md)             | Guide for improving instruction quality          | Quality Standards, Enhancement Process, Validation          |
+| [Improve TypeScript Files](../commands/improve-typescript-files.md)   | Guide for improving TypeScript code quality      | Code Quality, Type Safety, Best Practices                   |
+| [Update Status](../commands/update-status.md)                         | Guide for updating work item statuses            | Status Updates, Progress Tracking, Communication            |
 
 ## Ideas and Early Concepts
 
@@ -139,9 +179,9 @@ This document serves as a central navigation hub for all architectural and syste
 
 ### Example Ideas and Explorations
 
-| Document                                                                      | Description                           | Key Sections                                        |
-| ----------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------- |
-| [Ideas and Proposals Workflow](../methodology/ideas-to-proposals-workflow.md) | Workflow from ideas to implementation | Ideation, Research, Proposal, Tasks, Implementation |
+| Document                                                                    | Description                           | Key Sections                                        |
+| --------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------- |
+| [Ideas and Proposals Workflow](../processes/ideas-to-proposals-workflow.md) | Workflow from ideas to implementation | Ideation, Research, Proposal, Tasks, Implementation |
 
 ## Templates
 
@@ -154,6 +194,13 @@ This document serves as a central navigation hub for all architectural and syste
 | [Context Template](../templates/context-template.md)                            | Template for context documentation     | Context Type, Key Information, Relationships       |
 | [Technical Debt Assessment](../templates/technical-debt-assessment-template.md) | Template for technical debt assessment | Impact Analysis, Effort Estimation, Priority Score |
 
+## Analysis Documents
+
+| Document                                                                          | Description                                         | Key Sections                                        |
+| --------------------------------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------- |
+| [Command-Methodology Integration](../analysis-command-methodology-integration.md) | Analysis of integrating methodologies into commands | Integration Patterns, Implementation Plan, Benefits |
+| [Methodology Framework Gaps](../analysis-methodology-framework-gaps.md)           | Analysis of gaps in methodology framework           | Gap Identification, Improvement Areas, Solutions    |
+
 ---
 
-**Last Updated**: 2025-03-22
+**Last Updated**: 2025-07-29

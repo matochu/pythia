@@ -14,8 +14,26 @@ Before updating a command document, ensure you have:
 2. [ ] Collected feedback or usage experience related to the command
 3. [ ] Determined the scope of necessary changes (minor corrections vs. major restructuring)
 4. [ ] Obtained the current date for proper document timestamping
-5. [ ] Verified access to the project's configuration file (../config.json)
+5. [ ] Verified access to the project's documentation structure
 6. [ ] Backed up the original command document
+
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@update-command.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@update-command.md
+Context: My project's create-task command needs improvement
+Objective: Update command based on user feedback
+Scope: Add workspace integration and improve clarity
+```
 
 ## Command Checklist
 
@@ -38,18 +56,18 @@ Thoroughly review the existing command document to understand its structure, pur
 # Get the current date for proper timestamping
 date +%Y-%m-%d
 
-# Read project configuration to access paths
-CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
+# Determine commands directory based on project structure
+# For standard Pythia structure: docs/commands/
+# For custom structure: adapt to your project's documentation layout
+COMMANDS_PATH="docs/commands"
 
 # Create a backup of the original command
 COMMAND_NAME="command-to-update.md"
 BACKUP_NAME="$COMMAND_NAME.backup-$(date +%Y%m%d)"
-cp "$PROJECT_ROOT$DOCS_PATH/commands/$COMMAND_NAME" "$PROJECT_ROOT$DOCS_PATH/commands/$BACKUP_NAME"
+cp "$COMMANDS_PATH/$COMMAND_NAME" "$COMMANDS_PATH/$BACKUP_NAME"
 
 # View the content of the command
-cat "$PROJECT_ROOT$DOCS_PATH/commands/$COMMAND_NAME"
+cat "$COMMANDS_PATH/$COMMAND_NAME"
 ```
 
 During analysis, identify:

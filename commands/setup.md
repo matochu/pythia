@@ -28,6 +28,48 @@ Before setting up Pythia workspace integration, ensure you have:
 - [ ] Verify workspace integration
 - [ ] Handle any errors encountered
 
+## Quick Reference
+
+### Setup Process Overview
+
+1. **Project Analysis** - Determine current state and requirements
+2. **Information Gathering** - Collect project details and preferences
+3. **Structure Creation** - Create documentation directory and files
+4. **Workspace Integration** - Set up Cursor rules and guides
+5. **Verification** - Test workspace integration functionality
+
+### Key Files Created
+
+- `docs/project-structure.md` - Project overview and directory structure
+- `docs/workspace-integration.md` - Usage guide for the workspace
+- `.cursor/rules/documentation.mdc` - AI navigation rules
+- `docs/workflows/` - Task, proposal, and idea directories
+
+### Common Setup Commands
+
+```bash
+# Create documentation structure
+mkdir -p docs/workflows/{tasks,proposals,ideas,decisions}
+mkdir -p docs/{architecture,methodology,guides,navigation}
+
+# Create project structure file
+touch docs/project-structure.md
+
+# Create workspace integration guide
+touch docs/workspace-integration.md
+
+# Create Cursor rules directory
+mkdir -p .cursor/rules
+touch .cursor/rules/documentation.mdc
+```
+
+### Workspace Integration Features
+
+- **@command syntax** - Reference commands in any workspace
+- **mdc: links** - AI-specific navigation for Cursor
+- **Project structure declaration** - Human-readable project overview
+- **Workspace guides** - Project-specific usage instructions
+
 ## Project Analysis and Workspace Integration Setup
 
 When a user asks to execute the setup command, the LLM should determine:

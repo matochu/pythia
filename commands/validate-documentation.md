@@ -1,6 +1,14 @@
 # Command: Validate Documentation
 
-This guide explains how to use the documentation automation scripts with Large Language Models (LLMs) and how to address common issues found by these tools.
+> **IMPORTANT**: This command provides a systematic, production-ready process for validating documentation integrity, link consistency, and coverage completeness. It is designed for use by LLMs and human reviewers to ensure all documentation meets the highest standards of accuracy, completeness, and navigability.
+
+## Quick Reference
+
+- **Purpose**: Validate documentation for links, coverage, and integrity
+- **Key Steps**: Preparation → Link Validation → Coverage Check → Fix Issues → Verify
+- **Self-Check**: Use the Self-Check Points section before finalizing
+- **Methodology**: Integrate validation frameworks for comprehensive checking
+- **Safety**: Stop and request clarification if validation requirements are unclear
 
 ## Workspace Usage
 
@@ -167,6 +175,35 @@ While the `--fix` options can automatically address some issues (adding reciproc
 
 LLMs should always check the script output carefully, address issues manually that the automated fixes can't handle, and run the validation again to confirm all issues are resolved.
 
+## Examples
+
+### Basic Example: Standard Documentation Validation
+
+```bash
+# Validate documentation for a typical project
+@validate-documentation.md
+Context: Validate all documentation in my React project
+Focus: Check links, coverage, and documentation integrity
+```
+
+### Edge Case Example: Complex Link Structure with mdc: Links
+
+```bash
+# Validate documentation with mdc: links and complex structure
+@validate-documentation.md
+Context: Validate documentation with mdc: links and workspace-specific references
+# Expected: Scripts should handle mdc: links correctly and report any issues
+```
+
+### Acceptance Criteria
+
+- All validation scripts run without errors
+- All broken links are identified and fixed
+- Documentation coverage meets project standards
+- mdc: links are properly validated
+- Cross-references are complete and accurate
+- Validation reports are generated successfully
+
 ## Best Practices for LLMs Working with Documentation
 
 1. **Understand the Document Hierarchy**: Familiarize yourself with the project's documentation structure before making changes.
@@ -198,6 +235,74 @@ If you identify potential improvements to these scripts:
 
 For more complex issues, examine the TypeScript source code in the `scripts/documentation` directory.
 
+## Safety & Stop Conditions
+
+- **No Hallucination**: If validation requirements are unclear, STOP and request clarification
+- **Stop Conditions**:
+  - Missing validation scripts or tools
+  - Conflicting validation results
+  - Insufficient permissions to access documentation
+  - Critical broken links that cannot be resolved
+- **Fallback**: Use default validation settings only if explicitly allowed
+- **Request Help**: If stuck with complex validation issues, escalate to a human reviewer
+
+## Self-Check Points
+
+Before completing this command, verify:
+
+- [ ] **Validation Scripts**: All validation scripts are working correctly
+- [ ] **Link Validation**: All broken links are identified and fixed
+- [ ] **Coverage Check**: Documentation coverage meets project standards
+- [ ] **Reciprocal Links**: All documents have proper bidirectional links
+- [ ] **Documentation Map**: Map is updated and accurate
+- [ ] **Error Resolution**: All validation errors are addressed
+- [ ] **Automated Fixes**: Script fixes are applied where appropriate
+- [ ] **Manual Fixes**: Complex issues are manually resolved
+- [ ] **Consistent Formatting**: All documents follow consistent formatting
+- [ ] **Cross-References**: All related documents are properly linked
+
+## Quality Rubric
+
+| Dimension           | 1 (Low)         | 3 (Medium)      | 5 (High)                 |
+| ------------------- | --------------- | --------------- | ------------------------ |
+| **Clarity**         | Unclear process | Mostly clear    | Crystal clear process    |
+| **Determinism**     | Ambiguous steps | Some ambiguity  | Fully deterministic      |
+| **Testability**     | No validation   | Basic checks    | Comprehensive validation |
+| **Safety**          | No safety rules | Basic safety    | Robust safety/fallback   |
+| **Completeness**    | Major gaps      | Minor gaps      | Complete coverage        |
+| **Maintainability** | Hard to update  | Moderate effort | Easy to maintain         |
+
+## Methodology Integration
+
+- **Methodology Consistency Checker**: Use for systematic validation of documentation quality and consistency
+- **Methodology Application Patterns**: Apply consistent validation patterns across all documentation
+- **Methodology Effectiveness Framework**: Measure the impact of documentation validation improvements
+- **Documentation Guidelines**: Follow established guidelines for documentation structure and cross-referencing
+
+## Integration Guidelines
+
+This command integrates with other Pythia components:
+
+### Related Commands
+
+- **`@update-documentation-map.md`** - To update the documentation map
+- **`@report-workflows.md`** - To generate workflow status reports
+- **`@archive-tasks.md`** - To archive completed tasks
+- **`@create-task.md`** - To create tasks for documentation improvements
+
+### Template Integration
+
+- Uses validation standards for consistent checking
+- Follows documentation guidelines for proper structure
+- Integrates with automated validation workflow
+
+### Workspace Integration
+
+- **Standard Structure**: Works with any project's documentation structure
+- **Automated Scripts**: Uses npm scripts for validation and fixing
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@validate-documentation.md` in your workspace
+
 ## References
 
 - [Guide Llm Documentation Workflow](mdc:guides/guide-llm-documentation-workflow.md)
@@ -205,16 +310,17 @@ For more complex issues, examine the TypeScript source code in the `scripts/docu
 - [README](mdc:README.md)
 - [Documentation Map](mdc:navigation/documentation-map.md)
 - [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+- [Methodology Consistency Checker](mdc:methodology/methodology-consistency-checker.md)
+- [Methodology Application Patterns](mdc:methodology/methodology-application-patterns.md)
+- [Methodology Effectiveness Framework](mdc:methodology/methodology-effectiveness-framework.md)
+- [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
 
-## Workspace Integration Notes
+## Versioning & Iteration
 
-This command is designed for workspace integration and adapts to your project's structure:
-
-- **Documentation Validation**: Works with any project's documentation structure
-- **Automated Scripts**: Uses npm scripts for validation and fixing
-- **Cross-References**: Uses `mdc:` links for workspace navigation
-- **Command Usage**: Reference with `@validate-documentation.md` in your workspace
+- **Iterative Improvement**: This command should be reviewed and improved regularly using validation frameworks and methodology integration
+- **Version Tracking**: Update the "Last Updated" line with each major change
+- **Feedback**: Incorporate reviewer and user feedback in each iteration
 
 ---
 
-**Last Updated**: 2025-03-11
+**Last Updated**: 2025-07-29

@@ -20,6 +20,17 @@ Brief description of the task's background and why it's important. This should p
 - How does it relate to overall project goals?
 - What triggered the need for this task?
 
+**Related Context Documents:**
+
+- [Context Document 1](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
+- [Context Document 2](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
+
+**Context Analysis:**
+
+- Key insights from context documents that informed this task
+- Decisions made based on context analysis
+- Risk factors identified through context review
+
 ## Objectives
 
 Clear, concise list of what this task aims to achieve:

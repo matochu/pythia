@@ -58,7 +58,7 @@ Commands automatically adapt to your project's structure:
 
 ```bash
 # Specify your project structure
-My project is a React TypeScript web application
+My project is a web application
 My docs are in ./docs directory
 My project uses Redux for state management
 
@@ -73,7 +73,7 @@ Use `mdc:` links for workspace-aware file references:
 ```markdown
 # Reference project files
 
-[Project Architecture](mdc:docs/architecture/overview.md)
+[Project Architecture](mdc:navigation/documentation-map.md)
 
 # Reference Pythia commands
 
@@ -181,7 +181,7 @@ vi config.json
 # Create task for feature improvement
 @create-task.md
 
-# Context: React TypeScript web application
+# Context: Web application
 # Objective: Improve user navigation system
 # Priority: High
 # Timeline: 2 weeks
@@ -218,7 +218,7 @@ vi config.json
 
 ```bash
 # Essential project information
-My project is a React TypeScript application
+My project is a web application
 My docs are in ./docs directory
 My project uses Redux for state management
 
@@ -235,7 +235,7 @@ I need to optimize performance
 @create-task.md
 
 # With specific requirements
-Create a task for improving user navigation in my React TypeScript application
+Create a task for improving user navigation in my application
 
 # With project context
 Execute this command for my project at /path/to/your-project
@@ -534,8 +534,8 @@ These tests ensure that our documentation validation tools work correctly, parti
 ## References
 
 - [CONCEPT](CONCEPT.md)
-- [Improvement Roadmap](architecture/improvement-roadmap.md)
-- [Documentation Structure](navigation/documentation-structure.md)
+- [Improvement Roadmap](CONCEPT.md)
+- [Documentation Structure](navigation/documentation-map.md)
 - [Documentation Map](navigation/documentation-map.md)
 - [Documentation Standards](navigation/documentation-standards.md)
 - [Documentation Guidelines](methodology/documentation-guidelines.md)

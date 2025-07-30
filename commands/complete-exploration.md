@@ -2,6 +2,10 @@
 
 This guide provides step-by-step instructions for completing an exploration document and determining the next steps in the workflow.
 
+## Purpose
+
+This command provides a structured approach to finalizing exploration documents and determining appropriate next steps in the documentation workflow, ensuring proper closure of research phases and clear transition to implementation.
+
 ## Prerequisites
 
 Before completing an exploration document, ensure:
@@ -9,6 +13,25 @@ Before completing an exploration document, ensure:
 1. All research questions have been answered with clear conclusions
 2. All required sections of the exploration template are filled
 3. The document has been reviewed for completeness and accuracy
+
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@complete-exploration.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@complete-exploration.md
+Context: My project's authentication exploration is complete
+Objective: Finalize exploration and determine next steps
+Exploration: User authentication implementation research
+Next Steps: Create proposal or task based on complexity
+```
 
 ## Command Checklist
 

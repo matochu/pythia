@@ -4,11 +4,11 @@ globs: docs/workflows/tasks/*.md
 alwaysApply: false
 ---
 
-# Task Management Workflow for Thea Project
+# Task Management Workflow
 
 ## Overview
 
-This rule defines the comprehensive workflow for managing complex tasks in the Thea project, based on evidence-based analysis and proper documentation practices. It emphasizes planning first, documenting context, and making informed architectural decisions.
+This rule defines the comprehensive workflow for managing complex tasks in any project, based on evidence-based analysis and proper documentation practices. It emphasizes planning first, documenting context, and making informed architectural decisions.
 
 ## Core Principles
 
@@ -53,13 +53,13 @@ Context documents should inform:
 
 ### 3. Task Documentation Structure
 
-Create task files in [docs/workflows/tasks/](mdc:thea/docs/workflows/tasks) following the naming convention:
+Create task files in [docs/workflows/tasks/](mdc:docs/workflows/tasks) following the naming convention:
 
 ```
 task-YYYY-MM-DD-{topic}.md
 ```
 
-Use this structure based on [task-2025-05-dependency-analysis-ddd-layers.md](mdc:thea/docs/workflows/tasks/task-2025-05-dependency-analysis-ddd-layers.md):
+Use this structure based on [task-template.md](mdc:templates/task-template.md):
 
 ```markdown
 # Task: [Clear Title]
@@ -143,7 +143,7 @@ When tasks become large (>1000 lines), reorganize into focused context files:
 
 #### Create Context Files
 
-Store detailed analysis in [docs/contexts/](mdc:thea/docs/contexts) subdirectories:
+Store detailed analysis in [docs/contexts/](mdc:docs/contexts) subdirectories:
 
 - `dependency-analysis-results.md` - Analysis data and findings
 - `proposed-architecture-layers.md` - Architectural proposals
@@ -176,8 +176,8 @@ Example reorganization pattern from the conversation:
 
 ### Critical Findings Summary
 
-**Scale**: 707 files, 2451 circular dependencies, 343 TV platform dependencies  
-**Key Challenge**: TV platform makes traditional layered architecture unfeasible  
+**Scale**: 707 files, 2451 circular dependencies, 343 platform dependencies  
+**Key Challenge**: Platform constraints make traditional layered architecture unfeasible  
 **Timeline**: 12-24 months realistic vs 1-2 weeks theoretical
 ```
 
@@ -230,8 +230,8 @@ node scripts/analysis/import-analyzer.js
 Test theoretical approaches against real constraints:
 
 ```typescript
-// Example: Test if "dumb components" are possible in TV environment
-// Reality check showed 343 TV platform dependencies in UI layer
+// Example: Test if "dumb components" are possible in constrained environment
+// Reality check showed 343 platform dependencies in UI layer
 // Conclusion: Traditional layered architecture unfeasible
 ```
 
@@ -261,9 +261,9 @@ Always consider real project scale:
 
 ### 3. Platform Constraints
 
-For Thea TV project, always consider:
+For any project, always consider:
 
-- TV platform coupling (343 dependencies found)
+- Platform coupling (dependencies found)
 - Navigation/focus requirements
 - Device-specific implementations
 - Performance constraints
@@ -308,7 +308,7 @@ Always include progress tracking:
 
 ### Update Documentation Map
 
-Ensure [docs/navigation/documentation-map.md](mdc:thea/docs/navigation/documentation-map.md) reflects new documents.
+Ensure [docs/navigation/documentation-map.md](mdc:docs/navigation/documentation-map.md) reflects new documents.
 
 ## Common Pitfalls to Avoid
 
@@ -328,7 +328,7 @@ Ensure [docs/navigation/documentation-map.md](mdc:thea/docs/navigation/documenta
 
 - Use complexity ratings, not time estimates
 - Consider real project scale (707 files, not toy examples)
-- Account for TV platform constraints
+- Account for platform constraints
 
 ### 4. Missing Context
 
@@ -373,7 +373,7 @@ Based on the conversation, here's how a complex architectural task should be han
 ### Phase 2: Reality Testing ✅
 
 - [x] Test layered architecture proposal against real constraints
-- [x] Identify TV platform coupling (343 dependencies)
+- [x] Identify platform coupling (343 dependencies)
 - [x] Document why theoretical approaches fail
 - [x] Develop pragmatic alternatives
 
@@ -395,9 +395,9 @@ Based on the conversation, here's how a complex architectural task should be han
 
 This task management approach integrates with:
 
-- [development.mdc](mdc:thea/.cursor/rules/development.mdc) - Code implementation guidelines
-- [workflow.mdc](mdc:thea/.cursor/rules/workflow.mdc) - General workflow principles
-- [documentation.mdc](mdc:thea/.cursor/rules/documentation.mdc) - Documentation standards
+- [development.mdc](mdc:rules/cursor/development.mdc) - Code implementation guidelines
+- [workflow.mdc](mdc:rules/cursor/workflow.mdc) - General workflow principles
+- [documentation.mdc](mdc:rules/cursor/documentation.mdc) - Documentation standards
 - [Context Documentation Methodology](mdc:pythia/methodology/context-documentation.md) - Context document guidelines
 
 ---

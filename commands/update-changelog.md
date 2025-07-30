@@ -11,14 +11,36 @@ This guide provides step-by-step instructions for Large Language Models (LLMs) t
 >
 > Make sure both the changelog entry date and the "Last Updated" date at the bottom reflect this current date.
 
+## Purpose
+
+This command provides a structured approach to updating project changelogs with recent changes, ensuring proper documentation of project evolution and maintaining clear change history.
+
 ## Prerequisites
 
 Before updating the Changelog, ensure you have:
 
 1. Knowledge of recent significant changes to the documentation or codebase
 2. The current date for proper changelog timestamping
-3. Reviewed the existing Changelog (`../CHANGELOG.md`)
+3. Reviewed the existing Changelog (`CHANGELOG.md`)
 4. Understood the categorization of changes (Added, Changed, Removed, Fixed)
+
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@update-changelog.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@update-changelog.md
+Context: My project has recent documentation updates
+Objective: Update changelog with recent changes
+Changes: Added new task documentation, updated architecture analysis
+```
 
 ## Command Checklist
 
@@ -41,7 +63,7 @@ Before proceeding with the changelog update, complete this checklist:
 
 First, review the current state of the Changelog:
 
-1. Open `../CHANGELOG.md`
+1. Open `CHANGELOG.md`
 2. Understand the current organization and format of entries
 3. Note the most recent date entry and its contents
 4. Familiarize yourself with how changes are categorized and described
@@ -90,13 +112,13 @@ For each change, add an entry to the appropriate category:
 1. **Added**: New documents, features, or significant content additions
 
    ```markdown
-   - Added new task documentation for [topic] (`../workflows/tasks/task-yyyy-mm-topic.md`)
+   - Added new task documentation for [topic] (`docs/workflows/tasks/task-yyyy-mm-topic.md`)
    ```
 
 2. **Changed**: Updates to existing documents or content
 
    ```markdown
-   - Updated architecture diagram in `../architecture/analysis-general-architecture.md`
+   - Updated architecture diagram in `docs/architecture/analysis-general-architecture.md`
    ```
 
 3. **Removed**: Documents or content that have been removed

@@ -296,14 +296,14 @@ If you copied Pythia files directly:
 
 ### Real Project Usage
 
-#### Thea Project Example
+#### Any Project Example
 
 ```bash
-# Create task for TV navigation improvement
+# Create task for navigation improvement
 @create-task.md
 
-# Context: Thea is a React TypeScript TV application
-# Objective: Improve TV remote navigation system
+# Context: Any project is a React TypeScript application
+# Objective: Improve navigation system
 # Priority: High
 # Timeline: 2 weeks
 ```
@@ -324,13 +324,13 @@ If you copied Pythia files directly:
 #### Task Creation
 
 ```markdown
-# Generated task-2025-07-tv-navigation-improvement.md
+# Generated task-2025-07-navigation-improvement.md
 
-## Task: TV Navigation Improvement
+## Task: Navigation Improvement
 
 ### Context
 
-Thea is a React TypeScript TV application requiring improved remote navigation.
+The project is a React TypeScript application requiring improved navigation.
 
 ### Objectives
 
@@ -343,20 +343,20 @@ Thea is a React TypeScript TV application requiring improved remote navigation.
 1. Analyze current navigation system
 2. Design improved focus management
 3. Implement keyboard navigation
-4. Test with TV remote controls
+4. Test with platform controls
 ```
 
 #### Project Analysis
 
 ```markdown
-# Generated analysis-thea-project.md
+# Generated analysis-project.md
 
-## Thea Project Analysis
+## Project Analysis
 
 ### Current State
 
 - React TypeScript application
-- TV-focused interface
+- Platform-focused interface
 - Redux state management
 - Offline support capabilities
 
@@ -364,7 +364,7 @@ Thea is a React TypeScript TV application requiring improved remote navigation.
 
 - Component structure: Well-organized
 - State management: Redux implementation
-- Performance: TV-optimized rendering
+- Performance: Platform-optimized rendering
 - Accessibility: Needs improvement
 ```
 

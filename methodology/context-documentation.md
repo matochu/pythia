@@ -1,235 +1,354 @@
-# Контекстні документи: методологія та застосування
+# Context Documents: Methodology and Application
 
-## Призначення документа
+> **IMPORTANT**: This document provides a systematic, production-ready methodology for creating, using, and managing context documents in projects that use the Pythia system. It is designed for use by LLMs and human reviewers to ensure all context documents meet the highest standards of clarity, completeness, and integration with task creation workflows.
 
-Цей документ описує методологію створення, використання та управління контекстними документами (Context Documents) в проектах, що використовують систему Pythia. Він визначає, що таке контексти, які типи контекстів можуть існувати, та як їх правильно інтегрувати в документаційну структуру проекту.
+## Quick Reference
 
-## Визначення контексту
+- **Purpose**: Define methodology for context documents that support decision-making and task creation
+- **Key Steps**: Definition → Principles → Classification → Structure → Integration → Work Process
+- **Self-Check**: Use the Self-Check Points section before finalizing context documents
+- **Methodology**: Integrate with task creation workflow and documentation standards
+- **Safety**: Stop and request clarification if context requirements are unclear
 
-**Контекстний документ** — це документ, який містить структуровану інформацію, що необхідна для прийняття рішень, створення завдань або розуміння передумов певних аспектів проекту. Контексти фокусуються на "чому" і "що", доповнюючи "як", яке описується в інших типах документів.
+## Document Purpose
 
-Контексти виконують роль інституційної пам'яті проекту, зберігаючи знання, які можуть бути втрачені при зміні команди або з плином часу.
+This document describes the methodology for creating, using, and managing context documents (Context Documents) in projects that use the Pythia system. It defines what contexts are, what types of contexts can exist, and how to properly integrate them into the project's documentation structure and task creation workflow.
 
-## Основні принципи контекстних документів
+## Definition of Context
 
-1. **Структурованість** — контексти мають чітку структуру, що полегшує їх пошук і використання
-2. **Фокус на знаннях** — контексти містять інформацію, необхідну для прийняття обґрунтованих рішень
-3. **Зв'язаність** — контексти пов'язані з іншими документами через посилання
-4. **Еволюційність** — контексти можуть розвиватися і оновлюватися з часом
-5. **Автономність** — кожен контекст має бути самодостатнім документом
-6. **Гнучкість** — структура та організація контекстів може адаптуватися під потреби конкретного проекту
+**Context Document** — is a document that contains structured information necessary for making decisions, creating tasks, or understanding the prerequisites of certain aspects of the project. Contexts focus on "why" and "what", complementing "how", which is described in other types of documents.
 
-## Гнучка класифікація контекстних документів
+Contexts serve as the project's institutional memory, preserving knowledge that could be lost when the team changes or over time.
 
-Важливо розуміти, що класифікація контекстів повинна відповідати потребам конкретного проекту та процесам команди. Замість жорсткої типізації, пропонуємо розглядати можливі виміри класифікації, які можуть комбінуватися:
+## Core Principles of Context Documents
 
-### За доменом знань
+1. **Structuredness** — contexts have a clear structure that facilitates their search and use
+2. **Knowledge Focus** — contexts contain information necessary for making informed decisions
+3. **Connectedness** — contexts are linked to other documents through references
+4. **Evolutionary** — contexts can evolve and be updated over time
+5. **Autonomy** — each context should be a self-sufficient document
+6. **Flexibility** — the structure and organization of contexts can adapt to the needs of a specific project
+7. **Task Integration** — contexts should support task creation workflow and decision-making processes
 
-- **Технічні контексти** — архітектура, технології, інструменти, обмеження
-- **Бізнесові контексти** — бізнес-вимоги, бізнес-процеси, ринкові аспекти
-- **Користувацькі контексти** — дослідження користувачів, потреби, поведінка
-- **Операційні контексти** — деплоймент, моніторинг, підтримка
+## Flexible Classification of Context Documents
 
-### За часовою віссю
+It's important to understand that context classification should correspond to the needs of a specific project and team processes. Instead of rigid typing, we propose considering possible classification dimensions that can be combined:
 
-- **Історичні контексти** — описують минулі рішення та їх наслідки
-- **Поточні контексти** — описують актуальний стан системи чи процесів
-- **Перспективні контексти** — описують плани, прогнози, очікувані зміни
+### By Knowledge Domain
 
-### За рівнем деталізації
+- **Technical Contexts** — architecture, technologies, tools, constraints
+- **Business Contexts** — business requirements, business processes, market aspects
+- **User Contexts** — user research, needs, behavior
+- **Operational Contexts** — deployment, monitoring, support
 
-- **Високорівневі контексти** — загальний огляд систем і процесів
-- **Середньорівневі контексти** — огляд компонентів чи модулів
-- **Низькорівневі контексти** — деталізація елементів системи
+### By Time Axis
 
-### За функціональним призначенням
+- **Historical Contexts** — describe past decisions and their consequences
+- **Current Contexts** — describe the current state of systems or processes
+- **Prospective Contexts** — describe plans, forecasts, expected changes
 
-Це класифікація, яка близька до початкового підходу, але розглядається як опціональна:
+### By Detail Level
 
-- **Проектні контексти** — загальні аспекти проекту, цілі, обмеження
-- **Контексти завдань** — передумови для конкретних завдань
-- **Контексти рішень** — обґрунтування важливих рішень
-- **Референсні контексти** — корисна довідкова інформація
+- **High-level Contexts** — general overview of systems and processes
+- **Mid-level Contexts** — overview of components or modules
+- **Low-level Contexts** — detailed breakdown of system elements
 
-## Приклади контекстних документів
+### By Functional Purpose
 
-Замість фіксованої класифікації, наведемо приклади можливих контекстів:
+This is a classification that is close to the initial approach but is considered optional:
 
-- Аналіз конкурентів
-- Портрети користувачів
-- Огляд технологічного стеку
-- Архітектурні обмеження
-- Історія еволюції ключових компонентів
-- Порівняння технологій для певного завдання
-- Дослідження патернів використання функціоналу
-- База знань з типових проблем та їх рішень
-- Глосарій термінів проекту
-- Аналіз відгуків користувачів
-- Документація з процесів розгортання та моніторингу
-- Опис інтеграцій з зовнішніми сервісами
+- **Project Contexts** — general aspects of the project, goals, constraints
+- **Task Contexts** — prerequisites for specific tasks
+- **Decision Contexts** — justification of important decisions
+- **Reference Contexts** — useful reference information
 
-## Структура контекстного документа
+## Examples of Context Documents
 
-Базова структура контекстного документа включає:
+Instead of fixed classification, here are examples of possible contexts:
 
-- **Метадані** - інформація про тип, статус, теги, дати, автора
-- **Опис** - загальний опис контексту та його призначення
-- **Ключова інформація** - основний вміст документа, структурований відповідно до потреб
-- **Артефакти та ресурси** - посилання на зовнішні ресурси, файли, дані
-- **Запитання та відповіді** - відповіді на ключові запитання
-- **Висновки** - підсумки та рекомендації
-- **Зв'язки з іншими контекстами** - перелік пов'язаних контекстів
-- **Історія змін** - таблиця основних змін документа
+- Competitor analysis
+- User personas
+- Technology stack overview
+- Architectural constraints
+- History of evolution of key components
+- Technology comparison for a specific task
+- Research of usage patterns of functionality
+- Knowledge base of typical problems and their solutions
+- Project terminology glossary
+- User feedback analysis
+- Documentation of deployment and monitoring processes
+- Description of integrations with external services
 
-Детальний шаблон з усіма секціями та рекомендаціями щодо їх заповнення доступний у [шаблоні контекстного документа](../templates/context-template.md).
+## Context Document Structure
 
-## Гнучка організація контекстів у проекті
+The basic structure of a context document includes:
 
-### Підходи до структури каталогів
+- **Metadata** - information about type, status, tags, dates, author
+- **Description** - general description of the context and its purpose
+- **Key Information** - main content of the document, structured according to needs
+- **Artifacts and Resources** - links to external resources, files, data
+- **Questions and Answers** - answers to key questions
+- **Conclusions** - summaries and recommendations
+- **Links to Other Contexts** - list of related contexts
+- **Change History** - table of major document changes
 
-Замість жорсткої структури, пропонуємо кілька підходів, які можна адаптувати:
+A detailed template with all sections and recommendations for their completion is available in the [context document template](../templates/context-template.md).
 
-#### 1. За доменами знань
+## Integration with Task Creation Workflow
+
+### Context-to-Task Integration
+
+Contexts should be designed to support the task creation process:
+
+1. **Task Preparation** — contexts provide the knowledge base for creating well-informed tasks
+2. **Decision Support** — contexts help determine task scope, priority, and approach
+3. **Risk Assessment** — contexts inform task risk analysis and mitigation strategies
+4. **Success Criteria** — contexts help define clear, measurable success criteria for tasks
+
+### Task Creation Process Integration
+
+When using [Create Task](mdc:commands/create-task.md) command:
+
+1. **Context Analysis** — review relevant contexts before creating tasks
+2. **Context References** — include references to relevant contexts in task documents
+3. **Context Updates** — update contexts based on task outcomes and learnings
+4. **Context Validation** — ensure task objectives align with context conclusions
+
+### Template Integration
+
+The [Task Template](mdc:templates/task-template.md) includes a "Context" section that should reference relevant context documents:
+
+```markdown
+## Context
+
+Brief description of the task's background and why it's important. This should provide enough context for the task to be understood independently.
+
+- What problem does this task solve?
+- Why is it important now?
+- How does it relate to overall project goals?
+- What triggered the need for this task?
+
+**Related Context Documents:**
+
+- [Context Document 1](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
+- [Context Document 2](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
+```
+
+## Flexible Organization of Contexts in the Project
+
+### Approaches to Directory Structure
+
+Instead of rigid structure, we propose several approaches that can be adapted:
+
+#### 1. By Knowledge Domains
 
 ```
 contexts/
-  technical/     # Технічні контексти
-  business/      # Бізнесові контексти
-  user/          # Користувацькі контексти
-  operational/   # Операційні контексти
+  technical/     # Technical contexts
+  business/      # Business contexts
+  user/          # User contexts
+  operational/   # Operational contexts
 ```
 
-#### 2. За функціональними областями проекту
-
-```
-contexts/
-  authentication/     # Контексти, пов'язані з аутентифікацією
-  reporting/          # Контексти, пов'язані зі звітністю
-  integration/        # Контексти, пов'язані з інтеграціями
-  performance/        # Контексти, пов'язані з продуктивністю
-```
-
-#### 3. Плоска структура з тегами
+#### 2. By Functional Areas of the Project
 
 ```
 contexts/
-  context-2025-03-authentication-evolution.md   # Теги: #technical #security #history
-  context-2025-03-user-research-results.md      # Теги: #user #research #current
-  context-2025-04-performance-bottlenecks.md    # Теги: #technical #performance #current
+  authentication/     # Contexts related to authentication
+  reporting/          # Contexts related to reporting
+  integration/        # Contexts related to integrations
+  performance/        # Contexts related to performance
 ```
 
-#### 4. Гібридний підхід
-
-Комбінуйте вищезазначені підходи відповідно до потреб проекту.
-
-### Іменування файлів
-
-Рекомендований формат імен файлів для контекстів:
+#### 3. Flat structure with tags
 
 ```
-context-[YYYY-MM]-[короткий-опис].md
+contexts/
+  context-2025-03-authentication-evolution.md   # Tags: #technical #security #history
+  context-2025-03-user-research-results.md      # Tags: #user #research #current
+  context-2025-04-performance-bottlenecks.md    # Tags: #technical #performance #current
 ```
 
-де:
+#### 4. Hybrid approach
 
-- `[YYYY-MM]` — рік і місяць створення контексту
-- `[короткий-опис]` — стислий опис змісту контексту у форматі slug
+Combine the above approaches according to project needs.
 
-Приклади:
+### File Naming
+
+Recommended file naming format for contexts:
+
+```
+context-[YYYY-MM]-[short-description].md
+```
+
+where:
+
+- `[YYYY-MM]` — year and month of context creation
+- `[short-description]` — concise description of context content in slug format
+
+Examples:
 
 - `context-2025-03-performance-analysis.md`
 - `context-2025-04-technology-selection.md`
 
-## Уникнення перетинів з Workflows
+## Avoiding Cross-Workflows
 
-Важливим аспектом ефективного використання контекстів є уникнення дублювання інформації, яка вже міститься в workflow-документах. Ось кілька рекомендацій:
+An important aspect of effective context usage is avoiding duplication of information already present in workflow documents. Here are some recommendations:
 
-### Розмежування контекстів і workflows
+### Separation of Contexts and Workflows
 
-- **Workflows** описують **процеси** і **кроки** виконання (як робити)
-- **Контексти** описують **знання** і **передумови** (чому і що)
+- **Workflows** describe **processes** and **steps** of execution (how to do)
+- **Contexts** describe **knowledge** and **prerequisites** (why and what)
 
-### Стратегії уникнення дублювання
+### Strategies for Avoiding Duplication
 
-1. **Взаємні посилання** — замість дублювання, workflow-документи можуть посилатися на відповідні контексти і навпаки
+1. **Mutual References** — instead of duplication, workflow documents can reference relevant contexts and vice versa
 
    ```markdown
-   ## Контекст
+   ## Context
 
-   Детальна інформація доступна в [контексті технологічного вибору](../../contexts/technical/context-2025-04-technology-selection.md).
+   Detailed information is available in [context-2025-04-technology-selection](../../contexts/technical/context-2025-04-technology-selection.md).
    ```
 
-2. **Різний фокус** — workflows фокусуються на послідовності дій, контексти — на знаннях та обґрунтуваннях
+2. **Different Focus** — workflows focus on a sequence of actions, contexts — on knowledge and justifications
 
-3. **Часові рамки** — workflows часто орієнтовані на конкретні завдання з обмеженим часом, контексти мають довший "термін життя"
+3. **Time Frames** — workflows are often oriented towards specific tasks with a limited time frame, contexts have a longer "lifespan"
 
-4. **Just-in-time документація** — створюйте контексти лише коли вони надають цінну інформацію, яка не відображена належним чином в інших документах
+4. **Just-in-time Documentation** — create contexts only when they provide valuable information that is not adequately reflected in other documents
 
-### Приклади взаємодоповнення
+### Examples of Complementary Information
 
-| Workflow документ              | Контекстний документ                                    |
-| ------------------------------ | ------------------------------------------------------- |
-| Процес деплойменту             | Архітектура розгортання та обґрунтування                |
-| Кроки для створення фічі       | Дослідження користувачів, що обґрунтовує потребу у фічі |
-| Процедура вирішення інцидентів | База знань типових проблем та їх рішень                 |
+| Workflow Document             | Context Document                                       |
+| ----------------------------- | ------------------------------------------------------ |
+| Deployment Process            | Architecture of deployment and justification           |
+| Steps for Feature Creation    | User research that justifies the need for a feature    |
+| Incident Resolution Procedure | Knowledge base of typical problems and their solutions |
 
-## Процес роботи з контекстами
+## Context Work Process
 
-### Створення контексту
+### Creating a Context
 
-1. Визначте, чи справді потрібен новий контекст (перевірте, чи інформація не дублюється)
-2. Оберіть відповідну класифікацію та місце в структурі проекту
-3. Використайте команду `create-context` або створіть файл вручну
-4. Заповніть шаблон відповідно до потреб
-5. Додайте посилання на пов'язані документи
-6. Додайте відповідні теги для полегшення пошуку
+1. Determine if a new context is actually needed (check if information is not duplicated)
+2. Choose the appropriate classification and location in the project structure
+3. Use the `create-context` command or create a file manually
+4. Fill in the template according to needs
+5. Add links to related documents
+6. Add appropriate tags for easy search
+7. **Validate context quality** using [Validate Command](mdc:commands/validate-command.md) standards
 
-### Використання контекстів
+### Using Contexts
 
-Контексти можуть використовуватися для:
+Contexts can be used for:
 
-1. **Підготовки до створення завдань** — аналіз контекстів допомагає формулювати чіткі, обґрунтовані завдання
-2. **Прийняття рішень** — контексти надають необхідну інформацію для прийняття обґрунтованих рішень
-3. **Введення нових членів команди** — контексти дозволяють швидко зрозуміти історію та логіку проекту
-4. **Документування знань** — контексти слугують для збереження інституційних знань про проект
+1. **Preparing for Task Creation** — analyzing contexts helps formulate clear, well-justified tasks
+2. **Making Decisions** — contexts provide necessary information for making informed decisions
+3. **Introducing New Team Members** — contexts allow new team members to quickly understand the project's history and logic
+4. **Documenting Knowledge** — contexts serve as a repository for institutional knowledge about the project
 
-### Оновлення контекстів
+### Updating Contexts
 
-1. Використайте команду `update-context` або оновіть файл вручну
-2. Додайте інформацію про зміни в секцію історії
-3. Оновіть дату оновлення в метаданих
-4. При значних змінах, розгляньте можливість створення нового контексту
+1. Use the `update-context` command or update the file manually
+2. Add information about changes to the history section
+3. Update the last updated date in metadata
+4. If significant changes occur, consider creating a new context
+5. **Re-validate context quality** after significant updates
 
-## Приклади використання контекстів
+## Quality Validation for Context Documents
 
-### Приклад 1: Технічний контекст для рефакторингу
+### Self-Check Points
 
-Створіть контекст, який описує поточний стан системи, проблеми, технічні обмеження та можливі підходи. Цей контекст використовується для створення завдань з рефакторингу.
+Before finalizing a context document, verify:
 
-### Приклад 2: Бізнесовий контекст для нової функціональності
+- [ ] **Clarity**: Context purpose and content are clear and understandable
+- [ ] **Completeness**: All required sections are present and filled
+- [ ] **Connectedness**: Proper links to related documents using `mdc:` format
+- [ ] **Task Integration**: Context supports task creation workflow
+- [ ] **Metadata**: All metadata fields are properly filled
+- [ ] **Structure**: Document follows the established template structure
+- [ ] **Tags**: Appropriate tags are assigned for easy discovery
 
-Створіть контекст, який описує бізнес-потребу, очікувані результати, метрики успіху та обмеження. Цей контекст стає основою для розробки функціональних вимог.
+### Quality Rubric
 
-### Приклад 3: Історичний контекст розвитку системи
+| Dimension            | 1 (Low)         | 3 (Medium)      | 5 (High)              |
+| -------------------- | --------------- | --------------- | --------------------- |
+| **Clarity**          | Unclear purpose | Mostly clear    | Crystal clear purpose |
+| **Completeness**     | Major gaps      | Minor gaps      | Complete coverage     |
+| **Connectedness**    | No links        | Basic links     | Comprehensive links   |
+| **Task Integration** | No task support | Basic support   | Full task integration |
+| **Maintainability**  | Hard to update  | Moderate effort | Easy to maintain      |
 
-Створіть контекст, який описує еволюцію системи, ключові рішення, які були прийняті, та їх наслідки. Цей контекст допомагає новим членам команди зрозуміти, чому система побудована саме так.
+## Examples of Context Usage
 
-## Висновки
+### Example 1: Technical Context for Refactoring
 
-Контекстні документи є важливою складовою документаційної системи проекту, яка забезпечує збереження та передачу знань, обґрунтування рішень та створення інформаційної бази для прийняття нових рішень.
+Create a context that describes the current state of the system, problems, technical constraints, and possible approaches. This context is used to create tasks for refactoring.
 
-Ключовою особливістю ефективної системи контекстів є **гнучкість** — структура та організація контекстів повинні адаптуватися до потреб конкретного проекту і команди, а не навпаки.
+### Example 2: Business Context for New Functionality
 
-Правильне використання контекстів дозволяє:
+Create a context that describes business needs, expected results, success metrics, and constraints. This context becomes the basis for functional requirements.
 
-- Зменшити втрату знань при зміні команди
-- Підвищити якість прийнятих рішень
-- Спростити введення нових членів команди
-- Створити єдине джерело правди для критичних аспектів проекту
-- Уникнути дублювання з іншими типами документів
+### Example 3: Historical Context of System Development
 
-Пам'ятайте, що контексти – це не ще один бюрократичний шар, а інструмент для ефективної організації знань. Використовуйте їх там, де вони приносять реальну користь, і адаптуйте підхід до своїх конкретних потреб.
+Create a context that describes the evolution of the system, key decisions made, and their consequences. This context helps new team members understand why the system is built the way it is.
+
+## Safety & Stop Conditions
+
+- **No Duplication**: If information already exists in workflow documents, STOP and reference instead
+- **Stop Conditions**:
+  - Missing required context information
+  - Conflicting context data
+  - Insufficient justification for context creation
+- **Fallback**: Use existing contexts when possible instead of creating new ones
+- **Request Help**: If context requirements are unclear, escalate to a human reviewer
+
+## Integration Guidelines
+
+This methodology integrates with other Pythia components:
+
+### Related Commands
+
+- **`@create-task.md`** - Use contexts to inform task creation
+- **`@validate-command.md`** - Apply validation standards to context documents
+- **`@validate-documentation.md`** - Validate context documentation integrity
+
+### Template Integration
+
+- Uses `templates/context-template.md` for consistent structure
+- Integrates with `templates/task-template.md` for task creation workflow
+- Follows documentation standards for cross-referencing
+
+### Methodology Integration
+
+- **Documentation Guidelines**: Follow [Documentation Guidelines](mdc:methodology/documentation-guidelines.md) for structure and cross-referencing
+- **Quality Standards**: Apply [Validate Command](mdc:commands/validate-command.md) quality rubric
+- **Task Workflow**: Integrate with [Create Task](mdc:commands/create-task.md) command
+
+## Conclusions
+
+Context documents are an important component of the project's documentation system, which ensures the preservation and transfer of knowledge, justification of decisions, and creation of an information base for making new decisions.
+
+The key feature of an effective context system is **flexibility** — the structure and organization of contexts must adapt to the needs of a specific project and team, not the other way around.
+
+Proper use of contexts allows:
+
+- Reduce knowledge loss when the team changes
+- Improve the quality of decisions made
+- Simplify introducing new team members
+- Create a single source of truth for critical aspects of the project
+- Avoid duplication with other document types
+- **Support task creation workflow** with informed decision-making
+
+Remember, contexts are not just another bureaucratic layer, but an instrument for effective knowledge organization. Use them where they provide real value, and adapt your approach to your specific needs.
+
+## References
+
+- [Create Task](mdc:commands/create-task.md)
+- [Validate Command](mdc:commands/validate-command.md)
+- [Task Template](mdc:templates/task-template.md)
+- [Context Template](mdc:templates/context-template.md)
+- [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
+- [Documentation Map](mdc:navigation/documentation-map.md)
 
 ---
 
-**Дата останнього оновлення**: 2025-03-22
+**Last Updated**: 2025-07-30

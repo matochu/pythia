@@ -6,6 +6,53 @@
 
 This command provides a structured approach to creating new command documents in the project's documentation system. Standardized commands improve consistency, reduce errors, and make processes repeatable across the team. The LLM should use this command to generate new command documents, which will then be reviewed by a human documentation maintainer.
 
+## Quick Reference
+
+- **Purpose**: Create new command documents in a standardized, production-ready format
+- **Key Steps**: Preparation → Template → Reasoning → Structure → Examples → Validation → Integration
+- **Self-Check**: Use the Self-Check Points section before finalizing
+- **Methodology**: Integrate Spark and Slow Thinking principles for quality
+- **Safety**: Stop and request clarification if requirements are unclear
+
+## Self-Check Points
+
+Before finalizing a new command, verify:
+
+- [ ] All required sections are present (Purpose, Prerequisites, Usage, Checklist, Steps, Examples, Issues, References)
+- [ ] Each step is clear, actionable, and testable
+- [ ] Safety and stop conditions are defined
+- [ ] Quality rubric scores are 4+ in all dimensions
+- [ ] All links use mdc: format
+- [ ] At least one edge case and acceptance criteria are included
+- [ ] Methodology integration is referenced
+
+## Methodology Integration
+
+- **Instruction Improvement**: Use [Improve Instruction](mdc:commands/improve-instruction.md) and [Spark-Improve Instruction](mdc:commands/improve-instruction-spark.md) for systematic quality enhancement
+- **Documentation Guidelines**: Follow [Documentation Guidelines](mdc:methodology/documentation-guidelines.md) for structure and cross-referencing
+- **Quality Rubric**: Apply the rubric below for self-assessment
+
+## Quality Rubric
+
+| Dimension           | 1 (Low)         | 3 (Medium)      | 5 (High)               |
+| ------------------- | --------------- | --------------- | ---------------------- |
+| **Clarity**         | Unclear         | Mostly clear    | Crystal clear          |
+| **Determinism**     | Ambiguous       | Some ambiguity  | Fully deterministic    |
+| **Testability**     | No tests        | Basic tests     | Comprehensive tests    |
+| **Safety**          | No safety rules | Basic safety    | Robust safety/fallback |
+| **Completeness**    | Major gaps      | Minor gaps      | Complete coverage      |
+| **Maintainability** | Hard to update  | Moderate effort | Easy to maintain       |
+
+## Safety & Stop Conditions
+
+- **No Hallucination**: If requirements are unclear, STOP and request clarification
+- **Stop Conditions**:
+  - Missing required information
+  - Conflicting requirements
+  - Insufficient permissions
+- **Fallback**: Use default values only if explicitly allowed
+- **Request Help**: If stuck, escalate to a human reviewer
+
 ## Prerequisites
 
 Before creating a new command document, ensure you have:
@@ -15,7 +62,26 @@ Before creating a new command document, ensure you have:
 3. [ ] Determined the command's scope and limitations
 4. [ ] Obtained the current date for proper document timestamping
 5. [ ] Identified related documentation and dependencies
-6. [ ] Verified access to the project's configuration file (../config.json)
+6. [ ] Verified access to the project's documentation structure
+
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@create-command.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@create-command.md
+Context: My project needs a new command for API documentation
+Objective: Create a command that generates API documentation
+Target Audience: Developers and technical writers
+Scope: REST API documentation generation
+```
 
 ## Command Checklist
 
@@ -39,13 +105,16 @@ Before starting, gather necessary information:
 # Get the current date for proper timestamping
 date +%Y-%m-%d
 
-# Read project configuration to access paths
-CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
+# Determine commands directory based on project structure
+# For standard Pythia structure: docs/commands/
+# For custom structure: adapt to your project's documentation layout
+COMMANDS_PATH="docs/commands"
+
+# Create directory if it doesn't exist
+mkdir -p "$COMMANDS_PATH"
 
 # Review existing commands for reference
-ls -la "$PROJECT_ROOT$DOCS_PATH/commands/"
+ls -la "$COMMANDS_PATH"
 ```
 
 Determine the following:
@@ -62,32 +131,60 @@ Determine the following:
 Create a new file in the commands directory using kebab-case:
 
 ```bash
-# Read configuration
-CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-
 # Create the command file
-touch "$PROJECT_ROOT$DOCS_PATH/commands/command-name.md"
+touch "$COMMANDS_PATH/command-name.md"
 ```
 
 ## Step 3: Use the Command Template
 
 Copy content from the command template and adapt it to your specific command:
 
+````bash
+# Determine templates directory
+TEMPLATES_PATH="docs/templates"
+
+# Copy template if available
+if [ -f "$TEMPLATES_PATH/command-template.md" ]; then
+    cat "$TEMPLATES_PATH/command-template.md" > "$COMMANDS_PATH/command-name.md"
+else
+    # Create basic structure if template doesn't exist
+    cat > "$COMMANDS_PATH/command-name.md" << 'EOF'
+# Command: [Command Name]
+
+> **IMPORTANT**: [Brief description of what this command does]
+
+## Purpose
+
+[Clear description of the command's purpose and benefits]
+
+## Prerequisites
+
+[List of requirements before executing this command]
+
+## Workspace Usage
+
+This command can be used in any project workspace:
+
 ```bash
-# Read configuration
-CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-TEMPLATES_FOLDER=$(jq -r '.folders.templates' $CONFIG_PATH)
-TEMPLATES_PATH="$PROJECT_ROOT$DOCS_PATH/$TEMPLATES_FOLDER"
+# Reference the command
+@command-name.md
 
-# Copy template
-cat "$TEMPLATES_PATH/command-template.md" > "$PROJECT_ROOT$DOCS_PATH/commands/command-name.md"
-```
+# Execute with project context
+Execute this command for my project at [project-path]
 
-> **IMPORTANT**: Always use the paths defined in config.json instead of hardcoding directory paths. This ensures consistency across the documentation system.
+# Example usage
+@command-name.md
+Context: [Project context]
+Objective: [Specific objective]
+Requirements: [Key requirements]
+````
+
+EOF
+fi
+
+````
+
+> **IMPORTANT**: Always use relative paths and adapt to your project's documentation structure. This ensures the command works in any workspace.
 
 When filling in the template:
 
@@ -137,7 +234,7 @@ Steps to verify successful completion.
 ## Step 4: Integration
 
 How to integrate this work with the broader system.
-```
+````
 
 ## Step 6: Add Examples and Edge Cases
 
@@ -184,45 +281,32 @@ Check that:
 
 ## Examples
 
-### Creating a Basic Process Command
+### Basic Example: Creating a Simple Command
 
 ```bash
 # Get current date
 date +%Y-%m-%d
-# Output: 2025-03-19
-
-# Read configuration
-CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-
 # Create command file
-touch "$PROJECT_ROOT$DOCS_PATH/commands/update-dependencies.md"
-
-# Copy template and fill in sections for a straightforward process
-# ...
-
-# Validate documentation
-npm run docs:validate-links
+touch docs/commands/update-dependencies.md
+# Copy template and fill in sections
 ```
 
-### Creating a Complex Integration Command
+### Edge Case Example: Command for a Non-Standard Directory
 
 ```bash
-# Read configuration
-CONFIG_PATH="../config.json"
-PROJECT_ROOT=$(jq -r '.project_root' $CONFIG_PATH)
-DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
-
-# Create an advanced command for a multi-step process
-touch "$PROJECT_ROOT$DOCS_PATH/commands/deploy-production-release.md"
-
-# Include additional sections:
-# - Rollback procedures
-# - Verification checklist
-# - Stakeholder notification process
-# - Integration with CI/CD
+# Custom structure
+touch custom_docs/commands/special-case.md
+# Adapt all paths and references accordingly
 ```
+
+### Acceptance Criteria
+
+- Command file is created in the correct location
+- All required sections are present and filled
+- Self-check points are completed
+- Quality rubric scores are 4+ in all dimensions
+- Safety and stop conditions are defined
+- At least one edge case is documented
 
 ## Common Issues and Solutions
 
@@ -237,11 +321,17 @@ touch "$PROJECT_ROOT$DOCS_PATH/commands/deploy-production-release.md"
 
 ## Related Documents
 
-- [Command Template](../templates/command-template.md)
-- [Documentation Guidelines](../methodology/documentation-guidelines.md)
-- [Validate Documentation](./validate-documentation.md)
-- [Documentation Map](../navigation/documentation-map.md)
+- [Command Template](mdc:templates/command-template.md)
+- [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
+- [Validate Documentation](mdc:commands/validate-documentation.md)
+- [Documentation Map](mdc:navigation/documentation-map.md)
 
 ---
 
 **Last Updated**: 2025-03-22
+
+## Versioning & Iteration
+
+- **Iterative Improvement**: Commands should be reviewed and improved regularly using [Improve Instruction](mdc:commands/improve-instruction.md) and [Spark-Improve Instruction](mdc:commands/improve-instruction-spark.md)
+- **Version Tracking**: Update the "Last Updated" line with each major change
+- **Feedback**: Incorporate reviewer and user feedback in each iteration

@@ -34,7 +34,7 @@ Execute this command for my project at [project-path]
 
 # Example usage
 @create-task.md
-Context: My React TypeScript application needs user authentication
+Context: My application needs user authentication
 Objective: Implement secure login/logout functionality
 Priority: High
 Timeline: 2 weeks
@@ -77,6 +77,10 @@ ls -la "$TASKS_PATH"
 
 # Search for similar tasks - basic keyword search
 grep -r "keyword" "$TASKS_PATH"
+
+# Search for relevant context documents
+CONTEXTS_PATH="docs/contexts"
+find "$CONTEXTS_PATH" -type f -name "*.md" -exec grep -l "keyword" {} \;
 ```
 
 ### Enhanced Search Methods
@@ -132,6 +136,29 @@ For example:
 - `task-2025-03-refactor-authentication.md`
 - `task-2025-03-improve-error-handling.md`
 
+### Context Document Integration
+
+Before creating the task, review relevant context documents:
+
+```bash
+# Search for relevant context documents
+CONTEXTS_PATH="docs/contexts"
+find "$CONTEXTS_PATH" -type f -name "*.md" -exec grep -l "feature-name" {} \;
+
+# Review context documents for insights
+cat "$CONTEXTS_PATH/domain/context-YYYY-MM-topic.md"
+
+# Extract key insights for task creation
+grep -A 5 -B 5 "key-term" "$CONTEXTS_PATH/domain/context-YYYY-MM-topic.md"
+```
+
+Context documents should inform:
+
+- Task scope and objectives
+- Risk assessment and mitigation strategies
+- Success criteria definition
+- Technical approach and constraints
+
 ## Step 3: Use the Task Template
 
 Copy the content from the [Task Template](mdc:templates/task-template.md) and fill in all sections:
@@ -147,12 +174,14 @@ Copy the content from the [Task Template](mdc:templates/task-template.md) and fi
 3. **Summary**: Brief overview of what needs to be done
 4. **Objectives**: Clear list of what this task aims to accomplish
 5. **Context**: Background information and why this task is needed
+   - **Context Documents**: Reference relevant context documents
+   - **Context Analysis**: Key insights from context documents
 6. **Scope**: What is in-scope and out-of-scope for this task
 7. **Approach**: How the task will be implemented
 8. **Steps**: Detailed breakdown of implementation steps with checkboxes
 9. **Success Criteria**: Clear measures for determining when the task is complete
 10. **Dependencies**: Other tasks or components this task depends on
-11. **References**: Links to related documents
+11. **References**: Links to related documents and context documents
 
 Ensure that every section is filled in with detailed information.
 
@@ -194,7 +223,7 @@ Add references to related documents at the bottom of the task file:
 ```markdown
 ## References
 
-- [Related Analysis](mdc:docs/architecture/analysis-topic.md)
+- [Related Context Documents](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
 - [Similar Task](mdc:docs/workflows/tasks/task-YYYY-MM-related.md)
 - [Relevant Documentation](mdc:docs/documentation/topic.md)
 
@@ -260,6 +289,10 @@ Before finalizing the task document, verify that it meets these quality criteria
 - [ ] **Consistency**: Task aligns with existing project standards and approaches
 - [ ] **Formatting**: Document uses consistent Markdown formatting
 - [ ] **Grammar and Spelling**: Document is free of typos and grammatical errors
+- [ ] **Context Integration**: Task properly references and utilizes context documents
+  - [ ] Relevant context documents are identified and linked
+  - [ ] Context analysis informs task objectives and approach
+  - [ ] Context insights are reflected in risk assessment and success criteria
 
 Use tools to assist with validation:
 
@@ -283,9 +316,10 @@ npx task-validator "$TASK_FILE"
 date +%Y-%m-%d
 # Output: 2025-03-24
 
-# Read configuration
-CONFIG_PATH="../config.json"
-TASKS_PATH=$(jq -r '.paths.tasks' $CONFIG_PATH)
+# Determine tasks directory based on project structure
+# For standard Pythia structure: docs/workflows/tasks/
+# For custom structure: adapt to your project's documentation layout
+TASKS_PATH="docs/workflows/tasks"
 
 # Create the task file
 TASK_FILE="$TASKS_PATH/task-2025-03-implement-form-validation.md"
@@ -315,9 +349,10 @@ npm run docs:report-workflows
 ### Creating a Complex Development Task
 
 ```bash
-# Read configuration
-CONFIG_PATH="../config.json"
-TASKS_PATH=$(jq -r '.paths.tasks' $CONFIG_PATH)
+# Determine tasks directory based on project structure
+# For standard Pythia structure: docs/workflows/tasks/
+# For custom structure: adapt to your project's documentation layout
+TASKS_PATH="docs/workflows/tasks"
 
 # Create comprehensive task with supporting research
 TASK_FILE="$TASKS_PATH/task-2025-03-implement-offline-mode.md"
@@ -381,20 +416,60 @@ npm run docs:report-workflows
    - Issue: Task duplicates objectives from existing tasks
    - Solution: Use the enhanced search methods to find similar tasks and either merge or clearly differentiate
 
-## Related Documents
+## Self-Check Points
 
-- [Task Template](mdc:templates/task-template.md)
-- [Report Workflows](mdc:commands/report-workflows.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+Before completing this command, verify:
 
-## Workspace Integration Notes
+- [ ] **Task Uniqueness**: No duplicate tasks exist with similar objectives
+- [ ] **Clear Objectives**: Task has specific, measurable objectives
+- [ ] **Complete Metadata**: All required fields are filled (title, priority, complexity, etc.)
+- [ ] **Proper Categorization**: Task is correctly categorized and tagged
+- [ ] **Dependencies Identified**: All dependencies are listed and validated
+- [ ] **Success Criteria**: Clear, measurable success criteria are defined
+- [ ] **Implementation Steps**: Steps are actionable and have clear completion criteria
+- [ ] **Cross-References**: All related documents are properly linked
+- [ ] **English Content**: All content is in English
+- [ ] **File Naming**: Task file follows naming convention `task-YYYY-MM-topic.md`
 
-This command is designed for workspace integration and adapts to your project's structure:
+## Integration Guidelines
+
+This command integrates with other Pythia components:
+
+### Related Commands
+
+- **`@create-proposal.md`** - For complex tasks requiring proposals first
+- **`@create-idea.md`** - For tasks originating from ideas
+- **`@report-workflows.md`** - To generate workflow status reports
+- **`@validate-documentation.md`** - To validate task documentation
+
+### Template Integration
+
+- Uses `templates/task-template.md` for consistent structure
+- Follows metadata standards for proper categorization
+- Integrates with workflow reporting system
+
+### Methodology Integration
+
+- **Implementation Approach**: For complex tasks, consider using the four-phase implementation framework:
+  - **Phase 1 (R&D)**: Research alternatives, build proof-of-concepts, evaluate risks
+  - **Phase 2 (Preparation)**: Refactor codebase, establish patterns, create supporting tools
+  - **Phase 3 (Full Integration)**: Implement changes incrementally with thorough testing
+  - **Phase 4 (Optimization)**: Optimize performance and add extended functionality
+- **Context Documentation**: For tasks requiring deep domain knowledge, reference relevant context documents
+- **Prioritization Methods**: Use prioritization frameworks for task sequencing and resource allocation
+
+### Workspace Integration
 
 - **Standard Structure**: Creates tasks in `docs/workflows/tasks/`
 - **Custom Structure**: Adapts to your project's documentation layout
 - **Cross-References**: Uses `mdc:` links for workspace navigation
 - **Command Usage**: Reference with `@create-task.md` in your workspace
+
+## Related Documents
+
+- [Task Template](mdc:templates/task-template.md)
+- [Report Workflows](mdc:commands/report-workflows.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
 
 ---
 

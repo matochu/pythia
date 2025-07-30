@@ -245,20 +245,57 @@ npm run docs:report-workflows
    - Issue: Success criteria are subjective or unmeasurable
    - Solution: Define specific, measurable criteria that can objectively determine success
 
-## Related Documents
+## Self-Check Points
 
-- [Proposal Template](mdc:templates/proposal-template.md)
-- [Report Workflows](mdc:commands/report-workflows.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+Before completing this command, verify:
 
-## Workspace Integration Notes
+- [ ] **Proposal Completeness**: All template sections are filled with actual content
+- [ ] **Cross-References**: All related documents are properly linked
+- [ ] **Implementation Approach**: Clear phases with specific deliverables
+- [ ] **Alternative Analysis**: At least three alternatives with pros/cons
+- [ ] **Success Criteria**: Specific, measurable success criteria defined
+- [ ] **Business Impact**: Clear business justification and impact analysis
+- [ ] **Risk Assessment**: Comprehensive risk analysis with mitigation strategies
+- [ ] **Timeline**: Realistic timeline with key decision points
+- [ ] **Stakeholder Alignment**: All stakeholders are identified and consulted
+- [ ] **File Naming**: Proposal file follows naming convention `proposal-topic.md`
 
-This command is designed for workspace integration and adapts to your project's structure:
+## Integration Guidelines
+
+This command integrates with other Pythia components:
+
+### Related Commands
+
+- **`@create-idea.md`** - For proposals originating from ideas
+- **`@create-exploration.md`** - For proposals requiring research first
+- **`@report-workflows.md`** - To generate workflow status reports
+- **`@validate-documentation.md`** - To validate proposal documentation
+
+### Template Integration
+
+- Uses `templates/proposal-template.md` for consistent structure
+- Follows metadata standards for proper categorization
+- Integrates with workflow reporting system
+
+### Workspace Integration
 
 - **Standard Structure**: Creates proposals in `docs/workflows/proposals/`
 - **Custom Structure**: Adapts to your project's documentation layout
 - **Cross-References**: Uses `mdc:` links for workspace navigation
 - **Command Usage**: Reference with `@create-proposal.md` in your workspace
+
+### Methodology Integration
+
+- **Ideas to Proposals Workflow**: This command is part of the structured workflow for transforming ideas into implemented features. The typical flow is:
+  1. **Idea** → 2. **Exploration** → 3. **Proposal** → 4. **Decision** → 5. **Task** → 6. **Implementation**
+- Proposals should be based on prior explorations and ideas, ensuring that all technical, business, and risk factors are considered before formalization.
+- For details, see [Ideas to Proposals Workflow](mdc:methodology/ideas-to-proposals-workflow.md).
+
+## Related Documents
+
+- [Proposal Template](mdc:templates/proposal-template.md)
+- [Report Workflows](mdc:commands/report-workflows.md)
+- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
 
 ---
 

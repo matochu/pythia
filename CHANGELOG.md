@@ -1,8 +1,29 @@
 # Changelog
 
-All notable changes to the Thea project documentation will be documented in this file.
+All notable changes to the Pythia documentation system will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [2025-07-30]
+
+### Added
+
+- Enhanced context documentation methodology with task integration
+- Added LLM self-check guidelines to response-start rules
+- Integrated context documents with task creation workflow
+
+### Changed
+
+- Updated create-task command to include context document integration
+- Enhanced task template with context analysis sections
+- Improved task management workflow with context-driven approach
+- Updated context documentation methodology with validation standards
+- Made Pythia completely generic by removing all project-specific references
+
+### Removed
+
+- Removed all Thea and TV references from rules, guides, and templates
+- Cleaned up project-specific examples in workspace integration guide
 
 ## [2025-03-24]
 

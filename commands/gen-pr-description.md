@@ -15,6 +15,25 @@ Before creating a PR description:
 3. Review the diff between your branch and the target branch
 4. Identify affected components and implemented features/fixes
 
+## Workspace Usage
+
+This command can be used in any project workspace:
+
+```bash
+# Reference the command
+@gen-pr-description.md
+
+# Execute with project context
+Execute this command for my project at [project-path]
+
+# Example usage
+@gen-pr-description.md
+Context: My React application needs a new user authentication feature
+Objective: Generate PR description for authentication implementation
+Changes: Added login/logout functionality, user state management
+Testing: Unit tests for auth components, integration tests for API calls
+```
+
 ## Command Checklist
 
 - [ ] The PR Title and Summary clearly state the main purpose and intent of the PR.
@@ -81,7 +100,7 @@ Links to related tickets or issues.
 - The PR Title and Summary must always clearly and unambiguously state the primary purpose and intent of the PR, regardless of the type of change (feature, fix, refactor, workflow, documentation, etc.).
 - Avoid generic or vague titles/summaries. The main change or goal should be immediately clear to reviewers.
 - In the Features/Changes section, describe the main change in detail, including its purpose, how it works, and its impact.
-- If the PR contains multiple unrelated changes, group them by logical category and ensure each group’s purpose is clear.
+- If the PR contains multiple unrelated changes, group them by logical category and ensure each group's purpose is clear.
 
 ### Summary Section
 

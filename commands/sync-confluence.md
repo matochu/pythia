@@ -49,6 +49,48 @@ Before synchronizing a document with Confluence, ensure you have:
 - [ ] Validate the synchronization was successful
 - [ ] Update any references to track the synchronization
 
+## Quick Reference
+
+### Synchronization Process
+
+1. **Document Preparation** - Clean and format the document
+2. **Metadata Setup** - Add sync metadata to local file
+3. **Confluence Search** - Find existing page or create new one
+4. **Content Sync** - Push/pull content between systems
+5. **Validation** - Verify sync was successful
+
+### Key Synchronization Rules
+
+- **Page Title**: Uses first H1 header (`# Title`) as Confluence page title
+- **Local References**: Excluded from Confluence sync (e.g., `[Link](../doc.md)`)
+- **Metadata**: Local metadata comments are NOT synced to Confluence
+- **Content Only**: Only actual content is transferred, not file structure
+
+### Common Sync Commands
+
+```bash
+# Get current timestamp
+date "+%Y-%m-%d %H:%M"
+
+# Check document format
+head -5 docs/workflows/proposals/proposal-example.md
+
+# Validate document structure
+grep -n "^#" docs/workflows/proposals/proposal-example.md
+
+# Check for local references
+grep -r "\.\./" docs/workflows/proposals/proposal-example.md
+```
+
+### Document Preparation Checklist
+
+- ✅ First line is single H1 header (`# Document Title`)
+- ✅ Document filename matches content
+- ✅ Clean metadata section present
+- ✅ Local references reviewed and handled
+- ✅ Content structure verified (H2, H3, tables, code blocks)
+- ✅ Repository-specific content removed
+
 ## Step 1: Prepare for Synchronization
 
 Begin by gathering necessary information:

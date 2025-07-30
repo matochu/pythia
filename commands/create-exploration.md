@@ -217,20 +217,57 @@ npm run docs:report-workflows
    - Issue: The exploration ends without clear recommendations
    - Solution: Include a decisive conclusion with specific next steps, even if the recommendation is to not proceed
 
+## Self-Check Points
+
+Before completing this command, verify:
+
+- [ ] **Clear Objectives**: Specific, measurable exploration objectives defined
+- [ ] **Scope Boundaries**: Clear in-scope and out-of-scope items defined
+- [ ] **Technical Validation**: Claims supported by code samples or benchmarks
+- [ ] **Alternative Analysis**: Multiple approaches considered and evaluated
+- [ ] **Conclusive Findings**: Clear recommendations with specific next steps
+- [ ] **Complete Metadata**: All required fields are filled (title, status, etc.)
+- [ ] **Cross-References**: All related documents are properly linked
+- [ ] **English Content**: All content is in English
+- [ ] **File Naming**: Exploration file follows naming convention `exploration-topic.md`
+- [ ] **Idea Integration**: Original idea document is properly updated
+
+## Integration Guidelines
+
+This command integrates with other Pythia components:
+
+### Related Commands
+
+- **`@create-idea.md`** - For explorations originating from ideas
+- **`@create-proposal.md`** - For explorations leading to proposals
+- **`@complete-exploration.md`** - To finalize exploration and determine next steps
+- **`@report-workflows.md`** - To generate workflow status reports
+
+### Template Integration
+
+- Uses `templates/exploration-template.md` for consistent structure
+- Follows metadata standards for proper categorization
+- Integrates with ideas workflow system
+
+### Workspace Integration
+
+- **Standard Structure**: Creates explorations in `docs/workflows/ideas/explorations/`
+- **Custom Structure**: Adapts to your project's documentation layout
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@create-exploration.md` in your workspace
+
+### Methodology Integration
+
+- **Ideas to Proposals Workflow**: This command represents the exploration stage in the structured workflow for transforming ideas into implemented features. The typical flow is:
+  1. **Idea** → 2. **Exploration** → 3. **Proposal** → 4. **Decision** → 5. **Task** → 6. **Implementation**
+- Explorations should thoroughly analyze feasibility, alternatives, and risks before moving to proposals or tasks. See [Ideas to Proposals Workflow](mdc:methodology/ideas-to-proposals-workflow.md).
+- **Context Documentation**: For background, rationale, and domain knowledge, reference or create context documents as described in [Context Documentation](mdc:methodology/context-documentation.md).
+
 ## Related Documents
 
 - [Exploration Template](mdc:templates/exploration-template.md)
 - [Report Workflows](mdc:commands/report-workflows.md)
 - [Workspace Integration Guide](mdc:guides/workspace-integration.md)
-
-## Workspace Integration Notes
-
-This command is designed for workspace integration and adapts to your project's structure:
-
-- **Exploration Management**: Works with any project's documentation structure
-- **Technical Investigation**: Maintains organized research and analysis for your project
-- **Cross-References**: Uses `mdc:` links for workspace navigation
-- **Command Usage**: Reference with `@create-exploration.md` in your workspace
 
 ---
 

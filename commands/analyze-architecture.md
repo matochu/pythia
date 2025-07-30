@@ -423,12 +423,51 @@ madge --image system-dependency.png --extensions ts,tsx src/
 | Architectural diagrams become outdated         | Suggest automated diagram generation tools that can be integrated into CI/CD                        |
 | Analysis results in competing recommendations  | Present trade-offs and multiple options with pros and cons rather than single solutions             |
 
+## Self-Check Points
+
+Before completing this command, verify:
+
+- [ ] **Analysis Scope**: Clear boundaries defined for what is being analyzed
+- [ ] **Data Collection**: All necessary code analysis and metrics collected
+- [ ] **Pattern Identification**: Architectural patterns clearly identified and documented
+- [ ] **Dependency Analysis**: Dependency structure mapped and issues identified
+- [ ] **Improvement Opportunities**: Specific, actionable recommendations provided
+- [ ] **Visual Documentation**: Architecture diagrams created and included
+- [ ] **Implementation Path**: Clear roadmap for implementing improvements
+- [ ] **Cross-References**: All related documents are properly linked
+- [ ] **English Content**: All content is in English
+- [ ] **File Naming**: Analysis file follows naming convention `analysis-YYYY-MM-topic.md`
+
+## Integration Guidelines
+
+This command integrates with other Pythia components:
+
+### Related Commands
+
+- **`@analyze-project.md`** - For broader project analysis context
+- **`@improve-typescript-files.md`** - For implementing architectural improvements
+- **`@validate-documentation.md`** - To validate analysis documentation
+- **`@report-workflows.md`** - To generate workflow status reports
+
+### Template Integration
+
+- Uses architectural analysis patterns for consistent structure
+- Follows documentation standards for proper categorization
+- Integrates with project analysis workflow
+
+### Workspace Integration
+
+- **Standard Structure**: Creates analyses in `docs/architecture/`
+- **Custom Structure**: Adapts to your project's documentation layout
+- **Cross-References**: Uses `mdc:` links for workspace navigation
+- **Command Usage**: Reference with `@analyze-architecture.md` in your workspace
+
 ## Related Documents
 
-- [Improve TypeScript Files](./improve-typescript-files.md)
-- [Documentation Guidelines](../methodology/documentation-guidelines.md)
-- [Code Quality Standards](../methodology/code-quality-standards.md)
-- [Refactoring Guide](../guides/refactoring-guide.md)
+- [Improve TypeScript Files](mdc:commands/improve-typescript-files.md)
+- [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
+- [Code Quality Standards](mdc:methodology/code-quality-standards.md)
+- [Refactoring Guide](mdc:guides/refactoring-guide.md)
 
 ---
 

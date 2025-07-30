@@ -57,6 +57,45 @@ Requirements: Document current state and identify improvement opportunities
 - [ ] Validate findings through code inspection and stakeholder interviews
 - [ ] Provide recommendations for improvements
 
+## Quick Reference
+
+### Key Analysis Areas
+
+- **Project Overview**: Name, purpose, history, team composition
+- **Business Context**: Goals, users, core functionality, domain concepts
+- **Technical Architecture**: Components, patterns, technologies, data flows
+- **Development Practices**: Build, test, deploy, operational processes
+- **Integration Points**: External systems, APIs, dependencies
+- **Non-Functional Requirements**: Performance, security, scalability
+
+### Common Analysis Commands
+
+```bash
+# Project metadata
+cat package.json Gemfile pom.xml build.gradle requirements.txt composer.json go.mod
+
+# Documentation search
+find . -name "*.md" | grep -i "documentation\|guide\|overview\|readme"
+
+# Version control
+git log --oneline -n 10
+git shortlog -sn --no-merges
+
+# File type analysis
+find . -type f -name "*.js" | wc -l
+find . -type f -name "*.py" | wc -l
+find . -type f -name "*.rb" | wc -l
+```
+
+### Analysis Output Structure
+
+1. **Executive Summary** - High-level project overview
+2. **Business Context** - Goals, users, functionality
+3. **Technical Architecture** - Components, patterns, technologies
+4. **Development Practices** - Build, test, deploy processes
+5. **Integration Analysis** - External systems and dependencies
+6. **Recommendations** - Improvement opportunities
+
 ## Step 1: Gather General Project Information and Context
 
 Begin by collecting high-level information about the project:

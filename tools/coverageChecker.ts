@@ -128,6 +128,7 @@ async function extractLinksFromMarkdown(
 
   // Regular expression to match markdown links
   // This matches both [text](url) and [text][reference] formats
+  // Also matches mdc: links for workspace navigation
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 
   for (let i = 0; i < lines.length; i++) {
@@ -141,6 +142,14 @@ async function extractLinksFromMarkdown(
       // Skip external links and anchors
       if (targetPath.startsWith('http') || targetPath.startsWith('#')) {
         continue;
+      }
+
+      // Handle mdc: links for workspace navigation
+      if (targetPath.startsWith('mdc:')) {
+        // Convert mdc: links to relative paths for validation
+        // mdc: links are workspace-specific and should be treated as internal links
+        const mdcPath = targetPath.replace('mdc:', '');
+        targetPath = mdcPath;
       }
 
       // Clean up the target path (remove query params, anchors)
