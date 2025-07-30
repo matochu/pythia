@@ -1,0 +1,373 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Content to Documentation Processing Rule
+
+## Purpose
+
+This rule helps analyze incoming content and suggest the most appropriate document types and structures based on the Pythia documentation system implemented in [docs/README.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/README.md).
+
+## Content Analysis Framework
+
+When receiving any text content, follow this systematic approach:
+
+### 1. Content Type Identification
+
+Analyze the input and categorize it according to these patterns:
+
+#### Actionable Work Items → Task Documents
+**Indicators:**
+- Contains specific deliverables or outcomes
+- Has clear implementation steps
+- Includes technical requirements
+- Mentions deadlines or milestones
+- Uses action verbs (implement, create, build, fix, update)
+
+**Example patterns:**
+- "Implement user authentication system"
+- "Fix the navigation bug in mobile view"
+- "Create API endpoints for user management"
+
+**Suggested document:** `task-YYYY-MM-{topic}.md` in [docs/workflows/tasks/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/tasks)
+**Pythia Command:** Use `/Users/Serhii/workspace/ai/pythia/commands/create-task.md` for automated creation
+
+#### Initial Concepts → Idea Documents
+**Indicators:**
+- Starts with "we should", "it would be good", "what if"
+- Expresses potential improvements or features
+- Contains brainstorming elements
+- Needs further research or validation
+- Focuses on benefits or user value
+
+**Example patterns:**
+- "We should add dark mode for better UX"
+- "It would be nice to have offline support"
+- "Consider implementing progressive web app features"
+
+**Suggested document:** `idea-YYYY-MM-{topic}.md` in [docs/workflows/ideas/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/ideas)
+**Pythia Command:** Use `/Users/Serhii/workspace/ai/pythia/commands/create-idea.md` for automated creation
+
+#### Research Topics → Exploration Documents
+**Indicators:**
+- Contains questions to investigate
+- Requests comparison of alternatives
+- Needs technical research
+- Focuses on "how to" or "which approach"
+- Mentions evaluation criteria
+
+**Example patterns:**
+- "Research different state management solutions"
+- "Investigate best practices for TV remote navigation"
+- "Compare authentication libraries for React"
+
+**Suggested document:** `exploration-{topic}.md` in [docs/workflows/ideas/explorations/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/ideas/explorations)
+**Pythia Command:** Use `/Users/Serhii/workspace/ai/pythia/commands/create-exploration.md` for automated creation
+
+#### Formal Change Requests → Proposal Documents
+**Indicators:**
+- Well-structured with problem and solution
+- Includes business justification
+- Has implementation plan outline
+- Requests team decision or approval
+- Contains risk assessment elements
+
+**Example patterns:**
+- "Proposal to migrate from JavaScript to TypeScript"
+- "Architecture change proposal for microservices"
+- "Process improvement proposal for code review"
+
+**Suggested document:** `proposal-{topic}.md` in [docs/workflows/proposals/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/proposals)
+**Pythia Command:** Use `/Users/Serhii/workspace/ai/pythia/commands/create-proposal.md` for automated creation
+
+#### Supporting Information → Context Documents
+**Indicators:**
+- Provides historical information
+- Explains project background
+- Contains meeting notes or decisions
+- Offers reference material
+- Documents stakeholder discussions
+- Analysis results and research findings
+- Reference architectures and patterns
+- Knowledge that can be reused across tasks
+- Supporting documentation to keep main docs clean
+
+**Example patterns:**
+- "Meeting notes from stakeholder discussion about requirements"
+- "Technical analysis of current authentication system"
+- "Research findings on TV remote navigation patterns"
+- "Project background and evolution history"
+- "Reference implementation for API design patterns"
+
+**Suggested location:** [docs/contexts/](mdc:difighter/difighter/difighter/difighter/docs/contexts) subdirectories
+**Pythia Command:** Manual creation (no automated command available)
+
+**Context Structure:**
+- **[project/](mdc:difighter/difighter/difighter/difighter/docs/contexts/project)** - Project history, stakeholder info, business context
+- **[technical/](mdc:difighter/difighter/difighter/difighter/docs/contexts/technical)** - Technical analysis, architecture, patterns
+- **[meetings/](mdc:difighter/difighter/difighter/difighter/docs/contexts/meetings)** - Meeting notes, decisions, discussions
+- **Custom subdirectories** - Create as needed for specific knowledge areas
+
+### 2. Document Structure Suggestions
+
+Based on the content analysis, suggest document structure using patterns from [docs/navigation/document-types-guide.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/navigation/document-types-guide.md):
+
+#### For Tasks:
+```markdown
+# Task: [Title]
+
+## Objective
+[Clear goal statement]
+
+## Success Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+
+## Implementation Approach
+### Phase 1: Analysis
+### Phase 2: Design  
+### Phase 3: Implementation
+### Phase 4: Testing
+
+## Dependencies
+## Related Documents
+```
+
+#### For Ideas:
+```markdown
+# Idea: [Title]
+
+## Problem Statement
+## Proposed Solution
+## Impact Assessment
+- Impact: [High/Medium/Low]
+- Effort: [High/Medium/Low]
+- Quadrant: [Strategic/Optimal/Quick Win/Avoid]
+
+## Alternatives Considered
+## Next Steps
+```
+
+#### For Explorations:
+```markdown
+# Exploration: [Title]
+
+## Research Objectives
+## Methodology
+## Key Questions
+## Findings
+## Recommendations
+## References
+```
+
+#### For Context Documents:
+```markdown
+# Context: [Title]
+
+## Purpose
+[What this context document provides]
+
+## Background
+[Historical information or project context]
+
+## Key Information
+[Main content - analysis, findings, decisions, etc.]
+
+## Related Documents
+[Links to tasks, ideas, proposals that use this context]
+
+## Last Updated
+[Date and reason for update]
+```
+
+### 3. Context Documents Deep Dive
+
+**Purpose:** Context documents serve as a knowledge repository to keep main workflow documents clean and focused while preserving important supporting information that can be reused across multiple tasks and decisions.
+
+**Key Principles:**
+- **Separation of Concerns**: Keep workflow documents focused on action items while storing supporting knowledge in contexts
+- **Reusability**: Create contexts that can be referenced by multiple tasks, ideas, and proposals
+- **Knowledge Preservation**: Store analysis, research, and decisions that provide background for future work
+- **Flexible Structure**: Create custom directory structures as needed for different knowledge domains
+
+**When to Create Context Documents:**
+- Research results that inform multiple decisions
+- Technical analysis that supports various implementation approaches
+- Meeting notes with stakeholder decisions and requirements
+- Project history and evolution that provides background
+- Reference architectures and design patterns
+- Analysis of existing systems or third-party solutions
+- Knowledge gained from completed tasks that should be preserved
+
+**Context Directory Usage:**
+
+#### [project/](mdc:difighter/difighter/difighter/docs/contexts/project) - Project Knowledge
+- Project history and evolution
+- Stakeholder information and requirements
+- Business context and constraints
+- User research and personas
+- Market analysis and competitive landscape
+
+#### [technical/](mdc:difighter/difighter/difighter/docs/contexts/technical) - Technical Knowledge  
+- Architecture analysis and decisions
+- Technology research and comparisons
+- Design patterns and best practices
+- System integration guides
+- Performance benchmarks and analysis
+- Security considerations and guidelines
+
+#### [meetings/](mdc:difighter/difighter/difighter/docs/contexts/meetings) - Communication Records
+- Stakeholder meeting notes
+- Technical decision discussions
+- Planning session outcomes
+- Review and retrospective findings
+- External vendor discussions
+
+#### Custom Subdirectories
+Create additional subdirectories as needed:
+- `contexts/research/` - For ongoing research topics
+- `contexts/legacy/` - For legacy system analysis
+- `contexts/vendors/` - For third-party service evaluations
+- `contexts/compliance/` - For regulatory and compliance information
+
+**Linking Strategy:**
+- Reference context documents in tasks: "See [Auth Analysis](mdc:difighter/difighter/contexts/technical/auth-system-analysis.md) for background"
+- Link from ideas to supporting research: "Based on findings in [User Research](mdc:difighter/difighter/contexts/project/user-navigation-research.md)"
+- Connect proposals to historical context: "Building on [Previous Discussion](mdc:difighter/difighter/contexts/meetings/2025-03-api-architecture-meeting.md)"
+
+### 4. Available Pythia Commands
+
+Use these commands for automated document creation and management:
+
+#### Document Creation Commands:
+- **`/Users/Serhii/workspace/ai/pythia/commands/create-task.md`** - Create task documents
+- **`/Users/Serhii/workspace/ai/pythia/commands/create-idea.md`** - Create idea documents
+- **`/Users/Serhii/workspace/ai/pythia/commands/create-exploration.md`** - Create exploration documents
+- **`/Users/Serhii/workspace/ai/pythia/commands/create-proposal.md`** - Create proposal documents
+
+#### Document Management Commands:
+- **`/Users/Serhii/workspace/ai/pythia/commands/complete-exploration.md`** - Complete exploration documents
+- **`/Users/Serhii/workspace/ai/pythia/commands/archive-tasks.md`** - Archive completed tasks
+- **`/Users/Serhii/workspace/ai/pythia/commands/update-status.md`** - Update document status
+
+#### Registry and Reporting Commands:
+- **`/Users/Serhii/workspace/ai/pythia/commands/report-workflows.md`** - Generate workflow reports
+- **`/Users/Serhii/workspace/ai/pythia/commands/update-documentation-map.md`** - Update documentation map
+- **`/Users/Serhii/workspace/ai/pythia/commands/update-summary-registry.md`** - Update summary registries
+
+#### Analysis and Validation Commands:
+- **`/Users/Serhii/workspace/ai/pythia/commands/analyze-project.md`** - Analyze project structure
+- **`/Users/Serhii/workspace/ai/pythia/commands/analyze-architecture.md`** - Analyze architecture
+- **`/Users/Serhii/workspace/ai/pythia/commands/validate-documentation.md`** - Validate documentation
+
+#### Utility Commands:
+- **`/Users/Serhii/workspace/ai/pythia/commands/create-command.md`** - Create new commands
+- **`/Users/Serhii/workspace/ai/pythia/commands/update-command.md`** - Update existing commands
+- **`/Users/Serhii/workspace/ai/pythia/commands/update-changelog.md`** - Update project changelog
+
+### 4. Automated Processing Workflow
+
+When content is provided:
+
+1. **Analyze content type** using the patterns above
+2. **Suggest document type** with confidence level
+3. **Propose document title** following naming conventions
+4. **Identify appropriate Pythia command** for creation
+5. **Outline document structure** with key sections
+6. **Identify related documents** for cross-referencing
+7. **Suggest registry updates** ([ideas-backlog.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/ideas/ideas-backlog.md), [report.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/report.md))
+
+### 5. Multiple Document Scenarios
+
+Some content may warrant multiple documents:
+
+#### Complex Features → Idea + Task + Exploration
+- **Idea document** for the concept (use `create-idea.md`)
+- **Exploration document** for research (use `create-exploration.md`)
+- **Task documents** for implementation pieces (use `create-task.md`)
+
+#### Meeting Notes → Context + Multiple Actions
+- **Context document** for meeting notes (manual creation)
+- **Task documents** for action items (use `create-task.md`)
+- **Decision documents** for conclusions (manual creation)
+
+### 6. Registry Management
+
+Always suggest updating relevant registries using appropriate commands:
+
+- **[Ideas Backlog](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/ideas/ideas-backlog.md)** - for new ideas
+- **[Workflows Report](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/report.md)** - for active work items (use `report-workflows.md`)
+- **[Documentation Map](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/navigation/documentation-map.md)** - for new document relationships (use `update-documentation-map.md`)
+
+### 7. Quality Checklist
+
+Before suggesting document creation, verify:
+
+- [ ] Content has sufficient detail for proposed document type
+- [ ] Appropriate Pythia command is identified
+- [ ] Naming convention follows established patterns
+- [ ] Document type aligns with content nature
+- [ ] Related documents are identified
+- [ ] Registry updates are planned
+- [ ] Cross-references are established
+
+## Implementation Guidance
+
+### Command Usage Priority
+
+1. **Always prefer Pythia commands** when available for document creation
+2. **Use management commands** for updating existing documents
+3. **Use reporting commands** to maintain registries
+4. **Reference [config.json](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/config.json)** for system configuration
+5. **Follow established workflows** from [docs/workflows/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows)
+
+### Response Format
+
+When analyzing content, provide:
+
+1. **Content Analysis Summary**
+2. **Recommended Document Type(s)**
+3. **Specific Pythia Command to Use**
+4. **Proposed Document Structure**
+5. **Suggested Cross-References**
+6. **Registry Update Plan**
+7. **Implementation Approach**
+
+### Examples
+
+#### Input: "We need to add user authentication with JWT tokens and password hashing"
+**Analysis:** Specific implementation requirement with clear deliverables
+**Recommendation:** Task document
+**Command:** `/Users/Serhii/workspace/ai/pythia/commands/create-task.md`
+**Structure:** Full task template with 4-phase implementation
+**Cross-refs:** Link to any existing auth-related ideas or technical context
+**Registry:** Update using `report-workflows.md`
+
+#### Input: "Should we consider using GraphQL instead of REST for our API?"
+**Analysis:** Research question requiring investigation
+**Recommendation:** Exploration document  
+**Command:** `/Users/Serhii/workspace/ai/pythia/commands/create-exploration.md`
+**Structure:** Research objectives, comparison methodology, evaluation criteria
+**Cross-refs:** Link to existing API documentation in technical context
+**Registry:** Add to ideas backlog, update using `update-documentation-map.md`
+
+#### Input: "We should add dark mode for better user experience"
+**Analysis:** Initial concept that needs validation
+**Recommendation:** Idea document
+**Command:** `/Users/Serhii/workspace/ai/pythia/commands/create-idea.md`
+**Structure:** Problem statement, solution proposal, impact assessment
+**Cross-refs:** Link to UX-related context documents
+**Registry:** Add to ideas backlog
+
+#### Input: "Here are the findings from our user research on TV navigation patterns and the meeting notes from stakeholder discussion about remote control requirements"
+**Analysis:** Supporting information and research findings
+**Recommendation:** Context documents
+**Command:** Manual creation (no automated command)
+**Structure:** 
+- `contexts/project/user-navigation-research.md` for research findings
+- `contexts/meetings/stakeholder-remote-control-requirements.md` for meeting notes
+**Cross-refs:** Can be referenced by future tasks and ideas related to navigation
+**Registry:** Update documentation map to include new context references
+
+This rule ensures consistent, structured approach to converting any content into properly organized documentation within the Pythia framework, leveraging all available automation commands and maintaining clean separation between actionable items and supporting knowledge.

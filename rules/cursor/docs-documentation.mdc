@@ -1,0 +1,169 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Documentation Standards for WhisperRecorder
+
+This rule governs all documentation created in the [docs](mdc:WhisperRecorder2/docs) directory.
+
+## Documentation Structure
+
+### Core Directories
+
+- [docs/contexts/technical](mdc:WhisperRecorder2/docs/contexts/technical) - Technical analysis and architecture documents
+- [docs/contexts/architecture](mdc:WhisperRecorder2/docs/contexts/architecture) - System architecture documentation
+- [docs/contexts/project](mdc:WhisperRecorder2/docs/contexts/project) - Project management and planning docs
+
+### Documentation Standards
+
+#### File Naming Convention
+- Use kebab-case: `workflow-state-machine-transitions.md`
+- Include date prefix for time-sensitive docs: `2025-06-09-bug-analysis.md`
+- Use descriptive names that indicate content purpose
+
+#### Document Structure
+Every technical document MUST include:
+
+```markdown
+# Document Title
+
+**Date**: YYYY-MM-DD
+**Status**: [Active/Deprecated/Draft/Critical]
+**Component**: `ComponentName.swift` (if applicable)
+
+## Overview
+Brief description of purpose and scope
+
+## [Content sections with Mermaid diagrams]
+
+---
+
+**Last Updated**: YYYY-MM-DD
+**Version**: [Description of current version]
+**Next Review**: [When to review again]
+```
+
+#### Required Mermaid Diagrams
+
+For technical documentation, ALWAYS include visual diagrams using Mermaid:
+
+1. **State Machines** - Use `stateDiagram-v2`:
+```mermaid
+stateDiagram-v2
+    [*] --> idle
+    idle --> active : trigger
+    active --> [*] : complete
+```
+
+2. **Workflows** - Use `flowchart TD`:
+```mermaid
+flowchart TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action]
+    B -->|No| D[Alternative]
+```
+
+3. **Component Interactions** - Use `sequenceDiagram`:
+```mermaid
+sequenceDiagram
+    User->>Component: action
+    Component-->>User: response
+```
+
+4. **Architecture** - Use `flowchart LR`:
+```mermaid
+flowchart LR
+    subgraph "Layer 1"
+        A[Component A]
+    end
+    subgraph "Layer 2"
+        B[Component B]
+    end
+    A --> B
+```
+
+#### Cross-References
+
+Use relative paths to reference code:
+- `[WorkflowStateMachine.swift](mdc:WhisperRecorder2/WhisperRecorder/Sources/WhisperRecorder/Core/Workflow/WorkflowStateMachine.swift)`
+- `[UIWorkflowController.swift](mdc:WhisperRecorder2/WhisperRecorder/Sources/WhisperRecorder/UI/UIWorkflowController.swift)`
+
+Use relative paths to reference other documentation:
+- `[Related Document](mdc:WhisperRecorder2/docs/contexts/technical/related-doc.md)`
+
+## Content Guidelines
+
+### Technical Analysis Documents
+
+Must include:
+1. **Problem Statement** - What issue is being addressed
+2. **Root Cause Analysis** - Technical details of the problem
+3. **Solution Description** - How the issue was resolved
+4. **Visual Diagrams** - Mermaid diagrams showing before/after states
+5. **Testing Strategy** - How to verify the fix works
+6. **Prevention Measures** - How to avoid similar issues
+
+### Architecture Documents
+
+Must include:
+1. **System Overview** - High-level architecture diagram
+2. **Component Breakdown** - Detailed component responsibilities
+3. **Data Flow** - How data moves through the system
+4. **State Management** - How state is tracked and updated
+5. **Integration Points** - How components interact
+6. **Performance Considerations** - Performance implications
+
+### Bug Analysis Documents
+
+Must include:
+1. **Bug Description** - Clear problem statement
+2. **Reproduction Steps** - How to trigger the bug
+3. **Log Analysis** - Relevant log excerpts with timestamps
+4. **State Diagrams** - Current vs expected state flows
+5. **Fix Implementation** - Code changes made
+6. **Verification** - How the fix was tested
+
+## Quality Standards
+
+### Mermaid Diagram Requirements
+
+- All diagrams must be syntactically valid
+- Use consistent styling and colors:
+  - Red (#ff6b6b) for errors/problems
+  - Green (#51cf66) for success/solutions
+  - Yellow (#ffd43b) for warnings/in-progress
+- Include meaningful node labels and descriptions
+- Use appropriate diagram types for the content
+
+### Writing Style
+
+- Write in the language appropriate for the audience (Ukrainian for internal team docs, English for technical implementation)
+- Use clear, concise language
+- Include code examples where relevant
+- Provide actionable information
+- Use proper technical terminology
+
+### Maintenance
+
+- Update documents when related code changes
+- Review and update "Last Updated" dates
+- Mark deprecated documents clearly
+- Remove or archive outdated information
+- Keep cross-references current
+
+## Example Integration
+
+For workflow-related documentation, reference:
+- [workflow-state-machine-transitions.md](mdc:WhisperRecorder2/docs/contexts/technical/workflow-state-machine-transitions.md) - Complete state machine analysis
+- [workflow-debugging-quickguide.md](mdc:WhisperRecorder2/docs/contexts/technical/workflow-debugging-quickguide.md) - Quick debugging reference
+
+These documents demonstrate proper use of Mermaid diagrams for technical documentation.
+
+## Review Process
+
+1. **Technical Accuracy** - Verify all technical information is correct
+2. **Visual Clarity** - Ensure Mermaid diagrams render properly and are useful
+3. **Completeness** - Check all required sections are present
+4. **Cross-Reference Validity** - Verify all mdc links work correctly
+5. **Update Currency** - Ensure information reflects current codebase state

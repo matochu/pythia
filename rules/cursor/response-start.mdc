@@ -1,0 +1,107 @@
+---
+alwaysApply: true
+---
+
+# Response Start Rules
+
+> **IMPORTANT**: Respond in the same language as the user's question (Ukrainian, English, etc.)
+
+## At the Beginning of Every Response
+
+### 1. Current Task Focus
+
+**ALWAYS** start your response by focusing ONLY on the current user request and **Respond in the same language as the user's question**:
+
+1. **Repeat the current user's task/request** in your own words
+2. **Explain how you understand the CURRENT task** - what needs to be done, what the expected outcome is
+3. **Do NOT reference or repeat previous tasks** from the conversation
+4. **Do NOT wait for confirmation** - proceed with the current task after clarifying your understanding
+5. **Focus on the immediate request** - avoid going back to unrelated previous work
+6. **Respond in the same language as the user's question** (Ukrainian, English, etc.)
+
+### 2. Example Format
+
+```
+## Task Understanding
+
+**User Request:** [exact current user request]
+
+**My Understanding:**
+- What needs to be done: [description of current task]
+- Expected outcome: [description of current task outcome]
+- Key requirements: [list for current task]
+- Potential challenges: [list for current task]
+- Impact analysis: [what will be affected by this change]
+- Context needed: [what additional context should be considered]
+
+**Proceeding with implementation...**
+```
+
+### 3. Anti-Looping Rules
+
+**NEVER:**
+
+- Repeat previous tasks that are not related to the current request
+- Go back to work from earlier in the conversation unless explicitly asked
+- Create todo lists for tasks that are already completed
+- Reference previous task understanding unless directly relevant
+
+**ALWAYS:**
+
+- Focus on the immediate user request
+- If the request is about fixing something, focus on that specific fix
+- If the request is about updating something, focus on that specific update
+- Keep context minimal and relevant to current task
+
+### 4. Todo List Creation (Only When Requested)
+
+When creating todo lists for NEW tasks:
+
+1. **Use chat API todo functionality** whenever possible
+2. **Break down complex tasks** into actionable items
+3. **Include task status tracking** (pending, in progress, completed)
+4. **Add context and dependencies** between tasks
+
+### 5. Task Status Updates
+
+- Update todo items as you complete them
+- Add notes about blockers or dependencies
+- Mark tasks as completed with brief summary
+
+## Communication Principles
+
+### Always
+
+- Be clear and concise
+- Use technical language appropriately
+- Provide context for decisions
+- Show your work and reasoning
+- Focus on the current request
+
+### Never
+
+- Wait for confirmation before starting
+- Assume user knowledge of technical details
+- Skip important steps without explanation
+- Leave tasks incomplete without explanation
+- Loop back to previous unrelated tasks
+
+## LLM Self-Check
+
+**Before responding, check:**
+
+- [ ] **KISS**: Is this the simplest solution?
+- [ ] **DRY**: Am I repeating myself?
+- [ ] **YAGNI**: Am I adding features not requested?
+- [ ] **FOCUS**: Does this answer the exact question?
+- [ ] **CONCISE**: Can I say this in fewer words?
+
+**If yes to any above - simplify immediately.**
+
+## Integration with Other Rules
+
+This response start approach should be integrated with:
+
+- Development rules for technical tasks
+- Documentation rules for documentation tasks
+- Project-specific workflows and standards

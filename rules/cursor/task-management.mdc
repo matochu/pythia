@@ -1,0 +1,405 @@
+---
+description:
+globs: docs/workflows/tasks/*.md
+alwaysApply: false
+---
+
+# Task Management Workflow for Thea Project
+
+## Overview
+
+This rule defines the comprehensive workflow for managing complex tasks in the Thea project, based on evidence-based analysis and proper documentation practices. It emphasizes planning first, documenting context, and making informed architectural decisions.
+
+## Core Principles
+
+1. **Plan First, Execute Second** - Always document your approach before implementation
+2. **Evidence-Based Decisions** - Use real data and analysis, not theoretical assumptions
+3. **Context Preservation** - Document enough context for future work without conversation history
+4. **Context Integration** - Use context documents to inform task creation and decision-making
+5. **Incremental Progress** - Break complex tasks into manageable phases with clear checkboxes
+6. **Reality Check** - Test theoretical approaches against real project constraints
+
+## Task Creation Workflow
+
+### 1. Initial Setup
+
+Always start by getting the current date:
+
+```bash
+date +%Y-%m-%d
+```
+
+### 2. Context Document Review
+
+Before creating a task, review relevant context documents:
+
+```bash
+# Search for relevant context documents
+find docs/contexts -type f -name "*.md" -exec grep -l "keyword" {} \;
+
+# Review context documents for insights
+cat docs/contexts/domain/context-YYYY-MM-topic.md
+
+# Extract key insights for task creation
+grep -A 5 -B 5 "key-term" docs/contexts/domain/context-YYYY-MM-topic.md
+```
+
+Context documents should inform:
+
+- Task scope and objectives
+- Risk assessment and mitigation strategies
+- Success criteria definition
+- Technical approach and constraints
+
+### 3. Task Documentation Structure
+
+Create task files in [docs/workflows/tasks/](mdc:thea/docs/workflows/tasks) following the naming convention:
+
+```
+task-YYYY-MM-DD-{topic}.md
+```
+
+Use this structure based on [task-2025-05-dependency-analysis-ddd-layers.md](mdc:thea/docs/workflows/tasks/task-2025-05-dependency-analysis-ddd-layers.md):
+
+```markdown
+# Task: [Clear Title]
+
+**Date**: YYYY-MM-DD  
+**Last Updated**: YYYY-MM-DD  
+**Status**: [New|In Progress|Completed|Blocked]  
+**Type**: [Research|Implementation|Refactoring|Analysis]  
+**Priority**: [Low|Medium|High|Critical]  
+**Complexity**: [Low|Medium|High]
+
+## Summary
+
+Brief overview of what was accomplished and current status.
+
+## Objectives
+
+- [ ] Clear, actionable objectives with checkboxes
+- [ ] Each objective should be measurable
+- [ ] Include completion criteria
+
+## Context
+
+Background information and why this task is needed.
+
+**Related Context Documents:**
+
+- [Context Document 1](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
+- [Context Document 2](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
+
+**Context Analysis:**
+
+- Key insights from context documents that informed this task
+- Decisions made based on context analysis
+- Risk factors identified through context review
+
+## Scope
+
+### In Scope
+
+- [ ] What will be done
+
+### Out of Scope
+
+- What will NOT be done
+
+## Implementation Steps
+
+- [ ] Phase 1: [Description]
+  - [ ] Subtask 1
+  - [ ] Subtask 2
+- [ ] Phase 2: [Description]
+  - [ ] Subtask 1
+
+## Progress Tracking
+
+| Phase   | Status      | Completion % | Last Updated | Notes |
+| ------- | ----------- | ------------ | ------------ | ----- |
+| Phase 1 | In Progress | 60%          | 2025-MM-DD   | -     |
+
+## Success Criteria
+
+- [ ] Measurable outcomes
+- [ ] Clear definition of "done"
+
+## Dependencies
+
+- [ ] Required tools, access, or prerequisites
+
+## References
+
+- Links to related documents
+- Analysis files
+- Context documents
+- [Context Documentation Methodology](mdc:pythia/methodology/context-documentation.md)
+```
+
+### 4. Documentation Organization Strategy
+
+When tasks become large (>1000 lines), reorganize into focused context files:
+
+#### Create Context Files
+
+Store detailed analysis in [docs/contexts/](mdc:thea/docs/contexts) subdirectories:
+
+- `dependency-analysis-results.md` - Analysis data and findings
+- `proposed-architecture-layers.md` - Architectural proposals
+- `migration-strategy.md` - Implementation plans
+- `architecture-validation-tools.md` - Tools and validation
+
+#### Context Document Integration
+
+Follow the [Context Documentation Methodology](mdc:pythia/methodology/context-documentation.md):
+
+- Use proper naming convention: `context-YYYY-MM-topic.md`
+- Include metadata, description, key information, and conclusions
+- Add appropriate tags for easy discovery
+- Link to related tasks and other context documents
+
+#### Update Main Task File
+
+Keep main task file focused (<500 lines) by:
+
+- Replacing large sections with links to context files
+- Keeping only essential summary information
+- Maintaining progress tracking and status
+
+Example reorganization pattern from the conversation:
+
+```markdown
+## Analysis Results
+
+**→ [Complete Analysis Results](mdc:../contexts/ddd/dependency-analysis-results.md)**
+
+### Critical Findings Summary
+
+**Scale**: 707 files, 2451 circular dependencies, 343 TV platform dependencies  
+**Key Challenge**: TV platform makes traditional layered architecture unfeasible  
+**Timeline**: 12-24 months realistic vs 1-2 weeks theoretical
+```
+
+## Context-Driven Task Creation
+
+### Context Document Workflow
+
+1. **Identify Relevant Contexts**
+
+   - Search existing context documents for related information
+   - Review context documents for insights and constraints
+   - Identify gaps that require new context documents
+
+2. **Context Analysis**
+
+   - Extract key insights from context documents
+   - Identify risks and constraints from context analysis
+   - Determine task scope based on context findings
+
+3. **Task Creation with Context**
+
+   - Reference relevant context documents in task
+   - Include context analysis in task objectives
+   - Use context insights for risk assessment
+
+4. **Context Updates**
+   - Update context documents based on task outcomes
+   - Add new insights and learnings to context documents
+   - Maintain bidirectional links between tasks and contexts
+
+## Evidence-Based Analysis Approach
+
+### 1. Data Collection Phase
+
+Always start with comprehensive data collection:
+
+```bash
+# Generate dependency data
+npx madge --ts-config tsconfig.json --extensions ts,tsx,js,jsx --json src/ > analysis/dependency-data.json
+npx madge --ts-config tsconfig.json --extensions ts,tsx,js,jsx --circular src/ > analysis/circular-dependencies.json
+
+# Run analysis scripts
+node scripts/analysis/code-complexity.js
+node scripts/analysis/dependency-analyzer.js
+node scripts/analysis/import-analyzer.js
+```
+
+### 2. Reality Testing
+
+Test theoretical approaches against real constraints:
+
+```typescript
+// Example: Test if "dumb components" are possible in TV environment
+// Reality check showed 343 TV platform dependencies in UI layer
+// Conclusion: Traditional layered architecture unfeasible
+```
+
+### 3. Quantify Problems
+
+Use real numbers, not estimates:
+
+- File counts: "707 files" not "many files"
+- Dependencies: "2451 circular dependencies" not "some cycles"
+- Complexity: "37+ imports per major component" not "highly coupled"
+
+## Critical Analysis Patterns
+
+### 1. Identify Theoretical Bias
+
+Watch for assumptions that don't match reality:
+
+- ❌ "Search feature has 3 files"
+- ✅ "Search feature has 15+ files in reality"
+
+### 2. Scale Awareness
+
+Always consider real project scale:
+
+- ❌ "1-2 weeks migration"
+- ✅ "12-24 months realistic timeline"
+
+### 3. Platform Constraints
+
+For Thea TV project, always consider:
+
+- TV platform coupling (343 dependencies found)
+- Navigation/focus requirements
+- Device-specific implementations
+- Performance constraints
+
+## Progress Tracking Guidelines
+
+### Use Checkboxes Consistently
+
+```markdown
+- [ ] Main task
+  - [x] Completed subtask
+  - [ ] Pending subtask
+```
+
+### Complexity Ratings
+
+Instead of time estimates, use complexity:
+
+- **Low**: Single component, clear requirements, minimal dependencies
+- **Medium**: Multiple components, some dependencies, moderate risk
+- **High**: Cross-system impact, multiple dependencies
+
+### Progress Table
+
+Always include progress tracking:
+
+```markdown
+| Phase    | Status      | Completion % | Last Updated | Notes                    |
+| -------- | ----------- | ------------ | ------------ | ------------------------ |
+| Analysis | Completed   | 100%         | 2025-05-25   | Found 2451 circular deps |
+| Planning | In Progress | 60%          | 2025-05-25   | Architecture design      |
+```
+
+## Documentation Cross-Referencing
+
+### Link Related Documents
+
+```markdown
+**→ [Detailed Analysis](mdc:../contexts/ddd/dependency-analysis-results.md)**
+**→ [Migration Strategy](mdc:../contexts/ddd/migration-strategy.md)**
+```
+
+### Update Documentation Map
+
+Ensure [docs/navigation/documentation-map.md](mdc:thea/docs/navigation/documentation-map.md) reflects new documents.
+
+## Common Pitfalls to Avoid
+
+### 1. Theoretical Bias
+
+- Don't assume clean architecture is always possible
+- Test proposals against real constraints
+- Use actual project data, not examples from books
+
+### 2. Scope Creep
+
+- Keep task files focused (<500 lines)
+- Move detailed analysis to context files
+- Link rather than duplicate content
+
+### 3. Unrealistic Timelines
+
+- Use complexity ratings, not time estimates
+- Consider real project scale (707 files, not toy examples)
+- Account for TV platform constraints
+
+### 4. Missing Context
+
+- Document decision rationale
+- Preserve enough context for future work
+- Link to related analysis and dependencies
+
+### 5. Context Isolation
+
+- Don't create tasks without reviewing relevant contexts
+- Avoid duplicating context information in tasks
+- Ensure bidirectional links between tasks and contexts
+- Don't ignore context insights when planning tasks
+
+## Success Criteria for Tasks
+
+A task is successfully executed when:
+
+1. ✅ Well-structured task document exists with proper naming
+2. ✅ Implementation follows documented plan with evidence
+3. ✅ All context and decision rationale preserved
+4. ✅ Documentation map and related documents updated
+5. ✅ Completed work meets defined success criteria
+6. ✅ All task checkboxes properly marked
+7. ✅ Progress tracking complete and accurate
+8. ✅ Real constraints identified and addressed
+9. ✅ Relevant context documents reviewed and referenced
+10. ✅ Context insights incorporated into task planning
+11. ✅ Bidirectional links maintained between tasks and contexts
+
+## Example: Architectural Analysis Task
+
+Based on the conversation, here's how a complex architectural task should be handled:
+
+### Phase 1: Data Collection ✅
+
+- [x] Generate dependency graphs (madge, dependency-cruiser)
+- [x] Analyze file structure (707 files identified)
+- [x] Quantify circular dependencies (2451 found)
+- [x] Measure component complexity (37+ imports per major component)
+
+### Phase 2: Reality Testing ✅
+
+- [x] Test layered architecture proposal against real constraints
+- [x] Identify TV platform coupling (343 dependencies)
+- [x] Document why theoretical approaches fail
+- [x] Develop pragmatic alternatives
+
+### Phase 3: Documentation Reorganization ✅
+
+- [x] Extract large sections into context files
+- [x] Create focused analysis documents
+- [x] Update main task with links and summaries
+- [x] Maintain progress tracking
+
+### Phase 4: Recommendations
+
+- [ ] Provide evidence-based recommendations
+- [ ] Include realistic timelines (12-24 months)
+- [ ] Focus on incremental improvements
+- [ ] Account for team preferences ("ugly and straightforward")
+
+## Integration with Development Workflow
+
+This task management approach integrates with:
+
+- [development.mdc](mdc:thea/.cursor/rules/development.mdc) - Code implementation guidelines
+- [workflow.mdc](mdc:thea/.cursor/rules/workflow.mdc) - General workflow principles
+- [documentation.mdc](mdc:thea/.cursor/rules/documentation.mdc) - Documentation standards
+- [Context Documentation Methodology](mdc:pythia/methodology/context-documentation.md) - Context document guidelines
+
+---
+
+**Last Updated**: 2025-05-25

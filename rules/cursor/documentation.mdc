@@ -1,0 +1,115 @@
+---
+description: Documentation process
+globs: /docs/**
+alwaysApply: false
+---
+# Documentation Guidelines for `/docs` Directory
+
+> **Note**: All documentation should be maintained in English only.
+
+## General Principles
+
+1. **Document Interconnections**:
+
+   - Each document should be connected to other relevant documents through cross-references
+   - When creating a new document, always add a reference to it in [documentation-map.md](mdc:docs/navigation/documentation-map.md)
+   - Related documents should contain mutual references (e.g., analysis → proposal and proposal → analysis)
+
+2. **Document Structure**:
+
+   - Each document should begin with a "Summary" section describing the main content
+   - The Summary should be followed by a "Current State" section to provide context
+   - Table of contents is mandatory for documents longer than 3 sections
+
+3. **Change Context**:
+   - When updating an existing document, maintain its general structure and format
+   - New proposals should be based on existing analytical documents
+   - When creating a new proposal, first identify all related analytical documents
+
+## Folders and Their Purpose
+
+- `/docs/architecture/` - Analytical documents about the current state of architecture
+- `/docs/proposals/` - Proposals for changes and improvements
+- `/docs/decisions/` - Architecture Decision Records (ADRs)
+- `/docs/methodology/` - Development methodologies and processes
+- `/docs/guides/` - Practical guides and instructions
+- `/docs/tasks/` - Task documentation and context
+- `/docs/navigation/` - Documents for navigating the documentation
+
+## File Naming
+
+- Use kebab-case for all documents (e.g., `file-name.md`)
+- Names should clearly indicate the content of the document
+- Use prefixes to indicate document type:
+  - Architecture documents: `analysis-{topic}.md`
+  - Decision records: `decision-YYYY-MM-{topic}.md`
+  - Guides: `guide-{topic}.md`
+  - Process documents: `{process-name}.md`
+  - Proposals: `proposal-{topic}.md`
+  - Tasks: `task-YYYY-MM-{topic}.md`
+
+## Cross-References
+
+- Use relative paths for linkcontextual description when linking: `[Learn more about state management](mdc:../architecture/analysis-state-management.md)`
+- When adding a new proposal, update all related documents with links to the new proposal
+
+## Documentation Updates
+
+- When significant system changes occur, update the corresponding analytical documents
+- After implementing a proposal, update its status in [documentation-map.md](mdc:docs/navigation/documentation-map.md)
+- For documents with version history, add an entry about the latest change
+
+## Task Documentation Structure
+
+Task documentation should include:
+
+- **Context**: Clear description of the problem and why it's important
+- **Objectives**: Specific goals the task aims to achieve
+- **Implementation Plan**: Detailed steps for completing the task
+- **Progress Tracking**: Current status and completion metrics
+- **Risks and Mitigation**: Identified risks and strategies to address them
+- **Implementation Summary**: After completion, a summary of the work done, challenges faced, and lessons learned
+
+## Visualizing Connections
+
+- For complex relationships, use diagrams in ASCII or Mermaid format
+- Update the relationship diagram in [documentation-map.md](mdc:docs/navigation/documentation-map.md) when adding new documents
+- Use tables for comparative analysis of alternatives
+
+## Practical Examples
+
+### Adding a New Proposal:
+
+1. Analyze existing analytical documents
+2. Create a new document in `/docs/proposals/` using the naming convention `proposal-{topic}.md`
+3. Add references to analytical documents
+4. Update [documentation-map.md](mdc:docs/navigation/documentation-map.md)
+5. Add references to the proposal in relevant analytical documents
+
+### Creating a New Task:
+
+1. Identify the purpose of the task (implementation, research, analysis)
+2. Choose the appropriate template from `/docs/tasks/`
+3. Create a new document in `/docs/tasks/` using the naming convention `task-YYYY-MM-{topic}.md`
+4. Fill in all required sections
+5. Update [documentation-map.md](mdc:docs/navigation/documentation-map.md) with the new task
+
+### Updating an Analytical Document:
+
+1. Preserve the existing structure
+2. Update content with new information
+3. Add references to related proposals
+4. Update all documents that reference the updated document
+
+## Notes for LLMs
+
+- Always check for the navigation map at [documentation-map.md](mdc:docs/navigation/documentation-map.md)
+- Use it to understand relationships between documents
+- When modifying documents, maintain their general style and format
+- Always aim for documentation integrity by adding appropriate cross-references
+- Preserve contextual information about changes in the documentation system
+- When updating documents, ensure links between related documents remain valid
+- Keep the documentation map updated as the single source of truth for document relationships
+- Follow the established pattern for each document type (analysis, proposal, decision, task)
+- Honor the existing document hierarchy and organization scheme
+- Ensure new documents integrate seamlessly with the existing documentation structure
