@@ -1,4 +1,4 @@
-# Context Documents: Methodology and Application
+# Context Documentation Methodology
 
 > **IMPORTANT**: This document provides a systematic, production-ready methodology for creating, using, and managing context documents in projects that use the Pythia system. It is designed for use by LLMs and human reviewers to ensure all context documents meet the highest standards of clarity, completeness, and integration with task creation workflows.
 
@@ -29,6 +29,49 @@ Contexts serve as the project's institutional memory, preserving knowledge that 
 5. **Autonomy** — each context should be a self-sufficient document
 6. **Flexibility** — the structure and organization of contexts can adapt to the needs of a specific project
 7. **Task Integration** — contexts should support task creation workflow and decision-making processes
+
+## Memory Bank Integration
+
+Memory Bank complements context documentation by providing session-specific insights and cross-session pattern recognition. While context documents focus on stable, long-term information, Memory Bank captures dynamic insights and decisions that emerge during active work sessions.
+
+### Complementary Roles
+
+**Context Documents:**
+
+- Stable, long-term information
+- Domain knowledge and constraints
+- Architectural decisions and rationale
+- Cross-project patterns and standards
+
+**Memory Bank:**
+
+- Session-specific insights and decisions
+- Dynamic pattern recognition
+- Cross-task learning and connections
+- Temporary context that may become permanent
+
+### Integration Points
+
+1. **Context Document Creation**: Use Memory Bank insights to identify new context documents needed
+2. **Pattern Extraction**: Move validated patterns from Memory Bank to context documents
+3. **Decision Tracking**: Link Memory Bank decisions to relevant context documents
+4. **Cross-Reference Maintenance**: Ensure Memory Bank entries reference appropriate context documents
+
+### Workflow Integration
+
+```bash
+# When creating context documents, check Memory Bank for insights
+if [ -d ".memory-bank" ]; then
+    # Find related session insights
+    find .memory-bank/sessions -name "*.md" -exec grep -l "topic" {} \;
+
+    # Extract patterns for context documentation
+    find .memory-bank/patterns -name "*.md" -exec basename {} \;
+
+    # Review decisions for context relevance
+    find .memory-bank/decisions -name "*.md" -exec grep -l "architectural" {} \;
+fi
+```
 
 ## Flexible Classification of Context Documents
 
@@ -93,6 +136,101 @@ The basic structure of a context document includes:
 - **Change History** - table of major document changes
 
 A detailed template with all sections and recommendations for their completion is available in the [context document template](../templates/context-template.md).
+
+## Context Document Types
+
+### 1. Domain Context Documents
+
+Capture domain-specific knowledge and constraints:
+
+```markdown
+# Context: [Domain Name] - [Date]
+
+**Domain Overview:**
+[Brief description of the domain and its key concepts]
+
+**Key Constraints:**
+
+- [Constraint 1 with rationale]
+- [Constraint 2 with rationale]
+
+**Business Rules:**
+
+- [Rule 1 with implementation details]
+- [Rule 2 with implementation details]
+
+**Integration Points:**
+
+- [External system 1 and its requirements]
+- [External system 2 and its requirements]
+
+**Cross-References:**
+
+- [Related Memory Bank entries]
+- [Related context documents]
+```
+
+### 2. Technical Context Documents
+
+Document technical decisions and architectural patterns:
+
+```markdown
+# Context: [Technical Area] - [Date]
+
+**Technical Overview:**
+[Brief description of the technical area and its importance]
+
+**Architectural Decisions:**
+
+- [Decision 1 with rationale and alternatives considered]
+- [Decision 2 with rationale and alternatives considered]
+
+**Implementation Patterns:**
+
+- [Pattern 1 with usage examples]
+- [Pattern 2 with usage examples]
+
+**Constraints and Limitations:**
+
+- [Technical constraint 1 with impact]
+- [Technical constraint 2 with impact]
+
+**Cross-References:**
+
+- [Related Memory Bank patterns]
+- [Related technical context documents]
+```
+
+### 3. Process Context Documents
+
+Document workflows and procedures:
+
+```markdown
+# Context: [Process Name] - [Date]
+
+**Process Overview:**
+[Brief description of the process and its purpose]
+
+**Key Steps:**
+
+- [Step 1 with details and rationale]
+- [Step 2 with details and rationale]
+
+**Decision Points:**
+
+- [Decision point 1 with criteria]
+- [Decision point 2 with criteria]
+
+**Success Criteria:**
+
+- [Criterion 1 with measurement method]
+- [Criterion 2 with measurement method]
+
+**Cross-References:**
+
+- [Related Memory Bank sessions]
+- [Related process context documents]
+```
 
 ## Integration with Task Creation Workflow
 
@@ -224,6 +362,26 @@ An important aspect of effective context usage is avoiding duplication of inform
 | Steps for Feature Creation    | User research that justifies the need for a feature    |
 | Incident Resolution Procedure | Knowledge base of typical problems and their solutions |
 
+## Context Document Lifecycle
+
+### 1. Creation
+
+- Identify context gaps through Memory Bank analysis
+- Create context documents for stable, reusable information
+- Link to relevant Memory Bank entries for dynamic insights
+
+### 2. Maintenance
+
+- Regular review and updates based on Memory Bank insights
+- Consolidate similar patterns from Memory Bank
+- Archive outdated context information
+
+### 3. Integration
+
+- Ensure bidirectional links between context documents and Memory Bank
+- Use context documents to inform Memory Bank searches
+- Extract patterns from Memory Bank to create new context documents
+
 ## Context Work Process
 
 ### Creating a Context
@@ -253,6 +411,25 @@ Contexts can be used for:
 4. If significant changes occur, consider creating a new context
 5. **Re-validate context quality** after significant updates
 
+## Quality Standards
+
+### Context Document Quality Checklist
+
+- [ ] Clear, concise description of the context
+- [ ] Specific constraints and their rationale
+- [ ] Practical examples and usage patterns
+- [ ] Cross-references to related documents
+- [ ] Links to relevant Memory Bank entries
+- [ ] Regular review and update schedule
+
+### Memory Bank Integration Checklist
+
+- [ ] Context documents reference relevant Memory Bank entries
+- [ ] Memory Bank entries link to appropriate context documents
+- [ ] Patterns are extracted from Memory Bank to context documents
+- [ ] Context documents inform Memory Bank searches
+- [ ] Regular synchronization between context and Memory Bank
+
 ## Quality Validation for Context Documents
 
 ### Self-Check Points
@@ -277,6 +454,29 @@ Before finalizing a context document, verify:
 | **Task Integration** | No task support | Basic support   | Full task integration |
 | **Maintainability**  | Hard to update  | Moderate effort | Easy to maintain      |
 
+## Best Practices
+
+### 1. Context Document Creation
+
+- Focus on stable, long-term information
+- Include practical examples and usage patterns
+- Maintain clear cross-references to related documents
+- Regular review and updates based on new insights
+
+### 2. Memory Bank Integration
+
+- Use Memory Bank insights to identify new context documents needed
+- Extract validated patterns from Memory Bank to context documents
+- Maintain bidirectional links between context and Memory Bank
+- Regular consolidation of Memory Bank insights into context documents
+
+### 3. Cross-Reference Management
+
+- Ensure all context documents have appropriate Memory Bank references
+- Update Memory Bank entries when context documents change
+- Regular validation of cross-references
+- Clear distinction between stable context and dynamic insights
+
 ## Examples of Context Usage
 
 ### Example 1: Technical Context for Refactoring
@@ -290,6 +490,33 @@ Create a context that describes business needs, expected results, success metric
 ### Example 3: Historical Context of System Development
 
 Create a context that describes the evolution of the system, key decisions made, and their consequences. This context helps new team members understand why the system is built the way it is.
+
+## Integration with Pythia Commands
+
+### Context Document Creation
+
+Use Memory Bank insights when creating context documents:
+
+```bash
+# Check Memory Bank for related insights before creating context document
+if [ -d ".memory-bank" ]; then
+    find .memory-bank/sessions -name "*.md" -exec grep -l "topic" {} \;
+    find .memory-bank/patterns -name "*.md" -exec basename {} \;
+    find .memory-bank/decisions -name "*.md" -exec grep -l "architectural" {} \;
+fi
+```
+
+### Context Document Maintenance
+
+Regularly update context documents based on Memory Bank insights:
+
+```bash
+# Extract patterns from Memory Bank for context documentation
+find .memory-bank/patterns -name "*.md" -mtime -30 -exec basename {} \;
+
+# Review recent decisions for context relevance
+find .memory-bank/decisions -name "*.md" -mtime -30 -exec grep -l "architectural" {} \;
+```
 
 ## Safety & Stop Conditions
 
@@ -310,6 +537,7 @@ This methodology integrates with other Pythia components:
 - **`@create-task.md`** - Use contexts to inform task creation
 - **`@validate-command.md`** - Apply validation standards to context documents
 - **`@validate-documentation.md`** - Validate context documentation integrity
+- **`@memory-bank-management.md`** - Integrate with Memory Bank system
 
 ### Template Integration
 
@@ -322,6 +550,7 @@ This methodology integrates with other Pythia components:
 - **Documentation Guidelines**: Follow [Documentation Guidelines](mdc:methodology/documentation-guidelines.md) for structure and cross-referencing
 - **Quality Standards**: Apply [Validate Command](mdc:commands/validate-command.md) quality rubric
 - **Task Workflow**: Integrate with [Create Task](mdc:commands/create-task.md) command
+- **Memory Bank**: Integrate with [Memory Bank Management](mdc:commands/memory-bank-management.md) system
 
 ## Conclusions
 
@@ -337,6 +566,7 @@ Proper use of contexts allows:
 - Create a single source of truth for critical aspects of the project
 - Avoid duplication with other document types
 - **Support task creation workflow** with informed decision-making
+- **Integrate with Memory Bank** for dynamic context preservation
 
 Remember, contexts are not just another bureaucratic layer, but an instrument for effective knowledge organization. Use them where they provide real value, and adapt your approach to your specific needs.
 
@@ -344,6 +574,7 @@ Remember, contexts are not just another bureaucratic layer, but an instrument fo
 
 - [Create Task](mdc:commands/create-task.md)
 - [Validate Command](mdc:commands/validate-command.md)
+- [Memory Bank Management](mdc:commands/memory-bank-management.md)
 - [Task Template](mdc:templates/task-template.md)
 - [Context Template](mdc:templates/context-template.md)
 - [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
@@ -351,4 +582,4 @@ Remember, contexts are not just another bureaucratic layer, but an instrument fo
 
 ---
 
-**Last Updated**: 2025-07-30
+**Last Updated**: 2025-08-06

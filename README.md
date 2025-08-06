@@ -542,3 +542,49 @@ These tests ensure that our documentation validation tools work correctly, parti
 - [Validate Documentation](commands/validate-documentation.md)
 - [Summary Documents Registry](navigation/summary-documents-registry.md)
 - [CHANGELOG](CHANGELOG.md)
+
+## Memory Bank Management
+
+Pythia includes a Memory Bank system for preserving context across LLM sessions in IDE environments. This system enhances existing commands by providing persistent context that improves decision-making speed and consistency.
+
+### Key Features
+
+- **Session Management**: Preserve insights and decisions from individual work sessions
+- **Pattern Recognition**: Identify and reuse successful patterns across tasks
+- **Cross-Task Learning**: Connect insights between related implementations
+- **IDE Integration**: Designed for Cursor and other IDE environments
+- **Context Preservation**: Reduce context reconstruction time from minutes to seconds
+
+### Usage
+
+```bash
+# Reference the Memory Bank Management command
+@memory-bank-management.md
+
+# Example usage for complex project
+@memory-bank-management.md
+Context: Large documentation project with multiple concurrent tasks
+Objective: Preserve architectural decisions and task context across sessions
+Requirements: Support for large tasks (600+ lines), architectural analysis, cross-task learning
+```
+
+### Integration with Existing Commands
+
+Memory Bank enhances existing Pythia commands:
+
+- **@create-task.md**: Check Memory Bank for related patterns and previous decisions
+- **@analyze-project.md**: Load historical analysis insights and architectural patterns
+- **@validate-documentation.md**: Apply validation patterns and previous issue resolutions
+
+### Structure
+
+```
+.memory-bank/
+├── sessions/              # Session-specific context and insights
+├── patterns/              # Reusable patterns and solutions
+├── decisions/             # Architectural and technical decisions
+├── insights/              # Cross-session learnings and connections
+└── templates/             # Templates for consistent entry creation
+```
+
+For detailed implementation, see [Memory Bank Management](commands/memory-bank-management.md).

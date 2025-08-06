@@ -75,6 +75,15 @@ mkdir -p "$TASKS_PATH"
 # List existing tasks to avoid duplication
 ls -la "$TASKS_PATH"
 
+# Check Memory Bank for relevant context (if available)
+if [ -d ".memory-bank" ]; then
+    echo "Checking Memory Bank for related context..."
+    # Search for related patterns
+    find .memory-bank/patterns -name "*.md" -exec grep -l "keyword" {} \; 2>/dev/null || echo "No related patterns found"
+    # Review recent sessions
+    find .memory-bank/sessions -name "*.md" -mtime -7 -exec basename {} \; 2>/dev/null || echo "No recent sessions found"
+fi
+
 # Search for similar tasks - basic keyword search
 grep -r "keyword" "$TASKS_PATH"
 
@@ -158,6 +167,33 @@ Context documents should inform:
 - Risk assessment and mitigation strategies
 - Success criteria definition
 - Technical approach and constraints
+
+### Memory Bank Integration
+
+If Memory Bank is available, check for relevant context:
+
+```bash
+# Check Memory Bank for related patterns and insights
+if [ -d ".memory-bank" ]; then
+    echo "Checking Memory Bank for relevant context..."
+
+    # Search for related patterns
+    find .memory-bank/patterns -name "*.md" -exec grep -l "keyword" {} \; 2>/dev/null || echo "No related patterns found"
+
+    # Review recent sessions for similar work
+    find .memory-bank/sessions -name "*.md" -mtime -7 -exec basename {} \; 2>/dev/null || echo "No recent sessions found"
+
+    # Check for relevant decisions
+    find .memory-bank/decisions -name "*.md" -exec grep -l "decision-keyword" {} \; 2>/dev/null || echo "No related decisions found"
+fi
+```
+
+Memory Bank insights should inform:
+
+- Previous architectural decisions and their rationale
+- Reusable patterns from similar tasks
+- Cross-task learnings and constraints
+- Historical context for current task
 
 ## Step 3: Use the Task Template
 
