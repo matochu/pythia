@@ -61,15 +61,15 @@ Memory Bank complements context documentation by providing session-specific insi
 
 ```bash
 # When creating context documents, check Memory Bank for insights
-if [ -d ".memory-bank" ]; then
+if [ -d ".pythia/memory-bank" ]; then
     # Find related session insights
-    find .memory-bank/sessions -name "*.md" -exec grep -l "topic" {} \;
+    find .pythia/memory-bank/sessions -name "*.md" -exec grep -l "topic" {} \;
 
     # Extract patterns for context documentation
-    find .memory-bank/patterns -name "*.md" -exec basename {} \;
+    find .pythia/memory-bank/patterns -name "*.md" -exec basename {} \;
 
     # Review decisions for context relevance
-    find .memory-bank/decisions -name "*.md" -exec grep -l "architectural" {} \;
+    find .pythia/memory-bank/decisions -name "*.md" -exec grep -l "architectural" {} \;
 fi
 ```
 
@@ -499,7 +499,7 @@ Use Memory Bank insights when creating context documents:
 
 ```bash
 # Check Memory Bank for related insights before creating context document
-if [ -d ".memory-bank" ]; then
+if [ -d ".pythia/memory-bank" ]; then
     find .memory-bank/sessions -name "*.md" -exec grep -l "topic" {} \;
     find .memory-bank/patterns -name "*.md" -exec basename {} \;
     find .memory-bank/decisions -name "*.md" -exec grep -l "architectural" {} \;
@@ -512,10 +512,10 @@ Regularly update context documents based on Memory Bank insights:
 
 ```bash
 # Extract patterns from Memory Bank for context documentation
-find .memory-bank/patterns -name "*.md" -mtime -30 -exec basename {} \;
+    find .pythia/memory-bank/patterns -name "*.md" -mtime -30 -exec basename {} \;
 
 # Review recent decisions for context relevance
-find .memory-bank/decisions -name "*.md" -mtime -30 -exec grep -l "architectural" {} \;
+    find .pythia/memory-bank/decisions -name "*.md" -mtime -30 -exec grep -l "architectural" {} \;
 ```
 
 ## Safety & Stop Conditions

@@ -186,17 +186,17 @@ This document serves as a central navigation hub for all architectural and syste
 
 ## Templates
 
-| Document                                                                        | Description                               | Key Sections                                           |
-| ------------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------ |
-| [Task Template](../templates/task-template.md)                                  | Template for task documentation           | Task Description, Goals, Implementation Plan           |
-| [Proposal Template](../templates/proposal-template.md)                          | Template for proposal documentation       | Problem Statement, Solution Design, Implementation     |
-| [Idea Template](../templates/idea-template.md)                                  | Template for idea documentation           | Idea Description, Benefits, Risks                      |
-| [Exploration Template](../templates/exploration-template.md)                    | Template for exploration documentation    | Research Goals, Methodology, Findings                  |
-| [Context Template](../templates/context-template.md)                            | Template for context documentation        | Context Type, Key Information, Relationships           |
-| [Technical Debt Assessment](../templates/technical-debt-assessment-template.md) | Template for technical debt assessment    | Impact Analysis, Effort Estimation, Priority Score     |
-| [Memory Bank Session Template](../templates/memory-bank-session-template.md)    | Template for memory bank session entries  | Session Context, Decisions, Insights, Cross-References |
-| [Memory Bank Pattern Template](../templates/memory-bank-pattern-template.md)    | Template for memory bank pattern entries  | Pattern Summary, Implementation, Effectiveness Notes   |
-| [Memory Bank Decision Template](../templates/memory-bank-decision-template.md)  | Template for memory bank decision entries | Decision Context, Options, Rationale, Outcomes         |
+| Document                                                                        | Description                                                        | Key Sections                                                  |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------- |
+| [Task Template](../templates/task-template.md)                                  | Template for task documentation with embedded AI solution analysis | Task Description, Goals, Implementation Plan, Quality Control |
+| [Proposal Template](../templates/proposal-template.md)                          | Template for proposal documentation                                | Problem Statement, Solution Design, Implementation            |
+| [Idea Template](../templates/idea-template.md)                                  | Template for idea documentation                                    | Idea Description, Benefits, Risks                             |
+| [Exploration Template](../templates/exploration-template.md)                    | Template for exploration documentation                             | Research Goals, Methodology, Findings                         |
+| [Context Template](../templates/context-template.md)                            | Template for context documentation                                 | Context Type, Key Information, Relationships                  |
+| [Technical Debt Assessment](../templates/technical-debt-assessment-template.md) | Template for technical debt assessment                             | Impact Analysis, Effort Estimation, Priority Score            |
+| [Memory Bank Session Template](../templates/memory-bank-session-template.md)    | Template for memory bank session entries                           | Session Context, Decisions, Insights, Cross-References        |
+| [Memory Bank Pattern Template](../templates/memory-bank-pattern-template.md)    | Template for memory bank pattern entries                           | Pattern Summary, Implementation, Effectiveness Notes          |
+| [Memory Bank Decision Template](../templates/memory-bank-decision-template.md)  | Template for memory bank decision entries                          | Decision Context, Options, Rationale, Outcomes                |
 
 ## Analysis Documents
 

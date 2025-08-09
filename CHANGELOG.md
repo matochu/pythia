@@ -4,6 +4,33 @@ All notable changes to the Pythia documentation system will be documented in thi
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2025-08-09]
+
+### Added
+
+- New command: `commands/manage-task.md` — lightweight workflow to manage tasks (gates, [H] convention)
+- New command: `commands/create-context.md` — minimal context creation with placement/template/links/validation
+- Human-only checkbox convention `[H]` documented in `templates/task-template.md` and related commands
+- AI review outputs to Memory Bank (JSON + Markdown) documented in `commands/analyze-ai-solutions.md`
+
+### Changed
+
+- Unified task status model and gates in `commands/update-status.md` and `templates/task-template.md`
+- Enhanced `templates/task-template.md` with Repository/Branch/PR/LLM Model fields; testing & coverage gates; reference to `Manage Task`
+- Moved Memory Bank and analysis artifacts to `.pythia/memory-bank/` across documentation:
+  - `commands/create-task.md`
+  - `templates/task-template.md`
+  - `commands/analyze-ai-solutions.md`
+  - `methodology/context-documentation.md`
+  - `commands/memory-bank-management.md`
+- `commands/create-task.md`: added Context-First intake and branch `[H]` guidance
+- `tools/validateDocumentQuality.ts`: tasks now require `Implementation Plan` section
+
+### Migration Notes
+
+- If your project used `.memory-bank/`, move its contents to `.pythia/memory-bank/`
+- Update any custom scripts or CI steps referencing `.memory-bank/` to the new path
+
 ## [2025-07-30]
 
 ### Added
@@ -22,7 +49,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Removed
 
-- Removed all Thea and TV references from rules, guides, and templates
 - Cleaned up project-specific examples in workspace integration guide
 
 ## [2025-03-24]

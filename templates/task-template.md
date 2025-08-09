@@ -4,12 +4,91 @@
 
 **Task ID**: task-YYYY-MM-descriptive-name  
 **Date Created**: YYYY-MM-DD  
-**Status**: Not Started / In Progress / Completed / On Hold  
+**Status**: Not Started / In Progress / Under Review / Blocked / Completed  
 **Priority**: High / Medium / Low  
 **Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
-**Owner**: {Name}
+**Owner**: {Name}  
+**Repository**: {repo-url-or-name}  
+**Branch**: feature/{slug-or-topic}  
+**PR**: [link-if-available]  
+**LLM Model**: {model-id}
 
 <!-- Add no-archive tag here if the task should never be archived: [no-archive] -->
+
+## 📖 Task Workflow Guide
+
+> **IMPORTANT**: This section provides embedded rules for working with this task. Follow this workflow for consistent execution and quality control.
+
+### Checkbox Markers (Lightweight Conventions)
+
+- `[LLM]` is the default actor and can be omitted. Any unchecked box without other markers is assumed to be performable by LLM.
+- Use `- [ ] ... [H]` for steps that only a human should confirm (LLM never checks these).
+- LLM can prepare evidence/notes for each `[H]` item (commands run, links, outcomes) but leaves the box unchecked.
+- Example: `- [ ] Create branch 'feature/xyz' and push initial commit [H]`.
+
+### How to Work with This Task
+
+1. **Before Starting**:
+
+   - [ ] Review all Context Documents and Memory Bank entries
+   - [ ] Check Dependencies section for blockers
+   - [ ] Set up Change Tracking (see below)
+   - [ ] Prepare for AI Solution Analysis (use @analyze-ai-solutions.md command)
+
+2. **During Implementation**:
+
+   - [ ] Update Progress Tracking after each phase
+   - [ ] Document key decisions in Memory Bank
+   - [ ] Add changed files to File Changes section
+   - [ ] Run AI Solution Analysis for major changes (use @analyze-ai-solutions.md)
+   - [ ] Update Context sections when new insights emerge
+
+3. **Quality Control Phase** (Required before completion):
+
+   - [ ] **Add/Update tests** for all new/changed code (unit/integration as appropriate)
+   - [ ] **Run coverage** and capture summary (target ≥ 85% or project-specific)
+   - [ ] **Run AI Solution Analysis** (use @analyze-ai-solutions.md command)
+   - [ ] **Run Self-Review Process** (see section below)
+   - [ ] **Validate against Success Criteria**
+   - [ ] **Check Quality Standards compliance**
+   - [ ] **Update Memory Bank with final insights**
+
+4. **Task Completion**:
+   - [ ] Complete Implementation Summary
+   - [ ] Archive relevant sessions to Memory Bank
+   - [ ] Update related Context Documents
+   - [ ] Mark task as Completed
+
+### Change Tracking Setup
+
+```bash
+# Set up change tracking for this task
+TASK_ID="task-YYYY-MM-descriptive-name"
+echo "# Changed Files for $TASK_ID" > .task-changes.md
+echo "**Start Date**: $(date +%Y-%m-%d)" >> .task-changes.md
+echo "" >> .task-changes.md
+
+# Track changes during work (run after each significant change)
+git status --porcelain >> .task-changes.md
+```
+
+### Memory Bank Integration
+
+**Session Tracking**:
+
+- Create session entry: `.pythia/memory-bank/sessions/$(date +%Y-%m-%d)-task-{descriptive-name}.md`
+- Document key decisions and insights during implementation
+- Link to this task file and related context documents
+
+- **Pattern Extraction**:
+
+- If new patterns emerge, document in `.pythia/memory-bank/patterns/`
+- Cross-reference patterns in task implementation
+
+- **Decision Recording**:
+
+- Major architectural decisions → `.pythia/memory-bank/decisions/`
+- Link decisions to affected components and future implications
 
 ## Context
 
@@ -24,6 +103,18 @@ Brief description of the task's background and why it's important. This should p
 
 - [Context Document 1](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
 - [Context Document 2](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
+
+**Context Documentation Resources:**
+
+- [Context Documentation Guide](mdc:methodology/context-documentation.md) - How to work with context documents
+- [Memory Bank Management](mdc:commands/memory-bank-management.md) - Context preservation system
+- [Create Context Document](mdc:commands/create-context.md) - How to create new context documents
+
+**Memory Bank Context:**
+
+- **Related Sessions**: [Links to previous session entries]
+- **Applicable Patterns**: [Links to relevant pattern entries]
+- **Related Decisions**: [Links to architectural decisions]
 
 **Context Analysis:**
 
@@ -49,8 +140,15 @@ Detailed breakdown of the implementation steps:
    - [ ] Task 1.2
 
 2. **Phase 2**: [Description] (Complexity: [Low/Medium/High])
+
    - [ ] Task 2.1
    - [ ] Task 2.2
+
+3. **Phase 3**: AI Solution Analysis & Quality Control (Complexity: Medium)
+   - [ ] **Run AI Solution Analysis** (use @analyze-ai-solutions.md command)
+   - [ ] **Run Self-Review Process** (see section below)
+   - [ ] **Update Memory Bank with final insights**
+   - [ ] **Complete documentation updates**
 
 ## Scope
 
@@ -112,7 +210,13 @@ Clearly define what it means for this task to be successfully completed:
 
 - [ ] Functional criteria
 - [ ] Technical criteria
-- [ ] Quality criteria
+- [ ] **Quality criteria** (AI Solution Analysis passed):
+  - [ ] Use @analyze-ai-solutions.md command for validation
+  - [ ] All quality thresholds met
+  - [ ] Documentation concise and clear
+- [ ] **Testing criteria**
+  - [ ] Tests are present for all new/changed code
+  - [ ] Coverage meets target (e.g., ≥ 85%) or deviation justified and approved
 - [ ] Performance criteria
 
 ## Expected Outcomes
@@ -121,7 +225,10 @@ Describe the expected outcomes and impact of completing this task:
 
 - [ ] User/developer experience improvements
 - [ ] Performance improvements
-- [ ] Code quality improvements
+- [ ] **Code quality improvements** (validated by AI Solution Analysis):
+  - [ ] Use @analyze-ai-solutions.md command for validation
+  - [ ] Improved maintainability and reduced complexity
+  - [ ] Better documentation quality
 - [ ] Process improvements
 
 ## Implementation Summary
@@ -147,6 +254,19 @@ Describe the expected outcomes and impact of completing this task:
 
 - Lesson 1
 - Lesson 2
+
+### AI Solution Analysis Results
+
+> **Note**: Use mdc:commands/analyze-ai-solutions.md command to generate detailed analysis results
+
+**Quality Assessment**:
+
+- [ ] Complexity thresholds met (CC ≤ 10, avg ≤ 7)
+- [ ] Duplication < 3% of changed code
+- [ ] No unused imports/exports
+- [ ] Documentation concise and clear
+- [ ] Coverage: [XX%] (target ≥ 85% or project-specific)
+- [ ] Overall quality score: [X/5] (minimum 4/5 required)
 
 ## Future Improvements
 
@@ -177,8 +297,12 @@ If this task should never be archived (e.g., it's an ongoing process or serves a
 - [Workflows Status Report](../workflows/report.md)
 - [Llm Task Workflow](../rules/llm-task-workflow.md)
 - [Create Task](../commands/create-task.md)
+- [Manage Task](../commands/manage-task.md)
 - [Task Archiving Rules](../rules/task-archiving-rules.md)
 - [Documentation Map](../navigation/documentation-map.md)
+- [Analyze AI Solutions](../commands/analyze-ai-solutions.md) - Quality control for AI-generated solutions
+- [Context Documentation Guide](../methodology/context-documentation.md) - Working with context documents
+- [Memory Bank Management](../commands/memory-bank-management.md) - Context preservation system
 
 Links to relevant resources, documentation, or discussions:
 

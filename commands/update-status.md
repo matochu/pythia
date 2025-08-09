@@ -41,13 +41,14 @@ grep -n "**Status**:" ../workflows/tasks/task-YYYY-MM-name.md
 
 Select the appropriate new status based on document type:
 
-**Task Status Values**:
+**Task Status Values** (canonical):
 
 - Not Started
 - In Progress (with optional % complete)
+- Under Review
 - Blocked (with reason)
-- Ready for Review
 - Completed
+- Archived (system/automation only)
 - Cancelled (with reason)
 
 **Proposal Status Values**:
@@ -82,6 +83,22 @@ Open the document and:
 2. Update any related fields (Progress, Completion %)
 3. Update the Last Modified date to the current date
 4. Add progress notes in the Implementation/Progress section
+5. If missing, fill task Overview auxiliary fields to help automation:
+   - Repository (repo URL or short name)
+   - Branch (e.g., `feature/<slug>`)
+   - PR link (when available)
+   - LLM Model (current model working on the task)
+
+### Lightweight Gating Guidance
+
+- Moving to "Under Review": ensure Context section is filled and references are valid; checklist in Success Criteria is drafted.
+- Moving to "Completed": ensure "AI Solution Analysis Results" section exists and indicates pass; tests are present for new/changed code; coverage meets project target; all Success Criteria are checked.
+- Setting "Blocked" or "Cancelled" requires a brief reason.
+
+### Human-Only Checkboxes Convention
+
+- `[LLM]` is the default and can be omitted. Use `[H]` at the end of the line for actions requiring human confirmation (e.g., branch creation, manual prod validation).
+- LLM prepares a short note under such items (commands suggested, links to PR/CI, what to verify) but does not tick the box.
 
 ```bash
 # Get current date for Last Modified update

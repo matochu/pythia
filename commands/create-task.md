@@ -45,6 +45,7 @@ Timeline: 2 weeks
 - [ ] Get current date using `date +%Y-%m-%d`
 - [ ] Validate task uniqueness against existing documentation
 - [ ] Define scope and objectives clearly
+- [ ] Perform Context-First intake (identify ≥1 relevant context or justify none for Low complexity)
 - [ ] Break down work into manageable steps
 - [ ] Identify dependencies and related tasks
 - [ ] Create task file with correct naming convention
@@ -76,12 +77,12 @@ mkdir -p "$TASKS_PATH"
 ls -la "$TASKS_PATH"
 
 # Check Memory Bank for relevant context (if available)
-if [ -d ".memory-bank" ]; then
+if [ -d ".pythia/memory-bank" ]; then
     echo "Checking Memory Bank for related context..."
     # Search for related patterns
-    find .memory-bank/patterns -name "*.md" -exec grep -l "keyword" {} \; 2>/dev/null || echo "No related patterns found"
+    find .pythia/memory-bank/patterns -name "*.md" -exec grep -l "keyword" {} \; 2>/dev/null || echo "No related patterns found"
     # Review recent sessions
-    find .memory-bank/sessions -name "*.md" -mtime -7 -exec basename {} \; 2>/dev/null || echo "No recent sessions found"
+    find .pythia/memory-bank/sessions -name "*.md" -mtime -7 -exec basename {} \; 2>/dev/null || echo "No recent sessions found"
 fi
 
 # Search for similar tasks - basic keyword search
@@ -132,7 +133,7 @@ Create a new file in the tasks directory using the naming convention:
 # Determine tasks directory based on project structure
 TASKS_PATH="docs/workflows/tasks"
 
-# Create new task file
+# Create new task file and suggest a working branch name
 TASK_NAME="implement-feature"
 CURRENT_DATE=$(date +%Y-%m)
 TASK_FILE="$TASKS_PATH/task-$CURRENT_DATE-$TASK_NAME.md"
@@ -144,6 +145,16 @@ For example:
 - `task-2025-03-implement-caching-layer.md`
 - `task-2025-03-refactor-authentication.md`
 - `task-2025-03-improve-error-handling.md`
+
+### Repository/Branch and Model Fields
+
+After creating the file, fill these quick fields in the Overview block to help LLM tooling:
+
+- Repository: repo URL or short name
+- Branch: intended working branch, e.g. `feature/$TASK_NAME` (LLM does not create the branch; mark the related checklist item as `[human]` and LLM will prepare notes for you)
+- Branch: intended working branch, e.g. `feature/$TASK_NAME` (LLM does not create the branch; mark the related checklist item with `[H]` and LLM will prepare notes for you)
+- PR: link when exists
+- LLM Model: the model currently executing the task (e.g., `gpt-5-large`, `gpt-o3`, `o1-mini`, `claude-4-0-sonnet`, `gemini-2.0-flash`, etc.)
 
 ### Context Document Integration
 
@@ -174,17 +185,17 @@ If Memory Bank is available, check for relevant context:
 
 ```bash
 # Check Memory Bank for related patterns and insights
-if [ -d ".memory-bank" ]; then
+if [ -d ".pythia/memory-bank" ]; then
     echo "Checking Memory Bank for relevant context..."
 
     # Search for related patterns
-    find .memory-bank/patterns -name "*.md" -exec grep -l "keyword" {} \; 2>/dev/null || echo "No related patterns found"
+    find .pythia/memory-bank/patterns -name "*.md" -exec grep -l "keyword" {} \; 2>/dev/null || echo "No related patterns found"
 
     # Review recent sessions for similar work
-    find .memory-bank/sessions -name "*.md" -mtime -7 -exec basename {} \; 2>/dev/null || echo "No recent sessions found"
+    find .pythia/memory-bank/sessions -name "*.md" -mtime -7 -exec basename {} \; 2>/dev/null || echo "No recent sessions found"
 
     # Check for relevant decisions
-    find .memory-bank/decisions -name "*.md" -exec grep -l "decision-keyword" {} \; 2>/dev/null || echo "No related decisions found"
+    find .pythia/memory-bank/decisions -name "*.md" -exec grep -l "decision-keyword" {} \; 2>/dev/null || echo "No related decisions found"
 fi
 ```
 
@@ -211,45 +222,41 @@ Copy the content from the [Task Template](mdc:templates/task-template.md) and fi
 4. **Objectives**: Clear list of what this task aims to accomplish
 5. **Context**: Background information and why this task is needed
    - **Context Documents**: Reference relevant context documents
+   - **Context Documentation Resources**: Links to context documentation guides
+   - **Memory Bank Context**: Related sessions, patterns, and decisions
    - **Context Analysis**: Key insights from context documents
 6. **Scope**: What is in-scope and out-of-scope for this task
 7. **Approach**: How the task will be implemented
-8. **Steps**: Detailed breakdown of implementation steps with checkboxes
+8. **Implementation Plan**: Detailed breakdown of implementation phases with checkboxes
 9. **Success Criteria**: Clear measures for determining when the task is complete
 10. **Dependencies**: Other tasks or components this task depends on
-11. **References**: Links to related documents and context documents
+11. **Quality Control**: AI Solution Analysis and Self-Review Process
+12. **References**: Links to related documents and context documents
 
 Ensure that every section is filled in with detailed information.
 
-## Step 4: Create Implementation Steps
+## Step 4: Create Implementation Plan
 
-Break down the implementation into clear, manageable steps with checkboxes:
+Break down the implementation into clear, manageable phases with checkboxes:
 
 ```markdown
-## Implementation Steps
+## Implementation Plan
 
-- [ ] **Phase 1: Research and Analysis**
+1. **Phase 1**: [Description] (Complexity: [Low/Medium/High])
 
-  - [ ] Review existing codebase
-  - [ ] Identify areas requiring changes
-  - [ ] Document current architecture
+   - [ ] Task 1.1
+   - [ ] Task 1.2
 
-- [ ] **Phase 2: Design**
+2. **Phase 2**: [Description] (Complexity: [Low/Medium/High])
 
-  - [ ] Create architecture diagram
-  - [ ] Design component interfaces
-  - [ ] Get design approved
+   - [ ] Task 2.1
+   - [ ] Task 2.2
 
-- [ ] **Phase 3: Implementation**
-
-  - [ ] Implement core functionality
-  - [ ] Add unit tests
-  - [ ] Review code against standards
-
-- [ ] **Phase 4: Validation**
-  - [ ] Run integration tests
-  - [ ] Fix any discovered issues
-  - [ ] Document test results
+3. **Phase 3**: AI Solution Analysis & Quality Control (Complexity: Medium)
+   - [ ] Run AI Solution Analysis (use @analyze-ai-solutions.md command)
+   - [ ] Run Self-Review Process
+   - [ ] Update Memory Bank with final insights
+   - [ ] Complete documentation updates
 ```
 
 ## Step 5: Add Cross-References
@@ -480,9 +487,10 @@ This command integrates with other Pythia components:
 
 ### Template Integration
 
-- Uses `templates/task-template.md` for consistent structure
+- Uses `templates/task-template.md` for consistent structure with embedded AI solution analysis
 - Follows metadata standards for proper categorization
 - Integrates with workflow reporting system
+- Includes Memory Bank integration and context documentation
 
 ### Methodology Integration
 
@@ -491,7 +499,8 @@ This command integrates with other Pythia components:
   - **Phase 2 (Preparation)**: Refactor codebase, establish patterns, create supporting tools
   - **Phase 3 (Full Integration)**: Implement changes incrementally with thorough testing
   - **Phase 4 (Optimization)**: Optimize performance and add extended functionality
-- **Context Documentation**: For tasks requiring deep domain knowledge, reference relevant context documents
+- **Context Documentation**: For tasks requiring deep domain knowledge, reference relevant context documents and Memory Bank
+- **AI Solution Analysis**: Use @analyze-ai-solutions.md command for quality control
 - **Prioritization Methods**: Use prioritization frameworks for task sequencing and resource allocation
 
 ### Workspace Integration
@@ -504,9 +513,12 @@ This command integrates with other Pythia components:
 ## Related Documents
 
 - [Task Template](mdc:templates/task-template.md)
+- [Analyze AI Solutions](mdc:commands/analyze-ai-solutions.md) - Quality control for AI-generated solutions
+- [Memory Bank Management](mdc:commands/memory-bank-management.md) - Context preservation system
+- [Context Documentation Guide](mdc:methodology/context-documentation.md) - Working with context documents
 - [Report Workflows](mdc:commands/report-workflows.md)
 - [Workspace Integration Guide](mdc:guides/workspace-integration.md)
 
 ---
 
-**Last Updated**: 2025-03-29
+**Last Updated**: 2025-08-06

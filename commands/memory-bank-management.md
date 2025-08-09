@@ -156,16 +156,17 @@ Create a memory bank structure that complements existing documentation:
 
 ```bash
 # Create memory bank directory structure (IDE-compatible)
-mkdir -p .memory-bank/{sessions,patterns,decisions,insights}
+mkdir -p .pythia/memory-bank/{sessions,patterns,decisions,insights}
 
 # Create templates for different memory bank entry types
-touch .memory-bank/templates/{session-template.md,pattern-template.md,decision-template.md}
+mkdir -p .pythia/memory-bank/templates
+touch .pythia/memory-bank/templates/{session-template.md,pattern-template.md,decision-template.md}
 ```
 
 **Memory Bank Structure Design:**
 
 ```
-.memory-bank/
+.pythia/memory-bank/
 ├── sessions/              # Session-specific context and insights
 │   ├── YYYY-MM-DD-task-name.md
 │   └── YYYY-MM-DD-architecture-analysis.md
@@ -192,7 +193,7 @@ touch .memory-bank/templates/{session-template.md,pattern-template.md,decision-t
 Develop templates that ensure consistent and valuable memory bank entries:
 
 ```markdown
-# Session Template (.memory-bank/templates/session-template.md)
+# Session Template (.pythia/memory-bank/templates/session-template.md)
 
 # Session: [Task/Topic Name] - [Date]
 
@@ -230,7 +231,7 @@ Develop templates that ensure consistent and valuable memory bank entries:
 ```
 
 ```markdown
-# Pattern Template (.memory-bank/templates/pattern-template.md)
+# Pattern Template (.pythia/memory-bank/templates/pattern-template.md)
 
 # Pattern: [Pattern Name]
 
@@ -272,8 +273,8 @@ Enhance existing Pythia commands to leverage memory bank context:
 ```markdown
 # Enhanced task creation with memory bank context
 
-1. Check memory bank for related patterns: grep -r "keyword" .memory-bank/patterns/
-2. Review previous session insights: ls .memory-bank/sessions/ | grep -i "topic"
+1. Check memory bank for related patterns: grep -r "keyword" .pythia/memory-bank/patterns/
+2. Review previous session insights: ls .pythia/memory-bank/sessions/ | grep -i "topic"
 3. Include memory bank references in task context section
 4. Create session entry upon task completion
 ```
@@ -283,9 +284,9 @@ Enhance existing Pythia commands to leverage memory bank context:
 ```markdown
 # Enhanced project analysis with historical context
 
-1. Load previous analysis insights from .memory-bank/insights/
-2. Apply identified patterns from .memory-bank/patterns/
-3. Reference architectural decisions from .memory-bank/decisions/
+1. Load previous analysis insights from .pythia/memory-bank/insights/
+2. Apply identified patterns from .pythia/memory-bank/patterns/
+3. Reference architectural decisions from .pythia/memory-bank/decisions/
 4. Update memory bank with new analysis findings
 ```
 
@@ -307,7 +308,7 @@ Begin with high-value entries from current project state:
 ```bash
 # Extract insights from large, complex documents
 # Example: Create session entry for recent major task
-cat > .memory-bank/sessions/2025-08-06-IN-13-launcher-update.md << 'EOF'
+cat > .pythia/memory-bank/sessions/2025-08-06-IN-13-launcher-update.md << 'EOF'
 # Session: IN-13 Launcher Force Update - 2025-08-06
 
 **Session Context:**
@@ -340,7 +341,7 @@ cat > .memory-bank/sessions/2025-08-06-IN-13-launcher-update.md << 'EOF'
 
 **Cross-References:**
 - Primary docs: [task-2025-07-IN-13-launcher-force-update-implementation.md](mdc:thea/docs/workflows/tasks/task-2025-07-IN-13-launcher-force-update-implementation.md)
-- Related patterns: [sw-communication-pattern.md](mdc:.memory-bank/patterns/sw-communication-pattern.md)
+- Related patterns: [sw-communication-pattern.md](mdc:.pythia/memory-bank/patterns/sw-communication-pattern.md)
 - Architecture: [service-worker-subscription-system.md](mdc:thea/docs/architecture/service-worker-subscription-system.md)
 EOF
 ```
@@ -355,7 +356,7 @@ Create sustainable maintenance practices:
 # memory-bank-daily.sh
 
 DATE=$(date +%Y-%m-%d)
-MEMORY_BANK_DIR=".memory-bank"
+MEMORY_BANK_DIR=".pythia/memory-bank"
 
 # Archive old sessions (older than 30 days)
 find $MEMORY_BANK_DIR/sessions -name "*.md" -mtime +30 -exec mv {} $MEMORY_BANK_DIR/archive/ \;
@@ -388,13 +389,13 @@ Test memory bank with real scenarios:
 # Simulate starting work on related task with memory bank assistance
 
 # 1. Query memory bank for relevant context
-grep -r "service worker" .memory-bank/ --include="*.md"
+grep -r "service worker" .pythia/memory-bank/ --include="*.md"
 
 # 2. Check for applicable patterns
-grep -r "TV performance" .memory-bank/patterns/ --include="*.md"
+grep -r "TV performance" .pythia/memory-bank/patterns/ --include="*.md"
 
 # 3. Review related decisions
-grep -r "Manager Registry" .memory-bank/decisions/ --include="*.md"
+grep -r "Manager Registry" .pythia/memory-bank/decisions/ --include="*.md"
 
 # 4. Measure context reconstruction time
 time_start=$(date +%s)
@@ -419,7 +420,7 @@ echo "Context reconstruction with memory bank: $((time_end - time_start)) second
 date +%Y-%m-%d  # 2025-08-06
 
 # Create session entry
-cat > .memory-bank/sessions/2025-08-06-dependency-analysis.md << 'EOF'
+cat > .pythia/memory-bank/sessions/2025-08-06-dependency-analysis.md << 'EOF'
 # Session: Dependency Analysis - 2025-08-06
 
 **Key Decisions Made:**
@@ -442,7 +443,7 @@ EOF
 
 ```bash
 # Extract communication pattern from multiple sessions
-cat > .memory-bank/patterns/sw-react-communication.md << 'EOF'
+cat > .pythia/memory-bank/patterns/sw-react-communication.md << 'EOF'
 # Pattern: Service Worker - React Communication
 
 **Pattern Summary:**
@@ -462,14 +463,14 @@ EOF
 
 # Apply pattern to new task
 echo "Applying SW-React communication pattern to new heartbeat feature..."
-grep -r "Manager Registry" .memory-bank/patterns/sw-react-communication.md
+grep -r "Manager Registry" .pythia/memory-bank/patterns/sw-react-communication.md
 ```
 
 ### Edge Case Example: Cross-Task Learning
 
 ```bash
 # Connect insights across different task types
-cat > .memory-bank/insights/tv-performance-patterns.md << 'EOF'
+cat > .pythia/memory-bank/insights/tv-performance-patterns.md << 'EOF'
 # Insight: TV Performance Optimization Patterns
 
 **Cross-Task Connections:**
