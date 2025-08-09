@@ -215,7 +215,7 @@ echo "Total tasks: $(( $(ls -la docs/workflows/tasks/ | wc -l) + $(ls -la docs/w
 
 - [Workflows Report](mdc:docs/workflows/report.md)
 - [Documentation Map](mdc:navigation/documentation-map.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+- [Workspace Integration](mdc:guides/guide-workspace-integration.md)
 
 ## Workspace Integration Notes
 

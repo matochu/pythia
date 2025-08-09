@@ -203,4 +203,3 @@ Context: Add offline support to user data
 - [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
 - [Validate Documentation](mdc:commands/validate-documentation.md)
 - [Create Task Command](mdc:commands/create-task.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)

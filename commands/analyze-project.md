@@ -764,7 +764,6 @@ Document your reasoning process as you analyze, noting observations, inferences,
 
 - [Create Documentation Map](mdc:commands/update-documentation-map.md)
 - [Create Technical Overview](mdc:templates/technical-overview-template.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
 
 ## Workspace Integration Notes
 

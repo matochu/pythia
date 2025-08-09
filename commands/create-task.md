@@ -517,7 +517,6 @@ This command integrates with other Pythia components:
 - [Memory Bank Management](mdc:commands/memory-bank-management.md) - Context preservation system
 - [Context Documentation Guide](mdc:methodology/context-documentation.md) - Working with context documents
 - [Report Workflows](mdc:commands/report-workflows.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
 
 ---
 

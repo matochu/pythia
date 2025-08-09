@@ -56,13 +56,13 @@ Consistent methodology application ensures:
 
 ### Reference Guides (Move to `/guides/`)
 
-3. **Prioritization Methods** (`guides/prioritization-methods.md`)
+3. **Prioritization Methods** (`guides/guide-prioritization-methods.md`)
 
    - **Purpose**: Decision-making frameworks for prioritization
    - **When to Use**: When choosing what to work on next
    - **Integration**: Use with implementation approach for planning
 
-4. **Technical Debt Prioritization** (`guides/technical-debt-prioritization.md`)
+4. ~Technical Debt Prioritization~ (merged into prioritization references)
    - **Purpose**: Specialized assessment for technical debt
    - **When to Use**: When evaluating technical debt items
    - **Integration**: Use with general prioritization methods
@@ -116,13 +116,13 @@ Consistent methodology application ensures:
 
 ### When to Use Which Methodology
 
-| Scenario                      | Primary Methodology           | Supporting Methodologies                       |
-| ----------------------------- | ----------------------------- | ---------------------------------------------- |
-| **Planning a major change**   | Implementation Approach       | Context Documentation, Prioritization Methods  |
-| **Choosing next priorities**  | Prioritization Methods        | Context Documentation                          |
-| **Developing new features**   | Ideas to Proposals Workflow   | Implementation Approach, Context Documentation |
-| **Evaluating technical debt** | Technical Debt Prioritization | Prioritization Methods, Context Documentation  |
-| **Creating documentation**    | Documentation Guidelines      | Context Documentation                          |
+| Scenario                      | Primary Methodology         | Supporting Methodologies                       |
+| ----------------------------- | --------------------------- | ---------------------------------------------- |
+| **Planning a major change**   | Implementation Approach     | Context Documentation, Prioritization Methods  |
+| **Choosing next priorities**  | Prioritization Methods      | Context Documentation                          |
+| **Developing new features**   | Ideas to Proposals Workflow | Implementation Approach, Context Documentation |
+| **Evaluating technical debt** | Prioritization Methods      | Context Documentation                          |
+| **Creating documentation**    | Documentation Guidelines    | Context Documentation                          |
 
 ### Methodology Selection Checklist
 
@@ -251,8 +251,7 @@ Ensure consistent application:
 - [Context Documentation](mdc:methodology/context-documentation.md)
 - [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
 - [Implementation Approach](mdc:processes/implementation-approach.md)
-- [Prioritization Methods](mdc:guides/prioritization-methods.md)
-- [Technical Debt Prioritization](mdc:guides/technical-debt-prioritization.md)
+- [Prioritization Methods](mdc:guides/guide-prioritization-methods.md)
 - [Ideas to Proposals Workflow](mdc:processes/ideas-to-proposals-workflow.md)
 - [Commands and Methodology Improvement Task](mdc:workflows/tasks/task-2025-01-commands-methodology-improvement.md)
 

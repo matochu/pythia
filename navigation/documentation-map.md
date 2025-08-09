@@ -65,9 +65,9 @@ This document serves as a central navigation hub for all architectural and syste
 
 | Document                                                                                     | Description                                        | Key Sections                                       |
 | -------------------------------------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------- |
-| [Prioritization Methods](../guides/prioritization-methods.md)                                | Decision-making frameworks                         | ICE, RICE, User Pain vs Dev Effort, WSJF           |
+| [Prioritization Methods](../guides/guide-prioritization-methods.md)                          | Decision-making frameworks                         | ICE, RICE, User Pain vs Dev Effort, WSJF           |
 | [Implementation Approach](../processes/implementation-approach.md)                           | Standardized approach to implementing improvements | R&D, Preparation, Full Integration, Optimization   |
-| [Technical Debt Prioritization](../guides/technical-debt-prioritization.md)                  | Technical debt prioritization methodology          | Assessment Criteria, Scoring System, Workflow      |
+| [Prioritization Methods](../guides/prioritization-methods.md)                                | Decision-making frameworks                         | ICE, RICE, User Pain vs Dev Effort, WSJF           |
 | [Context Documentation](../methodology/context-documentation.md)                             | Methodology for context documents                  | Document Types, Structure, Usage, Examples         |
 | [Methodology Integration Guide](../methodology/methodology-integration-guide.md)             | Unified methodology integration framework          | Integration Patterns, Usage Guidelines, Examples   |
 | [Methodology Usage Guide](../methodology/methodology-usage-guide.md)                         | Practical guide for applying methodologies         | Application Patterns, Decision Frameworks, Tools   |
@@ -88,13 +88,12 @@ This document serves as a central navigation hub for all architectural and syste
 
 ## Guides
 
-| Document                                                                    | Description                                              |
-| --------------------------------------------------------------------------- | -------------------------------------------------------- |
-| [LLM Documentation Workflow](../guides/guide-llm-documentation-workflow.md) | Guide on using LLM for effective documentation workflow  |
-| [Workspace Integration](../guides/workspace-integration.md)                 | Guide for integrating Pythia into project workspaces     |
-| [Installing Pythia](../guides/installing-pythia.md)                         | Guide for setting up Pythia in a project workspace       |
-| [Prioritization Methods](../guides/prioritization-methods.md)               | Decision-making frameworks and prioritization methods    |
-| [Technical Debt Prioritization](../guides/technical-debt-prioritization.md) | Technical debt assessment and prioritization methodology |
+| Document                                                                      | Description                                              |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------- |
+| [LLM Documentation Workflow](../guides/guide-llm-documentation-workflow.md)   | Guide on using LLM for effective documentation workflow  |
+| [Workspace Integration (via Setup)](../guides/guide-workspace-integration.md) | Run `@setup.md`, verify, and start working               |
+| [Prioritization Methods](../guides/guide-prioritization-methods.md)           | Decision-making frameworks and prioritization methods    |
+| [Technical Debt Prioritization](../guides/technical-debt-prioritization.md)   | Technical debt assessment and prioritization methodology |
 
 ## Processes
 

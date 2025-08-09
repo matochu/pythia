@@ -275,7 +275,7 @@ your-project/
 
 ### Documentation
 
-- [Workspace Integration Guide](guides/workspace-integration.md) - Complete guide for workspace usage
+- [Workspace Integration (via Setup)](guides/guide-workspace-integration.md) - Run `@setup.md`, verify, and start working
 - [Command Reference](commands/) - All available commands
 - [Methodology](methodology/) - Documentation methodologies
 - [Templates](templates/) - Document templates
@@ -331,7 +331,7 @@ node tools/installCore.js .. --method=git
 node tools/installCore.js .. --method=git --config=./my-config.json
 ```
 
-For detailed installation instructions, see our [Installation Guide](guides/installing-pythia.md).
+For integration, use the command [Setup](commands/setup.md) and see [Workspace Integration (via Setup)](guides/guide-workspace-integration.md).
 
 ## Testing Your Installation
 
@@ -474,7 +474,7 @@ Reports from these tools are saved in the `/reports` directory.
 
 The Pythia system is designed to be integrated into multiple projects while maintaining a single source of truth for core documentation structures and methodologies. As described in [CONCEPT](CONCEPT.md), the core system components are maintained in a separate repository and integrated into projects.
 
-For detailed instructions on integrating Pythia into your project, see our [Installation Guide](guides/installing-pythia.md), which describes:
+For detailed instructions on integrating Pythia into your project, see [Workspace Integration (via Setup)](guides/guide-workspace-integration.md), which describes:
 
 1. Three ways to install Pythia core:
 

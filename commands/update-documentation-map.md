@@ -214,7 +214,6 @@ Note: Interactive mode is currently under development and may have limited funct
 - [CHANGELOG](mdc:CHANGELOG.md)
 - [Documentation Map](mdc:navigation/documentation-map.md)
 - [Documentation Standards](mdc:navigation/documentation-standards.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
 - [Archive Tasks](mdc:commands/archive-tasks.md)
 
 ## Workspace Integration Notes

@@ -328,8 +328,7 @@ Start: What are you trying to accomplish?
 - [Methodology Effectiveness Framework](mdc:methodology/methodology-effectiveness-framework.md)
 - [Implementation Approach](mdc:processes/implementation-approach.md)
 - [Ideas to Proposals Workflow](mdc:processes/ideas-to-proposals-workflow.md)
-- [Prioritization Methods](mdc:guides/prioritization-methods.md)
-- [Technical Debt Prioritization](mdc:guides/technical-debt-prioritization.md)
+- [Prioritization Methods](mdc:guides/guide-prioritization-methods.md)
 
 ---
 

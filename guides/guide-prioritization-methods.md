@@ -2,7 +2,7 @@
 
 ## Table of Contents
 
-- [Guide: Prioritization Methods](#guide-prioritization-methods)
+- [Prioritization Methods for the Project](#prioritization-methods-for-the-project)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Prioritization Models](#prioritization-models)
@@ -25,7 +25,6 @@
     - [Analytics Improvement Prioritization](#analytics-improvement-prioritization)
     - [State Management Refactoring](#state-management-refactoring)
   - [Conclusion](#conclusion)
-  - [How to use with tasks/LLM](#how-to-use-with-tasksllm)
   - [References](#references)
 
 ## Introduction

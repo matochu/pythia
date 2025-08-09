@@ -311,7 +311,6 @@ This command integrates with other Pythia components:
 - [Archive Tasks](mdc:commands/archive-tasks.md)
 - [README](mdc:README.md)
 - [Documentation Map](mdc:navigation/documentation-map.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
 - [Methodology Consistency Checker](mdc:methodology/methodology-consistency-checker.md)
 - [Methodology Application Patterns](mdc:methodology/methodology-application-patterns.md)
 - [Methodology Effectiveness Framework](mdc:methodology/methodology-effectiveness-framework.md)

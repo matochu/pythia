@@ -23,6 +23,15 @@ This guide will help you quickly and easily use Large Language Models (LLM) capa
 
 ---
 
+## Philosophy: Text-in-the-Middle
+
+- Context-first: anchor work and decisions in living context docs, not tickets/config.
+- Minimal ceremony: commands are utilities; we optimize flows and outcomes, not command syntax.
+- Human-in-the-loop: LLM executes defaults; guarded steps are explicitly marked and confirmed by a person.
+- Traceability by design: analysis/review artifacts live under `.pythia/memory-bank/` and are linked from tasks/contexts.
+
+---
+
 ## How LLM Commands Work?
 
 Before looking at specific commands, let's understand how they work:
@@ -48,57 +57,96 @@ Before looking at specific commands, let's understand how they work:
 
 ---
 
-## Getting Started: Basic Commands
+## End-to-End Lifecycle (Idea → Completed)
 
-Simply enter one of these commands in the chat:
+### Lifecycle Phases: What to do and run
 
-### 🆕 Creating New Documents
+- Phase A — Shape the Change
 
-- `@create-task.md` – new task document with description, goals, and implementation plan.
+  - Purpose: turn a vague idea/problem into a decision-ready change when needed
+  - Run: `@create-idea.md` → `@create-exploration.md` (optional) → `@create-proposal.md` (optional)
+  - Output: context(s), rationale, options, recommendation; bidirectional links
 
-  - _What happens_: LLM analyzes the context, creates a structured document in the `../workflows/tasks/` folder with name `task-YYYY-MM-{topic}.md`, fills all sections according to the template, adds cross-references and progress markers.
+- Phase B — Start the Task
 
-- `@create-proposal.md` – automatically forms a proposal with benefits and risks analysis.
+  - Purpose: create an executable plan with clear gates
+  - Run: `@create-task.md`, then inside the task use `@manage-task.md`
+  - Do: fill Overview (Repository, Branch [H], PR, LLM Model), add phased checklist with `[H]` where human confirmation is required; link contexts via `mdc:`
+  - Status: Not Started → In Progress
 
-  - _What happens_: LLM analyzes related architecture documents, creates a proposal document in `../workflows/proposals/` with name `proposal-{topic}.md`, including current state analysis, proposal description, risk assessment, and implementation plan.
+- Phase C — Execute
 
-- `@create-idea.md` – creates a document for a new idea with description and rationale.
+  - Purpose: implement in small, verifiable steps
+  - Run: iterate with `@manage-task.md` guidance; keep notes in the task
+  - Do: add/update tests for all new/changed code; run coverage; prepare AI review
+  - Artifacts: keep evidence under `.pythia/memory-bank/sessions/` and link from the task
+  - Status: In Progress (use Blocked with reason when needed)
 
-  - _What happens_: LLM creates an idea document in `../workflows/ideas/` with name `idea-YYYY-MM-{topic}.md`, structuring problem description, proposed solution, potential benefits, and implementation risks.
+- Phase D — Under Review (Gate)
 
-- `@create-exploration.md` – prepares a detailed research of ideas or technologies.
-  - _What happens_: LLM creates a research document in `../workflows/explorations/` with name `exploration-{topic}.md`, including detailed technology analysis, comparison of alternatives, suitability assessment, and recommendations.
+  - Preconditions: Context valid; Success Criteria drafted; tests present; coverage meets target; AI review evidence attached
+  - Run: `@analyze-ai-solutions.md` (diff-aware by default)
+  - Do: add a short evidence summary in the task; ensure `[H]` items are ready for human validation
+  - Status: In Progress → Under Review
 
-### 🔄 Updating and Maintaining
+- Phase E — Completed (Gate)
 
-- `@update-documentation-map.md` – updates the documentation map with all current references.
+  - Preconditions: all Success Criteria checked; evidence OK; `[H]` items confirmed; "AI Solution Analysis Results" present
+  - Do: finalize notes, cross-links, and references
+  - Status: Under Review → Completed
 
-  - _What happens_: LLM scans all documentation, finds new or changed documents, classifies them by type, and updates the central documentation map, adding new documents to the appropriate sections.
+- Phase F — Archive & Report
+  - Run: `@archive-tasks.md`, `@update-documentation-map.md`, `@report-workflows.md`
+  - Do: add a final Memory Bank session if relevant; ensure bidirectional links remain valid
+  - Status: Completed → Archived
 
-- `@update-changelog.md` – adds recent changes to the change log.
+### 1) Idea → Exploration → Proposal → Task → Completed
 
-  - _What happens_: LLM analyzes recent changes in documentation, classifies them as added, changed, fixed, and removed, forms structured entries in CHANGELOG.md with proper dating.
+1. Capture idea context (short rationale, scope, desired impact)
+2. Exploration to reduce uncertainty (alternatives, risks, recommendation)
+3. Proposal to formalize the change (decision-ready)
+4. Implementation task with phased plan and success criteria
+5. Quality gates: tests/coverage + AI analysis; archive when done
 
-- `@update-summary-registry.md` – updates the summary documents registry.
-  - _What happens_: LLM updates the registry of documents that aggregate information from other sources, ensures tracking of dependencies between documents, and indicates who is responsible for updating each document.
+References: `@create-idea.md`, `@create-exploration.md`, `@create-proposal.md`, `@create-task.md`, `@manage-task.md`, `@analyze-ai-solutions.md`
 
-### ✅ Validating and Archiving
+### 2) Direct Task (Bug/Feature) → Review → Complete
 
-- `@validate-documentation.md` – checks the integrity of your documentation.
+1. Context-First intake: link at least one relevant context (or justify none for Low)
+2. Plan and execute with small, verifiable steps; mark human-only steps with `[H]`
+3. Add/Update tests for new/changed code; run coverage
+4. Run AI review (diff-aware); store artifacts under `.pythia/memory-bank/sessions/`
+5. Move to Under Review → Completed when gates are satisfied
 
-  - _What happens_: LLM checks all references in the documentation, finds and fixes broken links, ensures that all documents are included in the documentation map, and that cross-references between related documents exist in both directions.
+References: `@create-task.md`, `@manage-task.md`, `@analyze-ai-solutions.md`
 
-- `@archive-tasks.md` – quickly archives completed tasks.
-  - _What happens_: LLM determines which tasks meet archiving criteria, moves them to the `../workflows/archive/tasks/` folder, updates references in dependent documents, adds an archiving entry to CHANGELOG.md.
+### 3) Status and Gates (Control)
 
-### 🌟 Completing Research
+- Status model: Not Started, In Progress, Under Review, Blocked, Completed, Archived
+- Gate to Under Review: valid Context, drafted Success Criteria, tests + coverage OK, AI review evidence attached
+- Gate to Completed: evidence OK, all criteria checked, `[H]` items confirmed, "AI Solution Analysis Results" present
+- `[H]` marker: human-only checklist items; LLM writes notes but never checks them
 
-- `@complete-exploration.md` – automatically prepares summaries and recommendations after research.
-  - _What happens_: LLM analyzes the research document, forms summaries, recommendations, and conclusions, adds decision-making criteria, and, if necessary, recommends creating a proposal document based on research results.
+### 4) PR Loop → Evidence → Human Confirmation
+
+1. LLM produces review artifacts (JSON + MD) for the task/PR
+2. Human validates outcomes for guarded steps `[H]` (branch, prod checks)
+3. Link artifacts back to the task/contexts for traceability
+
+References: `@analyze-ai-solutions.md`, `.pythia/memory-bank/sessions/`
 
 ---
 
 ## 🔍 Real-World Examples
+
+---
+
+## ⚡ Task Flow Quick Start (LLM + Human)
+
+- Use `@manage-task.md` inside the task to drive the lifecycle: Context-First → Plan → Execute → Under Review → Completed.
+- Mark human-only steps with `[H]` (LLM prepares notes but does not tick the box). Example: `- [ ] Create/push branch 'feature/x' [H]`.
+- Add/Update tests for all new/changed code and run coverage before completion (see `@analyze-ai-solutions.md`).
+- Store AI review artifacts (JSON + MD) under `.pythia/memory-bank/sessions/` and link them from the task.
 
 ### 📌 Example 1. Creating a Task Document
 

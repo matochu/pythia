@@ -295,7 +295,7 @@ This command integrates with other Pythia components:
 
 - [Proposal Template](mdc:templates/proposal-template.md)
 - [Report Workflows](mdc:commands/report-workflows.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+- [Workspace Integration](mdc:guides/guide-workspace-integration.md)
 
 ---
 

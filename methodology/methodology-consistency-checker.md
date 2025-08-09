@@ -268,8 +268,7 @@ done
 - [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
 - [Implementation Approach](mdc:processes/implementation-approach.md)
 - [Ideas to Proposals Workflow](mdc:processes/ideas-to-proposals-workflow.md)
-- [Prioritization Methods](mdc:guides/prioritization-methods.md)
-- [Technical Debt Prioritization](mdc:guides/technical-debt-prioritization.md)
+- [Prioritization Methods](mdc:guides/guide-prioritization-methods.md)
 - [Commands and Methodology Improvement Task](mdc:workflows/tasks/task-2025-01-commands-methodology-improvement.md)
 
 ---

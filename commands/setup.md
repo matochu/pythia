@@ -41,7 +41,7 @@ Before setting up Pythia workspace integration, ensure you have:
 ### Key Files Created
 
 - `docs/project-structure.md` - Project overview and directory structure
-- `docs/workspace-integration.md` - Usage guide for the workspace
+- `docs/workspace-integration.md` - Usage guide for the workspace (or see repo guide: `guides/guide-workspace-integration.md`)
 - `docs/.gitignore` - Prevents accidental commits of generated docs
 - `.cursor/rules/documentation.mdc` - AI navigation rules
 - `docs/workflows/` - Task, proposal, and idea directories

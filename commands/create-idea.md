@@ -373,7 +373,7 @@ This command integrates with other Pythia components:
 
 - [Idea Template](mdc:templates/idea-template.md)
 - [Ideas Backlog](mdc:docs/workflows/ideas/ideas-backlog.md)
-- [Workspace Integration Guide](mdc:guides/workspace-integration.md)
+- [Workspace Integration](mdc:guides/guide-workspace-integration.md)
 - [Report Workflows](mdc:commands/report-workflows.md)
 
 ---
