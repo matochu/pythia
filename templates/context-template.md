@@ -270,7 +270,6 @@ This template integrates with other Pythia components:
 
 - **Task Creation**: Contexts inform task creation workflow
 - **Decision Support**: Contexts provide information for decision-making
-- **Memory Bank**: Contexts complement dynamic session insights
 - **Documentation Map**: Contexts are indexed in the documentation map
 - **Validation**: Contexts follow validation standards
 

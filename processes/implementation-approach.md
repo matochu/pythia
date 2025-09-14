@@ -447,10 +447,5 @@ Track implementation progress using:
 ## References
 
 - [Documentation Map](../navigation/documentation-map.md)
-
-- [Llm Task Workflow](../rules/llm-task-workflow.md)
-
-- [Llm Task Workflow](../rules/llm-task-workflow.md)
-
-- [Prioritization Methods](prioritization-methods.md) - Methods for prioritizing implementation work
-- [Documentation Standards](../navigation/documentation-standards.md) - Guidelines for maintaining documentation
+- [LLM Task Workflow](../rules/llm-task-workflow.md)
+- [Documentation Standards](../navigation/documentation-standards.md)

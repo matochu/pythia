@@ -13,7 +13,7 @@ This directory contains the core methodology framework for the Pythia documentat
 
 ### Core Methodologies
 
-#### 1. **Context Documentation** (`context-documentation.md`)
+#### 1. **Context Documentation** (see `commands/create-context.md`)
 
 **Purpose**: Foundation methodology for capturing structured information needed for decision-making
 **When to use**: ALWAYS - as the foundation for any other methodology
@@ -52,7 +52,7 @@ This directory contains the core methodology framework for the Pythia documentat
 ## Methodology Relationships
 
 ```
-Context Documentation (Foundation)
+Context Documentation (Foundation - see commands/create-context.md)
     ↓
 Documentation Guidelines (Quality)
     ↓
@@ -69,13 +69,13 @@ Methodology Effectiveness Framework (Improvement)
 
 ### Pattern 1: New Project Setup
 
-1. **Context Documentation** - Establish project context
+1. **Context Documentation** (see `commands/create-context.md`) - Establish project context
 2. **Documentation Guidelines** - Set up documentation standards
 3. **Methodology Integration Guide** - Plan methodology usage
 
 ### Pattern 2: Document Creation
 
-1. **Context Documentation** - Understand requirements
+1. **Context Documentation** (see `commands/create-context.md`) - Understand requirements
 2. **Documentation Guidelines** - Apply quality standards
 3. **Methodology Application Patterns** - Use consistent patterns
 
@@ -89,9 +89,9 @@ Methodology Effectiveness Framework (Improvement)
 
 All Pythia commands integrate with these methodologies:
 
-- **Create Task Command** → Uses Context Documentation + Documentation Guidelines
-- **Create Proposal Command** → Uses Ideas to Proposals Workflow + Context Documentation
-- **Analyze Project Command** → Uses Technical Debt Prioritization + Context Documentation
+- **Create Task Command** → Uses Context Documentation (see `commands/create-context.md`) + Documentation Guidelines
+- **Create Proposal Command** → Uses Ideas to Proposals Workflow + Context Documentation (see `commands/create-context.md`)
+- **Analyze Project Command** → Uses Technical Debt Prioritization + Context Documentation (see `commands/create-context.md`)
 - **Validate Documentation Command** → Uses Methodology Consistency Checker
 
 ## Related Directories

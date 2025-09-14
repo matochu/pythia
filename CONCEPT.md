@@ -183,20 +183,20 @@ Documents in the Pythia system are distributed across three levels, each with it
 
 1. **Core Documents**:
 
-   - Location: Pythia core in `/__folder__/core` directory
+   - Location: Pythia core in `/.pythia/core` directory
    - Include: rules, commands, methodology, templates, navigation tools
    - Features: universal, stable, common across all projects
    - Examples: formatting rules, document creation commands, methodological approaches
 
 2. **Working Documents**:
 
-   - Location: `/__folder__/workflows/` directory in project documentation
+   - Location: `/.pythia/workflows/` directory in project documentation
    - Include: tasks, proposals, decisions, ideas and their research
    - Features: project-specific, dynamic, reflect current process
    - Examples: task description, change proposal, decision record
 
 3. **Project Documents**:
-   - Location: `/__folder__/contexts/`, `/__folder__/architecture/`, `/__folder__/guides/` directories in project documentation
+   - Location: `/.pythia/contexts/`, `/.pythia/architecture/`, `/.pythia/guides/` directories in project documentation
    - Include: contexts, architectural documentation, instructions
    - Features: formalized, structured, store important project information
    - Examples: project overview, technical context, technology choice decision

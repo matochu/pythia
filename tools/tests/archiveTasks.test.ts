@@ -86,7 +86,7 @@ describe('archiveTasks.ts', () => {
   describe('findCompletedTasks', () => {
     it('should find all tasks with "Completed" status', async () => {
       // Arrange
-      const mockTasks = ['docs/tasks/task1.md', 'docs/tasks/task2.md'];
+      const mockTasks = ['.pythia/tasks/task1.md', '.pythia/tasks/task2.md'];
 
       const mockContent = `# Task Title
 ## Status: Completed
@@ -141,7 +141,7 @@ Test task`;
   describe('updateDocumentationMap', () => {
     it('should update Documentation Map when archiving a task', async () => {
       // Arrange
-      const mockMapPath = 'docs/navigation/documentation-map.md';
+      const mockMapPath = '.pythia/navigation/documentation-map.md';
       const mockMapContent = `
 ## Tasks
 
@@ -170,7 +170,7 @@ Test task`;
 
     it('should create Archived Tasks section if it does not exist', async () => {
       // Arrange
-      const mockMapPath = 'docs/navigation/documentation-map.md';
+      const mockMapPath = '.pythia/navigation/documentation-map.md';
       const mockMapContent = `
 ## Tasks
 
@@ -201,8 +201,8 @@ Test task`;
   describe('archiveTask', () => {
     it('should correctly archive a task', async () => {
       // Arrange
-      const mockTask = 'docs/tasks/task1.md';
-      const mockArchivedTask = 'docs/archive/tasks/task1.md';
+      const mockTask = '.pythia/tasks/task1.md';
+      const mockArchivedTask = '.pythia/archive/tasks/task1.md';
 
       (fs.existsSync as any).mockReturnValue(true);
 
@@ -215,7 +215,7 @@ Test task`;
 
     it('should not archive in dry run mode', async () => {
       // Arrange
-      const mockTask = 'docs/tasks/task1.md';
+      const mockTask = '.pythia/tasks/task1.md';
       process.argv.push('--dry-run');
 
       // Act
@@ -232,7 +232,7 @@ Test task`;
   describe('main function', () => {
     it('should process completed tasks and archive them', async () => {
       // Arrange
-      const mockTasks = ['docs/tasks/task1.md', 'docs/tasks/task2.md'];
+      const mockTasks = ['.pythia/tasks/task1.md', '.pythia/tasks/task2.md'];
 
       mockArchiveTasks.findCompletedTasks.mockResolvedValue(mockTasks);
       mockArchiveTasks.hasNoArchiveTag.mockReturnValue(false);
@@ -246,7 +246,7 @@ Test task`;
 
     it('should skip tasks with no-archive tag', async () => {
       // Arrange
-      const mockTasks = ['docs/tasks/task1.md', 'docs/tasks/task2.md'];
+      const mockTasks = ['.pythia/tasks/task1.md', '.pythia/tasks/task2.md'];
 
       mockArchiveTasks.findCompletedTasks.mockResolvedValue(mockTasks);
       mockArchiveTasks.hasNoArchiveTag.mockReturnValue(true);

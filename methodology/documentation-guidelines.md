@@ -17,8 +17,8 @@ Pythia is a **shared documentation base** designed to be integrated into any pro
    - Files are referenced using `mdc:` links and `@command.md` syntax
    - Examples: `mdc:commands/create-task.md`, `mdc:methodology/documentation-guidelines.md`
 
-2. **Project Workspace (e.g., /docs)**
-   - Each project has its own `/docs` directory (or equivalent)
+2. **Project Workspace (e.g., /.pythia)**
+   - Each project has its own `/.pythia` directory (or equivalent)
    - Project-specific documents are generated and maintained here using Pythia commands/templates
    - Examples: `/.pythia/project-structure.md`, `/.pythia/workflows/tasks/task-2025-07-feature-x.md`
 
@@ -32,7 +32,7 @@ Pythia is a **shared documentation base** designed to be integrated into any pro
 ### Example: Creating a Task in a Project Workspace
 
 ```bash
-# In your project workspace (e.g., /docs)
+# In your project workspace (e.g., /.pythia)
 @create-task.md
 Context: Implement offline mode for user data
 Objective: Create a new task document for this feature

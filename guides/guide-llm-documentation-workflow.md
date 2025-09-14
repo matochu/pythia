@@ -28,7 +28,7 @@ This guide will help you quickly and easily use Large Language Models (LLM) capa
 - Context-first: anchor work and decisions in living context docs, not tickets/config.
 - Minimal ceremony: commands are utilities; we optimize flows and outcomes, not command syntax.
 - Human-in-the-loop: LLM executes defaults; guarded steps are explicitly marked and confirmed by a person.
-- Traceability by design: analysis/review artifacts live under `.pythia/memory-bank/` and are linked from tasks/contexts.
+- Traceability by design: analysis/review artifacts are documented and linked from tasks/contexts.
 
 ---
 
@@ -79,7 +79,7 @@ Before looking at specific commands, let's understand how they work:
   - Purpose: implement in small, verifiable steps
   - Run: iterate with `@manage-task.md` guidance; keep notes in the task
   - Do: add/update tests for all new/changed code; run coverage; prepare AI review
-  - Artifacts: keep evidence under `.pythia/memory-bank/sessions/` and link from the task
+  - Artifacts: keep evidence and link from the task
   - Status: In Progress (use Blocked with reason when needed)
 
 - Phase D — Under Review (Gate)
@@ -97,7 +97,7 @@ Before looking at specific commands, let's understand how they work:
 
 - Phase F — Archive & Report
   - Run: `@archive-tasks.md`, `@update-documentation-map.md`, `@report-workflows.md`
-  - Do: add a final Memory Bank session if relevant; ensure bidirectional links remain valid
+  - Do: ensure bidirectional links remain valid
   - Status: Completed → Archived
 
 ### 1) Idea → Exploration → Proposal → Task → Completed
@@ -115,7 +115,7 @@ References: `@create-idea.md`, `@create-exploration.md`, `@create-proposal.md`, 
 1. Context-First intake: link at least one relevant context (or justify none for Low)
 2. Plan and execute with small, verifiable steps; mark human-only steps with `[H]`
 3. Add/Update tests for new/changed code; run coverage
-4. Run AI review (diff-aware); store artifacts under `.pythia/memory-bank/sessions/`
+4. Run AI review (diff-aware)
 5. Move to Under Review → Completed when gates are satisfied
 
 References: `@create-task.md`, `@manage-task.md`, `@analyze-ai-solutions.md`
@@ -133,7 +133,7 @@ References: `@create-task.md`, `@manage-task.md`, `@analyze-ai-solutions.md`
 2. Human validates outcomes for guarded steps `[H]` (branch, prod checks)
 3. Link artifacts back to the task/contexts for traceability
 
-References: `@analyze-ai-solutions.md`, `.pythia/memory-bank/sessions/`
+References: `@analyze-ai-solutions.md`
 
 ---
 
@@ -146,7 +146,7 @@ References: `@analyze-ai-solutions.md`, `.pythia/memory-bank/sessions/`
 - Use `@manage-task.md` inside the task to drive the lifecycle: Context-First → Plan → Execute → Under Review → Completed.
 - Mark human-only steps with `[H]` (LLM prepares notes but does not tick the box). Example: `- [ ] Create/push branch 'feature/x' [H]`.
 - Add/Update tests for all new/changed code and run coverage before completion (see `@analyze-ai-solutions.md`).
-- Store AI review artifacts (JSON + MD) under `.pythia/memory-bank/sessions/` and link them from the task.
+- Store AI review artifacts and link them from the task.
 
 ### 📌 Example 1. Creating a Task Document
 

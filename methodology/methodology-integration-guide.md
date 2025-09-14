@@ -43,7 +43,7 @@ Consistent methodology application ensures:
 
 ### Core Methodologies (Keep in `/methodology/`)
 
-1. **Context Documentation** (`context-documentation.md`)
+1. **Context Documentation** (see `commands/create-context.md`)
 
    - **Purpose**: Structured information for decision-making
    - **When to Use**: When you need to understand "why" and "what" before "how"

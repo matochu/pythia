@@ -34,7 +34,6 @@ Before proceeding with documentation validation, complete this checklist:
 
 - [ ] Review recent documentation changes
 - [ ] Check for any known documentation issues
-- [ ] Check Memory Bank for validation patterns and previous issues (if available)
 - [ ] Run link validation script
 - [ ] Address broken links
 - [ ] Fix missing reciprocal links
@@ -44,7 +43,6 @@ Before proceeding with documentation validation, complete this checklist:
 - [ ] Verify all fixes are applied
 - [ ] Re-run validation to confirm fixes
 - [ ] Document any remaining issues
-- [ ] Update Memory Bank with validation insights (if available)
 
 ## Available Automation Scripts
 

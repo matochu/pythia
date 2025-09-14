@@ -51,7 +51,7 @@ const mockCheckDocumentCoverage = async (): Promise<CoverageResult> => {
     missingDocuments: [],
     documentsNotInMap: [],
     allDocuments: [],
-    documentMap: 'docs/navigation/documentation-map.md'
+    documentMap: '.pythia/navigation/documentation-map.md'
   };
 };
 
@@ -159,14 +159,14 @@ describe('Coverage Checker', () => {
       // This function should be exported from coverageChecker.ts for testing
       // await fixDocumentMap({
       //   missingDocuments: [],
-      //   documentsNotInMap: ['docs/unmapped-doc.md'],
-      //   allDocuments: ['docs/existing-doc.md', 'docs/unmapped-doc.md'],
-      //   documentMap: 'docs/navigation/documentation-map.md'
+      //   documentsNotInMap: ['.pythia/unmapped-doc.md'],
+      //   allDocuments: ['.pythia/existing-doc.md', '.pythia/unmapped-doc.md'],
+      //   documentMap: '.pythia/navigation/documentation-map.md'
       // });
 
       // Assert
       // expect(fs.writeFileSync).toHaveBeenCalledWith(
-      //   'docs/navigation/documentation-map.md',
+      //   '.pythia/navigation/documentation-map.md',
       //   expect.stringContaining('unmapped-doc.md')
       // );
       console.log('Test: should update documentation map when fix flag is set');

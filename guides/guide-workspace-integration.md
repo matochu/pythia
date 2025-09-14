@@ -25,7 +25,7 @@ Pythia acts as a shared documentation base integrated directly into your project
 
 ```bash
 Execute this command for my project at /path/to/project
-Use my project's docs directory at ./docs
+Use my project's docs directory at ./.pythia
 ```
 
 ### 3) Verify
@@ -87,7 +87,6 @@ ls -la .pythia/
 - In each task, reference `@manage-task.md` to drive the lifecycle (Context-First → Plan → Execute → Under Review → Completed).
 - Mark human-only checkboxes with `[H]`; LLM adds notes but does not tick them.
 - Add/Update tests for all new/changed code and run coverage before completion; use `@analyze-ai-solutions.md` for AI review (diff-aware by default).
-- Store AI review artifacts under `.pythia/memory-bank/sessions/` (JSON + MD) and link them from the task.
 - Create supporting contexts using `@create-context.md` and add bidirectional links via `mdc:` references.
 
 ---

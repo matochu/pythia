@@ -11,9 +11,9 @@ This rule governs all documentation created in the [docs](mdc:WhisperRecorder2/d
 
 ### Core Directories
 
-- [docs/contexts/technical](mdc:WhisperRecorder2/docs/contexts/technical) - Technical analysis and architecture documents
-- [docs/contexts/architecture](mdc:WhisperRecorder2/docs/contexts/architecture) - System architecture documentation
-- [docs/contexts/project](mdc:WhisperRecorder2/docs/contexts/project) - Project management and planning docs
+- [.pythia/contexts/technical](mdc:WhisperRecorder2/.pythia/contexts/technical) - Technical analysis and architecture documents
+- [.pythia/contexts/architecture](mdc:WhisperRecorder2/.pythia/contexts/architecture) - System architecture documentation
+- [.pythia/contexts/project](mdc:WhisperRecorder2/.pythia/contexts/project) - Project management and planning docs
 
 ### Documentation Standards
 
@@ -90,7 +90,7 @@ Use relative paths to reference code:
 - `[UIWorkflowController.swift](mdc:WhisperRecorder2/WhisperRecorder/Sources/WhisperRecorder/UI/UIWorkflowController.swift)`
 
 Use relative paths to reference other documentation:
-- `[Related Document](mdc:WhisperRecorder2/docs/contexts/technical/related-doc.md)`
+- `[Related Document](mdc:WhisperRecorder2/.pythia/contexts/technical/related-doc.md)`
 
 ## Content Guidelines
 
@@ -155,8 +155,8 @@ Must include:
 ## Example Integration
 
 For workflow-related documentation, reference:
-- [workflow-state-machine-transitions.md](mdc:WhisperRecorder2/docs/contexts/technical/workflow-state-machine-transitions.md) - Complete state machine analysis
-- [workflow-debugging-quickguide.md](mdc:WhisperRecorder2/docs/contexts/technical/workflow-debugging-quickguide.md) - Quick debugging reference
+- [workflow-state-machine-transitions.md](mdc:WhisperRecorder2/.pythia/contexts/technical/workflow-state-machine-transitions.md) - Complete state machine analysis
+- [workflow-debugging-quickguide.md](mdc:WhisperRecorder2/.pythia/contexts/technical/workflow-debugging-quickguide.md) - Quick debugging reference
 
 These documents demonstrate proper use of Mermaid diagrams for technical documentation.
 

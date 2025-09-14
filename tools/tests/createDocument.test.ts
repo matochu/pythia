@@ -36,8 +36,8 @@ import * as handlebars from 'handlebars';
 // Mock the semanticSearch function from updateDocumentationMap
 vi.mock('../documentation/updateDocumentationMap', () => ({
   semanticSearch: vi.fn().mockResolvedValue([
-    { path: 'docs/related1.md', title: 'Related Document 1', relevance: 0.8 },
-    { path: 'docs/related2.md', title: 'Related Document 2', relevance: 0.6 }
+    { path: '.pythia/related1.md', title: 'Related Document 1', relevance: 0.8 },
+    { path: '.pythia/related2.md', title: 'Related Document 2', relevance: 0.6 }
   ])
 }));
 
@@ -123,16 +123,16 @@ describe('createDocument', () => {
   it("should create directories if they don't exist", async () => {
     (fs.existsSync as any).mockReturnValue(false);
 
-    await mockCreateDocument.createDirectories('docs/new/path');
+    await mockCreateDocument.createDirectories('.pythia/new/path');
 
     expect(mockCreateDocument.createDirectories).toHaveBeenCalledWith(
-      'docs/new/path'
+      '.pythia/new/path'
     );
   });
 
   it('should write document content to file', async () => {
     const content = '# Test Document\n## Description\nTest description';
-    const filePath = 'docs/test/document.md';
+    const filePath = '.pythia/test/document.md';
 
     await mockCreateDocument.writeDocument(filePath, content);
 

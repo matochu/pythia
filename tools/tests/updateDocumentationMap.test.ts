@@ -97,17 +97,17 @@ describe('updateDocumentationMap.ts', () => {
     it('should find all markdown documents in the docs directory', async () => {
       // Arrange
       const mockDocuments = [
-        'docs/tasks/task1.md',
-        'docs/architecture/analysis.md',
-        'docs/navigation/documentation-map.md'
+        '.pythia/tasks/task1.md',
+        '.pythia/architecture/analysis.md',
+        '.pythia/navigation/documentation-map.md'
       ];
 
       // Mock fs.promises.readdir to return different files in different directories
       const mockReaddirImplementation = (dir: string) => {
-        if (dir === 'docs/tasks') return Promise.resolve(['task1.md']);
-        if (dir === 'docs/architecture')
+        if (dir === '.pythia/tasks') return Promise.resolve(['task1.md']);
+        if (dir === '.pythia/architecture')
           return Promise.resolve(['analysis.md']);
-        if (dir === 'docs/navigation')
+        if (dir === '.pythia/navigation')
           return Promise.resolve(['documentation-map.md']);
         return Promise.resolve([]);
       };
@@ -121,7 +121,7 @@ describe('updateDocumentationMap.ts', () => {
       (exec as any).mockImplementation((cmd, callback) => {
         if (cmd.includes('find docs -type d')) {
           callback(null, {
-            stdout: 'docs/tasks\ndocs/architecture\ndocs/navigation'
+            stdout: '.pythia/tasks\n.pythia/architecture\n.pythia/navigation'
           });
         } else {
           callback(null, { stdout: '' });
@@ -141,17 +141,17 @@ describe('updateDocumentationMap.ts', () => {
     it('should correctly categorize documents based on their paths', () => {
       // Arrange
       const mockDocuments = [
-        'docs/tasks/task1.md',
-        'docs/architecture/analysis.md',
-        'docs/navigation/documentation-map.md',
-        'docs/proposals/proposal.md'
+        '.pythia/tasks/task1.md',
+        '.pythia/architecture/analysis.md',
+        '.pythia/navigation/documentation-map.md',
+        '.pythia/proposals/proposal.md'
       ];
 
       const expectedCategories = {
-        tasks: ['docs/tasks/task1.md'],
-        architecture: ['docs/architecture/analysis.md'],
-        navigation: ['docs/navigation/documentation-map.md'],
-        proposals: ['docs/proposals/proposal.md']
+        tasks: ['.pythia/tasks/task1.md'],
+        architecture: ['.pythia/architecture/analysis.md'],
+        navigation: ['.pythia/navigation/documentation-map.md'],
+        proposals: ['.pythia/proposals/proposal.md']
       };
 
       // Action
@@ -167,9 +167,9 @@ describe('updateDocumentationMap.ts', () => {
     it('should identify documents not present in the documentation map', () => {
       // Arrange
       const mockAllDocs = [
-        'docs/tasks/task1.md',
-        'docs/tasks/task2.md',
-        'docs/architecture/analysis.md'
+        '.pythia/tasks/task1.md',
+        '.pythia/tasks/task2.md',
+        '.pythia/architecture/analysis.md'
       ];
 
       const mockMapContent = `
@@ -186,7 +186,7 @@ describe('updateDocumentationMap.ts', () => {
 | [Analysis](../architecture/analysis.md) | Architecture analysis |
 `;
 
-      const expectedMissing = ['docs/tasks/task2.md'];
+      const expectedMissing = ['.pythia/tasks/task2.md'];
 
       // Action
       mockUpdateMap.findMissingDocuments.mockReturnValue(expectedMissing);
@@ -203,7 +203,7 @@ describe('updateDocumentationMap.ts', () => {
   describe('updateDocumentationMap', () => {
     it('should update the documentation map with missing documents', async () => {
       // Arrange
-      const mockMapPath = 'docs/navigation/documentation-map.md';
+      const mockMapPath = '.pythia/navigation/documentation-map.md';
       const mockMapContent = `
 ## Tasks
 
@@ -214,7 +214,7 @@ describe('updateDocumentationMap.ts', () => {
 ## References
 `;
 
-      const mockMissingDocs = ['docs/tasks/task2.md'];
+      const mockMissingDocs = ['.pythia/tasks/task2.md'];
 
       (fs.readFileSync as any).mockReturnValue(mockMapContent);
       (fs.existsSync as any).mockReturnValue(true);
@@ -233,7 +233,7 @@ describe('updateDocumentationMap.ts', () => {
   describe('updateLastModifiedDate', () => {
     it('should update the last modified date in the documentation map', async () => {
       // Arrange
-      const mockMapPath = 'docs/navigation/documentation-map.md';
+      const mockMapPath = '.pythia/navigation/documentation-map.md';
       const mockMapContent = `
 ## Maintenance
 
@@ -269,7 +269,7 @@ Last updated: March 10, 2025
   describe('updateRecentlyAddedDocuments', () => {
     it('should update the Recently Added Documents section', async () => {
       // Arrange
-      const mockMapPath = 'docs/navigation/documentation-map.md';
+      const mockMapPath = '.pythia/navigation/documentation-map.md';
       const mockMapContent = `
 ## References
 
@@ -277,14 +277,14 @@ Last updated: March 10, 2025
 
 ### Recently Added Documents
 
-#### docs/tasks
+#### .pythia/tasks
 
 - [Task 1](../tasks/task1.md)
 `;
 
       const mockNewDocuments = [
-        'docs/architecture/new-analysis.md',
-        'docs/tasks/task2.md'
+        '.pythia/architecture/new-analysis.md',
+        '.pythia/tasks/task2.md'
       ];
 
       (fs.readFileSync as any).mockReturnValue(mockMapContent);
@@ -308,8 +308,8 @@ Last updated: March 10, 2025
     it('should build metadata for all documents', async () => {
       // Arrange
       const mockDocuments = [
-        'docs/tasks/task1.md',
-        'docs/architecture/analysis.md'
+        '.pythia/tasks/task1.md',
+        '.pythia/architecture/analysis.md'
       ];
 
       const mockContent = `# Document Title
@@ -336,8 +336,8 @@ This is a test document.
     it('should analyze relationships between documents', async () => {
       // Arrange
       const mockDocuments = [
-        'docs/tasks/task1.md',
-        'docs/architecture/analysis.md'
+        '.pythia/tasks/task1.md',
+        '.pythia/architecture/analysis.md'
       ];
 
       // Action
@@ -352,8 +352,8 @@ This is a test document.
     it('should generate a Mermaid diagram for document relationships', async () => {
       // Arrange
       const mockDocuments = [
-        'docs/tasks/task1.md',
-        'docs/architecture/analysis.md'
+        '.pythia/tasks/task1.md',
+        '.pythia/architecture/analysis.md'
       ];
 
       (fs.existsSync as any).mockReturnValue(true);
@@ -375,7 +375,7 @@ This is a test document.
       const mockQuery = 'test query';
       const mockResults = [
         {
-          path: 'docs/tasks/task1.md',
+          path: '.pythia/tasks/task1.md',
           title: 'Task 1',
           relevance: 0.8,
           snippet: '...test content...'

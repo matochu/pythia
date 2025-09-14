@@ -59,13 +59,13 @@ When receiving a task request:
 
 Before implementing any changes:
 
-- Create a structured plan following the [implementation-approach.md](mdc:docs/methodology/implementation-approach.md)
+- Create a structured plan following the [implementation-approach.md](mdc:.pythia/methodology/implementation-approach.md)
 - Identify rine clear success criteria
 - Break down work into boxes ([ ]) to all actionable items for progress t ratings to each phase
 
 ### 3. Plan Doplan:
 
-- Create a task file in `docs/tasks` following the naming convention `task-YYYY-MM-{topic}.md`, using the current date
+- Create a task file in `.pythia/tasks` following the naming convention `task-YYYY-MM-{topic}.md`, using the current date
 - Use the structure from [Task Template](mdc:../templates/task-template.md)
 - Emphasize context, objectives, and implementation plan
 - Link to related documents and dependencies
@@ -147,7 +147,7 @@ Example:
 
 **LLM Response**:
 
-1. **Create task document** in `docs/tasks/task-2025-03-offline-data-handling.md`
+1. **Create task document** in `.pythia/tasks/task-2025-03-offline-data-handling.md`
 2. **Document plan** including research on caching strategies, implementation phases, and success criteria
 3. **Implement solution** according to plan
 4. **Document results** including challenges encountered and solutions found

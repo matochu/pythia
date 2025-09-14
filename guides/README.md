@@ -12,8 +12,6 @@ Practical guides for integrating and working with the Pythia documentation syste
 
 - Use `@manage-task.md` inside a task to run the lifecycle (Context-First → Plan → Execute → Review → Complete)
 - Create new context documents with `@create-context.md` and link them bidirectionally
-- Run quality gates with `@analyze-ai-solutions.md` (diff-aware, tests/coverage, artifacts)
-- Artifacts location (default): `.pythia/memory-bank/` (sessions, patterns, decisions)
 
 ## Creating New Guides
 

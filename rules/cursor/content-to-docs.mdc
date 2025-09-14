@@ -7,7 +7,7 @@ alwaysApply: false
 
 ## Purpose
 
-This rule helps analyze incoming content and suggest the most appropriate document types and structures based on the Pythia documentation system implemented in [docs/README.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/README.md).
+This rule helps analyze incoming content and suggest the most appropriate document types and structures based on the Pythia documentation system implemented in [.pythia/README.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/README.md).
 
 ## Content Analysis Framework
 
@@ -30,7 +30,7 @@ Analyze the input and categorize it according to these patterns:
 - "Fix the navigation bug in mobile view"
 - "Create API endpoints for user management"
 
-**Suggested document:** `task-YYYY-MM-{topic}.md` in [docs/workflows/tasks/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/tasks)
+**Suggested document:** `task-YYYY-MM-{topic}.md` in [.pythia/workflows/tasks/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/workflows/tasks)
 **Pythia Command:** Use `/Users/Serhii/workspace/ai/pythia/commands/create-task.md` for automated creation
 
 #### Initial Concepts → Idea Documents
@@ -46,7 +46,7 @@ Analyze the input and categorize it according to these patterns:
 - "It would be nice to have offline support"
 - "Consider implementing progressive web app features"
 
-**Suggested document:** `idea-YYYY-MM-{topic}.md` in [docs/workflows/ideas/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/ideas)
+**Suggested document:** `idea-YYYY-MM-{topic}.md` in [.pythia/workflows/ideas/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/workflows/ideas)
 **Pythia Command:** Use `/Users/Serhii/workspace/ai/pythia/commands/create-idea.md` for automated creation
 
 #### Research Topics → Exploration Documents
@@ -62,7 +62,7 @@ Analyze the input and categorize it according to these patterns:
 - "Investigate best practices for TV remote navigation"
 - "Compare authentication libraries for React"
 
-**Suggested document:** `exploration-{topic}.md` in [docs/workflows/ideas/explorations/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/ideas/explorations)
+**Suggested document:** `exploration-{topic}.md` in [.pythia/workflows/ideas/explorations/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/workflows/ideas/explorations)
 **Pythia Command:** Use `/Users/Serhii/workspace/ai/pythia/commands/create-exploration.md` for automated creation
 
 #### Formal Change Requests → Proposal Documents
@@ -78,7 +78,7 @@ Analyze the input and categorize it according to these patterns:
 - "Architecture change proposal for microservices"
 - "Process improvement proposal for code review"
 
-**Suggested document:** `proposal-{topic}.md` in [docs/workflows/proposals/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/proposals)
+**Suggested document:** `proposal-{topic}.md` in [.pythia/workflows/proposals/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/workflows/proposals)
 **Pythia Command:** Use `/Users/Serhii/workspace/ai/pythia/commands/create-proposal.md` for automated creation
 
 #### Supporting Information → Context Documents
@@ -100,18 +100,18 @@ Analyze the input and categorize it according to these patterns:
 - "Project background and evolution history"
 - "Reference implementation for API design patterns"
 
-**Suggested location:** [docs/contexts/](mdc:difighter/difighter/difighter/difighter/docs/contexts) subdirectories
+**Suggested location:** [.pythia/contexts/](mdc:difighter/difighter/difighter/difighter/.pythia/contexts) subdirectories
 **Pythia Command:** Manual creation (no automated command available)
 
 **Context Structure:**
-- **[project/](mdc:difighter/difighter/difighter/difighter/docs/contexts/project)** - Project history, stakeholder info, business context
-- **[technical/](mdc:difighter/difighter/difighter/difighter/docs/contexts/technical)** - Technical analysis, architecture, patterns
-- **[meetings/](mdc:difighter/difighter/difighter/difighter/docs/contexts/meetings)** - Meeting notes, decisions, discussions
+- **[project/](mdc:difighter/difighter/difighter/difighter/.pythia/contexts/project)** - Project history, stakeholder info, business context
+- **[technical/](mdc:difighter/difighter/difighter/difighter/.pythia/contexts/technical)** - Technical analysis, architecture, patterns
+- **[meetings/](mdc:difighter/difighter/difighter/difighter/.pythia/contexts/meetings)** - Meeting notes, decisions, discussions
 - **Custom subdirectories** - Create as needed for specific knowledge areas
 
 ### 2. Document Structure Suggestions
 
-Based on the content analysis, suggest document structure using patterns from [docs/navigation/document-types-guide.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/navigation/document-types-guide.md):
+Based on the content analysis, suggest document structure using patterns from [.pythia/navigation/document-types-guide.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/navigation/document-types-guide.md):
 
 #### For Tasks:
 ```markdown
@@ -202,14 +202,14 @@ Based on the content analysis, suggest document structure using patterns from [d
 
 **Context Directory Usage:**
 
-#### [project/](mdc:difighter/difighter/difighter/docs/contexts/project) - Project Knowledge
+#### [project/](mdc:difighter/difighter/difighter/.pythia/contexts/project) - Project Knowledge
 - Project history and evolution
 - Stakeholder information and requirements
 - Business context and constraints
 - User research and personas
 - Market analysis and competitive landscape
 
-#### [technical/](mdc:difighter/difighter/difighter/docs/contexts/technical) - Technical Knowledge  
+#### [technical/](mdc:difighter/difighter/difighter/.pythia/contexts/technical) - Technical Knowledge  
 - Architecture analysis and decisions
 - Technology research and comparisons
 - Design patterns and best practices
@@ -217,7 +217,7 @@ Based on the content analysis, suggest document structure using patterns from [d
 - Performance benchmarks and analysis
 - Security considerations and guidelines
 
-#### [meetings/](mdc:difighter/difighter/difighter/docs/contexts/meetings) - Communication Records
+#### [meetings/](mdc:difighter/difighter/difighter/.pythia/contexts/meetings) - Communication Records
 - Stakeholder meeting notes
 - Technical decision discussions
 - Planning session outcomes
@@ -276,7 +276,7 @@ When content is provided:
 4. **Identify appropriate Pythia command** for creation
 5. **Outline document structure** with key sections
 6. **Identify related documents** for cross-referencing
-7. **Suggest registry updates** ([ideas-backlog.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/ideas/ideas-backlog.md), [report.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/report.md))
+7. **Suggest registry updates** ([ideas-backlog.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/workflows/ideas/ideas-backlog.md), [report.md](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/workflows/report.md))
 
 ### 5. Multiple Document Scenarios
 
@@ -296,9 +296,9 @@ Some content may warrant multiple documents:
 
 Always suggest updating relevant registries using appropriate commands:
 
-- **[Ideas Backlog](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/ideas/ideas-backlog.md)** - for new ideas
-- **[Workflows Report](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows/report.md)** - for active work items (use `report-workflows.md`)
-- **[Documentation Map](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/navigation/documentation-map.md)** - for new document relationships (use `update-documentation-map.md`)
+- **[Ideas Backlog](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/workflows/ideas/ideas-backlog.md)** - for new ideas
+- **[Workflows Report](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/workflows/report.md)** - for active work items (use `report-workflows.md`)
+- **[Documentation Map](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/navigation/documentation-map.md)** - for new document relationships (use `update-documentation-map.md`)
 
 ### 7. Quality Checklist
 
@@ -319,8 +319,8 @@ Before suggesting document creation, verify:
 1. **Always prefer Pythia commands** when available for document creation
 2. **Use management commands** for updating existing documents
 3. **Use reporting commands** to maintain registries
-4. **Reference [config.json](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/config.json)** for system configuration
-5. **Follow established workflows** from [docs/workflows/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/docs/workflows)
+4. **Reference [config.json](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/config.json)** for system configuration
+5. **Follow established workflows** from [.pythia/workflows/](mdc:difighter/difighter/difighter/difighter/difighter/difighter/.pythia/workflows)
 
 ### Response Format
 

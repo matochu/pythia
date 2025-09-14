@@ -20,7 +20,6 @@ Provide a concise, actionable sequence for tasks: Context-First intake → Plan 
 - [ ] Under Review gate: Context valid, Success Criteria drafted
 - [ ] Completed gate: AI Solution Analysis present with pass indicators; all criteria checked
 - [ ] Workflows report updated; validation run fixed
-- [ ] Memory Bank updated (sessions/patterns/decisions)
 
 ## Status Model and Gates (Lightweight)
 
@@ -43,10 +42,8 @@ Provide a concise, actionable sequence for tasks: Context-First intake → Plan 
 - [Report Workflows](mdc:commands/report-workflows.md)
 - [Validate Documentation](mdc:commands/validate-documentation.md)
 - [Analyze AI Solutions](mdc:commands/analyze-ai-solutions.md)
-- [Memory Bank Management](mdc:commands/memory-bank-management.md)
 - [Task Template](mdc:templates/task-template.md)
 
 ---
 
 Last Updated: 2025-08-08
-

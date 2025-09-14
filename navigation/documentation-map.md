@@ -67,8 +67,7 @@ This document serves as a central navigation hub for all architectural and syste
 | -------------------------------------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------- |
 | [Prioritization Methods](../guides/guide-prioritization-methods.md)                          | Decision-making frameworks                         | ICE, RICE, User Pain vs Dev Effort, WSJF           |
 | [Implementation Approach](../processes/implementation-approach.md)                           | Standardized approach to implementing improvements | R&D, Preparation, Full Integration, Optimization   |
-| [Prioritization Methods](../guides/prioritization-methods.md)                                | Decision-making frameworks                         | ICE, RICE, User Pain vs Dev Effort, WSJF           |
-| [Context Documentation](../methodology/context-documentation.md)                             | Methodology for context documents                  | Document Types, Structure, Usage, Examples         |
+| [Context Documentation](../commands/create-context.md)                             | Command for creating context documents                  | Quick Steps, Template, Integration         |
 | [Methodology Integration Guide](../methodology/methodology-integration-guide.md)             | Unified methodology integration framework          | Integration Patterns, Usage Guidelines, Examples   |
 | [Methodology Usage Guide](../methodology/methodology-usage-guide.md)                         | Practical guide for applying methodologies         | Application Patterns, Decision Frameworks, Tools   |
 | [Methodology Application Patterns](../methodology/methodology-application-patterns.md)       | Standardized patterns for methodology application  | Pattern Types, Usage Examples, Best Practices      |
@@ -167,7 +166,6 @@ This document serves as a central navigation hub for all architectural and syste
 | [Improve Instruction](../commands/improve-instruction.md)             | Guide for improving instruction quality          | Quality Standards, Enhancement Process, Validation          |
 | [Improve TypeScript Files](../commands/improve-typescript-files.md)   | Guide for improving TypeScript code quality      | Code Quality, Type Safety, Best Practices                   |
 | [Update Status](../commands/update-status.md)                         | Guide for updating work item statuses            | Status Updates, Progress Tracking, Communication            |
-| [Memory Bank Management](../commands/memory-bank-management.md)       | Context preservation system for IDE workflows    | Session Management, Pattern Recognition, IDE Integration    |
 
 ## Ideas and Early Concepts
 
@@ -193,9 +191,6 @@ This document serves as a central navigation hub for all architectural and syste
 | [Exploration Template](../templates/exploration-template.md)                    | Template for exploration documentation                             | Research Goals, Methodology, Findings                         |
 | [Context Template](../templates/context-template.md)                            | Template for context documentation                                 | Context Type, Key Information, Relationships                  |
 | [Technical Debt Assessment](../templates/technical-debt-assessment-template.md) | Template for technical debt assessment                             | Impact Analysis, Effort Estimation, Priority Score            |
-| [Memory Bank Session Template](../templates/memory-bank-session-template.md)    | Template for memory bank session entries                           | Session Context, Decisions, Insights, Cross-References        |
-| [Memory Bank Pattern Template](../templates/memory-bank-pattern-template.md)    | Template for memory bank pattern entries                           | Pattern Summary, Implementation, Effectiveness Notes          |
-| [Memory Bank Decision Template](../templates/memory-bank-decision-template.md)  | Template for memory bank decision entries                          | Decision Context, Options, Rationale, Outcomes                |
 
 ## Analysis Documents
 

@@ -222,7 +222,7 @@ Use the `@markdown-confluence/cli` tool for synchronization. The tool is configu
   "confluenceParentId": "PARENT_PAGE_ID",
   "confluenceSpaceKey": "YOUR_SPACE",
   "atlassianUserName": "your.email@domain.com",
-  "folderToPublish": "path/to/docs"
+  "folderToPublish": "path/to/.pythia"
 }
 ```
 
@@ -402,7 +402,7 @@ grep -A 10 "Confluence Sync Metadata:" your-document.md > /tmp/extracted-metadat
 
 ```bash
 # Go back to original directory
-cd /path/to/original/docs
+cd /path/to/original/.pythia
 
 # Either:
 # 1. Manually update the metadata in the original file with the extracted information

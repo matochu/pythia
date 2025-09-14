@@ -83,7 +83,7 @@ export const mockLinkValidator = {
 export const mockDocumentHelper = {
   findDocuments: vi.fn().mockResolvedValue(['doc1.md', 'doc2.md']),
   loadDocument: vi.fn().mockResolvedValue({
-    path: 'docs/test-doc.md',
+    path: '.pythia/test-doc.md',
     title: 'Test Document',
     content: 'Test content'
   }),

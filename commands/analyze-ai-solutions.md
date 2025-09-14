@@ -263,12 +263,12 @@ Use the template below:
 _No – Coverage below threshold; see Next Steps._
 ```
 
-## Outputs to Memory Bank
+## Outputs
 
 Create lightweight artifacts so results are discoverable and reusable by LLM and humans.
 
-- JSON (machine‑readable): `.pythia/memory-bank/sessions/YYYY-MM-DD-task-<slug>-ai-review.json`
-- Markdown summary (PR/task friendly): `.pythia/memory-bank/sessions/YYYY-MM-DD-task-<slug>-ai-review.md`
+- JSON (machine‑readable): `YYYY-MM-DD-task-<slug>-ai-review.json`
+- Markdown summary (PR/task friendly): `YYYY-MM-DD-task-<slug>-ai-review.md`
 
 JSON minimal schema:
 

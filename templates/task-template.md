@@ -297,7 +297,7 @@ If this task should never be archived (e.g., it's an ongoing process or serves a
 - [Task Archiving Rules](../rules/task-archiving-rules.md)
 - [Documentation Map](../navigation/documentation-map.md)
 - [Analyze AI Solutions](../commands/analyze-ai-solutions.md) - Quality control for AI-generated solutions
-- [Context Documentation Guide](../methodology/context-documentation.md) - Working with context documents
+- [Context Documentation Guide](../commands/create-context.md) - Working with context documents
 
 Links to relevant resources, documentation, or discussions:
 

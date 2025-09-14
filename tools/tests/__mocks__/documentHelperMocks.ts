@@ -114,7 +114,7 @@ export const createMockDocument = (
   customProps: Partial<Document> = {}
 ): Document => {
   return {
-    path: 'docs/test-doc.md',
+    path: '.pythia/test-doc.md',
     relativePath: 'test-doc.md',
     content: 'Test content',
     rawContent: 'Test content with frontmatter',

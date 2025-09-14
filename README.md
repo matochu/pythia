@@ -13,9 +13,7 @@ Pythia is a **shared documentation framework** that provides:
 
 ## Quick Start
 
-### Workspace Integration (Recommended)
-
-Pythia is designed for **workspace integration** rather than standalone installation. Simply reference commands in your chat:
+Pythia is designed for **workspace integration** - simply reference commands in your chat:
 
 ```bash
 # Create a new task
@@ -26,6 +24,12 @@ Pythia is designed for **workspace integration** rather than standalone installa
 
 # Create a new proposal
 @create-proposal.md
+
+# With project context
+Execute @create-task.md for my project at /path/to/your-project
+
+# With specific requirements
+Create a task for improving user navigation in my React application
 ```
 
 ### Key Features
@@ -35,35 +39,15 @@ Pythia is designed for **workspace integration** rather than standalone installa
 - **Project Adaptation**: Commands automatically adapt to your project structure
 - **Cross-Project Compatibility**: Works with any project documentation structure
 
-## Workspace Integration
-
-### Using Pythia Commands
-
-Pythia commands are designed for **workspace integration**. Simply reference them in your chat:
-
-```bash
-# Basic command usage
-@create-task.md
-
-# With project context
-Execute this command for my project at /path/to/your-project
-
-# With specific requirements
-Create a task for improving user navigation in my React TypeScript application
-```
-
 ### Project Context
 
 Commands automatically adapt to your project's structure:
 
 ```bash
-# Specify your project structure
+# Specify your project structure  
 My project is a web application
-My docs are in ./docs directory
+My documentation is in ./.pythia directory
 My project uses Redux for state management
-
-# Commands will adapt accordingly
-@analyze-project.md
 ```
 
 ### Navigation and Links
@@ -82,7 +66,7 @@ Use `mdc:` links for workspace-aware file references:
 
 ## Legacy Installation (Deprecated)
 
-> **Note**: The following installation methods are deprecated. Pythia is now designed for workspace integration rather than standalone installation.
+> **Note**: These installation methods are deprecated. Use workspace integration instead.
 
 ### Method 1: LLM-Assisted Installation
 
@@ -121,7 +105,7 @@ Using Git Submodule:
 cd /path/to/your-project
 
 # Create docs directory if it doesn't exist
-mkdir -p docs
+mkdir -p .pythia
 
 # Add Pythia core as a git submodule
 git submodule add https://github.com/your-org/pythia-core.git .pythia/core
@@ -219,7 +203,7 @@ vi config.json
 ```bash
 # Essential project information
 My project is a web application
-My docs are in ./docs directory
+My docs are in ./.pythia directory
 My project uses Redux for state management
 
 # Optional: Specific requirements
@@ -311,7 +295,7 @@ If you previously used Pythia as a git submodule:
 
 ```bash
 # Create necessary directories
-cd /path/to/your-project/docs
+cd /path/to/your-project/.pythia
 mkdir -p workflows/tasks workflows/proposals workflows/decisions workflows/ideas
 mkdir -p contexts/project contexts/technical contexts/meetings
 ```
@@ -543,48 +527,3 @@ These tests ensure that our documentation validation tools work correctly, parti
 - [Summary Documents Registry](navigation/summary-documents-registry.md)
 - [CHANGELOG](CHANGELOG.md)
 
-## Memory Bank Management
-
-Pythia includes a Memory Bank system for preserving context across LLM sessions in IDE environments. This system enhances existing commands by providing persistent context that improves decision-making speed and consistency.
-
-### Key Features
-
-- **Session Management**: Preserve insights and decisions from individual work sessions
-- **Pattern Recognition**: Identify and reuse successful patterns across tasks
-- **Cross-Task Learning**: Connect insights between related implementations
-- **IDE Integration**: Designed for Cursor and other IDE environments
-- **Context Preservation**: Reduce context reconstruction time from minutes to seconds
-
-### Usage
-
-```bash
-# Reference the Memory Bank Management command
-@memory-bank-management.md
-
-# Example usage for complex project
-@memory-bank-management.md
-Context: Large documentation project with multiple concurrent tasks
-Objective: Preserve architectural decisions and task context across sessions
-Requirements: Support for large tasks (600+ lines), architectural analysis, cross-task learning
-```
-
-### Integration with Existing Commands
-
-Memory Bank enhances existing Pythia commands:
-
-- **@create-task.md**: Check Memory Bank for related patterns and previous decisions
-- **@analyze-project.md**: Load historical analysis insights and architectural patterns
-- **@validate-documentation.md**: Apply validation patterns and previous issue resolutions
-
-### Structure
-
-```
-.memory-bank/
-├── sessions/              # Session-specific context and insights
-├── patterns/              # Reusable patterns and solutions
-├── decisions/             # Architectural and technical decisions
-├── insights/              # Cross-session learnings and connections
-└── templates/             # Templates for consistent entry creation
-```
-
-For detailed implementation, see [Memory Bank Management](commands/memory-bank-management.md).

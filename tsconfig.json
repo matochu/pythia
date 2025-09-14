@@ -4,7 +4,7 @@
     "moduleResolution": "Node",
     "target": "ESNext",
     "lib": ["ESNext"],
-    "outDir": "../dist/docs",
+    "outDir": "../dist/.pythia",
     "rootDir": ".",
     "types": ["vitest/globals", "node"],
     "allowJs": true,

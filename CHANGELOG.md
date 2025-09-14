@@ -4,6 +4,32 @@ All notable changes to the Pythia documentation system will be documented in thi
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2025-09-14]
+
+### Changed
+
+- Updated project structure to use `.pythia` directory for documentation (refactor: d2cbdac)
+- Updated context documentation and references for clarity (fix: 313f86a)
+- Updated workspace integration documentation and references (refactor: 58b3fe3)
+- Consolidated `methodology/context-documentation.md` into `commands/create-context.md`
+- Simplified README.md by removing duplicated sections
+- Migrated all tools, scripts, tests, and configs from `docs/` to `.pythia/` structure
+- Updated DocumentHelper default configuration to use `.pythia` directory
+- Fixed all rule files in `rules/cursor/` and `.cursor/rules/` to use `.pythia/` paths
+- Updated config.json paths and tsconfig.json output directory
+- Completed comprehensive migration: all tests passing, zero remaining `docs/` references
+
+### Removed
+
+- Removed Memory Bank system references and documentation across all files
+- Eliminated `methodology/context-documentation.md` file
+- Removed duplicate `guides/prioritization-methods.md` file
+
+### Migration Notes
+
+- Change `docs/` → `.pythia/` in project structure
+- Context documentation now unified in `@create-context.md`
+
 ## [2025-08-09]
 
 ### Added
@@ -21,7 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - `commands/create-task.md`
   - `templates/task-template.md`
   - `commands/analyze-ai-solutions.md`
-  - `methodology/context-documentation.md`
+  - `commands/create-context.md`
   - `commands/memory-bank-management.md`
 - `commands/create-task.md`: added Context-First intake and branch `[H]` guidance
 - `tools/validateDocumentQuality.ts`: tasks now require `Implementation Plan` section
@@ -59,7 +85,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - `commands/create-command.md`
   - `commands/setup.md`
   - `commands/update-command.md`
-- Added new methodology document for context documentation (`methodology/context-documentation.md`)
+- Added new methodology document for context documentation (`commands/create-context.md`)
 - Added guide for installing Pythia (`guides/installing-pythia.md`)
 - Added command template (`templates/command-template.md`)
 - Added configuration file (`config.json`)

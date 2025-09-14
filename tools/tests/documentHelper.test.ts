@@ -125,7 +125,7 @@ describe('DocumentHelper', () => {
       const docs = await documentHelper.findDocuments();
 
       expect(docs).toHaveLength(2);
-      expect(docs.map((doc) => doc.replace('docs/', ''))).toContain('doc1.md');
+      expect(docs.map((doc) => doc.replace('.pythia/', ''))).toContain('doc1.md');
     });
 
     it('should handle errors when finding documents', async () => {
@@ -183,11 +183,11 @@ describe('DocumentHelper', () => {
         'Plain text content'
       );
 
-      const doc = await documentHelper.loadDocument('docs/test-doc.md');
+      const doc = await documentHelper.loadDocument('.pythia/test-doc.md');
 
       expect(doc).not.toBeNull();
       expect(doc?.title).toBe('Mock Title');
-      expect(fs.readFileSync).toHaveBeenCalledWith('docs/test-doc.md', 'utf8');
+      expect(fs.readFileSync).toHaveBeenCalledWith('.pythia/test-doc.md', 'utf8');
     });
   });
 
@@ -220,10 +220,10 @@ describe('DocumentHelper', () => {
       // Mock loadDocument to return our mock document
       vi.spyOn(documentHelper, 'loadDocument').mockResolvedValue(mockDocument);
 
-      const result = await documentHelper.analyzeContent('docs/test-doc.md');
+      const result = await documentHelper.analyzeContent('.pythia/test-doc.md');
 
       expect(documentHelper.loadDocument).toHaveBeenCalledWith(
-        'docs/test-doc.md'
+        '.pythia/test-doc.md'
       );
       expect(result).not.toBeNull();
       expect(result.documentTitle).toBe('Test Document');

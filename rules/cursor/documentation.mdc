@@ -1,20 +1,20 @@
 ---
 description: Documentation process
-globs: /docs/**
+globs: /.pythia/**
 alwaysApply: false
 ---
 
 # Documentation Guidelines for `/docs` Directory
 
 > **Note**: All documentation should be maintained in English only.
-> Exception: Workflow documents under `docs/workflows/` may be temporarily authored in the collaborating language during active work. Finalized documents (architecture, analyses, proposals, decisions) must remain in English.
+> Exception: Workflow documents under `.pythia/workflows/` may be temporarily authored in the collaborating language during active work. Finalized documents (architecture, analyses, proposals, decisions) must remain in English.
 
 ## General Principles
 
 1. **Document Interconnections**:
 
    - Each document should be connected to other relevant documents through cross-references
-   - When creating a new document, always add a reference to it in [documentation-map.md](mdc:docs/navigation/documentation-map.md)
+   - When creating a new document, always add a reference to it in [documentation-map.md](mdc:.pythia/navigation/documentation-map.md)
    - Related documents should contain mutual references (e.g., analysis → proposal and proposal → analysis)
 
 2. **Document Structure**:
@@ -30,13 +30,13 @@ alwaysApply: false
 
 ## Folders and Their Purpose
 
-- `/docs/architecture/` - Analytical documents about the current state of architecture
-- `/docs/proposals/` - Proposals for changes and improvements
-- `/docs/decisions/` - Architecture Decision Records (ADRs)
-- `/docs/methodology/` - Development methodologies and processes
-- `/docs/guides/` - Practical guides and instructions
-- `/docs/tasks/` - Task documentation and context
-- `/docs/navigation/` - Documents for navigating the documentation
+- `/.pythia/architecture/` - Analytical documents about the current state of architecture
+- `/.pythia/proposals/` - Proposals for changes and improvements
+- `/.pythia/decisions/` - Architecture Decision Records (ADRs)
+- `/.pythia/methodology/` - Development methodologies and processes
+- `/.pythia/guides/` - Practical guides and instructions
+- `/.pythia/tasks/` - Task documentation and context
+- `/.pythia/navigation/` - Documents for navigating the documentation
 
 ## File Naming
 
@@ -58,7 +58,7 @@ alwaysApply: false
 ## Documentation Updates
 
 - When significant system changes occur, update the corresponding analytical documents
-- After implementing a proposal, update its status in [documentation-map.md](mdc:docs/navigation/documentation-map.md)
+- After implementing a proposal, update its status in [documentation-map.md](mdc:.pythia/navigation/documentation-map.md)
 - For documents with version history, add an entry about the latest change
 
 ## Task Documentation Structure
@@ -75,7 +75,7 @@ Task documentation should include:
 ## Visualizing Connections
 
 - For complex relationships, use diagrams in ASCII or Mermaid format
-- Update the relationship diagram in [documentation-map.md](mdc:docs/navigation/documentation-map.md) when adding new documents
+- Update the relationship diagram in [documentation-map.md](mdc:.pythia/navigation/documentation-map.md) when adding new documents
 - Use tables for comparative analysis of alternatives
 
 ## Practical Examples
@@ -83,18 +83,18 @@ Task documentation should include:
 ### Adding a New Proposal:
 
 1. Analyze existing analytical documents
-2. Create a new document in `/docs/proposals/` using the naming convention `proposal-{topic}.md`
+2. Create a new document in `/.pythia/proposals/` using the naming convention `proposal-{topic}.md`
 3. Add references to analytical documents
-4. Update [documentation-map.md](mdc:docs/navigation/documentation-map.md)
+4. Update [documentation-map.md](mdc:.pythia/navigation/documentation-map.md)
 5. Add references to the proposal in relevant analytical documents
 
 ### Creating a New Task:
 
 1. Identify the purpose of the task (implementation, research, analysis)
-2. Choose the appropriate template from `/docs/tasks/`
-3. Create a new document in `/docs/tasks/` using the naming convention `task-YYYY-MM-{topic}.md`
+2. Choose the appropriate template from `/.pythia/tasks/`
+3. Create a new document in `/.pythia/tasks/` using the naming convention `task-YYYY-MM-{topic}.md`
 4. Fill in all required sections
-5. Update [documentation-map.md](mdc:docs/navigation/documentation-map.md) with the new task
+5. Update [documentation-map.md](mdc:.pythia/navigation/documentation-map.md) with the new task
 
 ### Updating an Analytical Document:
 
@@ -105,7 +105,7 @@ Task documentation should include:
 
 ## Notes for LLMs
 
-- Always check for the navigation map at [documentation-map.md](mdc:docs/navigation/documentation-map.md)
+- Always check for the navigation map at [documentation-map.md](mdc:.pythia/navigation/documentation-map.md)
 - Use it to understand relationships between documents
 - When modifying documents, maintain their general style and format
 - Always aim for documentation integrity by adding appropriate cross-references

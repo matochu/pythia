@@ -92,21 +92,21 @@ describe('Link Validator', () => {
         missingReciprocal: [
           {
             from: {
-              source: 'docs/some-file.md',
-              target: 'docs/target-file.md',
+              source: '.pythia/some-file.md',
+              target: '.pythia/target-file.md',
               lineNumber: 10,
               textContent: 'Some link'
             },
-            to: 'docs/CHANGELOG.md'
+            to: '.pythia/CHANGELOG.md'
           },
           {
             from: {
-              source: 'docs/another-file.md',
-              target: 'docs/target-file.md',
+              source: '.pythia/another-file.md',
+              target: '.pythia/target-file.md',
               lineNumber: 15,
               textContent: 'Another link'
             },
-            to: 'docs/navigation/documentation-standards.md'
+            to: '.pythia/navigation/documentation-standards.md'
           }
         ],
         documents: {}
@@ -129,12 +129,12 @@ describe('Link Validator', () => {
         missingReciprocal: [
           {
             from: {
-              source: 'docs/source-file.md',
-              target: 'docs/target-file.md',
+              source: '.pythia/source-file.md',
+              target: '.pythia/target-file.md',
               lineNumber: 10,
               textContent: 'Some link'
             },
-            to: 'docs/regular-file.md'
+            to: '.pythia/regular-file.md'
           }
         ],
         documents: {}
@@ -150,11 +150,11 @@ describe('Link Validator', () => {
       // Assert
       // For testing the real function:
       // expect(fs.writeFileSync).toHaveBeenCalledWith(
-      //   'docs/regular-file.md',
+      //   '.pythia/regular-file.md',
       //   expect.stringContaining('- [source-file](../source-file.md)')
       // );
       // expect(fs.writeFileSync).toHaveBeenCalledWith(
-      //   'docs/regular-file.md',
+      //   '.pythia/regular-file.md',
       //   expect.not.stringContaining('- See also:')
       // );
       console.log('Test: should add link without "See also:" prefix');
@@ -168,12 +168,12 @@ describe('Link Validator', () => {
         missingReciprocal: [
           {
             from: {
-              source: 'docs/source-file.md',
-              target: 'docs/target-file.md',
+              source: '.pythia/source-file.md',
+              target: '.pythia/target-file.md',
               lineNumber: 10,
               textContent: 'Some link'
             },
-            to: 'docs/file-with-reference.md'
+            to: '.pythia/file-with-reference.md'
           }
         ],
         documents: {}

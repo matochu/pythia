@@ -118,20 +118,6 @@ find . -name "*.md" | grep -i "documentation\|guide\|overview\|readme"
 git log --oneline -n 10
 git shortlog -sn --no-merges
 git branch -a
-
-# Check Memory Bank for historical analysis context (if available)
-if [ -d ".memory-bank" ]; then
-    echo "Loading historical analysis context from Memory Bank..."
-
-    # Load previous analysis insights
-    find .memory-bank/insights -name "*.md" -exec basename {} \; 2>/dev/null || echo "No previous insights found"
-
-    # Check for applicable patterns
-    find .memory-bank/patterns -name "*.md" -exec grep -l "analysis\|architecture" {} \; 2>/dev/null || echo "No analysis patterns found"
-
-    # Review relevant decisions
-    find .memory-bank/decisions -name "*.md" -exec grep -l "architectural\|technical" {} \; 2>/dev/null || echo "No architectural decisions found"
-fi
 ```
 
 Document your findings on:

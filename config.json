@@ -14,8 +14,8 @@
     "navigation": "navigation",
     "rules": "rules"
   },
-  "docs_path": "/docs",
-  "core_path": "/docs/core",
+  "docs_path": "/.pythia",
+  "core_path": "/.pythia/core",
   "description": {
     "folders": "All paths within folders are relative to documentation root",
     "project_root": "Path from this config to the main project root",

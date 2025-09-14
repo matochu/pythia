@@ -74,7 +74,7 @@ const MAP_PATH = path.join(PROJECT_ROOT, 'navigation', 'documentation-map.md');
 
 // Configuration
 const VISUALIZATION_DIR = path.join(PROJECT_ROOT, 'visualizations');
-const CACHE_DIR = path.join(PROJECT_ROOT, '.cache/docs');
+const CACHE_DIR = path.join(PROJECT_ROOT, '.cache/.pythia');
 
 // Command line arguments
 const ADD_ALL = process.argv.includes('--add-all');

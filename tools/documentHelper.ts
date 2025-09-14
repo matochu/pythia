@@ -175,7 +175,7 @@ interface LunrSearchResult {
 const execAsync = promisify(exec);
 
 // Configuration constants
-const DOCS_DIR = 'docs';
+const DOCS_DIR = '.pythia';
 const TEMPLATE_DIR = path.join(DOCS_DIR, 'templates');
 const CONFIG_MODULE_NAME = 'dochelper';
 const DEFAULT_CONFIG: DocumentHelperConfig = {

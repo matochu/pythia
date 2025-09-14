@@ -679,7 +679,7 @@ Options:
   --help             Show this help message
 
 Examples:
-  npm run docs:setup -- ../my-project/docs     Create symlinks in target directory
+  npm run docs:setup -- ../my-project/.pythia     Create symlinks in target directory
   npm run docs:setup -- --create-structure     Create directory structure without symlinks
   npm run docs:setup -- --check-only           Check if running in main repo
   npm run docs:setup -- --install-deps         Create symlinks and run npm install
