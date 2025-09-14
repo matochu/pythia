@@ -106,9 +106,9 @@ Before starting, gather necessary information:
 date +%Y-%m-%d
 
 # Determine commands directory based on project structure
-# For standard Pythia structure: docs/commands/
+# For standard Pythia structure: .pythia/commands/
 # For custom structure: adapt to your project's documentation layout
-COMMANDS_PATH="docs/commands"
+COMMANDS_PATH=".pythia/commands"
 
 # Create directory if it doesn't exist
 mkdir -p "$COMMANDS_PATH"
@@ -141,7 +141,7 @@ Copy content from the command template and adapt it to your specific command:
 
 ````bash
 # Determine templates directory
-TEMPLATES_PATH="docs/templates"
+TEMPLATES_PATH=".pythia/templates"
 
 # Copy template if available
 if [ -f "$TEMPLATES_PATH/command-template.md" ]; then
@@ -287,7 +287,7 @@ Check that:
 # Get current date
 date +%Y-%m-%d
 # Create command file
-touch docs/commands/update-dependencies.md
+touch .pythia/commands/update-dependencies.md
 # Copy template and fill in sections
 ```
 
@@ -295,7 +295,7 @@ touch docs/commands/update-dependencies.md
 
 ```bash
 # Custom structure
-touch custom_docs/commands/special-case.md
+touch custom_.pythia/commands/special-case.md
 # Adapt all paths and references accordingly
 ```
 

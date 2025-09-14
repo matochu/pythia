@@ -20,7 +20,7 @@ Pythia is a **shared documentation base** designed to be integrated into any pro
 2. **Project Workspace (e.g., /docs)**
    - Each project has its own `/docs` directory (or equivalent)
    - Project-specific documents are generated and maintained here using Pythia commands/templates
-   - Examples: `/docs/project-structure.md`, `/docs/workflows/tasks/task-2025-07-feature-x.md`
+   - Examples: `/.pythia/project-structure.md`, `/.pythia/workflows/tasks/task-2025-07-feature-x.md`
 
 ### How Integration Works
 
@@ -38,7 +38,7 @@ Context: Implement offline mode for user data
 Objective: Create a new task document for this feature
 ```
 
-This will generate `/docs/workflows/tasks/task-2025-07-implement-offline-mode.md` using the Pythia template.
+This will generate `/.pythia/workflows/tasks/task-2025-07-implement-offline-mode.md` using the Pythia template.
 
 ---
 
@@ -72,7 +72,7 @@ This will generate `/docs/workflows/tasks/task-2025-07-implement-offline-mode.md
   - `navigation/` - Navigation and documentation map
   - `rules/` - Guidelines and standards for LLMs and documentation
 - **Project Workspace (per-project):**
-  - `docs/` - Main documentation directory in each project
+  - `.pythia/` - Main documentation directory in each project
     - `architecture/` - Analytical documents about the current state of architecture
     - `workflows/` - Work items and documentation workflows
       - `tasks/` - Task documentation and context
@@ -158,8 +158,8 @@ Context: Add offline support to user data
 
 ### Adding a New Proposal
 
-1. Analyze existing analytical documents in `/docs/architecture/`
-2. Create a new document in `/docs/workflows/proposals/` using the naming convention `proposal-{topic}.md`
+1. Analyze existing analytical documents in `/.pythia/architecture/`
+2. Create a new document in `/.pythia/workflows/proposals/` using the naming convention `proposal-{topic}.md`
 3. Add references to analytical documents using `mdc:` links
 4. Update `mdc:navigation/documentation-map.md`
 5. Add references to the proposal in relevant analytical documents
@@ -190,7 +190,7 @@ Context: Add offline support to user data
 
 ## Change Management
 
-- Track significant updates in the project changelog (e.g., `/docs/CHANGELOG.md`)
+- Track significant updates in the project changelog (e.g., `/.pythia/CHANGELOG.md`)
 - When adding new documents, update the documentation map and cross-references
 - For major changes, summarize what changed and why
 

@@ -63,17 +63,17 @@ Before starting, gather all necessary information:
 date +%Y-%m-%d
 
 # List relevant ideas and explorations for reference
-# For standard Pythia structure: docs/workflows/ideas/
+# For standard Pythia structure: .pythia/workflows/ideas/
 # For custom structure: adapt to your project's documentation layout
-ls -la docs/workflows/ideas/
-ls -la docs/workflows/ideas/explorations/
+ls -la .pythia/workflows/ideas/
+ls -la .pythia/workflows/ideas/explorations/
 ```
 
 Review all related documents to ensure you have a comprehensive understanding of the problem space and potential solutions.
 
 ## Step 2: Create the Proposal File
 
-Create a new file in the `docs/workflows/proposals/` directory using the naming convention:
+Create a new file in the `.pythia/workflows/proposals/` directory using the naming convention:
 `proposal-{topic}.md`
 
 For example:
@@ -124,7 +124,7 @@ Example:
 
 ### Update Ideas Backlog
 
-Update the ideas backlog in `docs/workflows/ideas/ideas-backlog.md`:
+Update the ideas backlog in `.pythia/workflows/ideas/ideas-backlog.md`:
 
 1. Change the status of the idea to "Transformed"
 2. Add the idea to the "Ideas Transformed into Proposals" section with a link to the new proposal
@@ -187,7 +187,7 @@ date +%Y-%m-%d
 # Output: 2025-03-18
 
 # Create the proposal file
-touch docs/workflows/proposals/proposal-api-caching-strategy.md
+touch .pythia/workflows/proposals/proposal-api-caching-strategy.md
 
 # Copy the template contents and fill in all sections
 # ...
@@ -205,7 +205,7 @@ For more complex proposals like architecture changes or performance optimization
 
 ```bash
 # Create a comprehensive proposal with business impact analysis
-touch docs/workflows/proposals/proposal-microservices-migration.md
+touch .pythia/workflows/proposals/proposal-microservices-migration.md
 
 # Include additional sections:
 # - Phased implementation approach
@@ -279,7 +279,7 @@ This command integrates with other Pythia components:
 
 ### Workspace Integration
 
-- **Standard Structure**: Creates proposals in `docs/workflows/proposals/`
+- **Standard Structure**: Creates proposals in `.pythia/workflows/proposals/`
 - **Custom Structure**: Adapts to your project's documentation layout
 - **Cross-References**: Uses `mdc:` links for workspace navigation
 - **Command Usage**: Reference with `@create-proposal.md` in your workspace

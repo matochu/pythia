@@ -4,7 +4,7 @@ This command provides instructions for Large Language Models (LLMs) to effective
 
 ## Description
 
-The Documentation Map (`docs/navigation/documentation-map.md`) serves as the central navigation document for the project. It needs regular updates to include new documents, remove obsolete ones, and maintain an accurate representation of the project's documentation structure.
+The Documentation Map (`.pythia/navigation/documentation-map.md`) serves as the central navigation document for the project. It needs regular updates to include new documents, remove obsolete ones, and maintain an accurate representation of the project's documentation structure.
 
 This command outlines the steps to scan the documentation repository, identify missing documents, and update the Documentation Map accordingly.
 
@@ -28,7 +28,7 @@ Requirements: Keep documentation map current and organized
 
 ## Prerequisites
 
-- Access to the Documentation Map file: `docs/navigation/documentation-map.md`
+- Access to the Documentation Map file: `.pythia/navigation/documentation-map.md`
 - Knowledge of document categories and their organization in the map
 - Understanding of the relative paths between documents
 
@@ -55,7 +55,7 @@ Before proceeding with the documentation map update, complete this checklist:
 First, review the current state of the Documentation Map to understand its structure and existing content:
 
 ```bash
-cat docs/navigation/documentation-map.md
+cat .pythia/navigation/documentation-map.md
 ```
 
 Take note of:

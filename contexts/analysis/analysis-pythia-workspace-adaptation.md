@@ -146,9 +146,9 @@ Pythia has evolved from a project-specific documentation system to a **shared do
   },
   "paths": {
     "project_docs": "./docs",
-    "project_architecture": "./docs/architecture",
-    "project_workflows": "./docs/workflows",
-    "project_commands": "./docs/commands"
+    "project_architecture": "./.pythia/architecture",
+    "project_workflows": "./.pythia/workflows",
+    "project_commands": "./.pythia/commands"
   }
 }
 ```

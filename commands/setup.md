@@ -40,24 +40,24 @@ Before setting up Pythia workspace integration, ensure you have:
 
 ### Key Files Created
 
-- `docs/project-structure.md` - Project overview and directory structure
-- `docs/workspace-integration.md` - Usage guide for the workspace (or see repo guide: `guides/guide-workspace-integration.md`)
-- `docs/.gitignore` - Prevents accidental commits of generated docs
+- `.pythia/project-structure.md` - Project overview and directory structure
+- `.pythia/workspace-integration.md` - Usage guide for the workspace (or see repo guide: `guides/guide-workspace-integration.md`)
+- `.pythia/.gitignore` - Prevents accidental commits of generated docs
 - `.cursor/rules/documentation.mdc` - AI navigation rules
-- `docs/workflows/` - Task, proposal, and idea directories
+- `.pythia/workflows/` - Task, proposal, and idea directories
 
 ### Common Setup Commands
 
 ```bash
 # Create documentation structure
-mkdir -p docs/workflows/{tasks,proposals,ideas,decisions}
-mkdir -p docs/{architecture,methodology,guides,navigation}
+mkdir -p .pythia/workflows/{tasks,proposals,ideas,decisions}
+mkdir -p .pythia/{architecture,methodology,guides,navigation}
 
 # Create project structure file
-touch docs/project-structure.md
+touch .pythia/project-structure.md
 
 # Create workspace integration guide
-touch docs/workspace-integration.md
+touch .pythia/workspace-integration.md
 
 # Create Cursor rules directory
 mkdir -p .cursor/rules
@@ -84,8 +84,8 @@ When a user asks to execute the setup command, the LLM should determine:
 
 The LLM should examine the project structure. Key indicators of existing documentation setup:
 
-- Presence of a `docs/` directory with documentation structure
-- Presence of `docs/project-structure.md` file
+- Presence of a `.pythia/` directory with documentation structure
+- Presence of `.pythia/project-structure.md` file
 - Presence of `.cursor/rules/` directory with documentation rules
 - Presence of workspace integration files
 
@@ -126,7 +126,7 @@ If the user wants a custom documentation structure:
 
 ### Step 4: Create Project Structure Declaration
 
-Create `docs/project-structure.md` with project-specific information:
+Create `.pythia/project-structure.md` with project-specific information:
 
 ```markdown
 # [Project Name] Project Structure
@@ -140,7 +140,7 @@ Create `docs/project-structure.md` with project-specific information:
 ### Core Documentation
 ```
 
-docs/
+.pythia/
 ├── architecture/ # System design and technical analysis
 ├── workflows/ # Project processes and management
 │ ├── tasks/ # Task documentation and tracking
@@ -158,9 +158,9 @@ docs/
 ## Key Information Sources
 
 ### Architecture & Design
-- **System Design**: `docs/architecture/` - System design and technical analysis
-- **Project Management**: `docs/workflows/` - Project processes and management
-- **Automation**: `docs/commands/` - LLM automation and scripts
+- **System Design**: `.pythia/architecture/` - System design and technical analysis
+- **Project Management**: `.pythia/workflows/` - Project processes and management
+- **Automation**: `.pythia/commands/` - LLM automation and scripts
 
 ## Project Context
 
@@ -178,12 +178,12 @@ docs/
 ## Quick Reference
 
 ### Where to Find Information
-- **System Architecture**: `docs/architecture/`
-- **Active Tasks**: `docs/workflows/tasks/`
-- **Change Proposals**: `docs/workflows/proposals/`
-- **Decisions**: `docs/workflows/decisions/`
-- **Automation**: `docs/commands/`
-- **Tutorials**: `docs/tutorials/`
+- **System Architecture**: `.pythia/architecture/`
+- **Active Tasks**: `.pythia/workflows/tasks/`
+- **Change Proposals**: `.pythia/workflows/proposals/`
+- **Decisions**: `.pythia/workflows/decisions/`
+- **Automation**: `.pythia/commands/`
+- **Tutorials**: `.pythia/tutorials/`
 
 ---
 
@@ -244,7 +244,7 @@ touch .cursor/rules/documentation.mdc
 
 #### Create Workspace Integration Guide
 
-Create `docs/workspace-integration.md`:
+Create `.pythia/workspace-integration.md`:
 
 ````markdown
 # Workspace Integration Guide
@@ -280,9 +280,9 @@ Create `docs/workspace-integration.md`:
 
 Use `mdc:` links for workspace navigation:
 
-- `[Architecture](mdc:docs/architecture/)`
-- `[Tasks](mdc:docs/workflows/tasks/)`
-- `[Proposals](mdc:docs/workflows/proposals/)`
+- `[Architecture](mdc:.pythia/architecture/)`
+- `[Tasks](mdc:.pythia/workflows/tasks/)`
+- `[Proposals](mdc:.pythia/workflows/proposals/)`
 
 ## Project Context for LLM
 
@@ -329,25 +329,25 @@ Create `.cursor/rules/documentation.mdc` with AI-friendly navigation:
 ````markdown
 ---
 description: Documentation process and project structure
-globs: docs/**/*.md
+globs: .pythia/**/*.md
 alwaysApply: true
 ---
 
 # [Project Name] Documentation Guidelines
 
 > **Note**: All documentation should be maintained in English only.
-> Exception: Workflow documents under `docs/workflows/` may be temporarily authored in the collaborating language during active work. Finalized documents (architecture, analyses, proposals, decisions) must remain in English.
+> Exception: Workflow documents under `.pythia/workflows/` may be temporarily authored in the collaborating language during active work. Finalized documents (architecture, analyses, proposals, decisions) must remain in English.
 
 ## Quick Reference
 
 ### Where to Find Information
 
-- **System Architecture**: [docs/architecture/](mdc:docs/architecture/) - System design and technical analysis
-- **Active Tasks**: [docs/workflows/tasks/](mdc:docs/workflows/tasks/) - Current and completed task documentation
-- **Change Proposals**: [docs/workflows/proposals/](mdc:docs/workflows/proposals/) - Proposed changes and improvements
-- **Decisions**: [docs/workflows/decisions/](mdc:docs/workflows/decisions/) - Architecture Decision Records (ADRs)
-- **Automation**: [docs/commands/](mdc:docs/commands/) - LLM automation scripts
-- **Tutorials**: [docs/tutorials/](mdc:docs/tutorials/) - How-to guides and implementation tutorials
+- **System Architecture**: [.pythia/architecture/](mdc:.pythia/architecture/) - System design and technical analysis
+- **Active Tasks**: [.pythia/workflows/tasks/](mdc:.pythia/workflows/tasks/) - Current and completed task documentation
+- **Change Proposals**: [.pythia/workflows/proposals/](mdc:.pythia/workflows/proposals/) - Proposed changes and improvements
+- **Decisions**: [.pythia/workflows/decisions/](mdc:.pythia/workflows/decisions/) - Architecture Decision Records (ADRs)
+- **Automation**: [.pythia/commands/](mdc:.pythia/commands/) - LLM automation scripts
+- **Tutorials**: [.pythia/tutorials/](mdc:.pythia/tutorials/) - How-to guides and implementation tutorials
 
 ### Project Context
 
@@ -361,28 +361,28 @@ alwaysApply: true
 
 ### Architecture Documents
 
-- [System Design](mdc:docs/architecture/system-design.md) - System architecture and design patterns
-- [API Design](mdc:docs/architecture/api-design.md) - API design and integration patterns
-- [Data Architecture](mdc:docs/architecture/data-architecture.md) - Data modeling and storage patterns
+- [System Design](mdc:.pythia/architecture/system-design.md) - System architecture and design patterns
+- [API Design](mdc:.pythia/architecture/api-design.md) - API design and integration patterns
+- [Data Architecture](mdc:.pythia/architecture/data-architecture.md) - Data modeling and storage patterns
 
 ### Workflow Documents
 
-- [Tasks](mdc:docs/workflows/tasks/) - Task documentation and tracking
-- [Proposals](mdc:docs/workflows/proposals/) - Change proposals and improvements
-- [Decisions](mdc:docs/workflows/decisions/) - Architecture Decision Records (ADRs)
-- [Ideas](mdc:docs/workflows/ideas/) - Early concepts and brainstorming
+- [Tasks](mdc:.pythia/workflows/tasks/) - Task documentation and tracking
+- [Proposals](mdc:.pythia/workflows/proposals/) - Change proposals and improvements
+- [Decisions](mdc:.pythia/workflows/decisions/) - Architecture Decision Records (ADRs)
+- [Ideas](mdc:.pythia/workflows/ideas/) - Early concepts and brainstorming
 
 ### Automation Commands
 
-- [Analyze PR Impact](mdc:docs/commands/analyze-pull-request-impact.md) - Automated PR impact analysis
-- [Review PR](mdc:docs/commands/review-pull-request.md) - Automated PR review process
+- [Analyze PR Impact](mdc:.pythia/commands/analyze-pull-request-impact.md) - Automated PR impact analysis
+- [Review PR](mdc:.pythia/commands/review-pull-request.md) - Automated PR review process
 
 ### Context Documents
 
-- [Project Context](mdc:docs/contexts/) - Background information and project context
-- [Tutorials](mdc:docs/tutorials/) - How-to guides and implementation tutorials
-- [Requirements](mdc:docs/requirements/) - Project requirements and specifications
-- [Reports](mdc:docs/reports/) - Analysis reports and findings
+- [Project Context](mdc:.pythia/contexts/) - Background information and project context
+- [Tutorials](mdc:.pythia/tutorials/) - How-to guides and implementation tutorials
+- [Requirements](mdc:.pythia/requirements/) - Project requirements and specifications
+- [Reports](mdc:.pythia/reports/) - Analysis reports and findings
 
 ## General Principles
 
@@ -405,17 +405,17 @@ alwaysApply: true
 
 ## Folders and Their Purpose
 
-- [docs/architecture/](mdc:docs/architecture/) - System design and technical analysis
-- [docs/workflows/](mdc:docs/workflows/) - Project processes and management
-  - [docs/workflows/tasks/](mdc:docs/workflows/tasks/) - Task documentation and tracking
-  - [docs/workflows/proposals/](mdc:docs/workflows/proposals/) - Change proposals and improvements
-  - [docs/workflows/decisions/](mdc:docs/workflows/decisions/) - Architecture Decision Records
-  - [docs/workflows/ideas/](mdc:docs/workflows/ideas/) - Early concepts and brainstorming
-- [docs/commands/](mdc:docs/commands/) - LLM automation and scripts
-- [docs/contexts/](mdc:docs/contexts/) - Project context and background
-- [docs/tutorials/](mdc:docs/tutorials/) - How-to guides and tutorials
-- [docs/requirements/](mdc:docs/requirements/) - Project requirements and specifications
-- [docs/reports/](mdc:docs/reports/) - Analysis reports and findings
+- [.pythia/architecture/](mdc:.pythia/architecture/) - System design and technical analysis
+- [.pythia/workflows/](mdc:.pythia/workflows/) - Project processes and management
+  - [.pythia/workflows/tasks/](mdc:.pythia/workflows/tasks/) - Task documentation and tracking
+  - [.pythia/workflows/proposals/](mdc:.pythia/workflows/proposals/) - Change proposals and improvements
+  - [.pythia/workflows/decisions/](mdc:.pythia/workflows/decisions/) - Architecture Decision Records
+  - [.pythia/workflows/ideas/](mdc:.pythia/workflows/ideas/) - Early concepts and brainstorming
+- [.pythia/commands/](mdc:.pythia/commands/) - LLM automation and scripts
+- [.pythia/contexts/](mdc:.pythia/contexts/) - Project context and background
+- [.pythia/tutorials/](mdc:.pythia/tutorials/) - How-to guides and tutorials
+- [.pythia/requirements/](mdc:.pythia/requirements/) - Project requirements and specifications
+- [.pythia/reports/](mdc:.pythia/reports/) - Analysis reports and findings
 
 ## LLM Usage Guidelines
 
@@ -451,11 +451,11 @@ alwaysApply: true
 
 Use `mdc:` links for workspace navigation:
 
-- [System Design](mdc:docs/architecture/system-design.md)
-- [API Design](mdc:docs/architecture/api-design.md)
-- [Data Architecture](mdc:docs/architecture/data-architecture.md)
-- [Tasks](mdc:docs/workflows/tasks/)
-- [Proposals](mdc:docs/workflows/proposals/)
+- [System Design](mdc:.pythia/architecture/system-design.md)
+- [API Design](mdc:.pythia/architecture/api-design.md)
+- [Data Architecture](mdc:.pythia/architecture/data-architecture.md)
+- [Tasks](mdc:.pythia/workflows/tasks/)
+- [Proposals](mdc:.pythia/workflows/proposals/)
 
 `````
 
@@ -734,8 +734,8 @@ After successful setup, provide the user with these instructions:
 
 #### For Human Users:
 
-1. **Read `docs/project-structure.md`** - Contains human-readable project structure with regular markdown links
-2. **Use `docs/workspace-integration.md`** - Guide for using Pythia commands in your project
+1. **Read `.pythia/project-structure.md`** - Contains human-readable project structure with regular markdown links
+2. **Use `.pythia/workspace-integration.md`** - Guide for using Pythia commands in your project
 3. **Navigate using relative links** - All links in project-structure.md work in any markdown viewer
 
 #### For AI Assistant (Cursor):
@@ -747,9 +747,9 @@ After successful setup, provide the user with these instructions:
 
 #### File Usage:
 
-- **`docs/project-structure.md`** - For human navigation (regular markdown links)
+- **`.pythia/project-structure.md`** - For human navigation (regular markdown links)
 - **`.cursor/rules/documentation.mdc`** - For AI navigation (mdc: links)
-- **`docs/workspace-integration.md`** - For both humans and AI (command usage guide)
+- **`.pythia/workspace-integration.md`** - For both humans and AI (command usage guide)
 
 ### Success Criteria
 

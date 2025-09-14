@@ -17,7 +17,7 @@
 
 ### 1. **Project Structure Declaration (PSD) File**
 
-Створити `docs/project-structure.md` з повним описом структури:
+Створити `.pythia/project-structure.md` з повним описом структури:
 
 ```markdown
 # Project Structure
@@ -29,7 +29,7 @@
 ## Directory Structure
 ```
 
-docs/
+.pythia/
 ├── architecture/ # System design and technical analysis
 ├── workflows/ # Project processes and management
 ├── commands/ # LLM automation and scripts
@@ -51,7 +51,7 @@ docs/
 ```markdown
 ---
 description: Documentation process and project structure
-globs: docs/**/*.md
+globs: .pythia/**/*.md
 alwaysApply: true
 ---
 
@@ -68,7 +68,7 @@ alwaysApply: true
 
 ### 3. **Workspace Integration File**
 
-Створити `docs/workspace-integration.md`:
+Створити `.pythia/workspace-integration.md`:
 
 ```markdown
 # Workspace Integration Guide
@@ -107,7 +107,7 @@ alwaysApply: true
 
 ### Створені файли для проекту:
 
-1. **`docs/project-structure.md`** ✅
+1. **`.pythia/project-structure.md`** ✅
 
    - Повний опис структури проекту
    - Ключові файли та їх призначення
@@ -121,7 +121,7 @@ alwaysApply: true
    - Контекст проекту
    - alwaysApply: true
 
-3. **`docs/workspace-integration.md`** ✅
+3. **`.pythia/workspace-integration.md`** ✅
    - Приклади використання Pythia команд
    - Контекст проекту для LLM
    - Best practices
@@ -129,7 +129,7 @@ alwaysApply: true
 
 ### Як це працює:
 
-1. **LLM читає `docs/project-structure.md`** для розуміння структури
+1. **LLM читає `.pythia/project-structure.md`** для розуміння структури
 2. **Cursor rules** надають швидкий довідник
 3. **Workspace integration** показує як використовувати команди
 4. **Всі файли** працюють разом для повного розуміння
@@ -139,7 +139,7 @@ alwaysApply: true
 ### 1. **Створіть PSD файл**
 
 ```bash
-# Створіть docs/project-structure.md
+# Створіть .pythia/project-structure.md
 # Опишіть структуру проекту
 # Додайте контекст для LLM
 ```

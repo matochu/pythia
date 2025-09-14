@@ -20,7 +20,7 @@ This document outlines the structure, organization, and naming conventions for t
 │   └── ...
 ├── content/                   # Main documentation content
 │   └── ...
-├── docs/                      # General documentation
+├── .pythia/                      # General documentation
 │   └── ...
 ├── knowledge/                 # Knowledge base
 │   └── ...
@@ -56,7 +56,7 @@ This document outlines the structure, organization, and naming conventions for t
 
 5. **content/** - Contains main documentation content.
 
-6. **docs/** - Contains general project documentation.
+6. **.pythia/** - Contains general project documentation.
 
 7. **knowledge/** - Contains project knowledge base.
 

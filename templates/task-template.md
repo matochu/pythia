@@ -79,7 +79,7 @@ git status --porcelain >> .task-changes.md
 
 **Context Tracking**:
 
-- Create or update relevant context documents in `docs/contexts/`
+- Create or update relevant context documents in `.pythia/contexts/`
 - Document key decisions and insights during implementation
 - Link to this task file and related context documents
 
@@ -104,8 +104,8 @@ Brief description of the task's background and why it's important. This should p
 
 **Related Context Documents:**
 
-- [Context Document 1](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
-- [Context Document 2](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
+- [Context Document 1](mdc:.pythia/contexts/domain/context-YYYY-MM-topic.md)
+- [Context Document 2](mdc:.pythia/contexts/domain/context-YYYY-MM-topic.md)
 
 **Context Documentation Resources:**
 

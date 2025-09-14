@@ -105,10 +105,10 @@ Description of the current situation, existing implementations, or baseline stat
 
 ## Related Documents
 
-- **Related Contexts**: [mdc:docs/contexts/...]
-- **Related Tasks**: [mdc:docs/workflows/tasks/...]
-- **Related Proposals**: [mdc:docs/workflows/proposals/...]
-- **Related Decisions**: [mdc:docs/workflows/decisions/...]
+- **Related Contexts**: [mdc:.pythia/contexts/...]
+- **Related Tasks**: [mdc:.pythia/workflows/tasks/...]
+- **Related Proposals**: [mdc:.pythia/workflows/proposals/...]
+- **Related Decisions**: [mdc:.pythia/workflows/decisions/...]
 
 ## Change History
 

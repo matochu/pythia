@@ -457,7 +457,7 @@ This command integrates with other Pythia components:
 
 ### Workspace Integration
 
-- **Standard Structure**: Creates analyses in `docs/architecture/`
+- **Standard Structure**: Creates analyses in `.pythia/architecture/`
 - **Custom Structure**: Adapts to your project's documentation layout
 - **Cross-References**: Uses `mdc:` links for workspace navigation
 - **Command Usage**: Reference with `@analyze-architecture.md` in your workspace

@@ -21,11 +21,11 @@ Before managing the task, review relevant context documents:
 
 ```bash
 # Search for relevant context documents
-CONTEXTS_PATH="docs/contexts"
+CONTEXTS_PATH=".pythia/contexts"
 find "$CONTEXTS_PATH" -type f -name "*.md" -exec grep -l "feature-name" {} \;
 
 # Find context directory structure
-find "$CONTEXTS_PATH" -type d | grep -v "^docs/contexts$" | sed 's|docs/contexts/||' | sort
+find "$CONTEXTS_PATH" -type d | grep -v "^.pythia/contexts$" | sed 's|.pythia/contexts/||' | sort
 
 # Review context documents for insights
 cat "$CONTEXTS_PATH/[category]/context-YYYY-MM-DD-topic.md"

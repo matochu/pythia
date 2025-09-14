@@ -59,12 +59,12 @@ If you prefer explicit scaffolding, create docs structure and `.cursor/rules/` m
 ### 1) Create Documentation Structure
 
 ```bash
-mkdir -p docs/{architecture,workflows/{tasks,proposals,decisions,ideas},commands,contexts,guides,reports}
+mkdir -p .pythia/{architecture,workflows/{tasks,proposals,decisions,ideas},commands,contexts,guides,reports}
 ```
 
 ### 2) Workspace Integration Files
 
-Create `docs/project-structure.md` and `docs/workspace-integration.md` describing your structure and usage (optional).
+Create `.pythia/project-structure.md` and `.pythia/workspace-integration.md` describing your structure and usage (optional).
 
 ### 3) Cursor Rules (Optional)
 
@@ -76,7 +76,7 @@ mkdir -p .cursor/rules
 ### 4) Verification
 
 ```bash
-ls -la docs/
+ls -la .pythia/
 # In Cursor, try: @create-task.md
 ```
 

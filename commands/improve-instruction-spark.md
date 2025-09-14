@@ -103,7 +103,7 @@ Before executing this command, ensure you have:
 date +%Y-%m-%d
 
 # Create documentation workspace
-mkdir -p docs/{api,guides,examples,tests}
+mkdir -p .pythia/{api,guides,examples,tests}
 ```
 
 **Actions**:

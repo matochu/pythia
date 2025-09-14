@@ -56,14 +56,14 @@ Before starting, gather all necessary information:
 date +%Y-%m-%d
 
 # Review the original idea document
-# For standard Pythia structure: docs/workflows/ideas/
+# For standard Pythia structure: .pythia/workflows/ideas/
 # For custom structure: adapt to your project's documentation layout
-ls -la docs/workflows/ideas/
+ls -la .pythia/workflows/ideas/
 ```
 
 ## Step 2: Create the Exploration File
 
-Create a new file in the `docs/workflows/ideas/explorations/` directory using the naming convention:
+Create a new file in the `.pythia/workflows/ideas/explorations/` directory using the naming convention:
 `exploration-{topic}.md`
 
 For example:
@@ -161,7 +161,7 @@ date +%Y-%m-%d
 # Output: 2025-03-19
 
 # Create the exploration file
-touch docs/workflows/ideas/explorations/exploration-caching-strategy.md
+touch .pythia/workflows/ideas/explorations/exploration-caching-strategy.md
 
 # Copy the template contents and fill in all sections
 # ...
@@ -177,7 +177,7 @@ npm run docs:report-workflows
 
 ```bash
 # Create a comprehensive exploration with code samples
-touch docs/workflows/ideas/explorations/exploration-state-management.md
+touch .pythia/workflows/ideas/explorations/exploration-state-management.md
 
 # Include additional technical content:
 # - Proof of concept implementation
@@ -251,7 +251,7 @@ This command integrates with other Pythia components:
 
 ### Workspace Integration
 
-- **Standard Structure**: Creates explorations in `docs/workflows/ideas/explorations/`
+- **Standard Structure**: Creates explorations in `.pythia/workflows/ideas/explorations/`
 - **Custom Structure**: Adapts to your project's documentation layout
 - **Cross-References**: Uses `mdc:` links for workspace navigation
 - **Command Usage**: Reference with `@create-exploration.md` in your workspace

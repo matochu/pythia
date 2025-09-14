@@ -36,7 +36,7 @@ Requirements: Update metrics, identify blockers, suggest next actions
 1. **Preparation**:
 
    - [ ] Get current date using `date +%Y-%m-%d`
-   - [ ] Review existing Workflows Report `docs/workflows/report.md`
+   - [ ] Review existing Workflows Report `.pythia/workflows/report.md`
    - [ ] Identify all work items that need to be included
    - [ ] Gather status information from each work item document
    - [ ] Review dependencies between items
@@ -45,7 +45,7 @@ Requirements: Update metrics, identify blockers, suggest next actions
 2. **Report Updates by Item Type**:
 
    - [ ] **Tasks**: Update the Active Tasks section with current status
-   - [ ] **Archived Tasks**: Update the Archived Tasks section from the `docs/workflows/archive/tasks/` directory
+   - [ ] **Archived Tasks**: Update the Archived Tasks section from the `.pythia/workflows/archive/tasks/` directory
    - [ ] **Proposals**: Update the Active Proposals section with current status
    - [ ] **Ideas**: Update the New Ideas section with current status
    - [ ] **Explorations**: Update the Active Explorations section with current status
@@ -170,13 +170,13 @@ npm run docs:report-workflows --compare-previous
 
 ```bash
 # List archived tasks
-ls -la docs/workflows/archive/tasks/
+ls -la .pythia/workflows/archive/tasks/
 
 # Count archived proposals
-ls -la docs/workflows/archive/proposals/ | wc -l
+ls -la .pythia/workflows/archive/proposals/ | wc -l
 
 # Incorporate archived items into total counts
-echo "Total tasks: $(( $(ls -la docs/workflows/tasks/ | wc -l) + $(ls -la docs/workflows/archive/tasks/ | wc -l) - 2 ))"
+echo "Total tasks: $(( $(ls -la .pythia/workflows/tasks/ | wc -l) + $(ls -la .pythia/workflows/archive/tasks/ | wc -l) - 2 ))"
 ```
 
 ## Common Issues and Solutions
@@ -213,7 +213,7 @@ echo "Total tasks: $(( $(ls -la docs/workflows/tasks/ | wc -l) + $(ls -la docs/w
 
 ## References
 
-- [Workflows Report](mdc:docs/workflows/report.md)
+- [Workflows Report](mdc:.pythia/workflows/report.md)
 - [Documentation Map](mdc:navigation/documentation-map.md)
 - [Workspace Integration](mdc:guides/guide-workspace-integration.md)
 

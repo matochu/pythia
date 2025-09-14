@@ -112,13 +112,13 @@ For each change, add an entry to the appropriate category:
 1. **Added**: New documents, features, or significant content additions
 
    ```markdown
-   - Added new task documentation for [topic] (`docs/workflows/tasks/task-yyyy-mm-topic.md`)
+   - Added new task documentation for [topic] (`.pythia/workflows/tasks/task-yyyy-mm-topic.md`)
    ```
 
 2. **Changed**: Updates to existing documents or content
 
    ```markdown
-   - Updated architecture diagram in `docs/architecture/analysis-general-architecture.md`
+   - Updated architecture diagram in `.pythia/architecture/analysis-general-architecture.md`
    ```
 
 3. **Removed**: Documents or content that have been removed

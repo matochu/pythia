@@ -156,7 +156,7 @@ When Pythia core is integrated into a specific project, the structure looks like
 
 ```
 project/
-├── docs/                     # Project documentation with integrated Pythia core
+├── .pythia/                     # Project documentation with integrated Pythia core
 │   ├── core/                # Pythia core (via git submodule or symlink)
 │   │                        # contains rules, commands, methodology, templates...
 │   ├── contexts/            # Context documents (#project)

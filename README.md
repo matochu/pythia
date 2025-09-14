@@ -124,7 +124,7 @@ cd /path/to/your-project
 mkdir -p docs
 
 # Add Pythia core as a git submodule
-git submodule add https://github.com/your-org/pythia-core.git docs/core
+git submodule add https://github.com/your-org/pythia-core.git .pythia/core
 git submodule update --init --recursive
 ```
 
@@ -132,7 +132,7 @@ git submodule update --init --recursive
 
 ```bash
 # Install dependencies
-cd docs/core
+cd .pythia/core
 npm install
 
 # Configure settings
@@ -249,7 +249,7 @@ Pythia works with any documentation structure:
 
 ```
 your-project/
-├── docs/
+├── .pythia/
 │   ├── architecture/
 │   ├── workflows/
 │   ├── commands/
@@ -266,7 +266,7 @@ your-project/
 │   ├── design/
 │   ├── processes/
 │   └── decisions/
-├── docs/
+├── .pythia/
 │   └── api/
 └── README.md
 ```
@@ -294,8 +294,8 @@ If you previously used Pythia as a git submodule:
 1. **Remove Old Installation**:
 
    ```bash
-   git submodule deinit docs/pythia
-   git rm docs/pythia
+   git submodule deinit .pythia/pythia
+   git rm .pythia/pythia
    ```
 
 2. **Use Workspace Integration**:
@@ -322,7 +322,7 @@ After adding Pythia core (step 1 above), you can use the automated script to com
 
 ```bash
 # Navigate to the core directory
-cd /path/to/your-project/docs/core
+cd /path/to/your-project/.pythia/core
 
 # Run the installation script
 node tools/installCore.js .. --method=git
@@ -339,14 +339,14 @@ After installation, verify that everything works correctly:
 
 ```bash
 # Check the core installation
-ls -la docs/core
+ls -la .pythia/core
 
 # Verify project structure
-ls -la docs/workflows
-ls -la docs/contexts
+ls -la .pythia/workflows
+ls -la .pythia/contexts
 
 # Validate documentation structure
-cd docs/core/tools
+cd .pythia/core/tools
 node validateDocumentation.js ../..
 ```
 

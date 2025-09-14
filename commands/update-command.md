@@ -57,9 +57,9 @@ Thoroughly review the existing command document to understand its structure, pur
 date +%Y-%m-%d
 
 # Determine commands directory based on project structure
-# For standard Pythia structure: docs/commands/
+# For standard Pythia structure: .pythia/commands/
 # For custom structure: adapt to your project's documentation layout
-COMMANDS_PATH="docs/commands"
+COMMANDS_PATH=".pythia/commands"
 
 # Create a backup of the original command
 COMMAND_NAME="command-to-update.md"

@@ -19,7 +19,7 @@ Execute this command for my project at [project-path]
 @create-context.md
 Context: Need a technical context for TV offline caching patterns
 Type: Technical
-Target folder: docs/contexts/performance
+Target folder: .pythia/contexts/performance
 ```
 
 ## Command Checklist (Minimal)
@@ -36,7 +36,7 @@ Target folder: docs/contexts/performance
 
 If you need a context RIGHT NOW and don't want to analyze the whole project:
 
-1. **Choose location**: Use existing `docs/contexts/` structure or create `docs/contexts/general/`
+1. **Choose location**: Use existing `.pythia/contexts/` structure or create `.pythia/contexts/general/`
 2. **Name file**: `context-YYYY-MM-topic.md` (for task-specific) or `topic-context.md` (for general)
 3. **Copy template** from Step 7 below and fill it
 4. **Add links** in Step 8
@@ -49,26 +49,26 @@ For detailed analysis and project integration, follow Steps 1-6 below.
 
 ```bash
 # Find all context files
-find docs/contexts -name "*.md" -type f | head -20
+find .pythia/contexts -name "*.md" -type f | head -20
 
 # Extract document types
-find docs/contexts -name "*.md" -type f | sed 's/.*\///' | sed 's/-.*//' | sort | uniq
+find .pythia/contexts -name "*.md" -type f | sed 's/.*\///' | sed 's/-.*//' | sort | uniq
 ```
 
 ### 1.2. Identify Project Domains
 
 ```bash
 # Find subdirectories (domains)
-find docs/contexts -type d | grep -v "^docs/contexts$" | sed 's|docs/contexts/||' | sort
+find .pythia/contexts -type d | grep -v "^.pythia/contexts$" | sed 's|.pythia/contexts/||' | sort
 ```
 
 ### 1.3. Understand Naming Conventions
 
 ```bash
 # Find date patterns
-find docs/contexts -name "*.md" -type f | grep -E "[0-9]{4}-[0-9]{2}-[0-9]{2}"  # YYYY-MM-DD
-find docs/contexts -name "*.md" -type f | grep -E "[0-9]{4}-[0-9]{2}-" | grep -v -E "[0-9]{4}-[0-9]{2}-[0-9]{2}"  # YYYY-MM
-find docs/contexts -name "*.md" -type f | grep -v -E "[0-9]{4}-[0-9]{2}"  # No date
+find .pythia/contexts -name "*.md" -type f | grep -E "[0-9]{4}-[0-9]{2}-[0-9]{2}"  # YYYY-MM-DD
+find .pythia/contexts -name "*.md" -type f | grep -E "[0-9]{4}-[0-9]{2}-" | grep -v -E "[0-9]{4}-[0-9]{2}-[0-9]{2}"  # YYYY-MM
+find .pythia/contexts -name "*.md" -type f | grep -v -E "[0-9]{4}-[0-9]{2}"  # No date
 ```
 
 ## Step 2: Determine Creation Date
@@ -115,7 +115,7 @@ echo "Current date: $CURRENT_DATE"
 
 ```bash
 # Create directory based on analysis
-CTX_DIR="docs/contexts/[category]/[subcategory]"
+CTX_DIR=".pythia/contexts/[category]/[subcategory]"
 mkdir -p "$CTX_DIR"
 ```
 
@@ -190,9 +190,9 @@ Brief overview: what this context covers and why it exists.
 
 ## Links to Related Documents
 
-- Related Contexts: [mdc:docs/contexts/...]
-- Related Tasks: [mdc:docs/workflows/tasks/task-YYYY-MM-topic.md]
-- Related Proposals/Decisions: [mdc:docs/workflows/proposals/...]
+- Related Contexts: [mdc:.pythia/contexts/...]
+- Related Tasks: [mdc:.pythia/workflows/tasks/task-YYYY-MM-topic.md]
+- Related Proposals/Decisions: [mdc:.pythia/workflows/proposals/...]
 
 ## Change History
 

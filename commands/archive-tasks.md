@@ -49,9 +49,9 @@ Before archiving, ensure the task is genuinely complete:
 
 ```bash
 # Open the task document to verify completion
-# For standard Pythia structure: docs/workflows/tasks/
+# For standard Pythia structure: .pythia/workflows/tasks/
 # For custom structure: adapt to your project's documentation layout
-cat docs/workflows/tasks/task-YYYY-MM-task-name.md | grep "Status"
+cat .pythia/workflows/tasks/task-YYYY-MM-task-name.md | grep "Status"
 ```
 
 Confirm the status is "Completed" and all implementation steps are checked.
@@ -62,12 +62,12 @@ Ensure the archive directory exists:
 
 ```bash
 # Check if archive directory exists
-# For standard Pythia structure: docs/workflows/archive/tasks/
+# For standard Pythia structure: .pythia/workflows/archive/tasks/
 # For custom structure: adapt to your project's documentation layout
-ls -la docs/workflows/archive/tasks/
+ls -la .pythia/workflows/archive/tasks/
 
 # If it doesn't exist, create it
-mkdir -p docs/workflows/archive/tasks/
+mkdir -p .pythia/workflows/archive/tasks/
 ```
 
 ## Step 3: Move Task to Archive
@@ -76,7 +76,7 @@ Move the completed task to the archive:
 
 ```bash
 # Move the task file to the archive
-mv docs/workflows/tasks/task-YYYY-MM-task-name.md docs/workflows/archive/tasks/
+mv .pythia/workflows/tasks/task-YYYY-MM-task-name.md .pythia/workflows/archive/tasks/
 ```
 
 ## Step 4: Update Cross-References
@@ -86,12 +86,12 @@ Update all documents that reference the archived task:
 1. Search for references to the task using:
 
    ```bash
-   grep -r "task-YYYY-MM-task-name.md" docs/
+   grep -r "task-YYYY-MM-task-name.md" .pythia/
    ```
 
 2. For each reference found, update the link to point to the archived location:
-   - From: `docs/workflows/tasks/task-YYYY-MM-task-name.md`
-   - To: `docs/workflows/archive/tasks/task-YYYY-MM-task-name.md`
+   - From: `.pythia/workflows/tasks/task-YYYY-MM-task-name.md`
+   - To: `.pythia/workflows/archive/tasks/task-YYYY-MM-task-name.md`
 
 ## Step 5: Generate Workflows Report
 
@@ -118,11 +118,11 @@ Fix any issues reported by the tool.
 
 ```bash
 # Verify task completion status
-cat docs/workflows/tasks/task-2025-03-refactor-api-endpoints.md | grep "Status"
+cat .pythia/workflows/tasks/task-2025-03-refactor-api-endpoints.md | grep "Status"
 # Output: **Status**: Completed
 
 # Move the task to the archive
-mv docs/workflows/tasks/task-2025-03-refactor-api-endpoints.md docs/workflows/archive/tasks/
+mv .pythia/workflows/tasks/task-2025-03-refactor-api-endpoints.md .pythia/workflows/archive/tasks/
 
 # Update cross-references (after finding them with grep)
 # Edit each file that references this task to point to the archive location
@@ -135,7 +135,7 @@ npm run docs:report-workflows
 
 ```bash
 # Create a list of completed tasks
-grep -r "Status.*Completed" docs/workflows/tasks/ --include="*.md" > completed_tasks.txt
+grep -r "Status.*Completed" .pythia/workflows/tasks/ --include="*.md" > completed_tasks.txt
 
 # Process each completed task
 while read -r task; do
@@ -143,7 +143,7 @@ while read -r task; do
   echo "Archiving $task_file"
 
   # Move to archive
-  mv "$task_file" docs/workflows/archive/tasks/
+  mv "$task_file" .pythia/workflows/archive/tasks/
 
   # Find and update references (would need manual editing)
   task_name=$(basename "$task_file")
@@ -162,7 +162,7 @@ npm run docs:report-workflows
 1. **Missing Archive Directory**:
 
    - Issue: Archive directory doesn't exist, causing move operation to fail
-   - Solution: Create the directory structure with `mkdir -p docs/workflows/archive/tasks/`
+   - Solution: Create the directory structure with `mkdir -p .pythia/workflows/archive/tasks/`
 
 2. **Broken References**:
 

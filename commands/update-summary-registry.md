@@ -12,7 +12,7 @@ Before updating the Summary Documents Registry, ensure you have:
 
 1. Identified any new or modified summary documents in the project
 2. Obtained the current date for proper document timestamping
-3. Reviewed the existing Summary Documents Registry (`docs/navigation/summary-documents-registry.md`)
+3. Reviewed the existing Summary Documents Registry (`.pythia/navigation/summary-documents-registry.md`)
 4. Understood the purpose and scope of any new summary documents
 
 ## Workspace Usage
@@ -54,7 +54,7 @@ Before proceeding with registry update, complete this checklist:
 
 First, review the current state of the Summary Documents Registry:
 
-1. Open `docs/navigation/summary-documents-registry.md`
+1. Open `.pythia/navigation/summary-documents-registry.md`
 2. Understand the current organization and categories of summary documents
 3. Note any patterns in how documents are categorized and described
 4. Check for any pending documents that may have been completed
@@ -86,7 +86,7 @@ For each document that needs to be added or updated:
 For example:
 
 ```markdown
-| [Component Analysis](mdc:docs/architecture/component-analysis.md) | Aggregator | Component implementations | UI Team | Manual | When patterns change | 2025-03-15 |
+| [Component Analysis](mdc:.pythia/architecture/component-analysis.md) | Aggregator | Component implementations | UI Team | Manual | When patterns change | 2025-03-15 |
 ```
 
 ## Step 4: Update Pending Documents Section

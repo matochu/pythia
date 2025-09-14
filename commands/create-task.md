@@ -2,7 +2,7 @@
 
 > **IMPORTANT**: This command requires active execution of tasks, not just planning. Follow each step in the checklist by actually performing the actions, creating files, updating references, and validating the documentation.
 >
-> **NOTE ON FILE PATHS**: This command adapts to your project's documentation structure. It will create tasks in your project's `docs/workflows/tasks/` directory or equivalent.
+> **NOTE ON FILE PATHS**: This command adapts to your project's documentation structure. It will create tasks in your project's `.pythia/workflows/tasks/` directory or equivalent.
 
 ## Purpose
 
@@ -66,9 +66,9 @@ Before starting, gather all necessary information:
 date +%Y-%m-%d
 
 # Determine tasks directory based on project structure
-# For standard Pythia structure: docs/workflows/tasks/
+# For standard Pythia structure: .pythia/workflows/tasks/
 # For custom structure: adapt to your project's documentation layout
-TASKS_PATH="docs/workflows/tasks"
+TASKS_PATH=".pythia/workflows/tasks"
 
 # Create directory if it doesn't exist
 mkdir -p "$TASKS_PATH"
@@ -77,14 +77,14 @@ mkdir -p "$TASKS_PATH"
 ls -la "$TASKS_PATH"
 
 # Search for relevant context documents
-CONTEXTS_PATH="docs/contexts"
+CONTEXTS_PATH=".pythia/contexts"
 find "$CONTEXTS_PATH" -type f -name "*.md" -exec grep -l "keyword" {} \;
 
 # Search for similar tasks - basic keyword search
 grep -r "keyword" "$TASKS_PATH"
 
 # Search for relevant context documents
-CONTEXTS_PATH="docs/contexts"
+CONTEXTS_PATH=".pythia/contexts"
 find "$CONTEXTS_PATH" -type f -name "*.md" -exec grep -l "keyword" {} \;
 ```
 
@@ -126,7 +126,7 @@ Create a new file in the tasks directory using the naming convention:
 
 ```bash
 # Determine tasks directory based on project structure
-TASKS_PATH="docs/workflows/tasks"
+TASKS_PATH=".pythia/workflows/tasks"
 
 # Create new task file and suggest a working branch name
 TASK_NAME="implement-feature"
@@ -157,11 +157,11 @@ Before creating the task, review relevant context documents:
 
 ```bash
 # Search for relevant context documents
-CONTEXTS_PATH="docs/contexts"
+CONTEXTS_PATH=".pythia/contexts"
 find "$CONTEXTS_PATH" -type f -name "*.md" -exec grep -l "feature-name" {} \;
 
 # Find context directory structure
-find "$CONTEXTS_PATH" -type d | grep -v "^docs/contexts$" | sed 's|docs/contexts/||' | sort
+find "$CONTEXTS_PATH" -type d | grep -v "^.pythia/contexts$" | sed 's|.pythia/contexts/||' | sort
 
 # Review context documents for insights
 cat "$CONTEXTS_PATH/[category]/context-YYYY-MM-DD-topic.md"
@@ -249,7 +249,7 @@ Add references to related documents at the bottom of the task file:
 ### Context Integration
 
 - [Create Context Document](mdc:commands/create-context.md) - How to create context with flexible naming
-- [Related Context Documents](mdc:docs/contexts/[category]/context-YYYY-MM-DD-topic.md) - If applicable
+- [Related Context Documents](mdc:.pythia/contexts/[category]/context-YYYY-MM-DD-topic.md) - If applicable
 
 ## Status History
 
@@ -343,9 +343,9 @@ date +%Y-%m-%d
 # Output: 2025-03-24
 
 # Determine tasks directory based on project structure
-# For standard Pythia structure: docs/workflows/tasks/
+# For standard Pythia structure: .pythia/workflows/tasks/
 # For custom structure: adapt to your project's documentation layout
-TASKS_PATH="docs/workflows/tasks"
+TASKS_PATH=".pythia/workflows/tasks"
 
 # Create the task file
 TASK_FILE="$TASKS_PATH/task-2025-03-implement-form-validation.md"
@@ -376,9 +376,9 @@ npm run docs:report-workflows
 
 ```bash
 # Determine tasks directory based on project structure
-# For standard Pythia structure: docs/workflows/tasks/
+# For standard Pythia structure: .pythia/workflows/tasks/
 # For custom structure: adapt to your project's documentation layout
-TASKS_PATH="docs/workflows/tasks"
+TASKS_PATH=".pythia/workflows/tasks"
 
 # Create comprehensive task with supporting research
 TASK_FILE="$TASKS_PATH/task-2025-03-implement-offline-mode.md"
@@ -488,7 +488,7 @@ This command integrates with other Pythia components:
 
 ### Workspace Integration
 
-- **Standard Structure**: Creates tasks in `docs/workflows/tasks/`
+- **Standard Structure**: Creates tasks in `.pythia/workflows/tasks/`
 - **Custom Structure**: Adapts to your project's documentation layout
 - **Cross-References**: Uses `mdc:` links for workspace navigation
 - **Command Usage**: Reference with `@create-task.md` in your workspace

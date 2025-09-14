@@ -73,13 +73,13 @@ Before synchronizing a document with Confluence, ensure you have:
 date "+%Y-%m-%d %H:%M"
 
 # Check document format
-head -5 docs/workflows/proposals/proposal-example.md
+head -5 .pythia/workflows/proposals/proposal-example.md
 
 # Validate document structure
-grep -n "^#" docs/workflows/proposals/proposal-example.md
+grep -n "^#" .pythia/workflows/proposals/proposal-example.md
 
 # Check for local references
-grep -r "\.\./" docs/workflows/proposals/proposal-example.md
+grep -r "\.\./" .pythia/workflows/proposals/proposal-example.md
 ```
 
 ### Document Preparation Checklist
@@ -340,7 +340,7 @@ mkdir -p /tmp/confluence-sync-tmp
 
 ```bash
 # Copy document to temp directory
-cp docs/workflows/proposals/your-document.md /tmp/confluence-sync-tmp/
+cp .pythia/workflows/proposals/your-document.md /tmp/confluence-sync-tmp/
 ```
 
 3. Prepare the temporary copy for synchronization:

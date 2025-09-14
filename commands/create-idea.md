@@ -63,9 +63,9 @@ Before starting, ensure you have all necessary information:
 date +%Y-%m-%d
 
 # Determine ideas directory based on project structure
-# For standard Pythia structure: docs/workflows/ideas/
+# For standard Pythia structure: .pythia/workflows/ideas/
 # For custom structure: adapt to your project's documentation layout
-IDEAS_PATH="docs/workflows/ideas"
+IDEAS_PATH=".pythia/workflows/ideas"
 
 # Create directory if it doesn't exist
 mkdir -p "$IDEAS_PATH"
@@ -84,7 +84,7 @@ Create a new file in the ideas directory using the naming convention:
 
 ```bash
 # Determine ideas directory based on project structure
-IDEAS_PATH="docs/workflows/ideas"
+IDEAS_PATH=".pythia/workflows/ideas"
 
 # Create new idea file
 IDEA_NAME="performance-optimization"
@@ -135,9 +135,9 @@ Update the ideas backlog:
 
 ```bash
 # Determine ideas directory based on project structure
-# For standard Pythia structure: docs/workflows/ideas/
+# For standard Pythia structure: .pythia/workflows/ideas/
 # For custom structure: adapt to your project's documentation layout
-IDEAS_PATH="docs/workflows/ideas"
+IDEAS_PATH=".pythia/workflows/ideas"
 
 # Update ideas backlog
 BACKLOG_FILE="$IDEAS_PATH/ideas-backlog.md"
@@ -175,9 +175,9 @@ Add references to related documents at the bottom of the idea file:
 ```markdown
 ## References
 
-- [Related Analysis](mdc:docs/architecture/analysis-topic.md)
-- [Similar Idea](mdc:docs/workflows/ideas/idea-YYYY-MM-related.md)
-- [Relevant Documentation](mdc:docs/documentation/topic.md)
+- [Related Analysis](mdc:.pythia/architecture/analysis-topic.md)
+- [Similar Idea](mdc:.pythia/workflows/ideas/idea-YYYY-MM-related.md)
+- [Relevant Documentation](mdc:.pythia/documentation/topic.md)
 
 ## Status History
 
@@ -229,9 +229,9 @@ date +%Y-%m-%d
 # Output: 2025-03-24
 
 # Determine ideas directory based on project structure
-# For standard Pythia structure: docs/workflows/ideas/
+# For standard Pythia structure: .pythia/workflows/ideas/
 # For custom structure: adapt to your project's documentation layout
-IDEAS_PATH="docs/workflows/ideas"
+IDEAS_PATH=".pythia/workflows/ideas"
 
 # Create the idea file
 IDEA_FILE="$IDEAS_PATH/idea-2025-03-api-caching-strategy.md"
@@ -268,9 +268,9 @@ npm run docs:report-workflows
 
 ```bash
 # Determine ideas directory based on project structure
-# For standard Pythia structure: docs/workflows/ideas/
+# For standard Pythia structure: .pythia/workflows/ideas/
 # For custom structure: adapt to your project's documentation layout
-IDEAS_PATH="docs/workflows/ideas"
+IDEAS_PATH=".pythia/workflows/ideas"
 
 # Create comprehensive idea with supporting research
 IDEA_FILE="$IDEAS_PATH/idea-2025-03-cross-platform-architecture.md"
@@ -357,7 +357,7 @@ This command integrates with other Pythia components:
 
 ### Workspace Integration
 
-- **Standard Structure**: Creates ideas in `docs/workflows/ideas/`
+- **Standard Structure**: Creates ideas in `.pythia/workflows/ideas/`
 - **Custom Structure**: Adapts to your project's documentation layout
 - **Cross-References**: Uses `mdc:` links for workspace navigation
 - **Command Usage**: Reference with `@create-idea.md` in your workspace
@@ -372,7 +372,7 @@ This command integrates with other Pythia components:
 ## Related Documents
 
 - [Idea Template](mdc:templates/idea-template.md)
-- [Ideas Backlog](mdc:docs/workflows/ideas/ideas-backlog.md)
+- [Ideas Backlog](mdc:.pythia/workflows/ideas/ideas-backlog.md)
 - [Workspace Integration](mdc:guides/guide-workspace-integration.md)
 - [Report Workflows](mdc:commands/report-workflows.md)
 
