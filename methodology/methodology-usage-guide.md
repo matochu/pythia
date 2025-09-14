@@ -320,7 +320,7 @@ Start: What are you trying to accomplish?
 
 ## Related Documents
 
-- [Context Documentation](mdc:methodology/context-documentation.md)
+- [Context Documentation](mdc:commands/create-context.md)
 - [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
 - [Methodology Integration Guide](mdc:methodology/methodology-integration-guide.md)
 - [Methodology Application Patterns](mdc:methodology/methodology-application-patterns.md)

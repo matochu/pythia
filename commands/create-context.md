@@ -1,6 +1,6 @@
 # Command: Create Context Document
 
-> **IMPORTANT**: Creates a minimal, production‑ready context document and wires it into the documentation graph (tasks/proposals/map/Memory Bank) with zero custom config.
+> **IMPORTANT**: Creates a minimal, production‑ready context document and wires it into the documentation graph (tasks/proposals/map) with zero custom config.
 
 ## Purpose
 
@@ -25,38 +25,134 @@ Target folder: docs/contexts/performance
 ## Command Checklist (Minimal)
 
 - [ ] Determine context type and target folder (technical/business/user/operational)
-- [ ] Create file with standard naming: `context-YYYY-MM-short-slug.md`
+- [ ] Create file with flexible naming: `{type}-{date}-{topic-slug}.md` or `{topic-slug}.md`
 - [ ] Insert required metadata and sections (see Minimal Template)
 - [ ] Add cross‑references (related tasks/proposals/contexts)
 - [ ] Update Documentation Map
 - [ ] Validate links and structure
-- [ ] (Optional) Link relevant Memory Bank entries; create a short session note
+- [ ] Link to related tasks or proposals if they exist
 
-## Step 1: Determine Type and Placement
+## Quick Start (Skip to Step 7 if you know what you're doing)
 
-- Choose type/directory based on your project structure (examples):
-  - `docs/contexts/technical/`
-  - `docs/contexts/business/`
-  - `docs/contexts/user/`
-  - `docs/contexts/operational/`
-- If unsure, place under `docs/contexts/technical/` and tag appropriately.
+If you need a context RIGHT NOW and don't want to analyze the whole project:
 
-## Step 2: Create the Context File
+1. **Choose location**: Use existing `docs/contexts/` structure or create `docs/contexts/general/`
+2. **Name file**: `context-YYYY-MM-topic.md` (for task-specific) or `topic-context.md` (for general)
+3. **Copy template** from Step 7 below and fill it
+4. **Add links** in Step 8
+
+For detailed analysis and project integration, follow Steps 1-6 below.
+
+## Step 1: Analyze Project Context Structure
+
+### 1.1. Map Existing Contexts
 
 ```bash
-# Get the current date for proper timestamping
-DATE=$(date +%Y-%m)
-SLUG="offline-caching"
-CTX_DIR="docs/contexts/technical"
-mkdir -p "$CTX_DIR"
-CTX_FILE="$CTX_DIR/context-$DATE-$SLUG.md"
+# Find all context files
+find docs/contexts -name "*.md" -type f | head -20
 
-# Create file
+# Extract document types
+find docs/contexts -name "*.md" -type f | sed 's/.*\///' | sed 's/-.*//' | sort | uniq
+```
+
+### 1.2. Identify Project Domains
+
+```bash
+# Find subdirectories (domains)
+find docs/contexts -type d | grep -v "^docs/contexts$" | sed 's|docs/contexts/||' | sort
+```
+
+### 1.3. Understand Naming Conventions
+
+```bash
+# Find date patterns
+find docs/contexts -name "*.md" -type f | grep -E "[0-9]{4}-[0-9]{2}-[0-9]{2}"  # YYYY-MM-DD
+find docs/contexts -name "*.md" -type f | grep -E "[0-9]{4}-[0-9]{2}-" | grep -v -E "[0-9]{4}-[0-9]{2}-[0-9]{2}"  # YYYY-MM
+find docs/contexts -name "*.md" -type f | grep -v -E "[0-9]{4}-[0-9]{2}"  # No date
+```
+
+## Step 2: Determine Creation Date
+
+```bash
+# Get current date for LLM
+CURRENT_DATE=$(date +%Y-%m-%d)
+echo "Current date: $CURRENT_DATE"
+```
+
+## Step 3: Determine Document Type
+
+### 3.1. Analyze Context Purpose
+
+- Is this context for a specific task? → Use task-specific type
+- Is this context for general knowledge? → Use general type
+- Is this context for reference? → Use reference type
+- Is this context for analysis? → Use analysis type
+
+### 3.2. Choose Appropriate Type
+
+- **Follow existing patterns** in the project
+- **Use established types** when possible
+- **Create new types** only when necessary
+- **Maintain consistency** across similar contexts
+
+### 3.3. Determine Date Relevance
+
+- **Task-specific context** → Use YYYY-MM-DD
+- **Monthly relevant context** → Use YYYY-MM
+- **Stable, timeless context** → No date
+- **Follow existing date patterns** in the project
+
+## Step 4: Determine Categorization
+
+### 4.1. Choose Category Based on Analysis
+
+- **Domain categories**: Based on project domains found
+- **Technical categories**: Based on technical areas
+- **Process categories**: Based on workflow areas
+- **Reference categories**: Based on reference materials
+
+### 4.2. Create Directory Structure
+
+```bash
+# Create directory based on analysis
+CTX_DIR="docs/contexts/[category]/[subcategory]"
+mkdir -p "$CTX_DIR"
+```
+
+## Step 5: Create File Name
+
+### 5.1. Apply Naming Pattern
+
+```bash
+# Generate file name based on analysis
+TYPE="context"  # or analysis, guide, reference, spec, design, review, audit, etc.
+DATE="$CURRENT_DATE"  # or YYYY-MM or empty
+TOPIC="tv-navigation-patterns"
+FILENAME="${TYPE}-${DATE}-${TOPIC}.md"
+# Remove empty date part if no date
+FILENAME=$(echo $FILENAME | sed 's/--/-/g')
+
+# Alternative: No prefix for stable contexts
+# FILENAME="${DATE}-${TOPIC}.md"  # or just "${TOPIC}.md"
+```
+
+### 5.2. Validate Naming
+
+- Check if similar files exist
+- Ensure uniqueness
+- Follow project conventions
+- Maintain consistency
+
+## Step 6: Create Context File
+
+```bash
+# Create file with determined name
+CTX_FILE="$CTX_DIR/$FILENAME"
 [ -f "$CTX_FILE" ] || touch "$CTX_FILE"
 echo "Created: $CTX_FILE"
 ```
 
-## Step 3: Insert Minimal Template (copy/paste)
+## Step 7: Insert Minimal Template (copy/paste)
 
 Paste the following Minimal Context Template into the new file and fill in the brackets:
 
@@ -110,13 +206,13 @@ Notes:
 - Keep the context concise; move verbose artifacts to “Resources” and link.
 - Use English for consistency across tools.
 
-## Step 4: Add Cross‑References (bidirectional)
+## Step 8: Add Cross‑References (bidirectional)
 
 - From the context: link to related tasks/proposals/contexts (Links section).
 - From related tasks/proposals: add a link back to this context in their Context/References section.
 - For tasks managed with Context‑First intake, ensure at least one such link exists (or justification if none).
 
-## Step 5: Update Documentation Map
+## Step 9: Update Documentation Map
 
 - Add the new context to the Documentation Map under appropriate section/category:
 
@@ -124,7 +220,7 @@ Notes:
 @update-documentation-map.md
 ```
 
-## Step 6: Validation
+## Step 10: Validation
 
 - Validate links and structure:
 
@@ -134,38 +230,21 @@ Notes:
 
 - If broken links are reported, fix paths and re‑run.
 
-## Step 7: Memory Bank Integration (Optional)
+## Step 11: Final Check
 
-- If relevant entries exist, link them:
-
-```bash
-# List recent session insights
-find .memory-bank/sessions -name "*.md" -mtime -30 | head -10 || true
-```
-
-- Create a short session note about the new context (optional):
-
-```bash
-cat > .memory-bank/sessions/$(date +%Y-%m-%d)-context-$SLUG.md << 'EOF'
-# Session: Created context - $SLUG
-
-**Context File**: mdc:docs/contexts/technical/context-YYYY-MM-$SLUG.md
-**Reason**: [Why the context was needed]
-**Links**: [Add related tasks/proposals]
-EOF
-```
+- Validate all links work
+- Check that context is referenced from at least one task or proposal
+- Update Documentation Map if needed
 
 ## Acceptance Criteria
 
-- Context file exists with standard naming and required sections
+- Context file exists with flexible naming and required sections
 - Metadata block filled (Status, Version, Created, Last Updated, Tags)
 - Bidirectional links to at least one related document (task/proposal/context)
 - Documentation Map updated; link validation passes
 
 ## References
 
-- [Context Documentation Methodology](mdc:methodology/context-documentation.md)
-- [Context Documentation Critique](mdc:contexts/analysis/analysis-context-documentation-critique.md)
 - [Context Template](mdc:templates/context-template.md)
 - [Create Task](mdc:commands/create-task.md)
 - [Validate Documentation](mdc:commands/validate-documentation.md)
@@ -173,4 +252,4 @@ EOF
 
 ---
 
-Last Updated: 2025-08-08
+Last Updated: 2025-09-13

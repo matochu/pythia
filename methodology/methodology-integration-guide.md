@@ -248,7 +248,7 @@ Ensure consistent application:
 ## Related Documents
 
 - [Methodology Usage Guide](mdc:methodology/methodology-usage-guide.md) - **START HERE** for practical guidance
-- [Context Documentation](mdc:methodology/context-documentation.md)
+- [Context Documentation](mdc:commands/create-context.md)
 - [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
 - [Implementation Approach](mdc:processes/implementation-approach.md)
 - [Prioritization Methods](mdc:guides/guide-prioritization-methods.md)

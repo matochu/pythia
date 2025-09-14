@@ -336,6 +336,7 @@ alwaysApply: true
 # [Project Name] Documentation Guidelines
 
 > **Note**: All documentation should be maintained in English only.
+> Exception: Workflow documents under `docs/workflows/` may be temporarily authored in the collaborating language during active work. Finalized documents (architecture, analyses, proposals, decisions) must remain in English.
 
 ## Quick Reference
 

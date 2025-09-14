@@ -1,6 +1,6 @@
 # Documentation Standards
 
-> **Note**: This document outlines standards for documentation in the project. While the documentation itself should be maintained in English only, this document provides standards applicable to all documentation regardless of language.
+> **Note**: This document outlines standards for documentation in the project. While the documentation itself should be maintained in English only, this document provides standards applicable to all documentation regardless of language. Exception: workflow documents under `docs/workflows/` may be temporarily authored in the collaborating language during active work. Finalized documents (architecture, analyses, proposals, decisions) must remain in English.
 
 ## Document Structure Standards
 

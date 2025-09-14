@@ -76,14 +76,9 @@ mkdir -p "$TASKS_PATH"
 # List existing tasks to avoid duplication
 ls -la "$TASKS_PATH"
 
-# Check Memory Bank for relevant context (if available)
-if [ -d ".pythia/memory-bank" ]; then
-    echo "Checking Memory Bank for related context..."
-    # Search for related patterns
-    find .pythia/memory-bank/patterns -name "*.md" -exec grep -l "keyword" {} \; 2>/dev/null || echo "No related patterns found"
-    # Review recent sessions
-    find .pythia/memory-bank/sessions -name "*.md" -mtime -7 -exec basename {} \; 2>/dev/null || echo "No recent sessions found"
-fi
+# Search for relevant context documents
+CONTEXTS_PATH="docs/contexts"
+find "$CONTEXTS_PATH" -type f -name "*.md" -exec grep -l "keyword" {} \;
 
 # Search for similar tasks - basic keyword search
 grep -r "keyword" "$TASKS_PATH"
@@ -165,12 +160,19 @@ Before creating the task, review relevant context documents:
 CONTEXTS_PATH="docs/contexts"
 find "$CONTEXTS_PATH" -type f -name "*.md" -exec grep -l "feature-name" {} \;
 
+# Find context directory structure
+find "$CONTEXTS_PATH" -type d | grep -v "^docs/contexts$" | sed 's|docs/contexts/||' | sort
+
 # Review context documents for insights
-cat "$CONTEXTS_PATH/domain/context-YYYY-MM-topic.md"
+cat "$CONTEXTS_PATH/[category]/context-YYYY-MM-DD-topic.md"
 
 # Extract key insights for task creation
-grep -A 5 -B 5 "key-term" "$CONTEXTS_PATH/domain/context-YYYY-MM-topic.md"
+grep -A 5 -B 5 "key-term" "$CONTEXTS_PATH/[category]/context-YYYY-MM-DD-topic.md"
 ```
+
+**For detailed context creation and directory structure guidance, see [@create-context.md](mdc:commands/create-context.md)**
+
+**If no relevant contexts exist**: Use [@create-context.md](mdc:commands/create-context.md) Quick Start to create minimal context.
 
 Context documents should inform:
 
@@ -178,33 +180,6 @@ Context documents should inform:
 - Risk assessment and mitigation strategies
 - Success criteria definition
 - Technical approach and constraints
-
-### Memory Bank Integration
-
-If Memory Bank is available, check for relevant context:
-
-```bash
-# Check Memory Bank for related patterns and insights
-if [ -d ".pythia/memory-bank" ]; then
-    echo "Checking Memory Bank for relevant context..."
-
-    # Search for related patterns
-    find .pythia/memory-bank/patterns -name "*.md" -exec grep -l "keyword" {} \; 2>/dev/null || echo "No related patterns found"
-
-    # Review recent sessions for similar work
-    find .pythia/memory-bank/sessions -name "*.md" -mtime -7 -exec basename {} \; 2>/dev/null || echo "No recent sessions found"
-
-    # Check for relevant decisions
-    find .pythia/memory-bank/decisions -name "*.md" -exec grep -l "decision-keyword" {} \; 2>/dev/null || echo "No related decisions found"
-fi
-```
-
-Memory Bank insights should inform:
-
-- Previous architectural decisions and their rationale
-- Reusable patterns from similar tasks
-- Cross-task learnings and constraints
-- Historical context for current task
 
 ## Step 3: Use the Task Template
 
@@ -223,7 +198,7 @@ Copy the content from the [Task Template](mdc:templates/task-template.md) and fi
 5. **Context**: Background information and why this task is needed
    - **Context Documents**: Reference relevant context documents
    - **Context Documentation Resources**: Links to context documentation guides
-   - **Memory Bank Context**: Related sessions, patterns, and decisions
+   - **Context Documents**: Reference relevant context documents
    - **Context Analysis**: Key insights from context documents
 6. **Scope**: What is in-scope and out-of-scope for this task
 7. **Approach**: How the task will be implemented
@@ -255,7 +230,7 @@ Break down the implementation into clear, manageable phases with checkboxes:
 3. **Phase 3**: AI Solution Analysis & Quality Control (Complexity: Medium)
    - [ ] Run AI Solution Analysis (use @analyze-ai-solutions.md command)
    - [ ] Run Self-Review Process
-   - [ ] Update Memory Bank with final insights
+   - [ ] Update context documents with final insights
    - [ ] Complete documentation updates
 ```
 
@@ -266,9 +241,15 @@ Add references to related documents at the bottom of the task file:
 ```markdown
 ## References
 
-- [Related Context Documents](mdc:docs/contexts/domain/context-YYYY-MM-topic.md)
-- [Similar Task](mdc:docs/workflows/tasks/task-YYYY-MM-related.md)
-- [Relevant Documentation](mdc:docs/documentation/topic.md)
+### Core Management
+
+- [Manage Task](mdc:commands/manage-task.md) - Task management workflow
+- [Task Template](mdc:templates/task-template.md) - Template reference
+
+### Context Integration
+
+- [Create Context Document](mdc:commands/create-context.md) - How to create context with flexible naming
+- [Related Context Documents](mdc:docs/contexts/[category]/context-YYYY-MM-DD-topic.md) - If applicable
 
 ## Status History
 
@@ -277,6 +258,8 @@ Add references to related documents at the bottom of the task file:
 | YYYY-MM-DD | New       | Initial creation        |
 | YYYY-MM-DD | In Review | Team discussion planned |
 ```
+
+**Validation Rule:** Task creation will FAIL if core management references are missing!
 
 Ensure that references are bidirectional - update any related documents to reference this new task.
 
@@ -490,7 +473,7 @@ This command integrates with other Pythia components:
 - Uses `templates/task-template.md` for consistent structure with embedded AI solution analysis
 - Follows metadata standards for proper categorization
 - Integrates with workflow reporting system
-- Includes Memory Bank integration and context documentation
+- Includes context document integration and analysis
 
 ### Methodology Integration
 
@@ -499,7 +482,7 @@ This command integrates with other Pythia components:
   - **Phase 2 (Preparation)**: Refactor codebase, establish patterns, create supporting tools
   - **Phase 3 (Full Integration)**: Implement changes incrementally with thorough testing
   - **Phase 4 (Optimization)**: Optimize performance and add extended functionality
-- **Context Documentation**: For tasks requiring deep domain knowledge, reference relevant context documents and Memory Bank
+- **Context Documentation**: For tasks requiring deep domain knowledge, reference relevant context documents
 - **AI Solution Analysis**: Use @analyze-ai-solutions.md command for quality control
 - **Prioritization Methods**: Use prioritization frameworks for task sequencing and resource allocation
 
@@ -514,8 +497,8 @@ This command integrates with other Pythia components:
 
 - [Task Template](mdc:templates/task-template.md)
 - [Analyze AI Solutions](mdc:commands/analyze-ai-solutions.md) - Quality control for AI-generated solutions
-- [Memory Bank Management](mdc:commands/memory-bank-management.md) - Context preservation system
-- [Context Documentation Guide](mdc:methodology/context-documentation.md) - Working with context documents
+- [Context Documentation Guide](mdc:commands/create-context.md) - Working with context documents
+- [Create Context](mdc:commands/create-context.md) - Flexible context creation with adaptive naming
 - [Report Workflows](mdc:commands/report-workflows.md)
 
 ---

@@ -154,7 +154,7 @@ Store detailed analysis in [docs/contexts/](mdc:docs/contexts) subdirectories:
 
 Follow the [Context Documentation Methodology](mdc:pythia/methodology/context-documentation.md):
 
-- Use proper naming convention: `context-YYYY-MM-topic.md`
+- Use flexible naming convention: `{type}-{date}-{topic-slug}.md` (see [@create-context.md](mdc:commands/create-context.md))
 - Include metadata, description, key information, and conclusions
 - Add appropriate tags for easy discovery
 - Link to related tasks and other context documents

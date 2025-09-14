@@ -261,7 +261,7 @@ This command integrates with other Pythia components:
 - **Ideas to Proposals Workflow**: This command represents the exploration stage in the structured workflow for transforming ideas into implemented features. The typical flow is:
   1. **Idea** → 2. **Exploration** → 3. **Proposal** → 4. **Decision** → 5. **Task** → 6. **Implementation**
 - Explorations should thoroughly analyze feasibility, alternatives, and risks before moving to proposals or tasks. See [Ideas to Proposals Workflow](mdc:methodology/ideas-to-proposals-workflow.md).
-- **Context Documentation**: For background, rationale, and domain knowledge, reference or create context documents as described in [Context Documentation](mdc:methodology/context-documentation.md).
+- **Context Documentation**: For background, rationale, and domain knowledge, reference or create context documents as described in [Context Documentation](mdc:commands/create-context.md).
 
 ## Related Documents
 

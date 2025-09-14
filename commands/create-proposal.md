@@ -299,4 +299,4 @@ This command integrates with other Pythia components:
 
 ---
 
-**Last Updated**: 2025-03-18
+**Last Updated**: 2025-09-13

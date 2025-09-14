@@ -14,10 +14,11 @@ alwaysApply: true
 
 1. **Repeat the current user's task/request** in your own words
 2. **Explain how you understand the CURRENT task** - what needs to be done, what the expected outcome is
-3. **Do NOT reference or repeat previous tasks** from the conversation
-4. **Do NOT wait for confirmation** - proceed with the current task after clarifying your understanding
-5. **Focus on the immediate request** - avoid going back to unrelated previous work
-6. **Respond in the same language as the user's question** (Ukrainian, English, etc.)
+3. **If there is an active work item (task/idea/exploration/proposal), explicitly reference it in "My Understanding" and plan to record progress there**
+4. **Do NOT reference or repeat previous tasks** from the conversation (unless it's the active work item)
+5. **Do NOT wait for confirmation** - proceed with the current task after clarifying your understanding
+6. **Focus on the immediate request** - avoid going back to unrelated previous work
+7. **Respond in the same language as the user's question** (Ukrainian, English, etc.)
 
 ### 2. Example Format
 
@@ -33,6 +34,8 @@ alwaysApply: true
 - Potential challenges: [list for current task]
 - Impact analysis: [what will be affected by this change]
 - Context needed: [what additional context should be considered]
+- Current work item: [link/path to active task/idea/exploration/proposal]
+- Progress updates: [state that progress will be marked in that document]
 
 **Proceeding with implementation...**
 ```
@@ -67,8 +70,14 @@ When creating todo lists for NEW tasks:
 - Update todo items as you complete them
 - Add notes about blockers or dependencies
 - Mark tasks as completed with brief summary
+- If a planning document exists, update its progress/status and checkboxes in that document
 
 ## Communication Principles
+
+### Active Work Item Sync
+
+- If there is an active planning document (task/idea/exploration/proposal), reference it in "My Understanding" and record progress in that document (status, checkboxes, notes).
+- Keep the response concise here; details and progress belong in the planning document.
 
 ### Always
 
@@ -95,6 +104,7 @@ When creating todo lists for NEW tasks:
 - [ ] **YAGNI**: Am I adding features not requested?
 - [ ] **FOCUS**: Does this answer the exact question?
 - [ ] **CONCISE**: Can I say this in fewer words?
+- [ ] **WORK ITEM SYNC**: Did I reference the active planning document and update progress there?
 
 **If yes to any above - simplify immediately.**
 

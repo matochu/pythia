@@ -282,7 +282,7 @@ Focus improvements on delivering user value:
 - [Methodology Integration Guide](mdc:methodology/methodology-integration-guide.md)
 - [Methodology Application Patterns](mdc:methodology/methodology-application-patterns.md)
 - [Methodology Consistency Checker](mdc:methodology/methodology-consistency-checker.md)
-- [Context Documentation](mdc:methodology/context-documentation.md)
+- [Context Documentation](mdc:commands/create-context.md)
 - [Documentation Guidelines](mdc:methodology/documentation-guidelines.md)
 - [Implementation Approach](mdc:processes/implementation-approach.md)
 - [Ideas to Proposals Workflow](mdc:processes/ideas-to-proposals-workflow.md)

@@ -9,7 +9,7 @@
 **Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
 **Owner**: {Name}  
 **Repository**: {repo-url-or-name}  
-**Branch**: feature/{slug-or-topic}  
+**Branch**: feature|bugfix|hotfix/{slug-or-topic}  
 **PR**: [link-if-available]  
 **LLM Model**: {model-id}
 
@@ -18,6 +18,8 @@
 ## 📖 Task Workflow Guide
 
 > **IMPORTANT**: This section provides embedded rules for working with this task. Follow this workflow for consistent execution and quality control.
+>
+> **Quick Reference**: [Manage Task](mdc:commands/manage-task.md) - Complete task management workflow
 
 ### Checkbox Markers (Lightweight Conventions)
 
@@ -30,7 +32,7 @@
 
 1. **Before Starting**:
 
-   - [ ] Review all Context Documents and Memory Bank entries
+   - [ ] Review all Context Documents and related analysis
    - [ ] Check Dependencies section for blockers
    - [ ] Set up Change Tracking (see below)
    - [ ] Prepare for AI Solution Analysis (use @analyze-ai-solutions.md command)
@@ -38,24 +40,25 @@
 2. **During Implementation**:
 
    - [ ] Update Progress Tracking after each phase
-   - [ ] Document key decisions in Memory Bank
+   - [ ] Document key decisions in context documents
    - [ ] Add changed files to File Changes section
    - [ ] Run AI Solution Analysis for major changes (use @analyze-ai-solutions.md)
    - [ ] Update Context sections when new insights emerge
 
 3. **Quality Control Phase** (Required before completion):
 
-   - [ ] **Add/Update tests** for all new/changed code (unit/integration as appropriate)
-   - [ ] **Run coverage** and capture summary (target ≥ 85% or project-specific)
-   - [ ] **Run AI Solution Analysis** (use @analyze-ai-solutions.md command)
-   - [ ] **Run Self-Review Process** (see section below)
-   - [ ] **Validate against Success Criteria**
-   - [ ] **Check Quality Standards compliance**
-   - [ ] **Update Memory Bank with final insights**
+   - [ ] Add/Update tests for all new/changed code (unit/integration as appropriate)
+   - [ ] Run coverage and capture summary (target ≥ 85% or project-specific)
+   - [ ] Run AI Solution Analysis (use @analyze-ai-solutions.md command)
+   - [ ] Run Self-Review Process (see section below)
+   - [ ] Validate against Success Criteria
+   - [ ] Check Quality Standards compliance
+   - [ ] Update context documents with final insights
+   - [ ] TDD Integration: Ensure test-driven development workflow is followed
 
 4. **Task Completion**:
    - [ ] Complete Implementation Summary
-   - [ ] Archive relevant sessions to Memory Bank
+   - [ ] Archive relevant sessions to context documents
    - [ ] Update related Context Documents
    - [ ] Mark task as Completed
 
@@ -72,22 +75,22 @@ echo "" >> .task-changes.md
 git status --porcelain >> .task-changes.md
 ```
 
-### Memory Bank Integration
+### Context Document Integration
 
-**Session Tracking**:
+**Context Tracking**:
 
-- Create session entry: `.pythia/memory-bank/sessions/$(date +%Y-%m-%d)-task-{descriptive-name}.md`
+- Create or update relevant context documents in `docs/contexts/`
 - Document key decisions and insights during implementation
 - Link to this task file and related context documents
 
 - **Pattern Extraction**:
 
-- If new patterns emerge, document in `.pythia/memory-bank/patterns/`
+- If new patterns emerge, document in appropriate context documents
 - Cross-reference patterns in task implementation
 
 - **Decision Recording**:
 
-- Major architectural decisions → `.pythia/memory-bank/decisions/`
+- Major architectural decisions → architecture context documents
 - Link decisions to affected components and future implications
 
 ## Context
@@ -106,21 +109,14 @@ Brief description of the task's background and why it's important. This should p
 
 **Context Documentation Resources:**
 
-- [Context Documentation Guide](mdc:methodology/context-documentation.md) - How to work with context documents
-- [Memory Bank Management](mdc:commands/memory-bank-management.md) - Context preservation system
+- [Context Documentation Guide](mdc:commands/create-context.md) - How to work with context documents
 - [Create Context Document](mdc:commands/create-context.md) - How to create new context documents
-
-**Memory Bank Context:**
-
-- **Related Sessions**: [Links to previous session entries]
-- **Applicable Patterns**: [Links to relevant pattern entries]
-- **Related Decisions**: [Links to architectural decisions]
 
 **Context Analysis:**
 
-- Key insights from context documents that informed this task
-- Decisions made based on context analysis
-- Risk factors identified through context review
+- **Key Insights**: [Key insights from context documents]
+- **Patterns Identified**: [Relevant patterns from context analysis]
+- **Decision Context**: [Context for key decisions made]
 
 ## Objectives
 
@@ -147,7 +143,7 @@ Detailed breakdown of the implementation steps:
 3. **Phase 3**: AI Solution Analysis & Quality Control (Complexity: Medium)
    - [ ] **Run AI Solution Analysis** (use @analyze-ai-solutions.md command)
    - [ ] **Run Self-Review Process** (see section below)
-   - [ ] **Update Memory Bank with final insights**
+   - [ ] **Update context documents with final insights**
    - [ ] **Complete documentation updates**
 
 ## Scope
@@ -302,7 +298,6 @@ If this task should never be archived (e.g., it's an ongoing process or serves a
 - [Documentation Map](../navigation/documentation-map.md)
 - [Analyze AI Solutions](../commands/analyze-ai-solutions.md) - Quality control for AI-generated solutions
 - [Context Documentation Guide](../methodology/context-documentation.md) - Working with context documents
-- [Memory Bank Management](../commands/memory-bank-management.md) - Context preservation system
 
 Links to relevant resources, documentation, or discussions:
 
