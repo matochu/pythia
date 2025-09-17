@@ -420,6 +420,72 @@ Most commands follow a consistent structure:
 └── README.md                  # This file
 ```
 
+## MCP Server Integration
+
+Pythia includes a **Model Context Protocol (MCP) Server** for integration with Claude Code and Cursor.
+
+### Available Tools
+
+- `archive_tasks` - Archive completed tasks
+- `check_coverage` - Check documentation coverage
+- `check_quality` - Document quality analysis
+- `create_document` - Create new documents using templates
+- `update_map` - Update documentation map
+- `validate_links` - Validate and fix links
+- `validate_quality` - Validate documentation quality
+
+### Quick Start
+
+Start the MCP server:
+```bash
+npm run mcp-server
+```
+
+### Claude Code Integration
+
+Add to your Claude Code MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "pythia": {
+      "command": "npm",
+      "args": ["run", "mcp-server"],
+      "cwd": "/path/to/pythia"
+    }
+  }
+}
+```
+
+### Cursor Integration
+
+Add to `.cursor/mcp.json` in your project:
+
+```json
+{
+  "mcpServers": {
+    "pythia": {
+      "command": "npm", 
+      "args": ["run", "mcp-server"],
+      "cwd": "/path/to/pythia"
+    }
+  }
+}
+```
+
+### Usage
+
+```javascript
+// Validate and fix links
+pythia.validate_links({ fix: true })
+
+// Create task document
+pythia.create_document({ type: "task", title: "New Feature" })
+
+// Update documentation map
+pythia.update_map({ addAll: true })
+```
+
 ## Documentation Tools and Enhancements
 
 Pythia uses a collection of documentation commands to facilitate effective interaction between humans and LLMs. For information about automation scripts and utilities that support these commands, see [Documentation Automation Scripts](tools/README.md).

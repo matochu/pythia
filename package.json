@@ -1,9 +1,13 @@
 {
   "name": "pythia",
   "version": "0.0.1",
+  "type": "module",
   "scripts": {
     "setup": "ts-node tools/installCore.ts",
     "test": "vitest run tools/tests/*.test.ts",
+    "mcp-server": "npm run build-mcp && ts-node --esm src/index.ts",
+    "build": "tsc",
+    "build-mcp": "tsc -p tsconfig.mcp.json",
     "validate-links": "ts-node tools/linkValidator.ts",
     "fix-links": "ts-node tools/linkValidator.ts --fix",
     "check-coverage": "ts-node tools/coverageChecker.ts",
@@ -16,10 +20,15 @@
     "create-doc": "ts-node tools/createDocument.ts",
     "validate-quality": "ts-node tools/validateDocumentQuality.ts",
     "check-quality": "ts-node tools/checkDocQuality.ts",
+    "validate-mcp": "mcp validate",
+    "validate-mcp-all": "ts-node tools/validateMCPComponents.ts",
+    "test-mcp": "npm run build-mcp && npm run validate-mcp-all",
     "sync-confluence": "markdown-confluence",
     "sync-confluence:dry": "markdown-confluence --dry-run"
   },
   "dependencies": {
+    "mcp-framework": "^0.2.15",
+    "zod": "^3.22.4",
     "@types/fs-extra": "^11.0.4",
     "@types/glob": "^8.1.0",
     "@types/inquirer": "^9.0.7",

@@ -4,7 +4,7 @@
     "moduleResolution": "Node",
     "target": "ESNext",
     "lib": ["ESNext"],
-    "outDir": "../dist/.pythia",
+    "outDir": "./dist",
     "rootDir": ".",
     "types": ["vitest/globals", "node"],
     "allowJs": true,
@@ -19,6 +19,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["**/*.ts"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "tools/tests/**/*"],
   "references": []
 }
