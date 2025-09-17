@@ -1,7 +1,31 @@
 {
-  "name": "pythia",
-  "version": "0.0.1",
+  "name": "pythia-mcp",
+  "version": "0.1.0",
   "type": "module",
+  "description": "Pythia MCP Server - Task management and documentation workflow tools for Model Context Protocol",
+  "author": "Serhii",
+  "main": "./dist/src/index.js",
+  "bin": "./dist/src/index.js",
+  "files": [
+    "dist/src/index.js",
+    "dist/tools/*-*.js",
+    "dist/prompts/*.js",
+    "dist/resources/*.js",
+    "dist/resources/*.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "mcp",
+    "task-management",
+    "documentation",
+    "workflow",
+    "pythia"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/pythia-mcp.git"
+  },
   "scripts": {
     "setup": "ts-node tools/installCore.ts",
     "test": "vitest run tools/tests/*.test.ts",
@@ -24,11 +48,12 @@
     "validate-mcp-all": "ts-node tools/validateMCPComponents.ts",
     "test-mcp": "npm run build-mcp && npm run validate-mcp-all",
     "sync-confluence": "markdown-confluence",
-    "sync-confluence:dry": "markdown-confluence --dry-run"
+    "sync-confluence:dry": "markdown-confluence --dry-run",
+    "prepare": "npm run build-mcp",
+    "version": "npm run changelog && git add CHANGELOG.md",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
   "dependencies": {
-    "mcp-framework": "^0.2.15",
-    "zod": "^3.22.4",
     "@types/fs-extra": "^11.0.4",
     "@types/glob": "^8.1.0",
     "@types/inquirer": "^9.0.7",
@@ -47,6 +72,7 @@
     "jq": "^1.7.2",
     "lunr": "^2.3.9",
     "markdownlint": "^0.31.1",
+    "mcp-framework": "^0.2.15",
     "mdast-util-to-string": "^4.0.0",
     "natural": "^6.7.2",
     "remark-frontmatter": "^5.0.0",
@@ -54,13 +80,15 @@
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "unified": "^11.0.3",
-    "unist-util-visit": "^5.0.0"
+    "unist-util-visit": "^5.0.0",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@markdown-confluence/cli": "^5.5.2",
     "@types/cosmiconfig": "^5.0.3",
     "@types/natural": "^5.1.5",
     "@types/node": "^22.13.10",
+    "conventional-changelog-cli": "^5.0.0",
     "markdown-link-check": "^3.13.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
