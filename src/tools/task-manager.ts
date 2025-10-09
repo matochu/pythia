@@ -59,20 +59,66 @@ class TaskManagerTool extends MCPTool {
     } = input;
 
     return new Promise((resolve, reject) => {
-      const toolPath = path.join(process.cwd(), 'src/tools/taskManager.ts');
+      const toolPath = path.join(process.cwd(), 'src/tools/createDocument.ts');
       const args = ['--transpile-only', toolPath];
 
-      // Add action-specific arguments
-      args.push('--action', action);
+      // Add action-specific arguments based on createDocument.ts interface
+      if (action === 'create') {
+        args.push('--type', 'task');
+        if (taskName) args.push('--title', taskName);
+        if (projectPath) {
+          const taskPath = path.join(projectPath, 'tasks', `${taskName?.replace(/\s+/g, '-').toLowerCase()}.md`);
+          args.push('--path', taskPath);
+        }
+      } else {
+        // For other actions, fall back to updateWorkItemStatus
+        const updateToolPath = path.join(process.cwd(), 'src/tools/updateWorkItemStatus.ts');
+        const updateArgs = ['--transpile-only', updateToolPath];
 
-      if (taskName) args.push('--name', taskName);
-      if (taskId) args.push('--id', taskId);
-      if (status) args.push('--status', status);
-      if (priority) args.push('--priority', priority);
-      if (complexity) args.push('--complexity', complexity);
-      if (description) args.push('--description', description);
-      if (category) args.push('--category', category);
-      if (projectPath) args.push('--project-path', projectPath);
+        if (taskId) updateArgs.push('--id', taskId);
+        if (status) updateArgs.push('--status', status);
+        if (action) updateArgs.push('--action', action);
+
+        return new Promise((resolve, reject) => {
+          const child = spawn('ts-node', updateArgs, {
+            stdio: ['pipe', 'pipe', 'pipe'],
+            cwd: process.cwd()
+          });
+
+          let stdout = '';
+          let stderr = '';
+
+          child.stdout.on('data', (data) => {
+            stdout += data.toString();
+          });
+
+          child.stderr.on('data', (data) => {
+            stderr += data.toString();
+          });
+
+          child.on('close', (code) => {
+            if (code === 0) {
+              resolve({
+                content: [{
+                  type: 'text',
+                  text: `Task management ${action} completed:\n\n${stdout}`
+                }]
+              });
+            } else {
+              resolve({
+                content: [{
+                  type: 'text',
+                  text: `Error in task management (exit code ${code}):\n\n${stderr || stdout}`
+                }]
+              });
+            }
+          });
+
+          child.on('error', (error) => {
+            reject(error);
+          });
+        });
+      }
 
       const child = spawn('ts-node', args, {
         stdio: ['pipe', 'pipe', 'pipe'],

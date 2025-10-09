@@ -34,3 +34,4 @@ dist/
 
 # MCP Server
 mcp-server.log
+.claude

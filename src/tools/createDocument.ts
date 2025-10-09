@@ -98,7 +98,7 @@ import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as readline from 'readline';
-import { semanticSearch } from './updateDocumentationMap';
+import { semanticSearch } from './updateDocumentationMap.js';
 
 const execAsync = promisify(exec);
 
@@ -312,8 +312,13 @@ async function gatherDocumentDetails(): Promise<DocumentMetadata | null> {
     filename = `${docType}-${slugify(title)}.md`;
   }
 
-  // Get document path
-  const docDir = `${DOCS_DIR}/${docType}s`;
+  // Get document path - use .pythia/workflows structure for tasks
+  let docDir;
+  if (docType === 'task') {
+    docDir = `${DOCS_DIR}/.pythia/workflows/tasks`;
+  } else {
+    docDir = `${DOCS_DIR}/${docType}s`;
+  }
 
   // Additional metadata
   const owner = await getUserInput(
@@ -539,8 +544,15 @@ async function createDocument(): Promise<void> {
       filename = `${DOC_TYPE}-${slugify(DOC_TITLE)}.md`;
     }
 
-    // Set default path
-    const docDir = CUSTOM_PATH || `${DOCS_DIR}/${DOC_TYPE}s`;
+    // Set default path - use .pythia/workflows structure for tasks
+    let docDir;
+    if (CUSTOM_PATH) {
+      docDir = CUSTOM_PATH;
+    } else if (DOC_TYPE === 'task') {
+      docDir = `${DOCS_DIR}/.pythia/workflows/tasks`;
+    } else {
+      docDir = `${DOCS_DIR}/${DOC_TYPE}s`;
+    }
 
     docData = {
       title: DOC_TITLE,
@@ -574,7 +586,8 @@ async function createDocument(): Promise<void> {
     filename: docData.filename,
     tags: docData.tags.join(', '),
     year: docData.createdDate.split('-')[0],
-    month: docData.createdDate.split('-')[1]
+    month: docData.createdDate.split('-')[1],
+    slug: slugify(docData.title)
   };
 
   // Process the template
