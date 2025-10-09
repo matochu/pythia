@@ -17,6 +17,7 @@ This command helps LLMs produce high-quality, human-like documentation by identi
 **Key Principle**: Be direct, specific, and avoid flowery language
 
 **Red Flags**:
+
 - Overuse of certain phrases (delve, crucial, robust, leverage)
 - Excessive formatting (bold text, em-dashes)
 - Promotional tone (cutting-edge, revolutionary)
@@ -40,6 +41,7 @@ Before using this command:
 Before finalizing any documentation, verify:
 
 **Language Quality**
+
 - [ ] No overuse of "delve," "crucial," "vital," "robust," "enhance," "leverage"
 - [ ] No promotional language ("cutting-edge," "revolutionary," "game-changing")
 - [ ] No vague importance claims ("plays a pivotal role," "underscores the significance")
@@ -47,11 +49,13 @@ Before finalizing any documentation, verify:
 - [ ] Active voice preferred over passive voice
 
 **Formatting**
+
 - [ ] No excessive use of em-dashes (—) or bold text
 - [ ] No emoji unless explicitly required by the project style
 - [ ] Proper heading hierarchy maintained
 
 **Content Structure**
+
 - [ ] Sections don't end with "Challenges and Future Prospects"
 - [ ] No "Rule of Three" patterns (three parallel items everywhere)
 - [ ] Specific facts over general statements
@@ -173,6 +177,7 @@ and adoption. Future developments may address these limitations.
 
 - Maximum 1000 concurrent connections (as of v2.1)
 - No built-in caching (planned for v3.0, Q2 2024)
+
 </good>
 
 <rule>
@@ -195,6 +200,7 @@ The main challenges are:
 
 1. Technical complexity (requires senior developers)
 2. Resource constraints (minimum 16GB RAM)
+
 </good>
 
 <rule>
@@ -374,6 +380,7 @@ The Documentation Team
 1. Download the installer from https://example.com/download
 2. Run `npm install`
 3. Configure the `.env` file
+
 </good>
 
 <rule>
@@ -405,6 +412,7 @@ The authentication process involves three steps:
 1. User submits credentials
 2. Server validates against database
 3. Server returns JWT token
+
 </good>
 
 <rule>
@@ -462,23 +470,23 @@ Don't leave placeholder text. Complete the content or remove the section.
 
 ### High-Risk AI Phrases (Use Sparingly or Never)
 
-| AI Phrase | Better Alternative | Example |
-|-----------|-------------------|---------|
-| "delve into" | "examine," "explore," "discuss" | Examine the API structure |
-| "crucial" | "important," "necessary," "required" | Required for authentication |
-| "vital" | "essential," "needed," "important" | Essential configuration step |
-| "robust" | "reliable," "stable," specific metrics | Handles 10K requests/second |
-| "enhance" | "improve," specify improvement | Improves response time by 40% |
-| "leverage" | "use," "apply" | Use the caching system |
-| "facilitate" | "enable," "allow," "make easier" | Enables faster processing |
-| "utilize" | "use" | Use this endpoint |
-| "implement" | "create," "build," "add" | Create the authentication flow |
-| "comprehensive" | "complete," specify coverage | Covers all API endpoints |
-| "innovative" | Avoid or cite specific innovation | First to support WebGL 2.0 |
-| "cutting-edge" | Avoid promotional language | Uses latest ECMAScript features |
-| "state-of-the-art" | Avoid promotional language | Released in 2024 |
-| "seamless" | Specify integration method | Integrates via REST API |
-| "empower" | Specify what users can do | Allows users to export data |
+| AI Phrase          | Better Alternative                     | Example                         |
+| ------------------ | -------------------------------------- | ------------------------------- |
+| "delve into"       | "examine," "explore," "discuss"        | Examine the API structure       |
+| "crucial"          | "important," "necessary," "required"   | Required for authentication     |
+| "vital"            | "essential," "needed," "important"     | Essential configuration step    |
+| "robust"           | "reliable," "stable," specific metrics | Handles 10K requests/second     |
+| "enhance"          | "improve," specify improvement         | Improves response time by 40%   |
+| "leverage"         | "use," "apply"                         | Use the caching system          |
+| "facilitate"       | "enable," "allow," "make easier"       | Enables faster processing       |
+| "utilize"          | "use"                                  | Use this endpoint               |
+| "implement"        | "create," "build," "add"               | Create the authentication flow  |
+| "comprehensive"    | "complete," specify coverage           | Covers all API endpoints        |
+| "innovative"       | Avoid or cite specific innovation      | First to support WebGL 2.0      |
+| "cutting-edge"     | Avoid promotional language             | Uses latest ECMAScript features |
+| "state-of-the-art" | Avoid promotional language             | Released in 2024                |
+| "seamless"         | Specify integration method             | Integrates via REST API         |
+| "empower"          | Specify what users can do              | Allows users to export data     |
 
 </phrase_guidelines>
 
@@ -535,6 +543,7 @@ data protection.
 - **Robust Security**: Utilizing advanced encryption
 - **Seamless Integration**: Easy to implement
 - **Comprehensive Documentation**: Detailed guides
+
 </bad>
 
 <good label="Human-like">
@@ -554,6 +563,7 @@ tokens valid for 24 hours.
 - Tokens use RS256 signing
 - All endpoints require HTTPS
 - Rate limit: 100 requests per hour per IP
+
 </good>
 
 <analysis>
@@ -653,15 +663,15 @@ Time to complete: 15 minutes
 
 <troubleshooting>
 
-| Issue | Solution | Example Fix |
-|-------|----------|-------------|
-| Text sounds too formal or flowery | Remove adjectives. Use simple, direct sentences | "Utilize robust methodologies" → "Use proven methods" |
-| Overuse of certain words | Run word frequency check. Vary naturally | Search for "crucial", "delve", "leverage" - replace each |
-| Too much emphasis (bold, italics) | Use formatting only for UI elements, code, warnings | Remove **bold** from regular text, keep for `code` |
-| Vague statements | Add specific numbers, dates, versions, sources | "Recently" → "March 2024", "Many users" → "73%" |
-| Promotional tone | Remove marketing language. State facts neutrally | "Revolutionary platform" → "Released in 2023" |
-| Sections too long | Break into smaller sections. Use lists | Convert paragraphs to numbered steps or bullet points |
-| Overuse of passive voice | Rewrite in active voice | "is processed by" → "processes" |
+| Issue                             | Solution                                            | Example Fix                                              |
+| --------------------------------- | --------------------------------------------------- | -------------------------------------------------------- |
+| Text sounds too formal or flowery | Remove adjectives. Use simple, direct sentences     | "Utilize robust methodologies" → "Use proven methods"    |
+| Overuse of certain words          | Run word frequency check. Vary naturally            | Search for "crucial", "delve", "leverage" - replace each |
+| Too much emphasis (bold, italics) | Use formatting only for UI elements, code, warnings | Remove **bold** from regular text, keep for `code`       |
+| Vague statements                  | Add specific numbers, dates, versions, sources      | "Recently" → "March 2024", "Many users" → "73%"          |
+| Promotional tone                  | Remove marketing language. State facts neutrally    | "Revolutionary platform" → "Released in 2023"            |
+| Sections too long                 | Break into smaller sections. Use lists              | Convert paragraphs to numbered steps or bullet points    |
+| Overuse of passive voice          | Rewrite in active voice                             | "is processed by" → "processes"                          |
 
 </troubleshooting>
 
@@ -679,11 +689,14 @@ After writing documentation, run these checks:
 Search for these terms and review each usage:
 
 **High-risk AI phrases:**
+
 - "delve," "crucial," "vital," "robust," "leverage," "enhance," "facilitate"
 - "seamless," "innovative," "cutting-edge," "state-of-the-art"
 
 **Collaborative phrases:**
+
 - "Let's," "we can see," "it's important to note"
+
 </check>
 
 ### 2. Pattern Check
@@ -693,6 +706,7 @@ Search for these terms and review each usage:
 - **Bold text**: Should be < 5% of total text
 - **List variety**: Check for three-item lists in succession. Vary list lengths
 - **Heading hierarchy**: Verify proper H1 → H2 → H3 structure
+
 </check>
 
 ### 3. Structure Review
@@ -703,6 +717,7 @@ Search for these terms and review each usage:
 - [ ] No promotional language in technical descriptions
 - [ ] No placeholder text ([TODO], [TBD])
 - [ ] Consistent terminology throughout
+
 </check>
 
 ### 4. Specificity Test
@@ -716,9 +731,11 @@ For each claim, verify:
 - ❌ If not, can you add specifics or remove the claim?
 
 **Example transformations:**
+
 - "Recently released" → "Released March 2024"
 - "Many users" → "73% of surveyed users"
 - "Fast performance" → "Processes 10K requests/second"
+
 </check>
 
 </validation_steps>
@@ -775,7 +792,7 @@ To initiate a replacement:
 1. Verify the product meets replacement requirements
 2. Provide the customer with a return authorization form
 3. Approve the form after the customer completes it
-</good>
+   </good>
 
 <rule>
 Use step-by-step instructions. Break complex processes into smaller tasks.
@@ -798,7 +815,7 @@ Common error scenarios:
 - Network timeout: Retry after 5 seconds
 - Invalid credentials: Show "Login failed" message
 - Server error: Display "Service temporarily unavailable"
-</good>
+  </good>
 
 <rule>
 Provide specific examples of common scenarios and their solutions.
@@ -814,6 +831,7 @@ Provide specific examples of common scenarios and their solutions.
 #### ✅ Test Documentation with Users
 
 **Process:**
+
 1. Share documentation with different user groups
 2. Collect feedback on unclear sections
 3. Update documentation based on feedback
@@ -822,6 +840,7 @@ Provide specific examples of common scenarios and their solutions.
 **Rule:** Always test documentation with actual users before finalizing.
 
 **Success metrics:**
+
 - Task completion rate > 90%
 - Average time to complete < expected time
 - User satisfaction score > 4/5
@@ -832,12 +851,12 @@ Provide specific examples of common scenarios and their solutions.
 
 **Recommended tools:**
 
-| Tool | Purpose | Use Case |
-|------|---------|----------|
-| Grammarly | Grammar and style checking | Catch grammar errors, improve clarity |
-| DeepL | High-quality translation | Translate docs to other languages |
-| Hemingway Editor | Readability improvement | Simplify complex sentences |
-| ProWritingAid | Comprehensive writing analysis | Deep style and consistency checks |
+| Tool             | Purpose                        | Use Case                              |
+| ---------------- | ------------------------------ | ------------------------------------- |
+| Grammarly        | Grammar and style checking     | Catch grammar errors, improve clarity |
+| DeepL            | High-quality translation       | Translate docs to other languages     |
+| Hemingway Editor | Readability improvement        | Simplify complex sentences            |
+| ProWritingAid    | Comprehensive writing analysis | Deep style and consistency checks     |
 
 **Rule:** Use AI-powered tools to improve grammar, style, and readability.
 
@@ -866,7 +885,7 @@ Last updated: March 2024
 - v2.1 (2024-03-15): Added OAuth 2.0 support
 - v2.0 (2024-01-10): Migrated to REST API
 - v1.5 (2023-11-20): Added rate limiting
-</good>
+  </good>
 
 <rule>
 Track changes systematically. Include version numbers and dates.
@@ -879,12 +898,12 @@ Track changes systematically. Include version numbers and dates.
 
 **Recommended platforms:**
 
-| Platform | Best For | Key Features |
-|----------|----------|--------------|
-| GitBook | Version-controlled documentation | Git integration, markdown support |
-| Notion | Team collaboration | Real-time editing, databases |
-| Confluence | Enterprise documentation | Permissions, integrations |
-| GitHub Wiki | Developer-focused docs | Code integration, version control |
+| Platform    | Best For                         | Key Features                      |
+| ----------- | -------------------------------- | --------------------------------- |
+| GitBook     | Version-controlled documentation | Git integration, markdown support |
+| Notion      | Team collaboration               | Real-time editing, databases      |
+| Confluence  | Enterprise documentation         | Permissions, integrations         |
+| GitHub Wiki | Developer-focused docs           | Code integration, version control |
 
 **Rule:** Choose tools that support team collaboration and feedback.
 
@@ -899,6 +918,7 @@ Track changes systematically. Include version numbers and dates.
 #### ✅ Ensure Accessibility
 
 **Requirements:**
+
 - Use alt text for images
 - Provide screen reader compatibility
 - Use proper heading hierarchy (H1 → H2 → H3)
@@ -913,7 +933,7 @@ Track changes systematically. Include version numbers and dates.
 1. Enter your username in the first field
 2. Enter your password in the second field
 3. Click the "Sign In" button
-</good>
+   </good>
 
 <rule>
 Make documentation accessible to users with disabilities.
@@ -926,12 +946,12 @@ Make documentation accessible to users with disabilities.
 
 **Standards to consider:**
 
-| Standard | Focus | Authority |
-|----------|-------|-----------|
+| Standard      | Focus                       | Authority                   |
+| ------------- | --------------------------- | --------------------------- |
 | ISO/IEC 26514 | Software user documentation | International Standards Org |
-| IEEE 1063 | Software user documentation | IEEE Standards |
-| WCAG 2.1 | Web content accessibility | W3C |
-| MDN Web Docs | Web documentation standards | Mozilla |
+| IEEE 1063     | Software user documentation | IEEE Standards              |
+| WCAG 2.1      | Web content accessibility   | W3C                         |
+| MDN Web Docs  | Web documentation standards | Mozilla                     |
 
 **Rule:** Adhere to established international documentation standards.
 
@@ -993,6 +1013,7 @@ Never include real credentials or sensitive data in examples. Use placeholders o
 #### ✅ Use Diagrams and Charts
 
 **When to use:**
+
 - Complex system architecture
 - Process flows with multiple decision points
 - Data relationships and dependencies
@@ -1000,12 +1021,12 @@ Never include real credentials or sensitive data in examples. Use placeholders o
 
 **Recommended tools:**
 
-| Tool | Type | Best For |
-|------|------|----------|
-| Mermaid | Code-based diagrams | Version-controlled diagrams in markdown |
-| Draw.io | Visual editor | Complex architectural diagrams |
-| Lucidchart | Professional tool | Team collaboration on diagrams |
-| PlantUML | Code-based UML | Software architecture diagrams |
+| Tool       | Type                | Best For                                |
+| ---------- | ------------------- | --------------------------------------- |
+| Mermaid    | Code-based diagrams | Version-controlled diagrams in markdown |
+| Draw.io    | Visual editor       | Complex architectural diagrams          |
+| Lucidchart | Professional tool   | Team collaboration on diagrams          |
+| PlantUML   | Code-based UML      | Software architecture diagrams          |
 
 <example>
 <good>
@@ -1086,21 +1107,23 @@ Optional configurations and customizations.
 ## Examples
 
 ### Example 1: [Common Use Case]
+
 ```code
 // Real, working code example
 ```
 
 ### Example 2: [Another Use Case]
+
 ```code
 // Another real example
 ```
 
 ## Troubleshooting
 
-| Issue | Solution | Related Docs |
-|-------|----------|--------------|
-| Common error 1 | How to fix | [Link](#) |
-| Common error 2 | How to fix | [Link](#) |
+| Issue          | Solution   | Related Docs |
+| -------------- | ---------- | ------------ |
+| Common error 1 | How to fix | [Link](#)    |
+| Common error 2 | How to fix | [Link](#)    |
 
 ## API Reference
 
@@ -1112,6 +1135,7 @@ Detailed technical reference (if applicable).
 - [Related Feature 2](link)
 
 **Last Updated**: YYYY-MM-DD
+
 ```
 </template>
 
@@ -1171,3 +1195,4 @@ Use consistent templates across all documentation. Customize sections based on c
 ---
 
 **Last Updated**: 2025-10-09
+```

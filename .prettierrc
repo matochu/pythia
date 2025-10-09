@@ -1,4 +1,17 @@
 {
   "singleQuote": true,
-  "trailingComma": "none"
+  "trailingComma": "none",
+  "proseWrap": "preserve",
+  "htmlWhitespaceSensitivity": "ignore",
+  "overrides": [
+    {
+      "files": ["*.md", "**/*.md"],
+      "options": {
+        "proseWrap": "preserve",
+        "printWidth": 1000,
+        "htmlWhitespaceSensitivity": "ignore",
+        "parser": "markdown"
+      }
+    }
+  ]
 }
