@@ -28,3 +28,10 @@ Thumbs.db
 
 # Config
 config.json
+
+# Build output
+dist/
+
+# MCP Server
+mcp-server.log
+.claude

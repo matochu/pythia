@@ -1,0 +1,36 @@
+# Source files
+src/
+tools/
+.pythia/
+
+# Config files
+tsconfig.json
+tsconfig.mcp.json
+.vscode/
+.cursor/
+
+# Development files
+*.test.ts
+vitest.config.ts
+.env*
+
+# Git
+.git/
+.gitignore
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build artifacts (except dist)
+.tmp/
+.cache/
+
+# Documentation (except README.md)
+docs/
+*.md
+!README.md
+!CHANGELOG.md

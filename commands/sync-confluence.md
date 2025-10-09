@@ -363,14 +363,14 @@ nano your-document.md
 # Create minimal config file for single document sync
 cat > .markdown-confluence.json << EOF
 {
-  "confluenceBaseUrl": "https://titanos.atlassian.net",
-  "confluenceParentId": "418447369",
-  "confluenceSpaceKey": "DT1",
-  "atlassianUserName": "serhii.frolov@titanos.tv",
+  "confluenceBaseUrl": "https://your-domain.atlassian.net",
+  "confluenceParentId": "PARENT_PAGE_ID",
+  "confluenceSpaceKey": "YOUR_SPACE",
+  "atlassianUserName": "your.email@domain.com",
   "folderToPublish": ".",
   "files": [
     {
-      "path": "your-document.md",
+      "path": "path/to/your-document.md",
       "labels": ["proposal", "documentation"]
     }
   ],

@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": [
+    "src/tools/*-*.ts",
+    "src/prompts/**/*.ts",
+    "src/resources/**/*.ts",
+    "src/resources/**/*.md"
+  ],
+  "exclude": []
+}
