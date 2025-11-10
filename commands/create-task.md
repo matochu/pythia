@@ -174,6 +174,41 @@ grep -A 5 -B 5 "key-term" "$CONTEXTS_PATH/[category]/context-YYYY-MM-DD-topic.md
 
 **If no relevant contexts exist**: Use [@create-context.md](mdc:commands/create-context.md) Quick Start to create minimal context.
 
+### Plan Documents (Implementation Planning)
+
+For tasks requiring detailed code implementation planning, consider creating a plan document using **Plan Mode**:
+
+**When to create plans:**
+
+- Multiple implementation phases
+- Complex technical architecture
+- Dependencies on external systems
+- Need for step-by-step code implementation guidance
+
+**Creating plans:**
+Use `@create-plan.md` command to create detailed implementation plans that will guide the actual code writing process.
+
+**Plan structure:**
+
+```
+.pythia/workflows/plans/
+└── task-YYYY-MM-descriptive-name/
+    ├── 1-first-phase.plan.md
+    ├── 2-second-phase.plan.md
+    └── 3-optimization-phase.plan.md
+```
+
+**Referencing plans in tasks:**
+
+```markdown
+### Implementation Plans
+
+- [Redux Persist Integration](mdc:.pythia/workflows/plans/task-2025-10-hybrid-data-management-system/1-redux-persist-integration.plan.md)
+- [Key Architecture Decisions](mdc:.pythia/workflows/plans/task-2025-10-hybrid-data-management-system/2-key-decisions.plan.md)
+```
+
+**Important**: Plans are for implementation guidance, while context documents provide background and rationale.
+
 Context documents should inform:
 
 - Task scope and objectives
@@ -465,6 +500,7 @@ This command integrates with other Pythia components:
 
 - **`@create-proposal.md`** - For complex tasks requiring proposals first
 - **`@create-idea.md`** - For tasks originating from ideas
+- **`@create-plan.md`** - For creating detailed code implementation plans (Plan Mode)
 - **`@report-workflows.md`** - To generate workflow status reports
 - **`@validate-documentation.md`** - To validate task documentation
 
@@ -499,6 +535,7 @@ This command integrates with other Pythia components:
 - [Analyze AI Solutions](mdc:commands/analyze-ai-solutions.md) - Quality control for AI-generated solutions
 - [Context Documentation Guide](mdc:commands/create-context.md) - Working with context documents
 - [Create Context](mdc:commands/create-context.md) - Flexible context creation with adaptive naming
+- [Create Plan](mdc:commands/create-plan.md) - Creating detailed implementation plans
 - [Report Workflows](mdc:commands/report-workflows.md)
 
 ---

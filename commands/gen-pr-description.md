@@ -49,6 +49,7 @@ Testing: Unit tests for auth components, integration tests for API calls
 - [ ] Proofread for clarity and completeness
 - [ ] Use proper Markdown formatting
 - [ ] Write in English, regardless of request language
+- [ ] Validate text quality against [Documentation Writing Guidelines](mdc:commands/doc-writing.md)
 - [ ] Provide final description as raw Markdown in a code block
 
 ## PR Description Structure
@@ -67,15 +68,19 @@ Brief overview of what this PR addresses and why.
 ## Motivation
 
 ### Problem Statement
+
 Clear formulation of the problem being solved.
 
 ### Current Behavior
+
 How it works now (if applicable).
 
 ### Expected Behavior
+
 How it should work after changes.
 
 ### Alternatives Considered (Optional)
+
 Other approaches that were evaluated and why they were not chosen.
 
 ## Changes
@@ -97,6 +102,7 @@ Other approaches that were evaluated and why they were not chosen.
 ### Breaking Changes ⚠️ (If applicable)
 
 **BREAKING**:
+
 - What changed in API/behavior
 - Migration guide for users
 - Deprecated features and alternatives
@@ -112,6 +118,7 @@ Information about how changes were tested, including test types, edge cases, and
 ## Review Focus
 
 Key areas that require special attention during review:
+
 - [ ] Specific module or logic
 - [ ] Performance implications
 - [ ] Security considerations
@@ -133,13 +140,16 @@ For typo fixes, minor refactors, or trivial bug fixes:
 # Title of the PR
 
 ## Summary
+
 Brief description of what changed and why (1-2 sentences).
 
 ## Changes
+
 - Change detail 1
 - Change detail 2
 
 ## Testing
+
 How it was verified.
 ```
 
@@ -153,15 +163,18 @@ Different PR types require different levels of detail and focus areas.
 # Refactor: [Component/Module Name]
 
 ## Summary
+
 Brief description of refactoring goals and scope.
 
 ## Motivation
 
 ### Code Quality Issues
+
 - Technical debt being addressed
 - Maintainability concerns
 
 ### Benefits
+
 - Improved readability
 - Better performance
 - Easier testing
@@ -169,22 +182,27 @@ Brief description of refactoring goals and scope.
 ## Changes
 
 ### Code Structure
+
 - Reorganized components/modules
 - Extracted reusable utilities
 - Simplified complex logic
 
 ### Breaking Changes ⚠️ (If applicable)
+
 - Internal API changes (if any)
 
 ## Implementation
+
 Technical approach to refactoring, patterns used.
 
 ## Testing
+
 - [ ] All existing tests pass
 - [ ] No behavior changes verified
 - [ ] Performance benchmarks (if applicable)
 
 ## Review Focus
+
 - [ ] Logic equivalence maintained
 - [ ] No unintended side effects
 ```
@@ -195,28 +213,34 @@ Technical approach to refactoring, patterns used.
 # CI/CD: [Pipeline/Workflow Description]
 
 ## Summary
+
 What changes were made to CI/CD pipeline and why.
 
 ## Motivation
+
 Problem with current pipeline or new requirement.
 
 ## Changes
 
 ### Pipeline Configuration
+
 - Modified workflows
 - New steps added
 - Dependencies updated
 
 ### Performance
+
 - Build time impact: +/- Xs
 - Resource usage changes
 
 ## Testing
+
 - [ ] Pipeline tested on feature branch
 - [ ] All stages pass successfully
 - [ ] Rollback plan verified
 
 ## Review Focus
+
 - [ ] Security implications
 - [ ] Secrets and credentials handling
 - [ ] Resource limits and costs
@@ -228,19 +252,23 @@ Problem with current pipeline or new requirement.
 # Docs: [Documentation Area]
 
 ## Summary
+
 What documentation was added/updated and why.
 
 ## Motivation
+
 Gap in current documentation or need for clarification.
 
 ## Changes
 
 ### Documentation Updates
+
 - New guides added
 - Existing docs updated
 - Examples added/improved
 
 ## Review Focus
+
 - [ ] Technical accuracy
 - [ ] Clarity and readability
 - [ ] Code examples work correctly
@@ -275,6 +303,7 @@ Gap in current documentation or need for clarification.
 - **Alternatives Considered**: Other approaches evaluated and why they were rejected (only when relevant)
 
 Only include subsections when:
+
 - User explicitly asks for detailed motivation
 - There's complex business/technical context that reviewers need
 - Architectural decisions need explanation
@@ -313,41 +342,118 @@ Describe:
 When generating PR descriptions, AI assistants should:
 
 1. **Analyze Context First**
+
    - Review git diff to understand actual code changes
    - Check commit messages for development context
    - Identify related issues or tickets mentioned
 
 2. **Identify Primary Purpose**
+
    - Determine the MAIN goal of the PR (don't just list everything)
    - Distinguish between primary changes and side effects
    - Group related changes logically
 
 3. **Choose Appropriate Template**
+
    - Use Quick Mode for trivial changes (typos, minor fixes)
    - Use Full Template for features and significant bug fixes
    - Use specialized templates for refactoring, CI/CD, or docs-only changes
 
 4. **Highlight Breaking Changes**
+
    - Identify any breaking changes prominently at the top
    - Provide migration guidance when applicable
    - Mark deprecated features clearly
 
 5. **Focus on WHY, Not Just WHAT**
+
    - Explain the reasoning behind decisions
    - Provide context for reviewers
    - Document alternatives that were considered
 
 6. **Generate Review Focus**
+
    - Identify complex or risky areas
    - Highlight security implications
    - Point out performance-critical changes
+
+7. **Validate Text Quality**
+   - Review generated text against [Documentation Writing Guidelines](mdc:commands/doc-writing.md)
+   - Remove AI-telltale phrases and promotional language
+   - Replace vague statements with specific facts (numbers, dates, versions)
+   - Ensure active voice and direct language
+   - Check formatting (minimal bold, no excessive em-dashes)
+   - Verify consistent terminology throughout
+
+## Text Quality Validation
+
+Before finalizing the PR description, validate it against the [Documentation Writing Guidelines](mdc:commands/doc-writing.md):
+
+### Language Quality Check
+
+- [ ] No overuse of AI-telltale phrases: "delve," "crucial," "vital," "robust," "enhance," "leverage," "facilitate," "utilize"
+- [ ] No promotional language: "cutting-edge," "revolutionary," "game-changing," "state-of-the-art"
+- [ ] No vague importance claims: "plays a pivotal role," "underscores the significance"
+- [ ] No collaborative phrases: "Let's explore," "we can see," "it's important to note"
+- [ ] Active voice preferred over passive voice
+- [ ] Specific facts with numbers, dates, or versions instead of vague statements
+
+### Formatting Check
+
+- [ ] No excessive use of em-dashes (—) or bold text
+- [ ] Bold text used sparingly (less than 5% of total text)
+- [ ] Proper heading hierarchy maintained
+- [ ] No emoji unless explicitly required by project style
+
+### Content Structure Check
+
+- [ ] No sections ending with "Challenges and Future Prospects"
+- [ ] No "Rule of Three" patterns (three parallel items everywhere)
+- [ ] Specific facts over general statements
+- [ ] No placeholder text or TODOs
+- [ ] Consistent terminology throughout
+
+### Specificity Test
+
+For each claim, verify:
+
+- ✅ Is there a specific number, date, or version?
+- ✅ Is there a named source?
+- ✅ Are examples concrete and realistic?
+- ❌ If not, can you add specifics or remove the claim?
+
+**Example transformations:**
+
+- "Recently released" → "Released March 2024"
+- "Many users" → "73% of surveyed users"
+- "Fast performance" → "Processes 10K requests/second"
+- "Significant improvement" → "Reduces response time by 40%"
+
+### High-Risk Phrases to Review
+
+Search for and review each usage of:
+
+- "delve," "crucial," "vital," "robust," "leverage," "enhance," "facilitate"
+- "seamless," "innovative," "cutting-edge," "state-of-the-art"
+- "Let's," "we can see," "it's important to note"
+- "comprehensive," "empower," "utilize"
+
+Replace with more direct alternatives:
+
+- "delve into" → "examine," "explore," "discuss"
+- "crucial" → "important," "necessary," "required"
+- "robust" → "reliable," "stable," or specific metrics
+- "enhance" → "improve," or specify improvement
+- "leverage" → "use," "apply"
+- "utilize" → "use"
 
 ## Output Format
 
 Always provide the PR description for **GitHub**:
 
 1. **In English**, regardless of request language
-2. **As a properly formatted Markdown code block** for easy copying:
+2. **Validated against documentation writing guidelines** (see [Text Quality Validation](#text-quality-validation) above)
+3. **As a properly formatted Markdown code block** for easy copying:
 
 ````
 ```markdown
@@ -361,7 +467,7 @@ Always provide the PR description for **GitHub**:
 ```
 ````
 
-3. **Include PR metadata** (after the markdown block):
+4. **Include PR metadata** (after the markdown block):
    - Suggested PR title (50 chars max)
    - Suggested labels: `feature`, `bugfix`, `breaking-change`, `documentation`, etc.
    - Reviewers recommendations (if applicable)
@@ -469,9 +575,12 @@ Added explicit destruction of player instances on unmount or navigation, with tr
 6. **Non-English Description**: Always write in English for consistency.
 7. **Raw Format Missing**: Provide the description in a markdown code block for easy copying.
 8. **Repetitive Content**: Avoid repeating the same information between Summary and Motivation sections.
+9. **AI Writing Patterns**: Review text for overused phrases ("delve," "crucial," "leverage"), promotional language, and vague statements. Replace with specific facts and direct language.
+10. **Excessive Formatting**: Avoid overusing bold text and em-dashes. Use formatting sparingly for emphasis.
 
 ## Related Documents
 
+- [Documentation Writing Guidelines](mdc:commands/doc-writing.md) - Text quality validation rules
 - [Documentation Guidelines](../methodology/documentation-guidelines.md)
 - [Git Workflow](../methodology/git-workflow.md)
 - [Code Review Standards](../development/code-review-standards.md)
