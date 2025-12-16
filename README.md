@@ -340,6 +340,7 @@ If the validation passes without errors, your installation is working correctly.
 
 Our documentation is organized into several categories to make information easy to find and maintain:
 
+- **Agents**: Specialized role definitions for LLM behavior and task-specific workflows
 - **Commands**: Automated commands for documentation management
 - **Concept**: Core concept and architecture of the Pythia system
 - **Guides**: Practical how-to instructions
@@ -355,6 +356,21 @@ Our documentation is organized into several categories to make information easy 
 - [CONCEPT](CONCEPT.md): Detailed description of the Pythia system concept and architecture, principles of document classification and their interaction
 - [Documentation Map](navigation/documentation-map.md): Central navigation hub for all documentation, providing quick access to the necessary information
 - [Documentation Guidelines](methodology/documentation-guidelines.md): Main rules and standards for working with documentation, including formatting and structure requirements
+
+## Agent System
+
+Pythia includes a comprehensive **agent system** that defines specialized roles for LLMs to handle different types of tasks:
+
+- **Development Agents**: [agent-developer](agents/agent-developer.md), [agent-feature-developer](agents/agent-feature-developer.md)
+- **Testing Agents**: [agent-qa-automation-head](agents/agent-qa-automation-head.md), [agent-tdd-writer](agents/agent-tdd-writer.md), [agent-tdd-dev](agents/agent-tdd-dev.md)
+- **Analysis Agents**: [agent-architect](agents/agent-architect.md), [agent-code-analyzer](agents/agent-code-analyzer.md)
+
+Each agent has:
+- Clear role boundaries and operational limits
+- Escalation protocols for inter-agent collaboration
+- Tiered information architecture (Critical → Important → Reference)
+
+**Quick Start**: See [Agent Selection Guide](agents/_agent-selection-guide.md) to choose the right agent for your task.
 
 ## Working with Commands
 
@@ -400,6 +416,10 @@ Most commands follow a consistent structure:
 
 ```
 /
+├── agents/                    # Specialized LLM role definitions
+│   ├── agent-*.md             # Individual agent definitions
+│   ├── _agent-selection-guide.md
+│   └── _shared-principles.md
 ├── architecture/              # Analytical documents about architecture
 ├── methodology/               # Development methodologies and processes
 ├── rules/                     # Guidelines and standards for LLMs
@@ -414,7 +434,10 @@ Most commands follow a consistent structure:
 ├── templates/                 # Templates for creating new documents
 ├── commands/                  # Instructions for automation tools
 ├── tools/                     # Automation scripts and utilities
-├── VALIDATION_IMPROVEMENTS.md # Guide for enhancing validation
+├── src/                       # MCP server implementation
+├── contexts/                  # Context documents
+├── processes/                 # Process definitions
+├── reports/                   # Documentation analysis reports
 ├── CHANGELOG.md               # Record of documentation changes
 ├── CONCEPT.md                 # Core concept and architecture of the Pythia system
 └── README.md                  # This file

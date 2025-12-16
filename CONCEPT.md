@@ -26,6 +26,13 @@ Pythia is a mediator platform that stores, manages, and develops a set of docume
 - Analytical and structured documents that capture the process of developing ideas, proposals, analysis, task creation, etc.
 - Allow both human and LLM to have the same vision of the goal, status, and next steps in task execution
 
+### 5. Agent Documents (Agents)
+
+- Specialized role definitions for LLM behavior, defining boundaries, workflows, and escalation protocols for different types of tasks
+- Structure LLM behavior for specific domains (development, architecture, testing, analysis)
+- Enable clear role boundaries and inter-agent collaboration through explicit escalation protocols
+- Provide tiered information architecture (Critical → Important → Reference) for rapid comprehension
+
 ## System Role
 
 - **Mediator**: Ensures clarity and understanding in interaction, eliminates inaccuracies and ambiguities
@@ -59,6 +66,7 @@ The core is developed as a separate repository. Its components:
 
 - **Rules**: Basic interaction rules, response format requirements, quality control, etc.
 - **Commands**: Commands that can be used as instructions or actions performed by LLM
+- **Agents**: Specialized role definitions that structure LLM behavior for different task types (development, architecture, testing, analysis)
 - **Tools**: Automated scripts for working with documents, generating contexts, format conversion, validation
 - **Guides**: Standards and recommendations for creating documents, workflows, and interacting with LLM
 - **Methodology**: Set of approaches and principles that regulate the process of documentation generation and validation
@@ -90,6 +98,7 @@ All documents in the Pythia system can be classified along two key dimensions:
    - Command Documents (Commands)
    - Context Documents (Context)
    - Workflow Documents (Workflow)
+   - Agent Documents (Agents)
 
 2. **By Level of Belonging**:
    - **Core**: Documents that are part of the system's main repository and form its core. They are stable, universal, and can be used in any project
@@ -140,12 +149,22 @@ The Pythia system core is organized in a separate repository with the following 
 
 ```
 pythia-core/
+├── agents/              # Specialized LLM role definitions
+│   ├── agent-*.md       # Individual agent definitions
+│   ├── _agent-selection-guide.md
+│   └── _shared-principles.md
 ├── rules/               # Basic rules for LLM interaction
 ├── commands/            # Instructions and commands for working with documents
 ├── methodology/         # Methodological approaches and principles
 ├── templates/          # Templates for document creation
 ├── tools/              # Tools for document automation
 ├── navigation/         # Tools for navigation between documents
+├── src/                # MCP server implementation
+├── guides/             # Standards and recommendations
+├── contexts/           # Context documents
+├── workflows/          # Workflow documents
+├── processes/          # Process definitions
+├── reports/            # Documentation analysis reports
 ├── CONCEPT.md          # Conceptual system description
 └── README.md           # General information and instructions
 ```
@@ -158,7 +177,7 @@ When Pythia core is integrated into a specific project, the structure looks like
 project/
 ├── .pythia/                     # Project documentation with integrated Pythia core
 │   ├── core/                # Pythia core (via git submodule or symlink)
-│   │                        # contains rules, commands, methodology, templates...
+│   │                        # contains rules, commands, agents, methodology, templates...
 │   ├── contexts/            # Context documents (#project)
 │   │   ├── project/         # Project contexts (overviews, system descriptions)
 │   │   ├── technical/       # Technical contexts (technology analysis)
@@ -212,4 +231,4 @@ For effective system operation, integration of all components into a unified "ec
 
 ---
 
-**Last Updated**: 2025-03-24
+**Last Updated**: 2025-12-16
