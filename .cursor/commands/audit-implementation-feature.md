@@ -15,7 +15,7 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
 
 **Output**:
 
-1. **Architect audit report** written to `{feature-dir}/reports/{plan-slug}.architect-audit.md` per format specification (see Plan 3 Step 7).
+1. **Architect audit report** written to `{feature-dir}/reports/{plan-slug}.audit.md` per format specification (see Plan 3 Step 7).
 2. **Structured response** in chat using Architect Audit Response Format (plain Markdown) — see `references/response-formats.md` for format specification.
 3. **Plan update** (if decision is "ready"): Update plan file `plans/{plan-slug}.plan.md`:
    - Change `Status` from "In Progress" to "Implemented"

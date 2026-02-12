@@ -210,7 +210,6 @@ Copy content from the plan template and fill in all sections:
 ### Required Sections
 
 1. **Metadata**:
-
    - Plan number and name
    - Related Feature (with link)
    - Creation Date

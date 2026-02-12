@@ -10,7 +10,7 @@
 ## Metadata
 - **Plan-Id**: {plan-slug}
 - **Plan-Version**: v1 (or v2, v3...)
-- **Last review round**: notes/{plan-slug}.review.md → ## {plan-slug} R{n} — YYYY-MM-DD (or "Initial plan — no review yet")
+- **Last review round**: reports/{plan-slug}.review.md → ## {plan-slug} R{n} — YYYY-MM-DD (or "Initial plan — no review yet")
 
 ## Plan revision log
 

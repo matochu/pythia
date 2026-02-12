@@ -1,6 +1,6 @@
 # Architect Audit Format Specification
 
-**File**: `reports/{plan-slug}.architect-audit.md`
+**File**: `reports/{plan-slug}.audit.md`
 
 ## Required Structure
 

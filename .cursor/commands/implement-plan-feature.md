@@ -11,7 +11,7 @@
 
 **Gate Logic** (execute before delegating to Developer):
 
-1. Check if `{feature-dir}/notes/{plan-slug}.review.md` exists in feature directory.
+1. Check if `{feature-dir}/reports/{plan-slug}.review.md` exists in feature directory.
 2. Parse review file for `Verdict: READY` (search for line starting with `Verdict:`).
 3. If no review file exists:
    - Return error: "Cannot implement: plan must have review pass (Verdict: READY). Run /review-plan-feature first or complete review cycle."

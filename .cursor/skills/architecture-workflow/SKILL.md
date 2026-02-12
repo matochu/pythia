@@ -16,13 +16,26 @@ This skill provides procedures and formats for the plan stabilization workflow. 
 ## Commands Reference
 
 Commands are located in `.cursor/commands/`:
+- `/feature` → `.cursor/commands/feature.md`
+- `/context-feature` → `.cursor/commands/context-feature.md`
 - `/plan-feature` → `.cursor/commands/plan-feature.md`
 - `/review-plan-feature` → `.cursor/commands/review-plan-feature.md`
 - `/replan-feature` → `.cursor/commands/replan-feature.md`
 - `/implement-plan-feature` → `.cursor/commands/implement-plan-feature.md` (with gate logic)
 - `/audit-implementation-feature` → `.cursor/commands/audit-implementation-feature.md`
+- `/retro-feature` → `.cursor/commands/retro-feature.md`
 
 ## Workflow Procedures
+
+### Feature Creation
+- Input: Feature requirements, scope, objectives
+- Output: Feature document in `feat-XXX/feat-XXX.md`
+- Format: See feature template structure
+
+### Context Creation
+- Input: Feature context + context topic/type
+- Output: Context document in `feat-XXX/contexts/{name}.context.md`
+- Format: See context template structure
 
 ### Plan Creation/Revision
 - Input: Feature context + plan slug (required) + optional review text or link to round
@@ -53,6 +66,14 @@ Commands are located in `.cursor/commands/`:
   - Add/update plan entry in "Existing External Plans" section
   - Add `**Status: Implemented**` marker to plan entry
 
+### Retrospective
+- Input: Feature context + plan slug (completed plan with Status: "Implemented")
+- Output: Retrospective report in notes/
+- Format: See `references/retro-format.md`
+- **Gate**: Plan must have Status: "Implemented"
+- **Analysis**: Collects data from plan, review, implementation, and audit artifacts
+- **Output**: Comprehensive retrospective report with insights, patterns, challenges, solutions, and recommendations
+
 ## Review Loop Policy
 
 - **MAX_REVIEW_LOOPS = 2** (recommended 2–3 rounds per Plan 1)
@@ -63,8 +84,8 @@ Commands are located in `.cursor/commands/`:
 
 All artifacts are hermetic per feature:
 - Plans: `feat-XXX/plans/{plan-slug}.plan.md`
-- Reviews: `feat-XXX/notes/{plan-slug}.review.md`
+- Reviews: `feat-XXX/reports/{plan-slug}.review.md`
 - Implementation: `feat-XXX/reports/{plan-slug}.implementation.md`
-- Audit: `feat-XXX/reports/{plan-slug}.architect-audit.md`
+- Audit: `feat-XXX/reports/{plan-slug}.audit.md`
 
 Plan slug identifies the plan within a feature. All related artifacts use the same plan slug.

@@ -385,7 +385,7 @@ If this feature should never be archived, add the `no-archive` tag in the Overvi
 
 ### Core Management
 
-- [Create Feature](mdc:commands/create-feature.md) - Feature creation workflow
+- [Create Feature](mdc:.cursor/commands/feature.md) - Feature creation workflow
 - [Create Feature Plan](mdc:commands/create-feature-plan.md) - Plan creation
 - [Create Context](mdc:commands/create-context.md) - Context documentation
 - [Manage Task](mdc:commands/manage-task.md) - Task management workflow

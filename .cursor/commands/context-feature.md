@@ -1,4 +1,4 @@
-# Command: Create Feature Context Document
+# Command: /context-feature
 
 > **IMPORTANT**: This command requires active execution, not just planning. Follow each step in the checklist by actually performing the actions, creating files, updating references, and validating the documentation.
 >
@@ -93,17 +93,17 @@ This command can be used in any project workspace:
 
 ```bash
 # Reference the command
-@create-feature-context.md
+@context-feature.md
 
 # Execute with feature context
-@create-feature-context.md
+@context-feature.md
 Feature: feat-2025-10-feature-name
 Context: Technical Analysis
 Type: Technical Analysis
 Topic: Analysis topic and implementation strategies
 
 # Example with existing contexts
-@create-feature-context.md
+@context-feature.md
 Feature: feat-2025-10-feature-name
 Context: Performance Analysis
 Note: This is a technical analysis context
@@ -222,6 +222,7 @@ When creating a feature context using the template from `@create-context.md`, en
    ```
 
 2. **Links to Related Documents section includes:**
+
    - Related Feature (required - use relative path `../feat-YYYY-MM-name.md`)
    - Related Plans (if applicable - use relative path `../plans/N-plan-name.plan.md`)
    - Related Contexts (other feature contexts - use relative path `./other-context.context.md`)
@@ -490,7 +491,7 @@ When using the template from `@create-context.md`, ensure the **Links to Related
 
 ### Feature-Specific Commands
 
-- [Create Feature Plan Command](mdc:commands/create-feature-plan.md) - For feature implementation plans
+- `/plan-feature` - For feature implementation plans
 - [Feature Template](mdc:templates/feature-template.md) - Feature document structure
 
 ### Templates

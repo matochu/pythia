@@ -1,4 +1,4 @@
-# Command: Create Feature Document
+# Command: /feature
 
 > **IMPORTANT**: This command creates complex, multi-phase work items called Features. Features represent substantial development efforts requiring detailed planning, context documentation, and progress tracking.
 >
@@ -45,13 +45,13 @@ This command can be used in any project workspace:
 
 ```bash
 # Reference the command
-@create-feature.md
+@feature.md
 
 # Execute with project context
 Execute this command for my project at [project-path]
 
 # Example usage
-@create-feature.md
+@feature.md
 Context: Building custom Chromium with WASM integration
 Objective: Complete browser modification with plugin system
 Complexity: High
@@ -287,7 +287,7 @@ Link to all implementation plans for this feature:
 
 ### Creating New Plans
 
-Use [@create-feature-plan.md](mdc:commands/create-feature-plan.md) command to create detailed implementation plans.
+Use `/plan-feature` command to create detailed implementation plans.
 
 ## Related Contexts
 
@@ -385,7 +385,6 @@ Any additional information, caveats, or considerations:
 ### Core Management
 
 - [Manage Task](mdc:commands/manage-task.md) - Task management workflow
-- [Create Feature Plan](mdc:commands/create-feature-plan.md) - Plan creation
 - [Feature Template](mdc:templates/feature-template.md) - Template reference
 
 ### Related Documentation
@@ -407,7 +406,7 @@ Subdirectories are created only when needed:
 # Create when first plan is needed
 mkdir -p "$FEATURE_DIR/plans"
 
-# Use @create-feature-plan.md to create plans
+# Use /plan-feature to create plans
 ```
 ````
 
@@ -417,7 +416,7 @@ mkdir -p "$FEATURE_DIR/plans"
 # Create when first context document is needed
 mkdir -p "$FEATURE_DIR/contexts"
 
-# Use @create-context.md to create contexts
+# Use /context-feature to create contexts
 ```
 
 ### Creating Reports Directory
@@ -446,7 +445,6 @@ Update related documents to reference this new feature:
 ### Core Management
 
 - [Manage Task](mdc:commands/manage-task.md) - Task management workflow
-- [Create Feature Plan](mdc:commands/create-feature-plan.md) - Plan creation
 - [Feature Template](mdc:templates/feature-template.md) - Template reference
 
 ### Context Integration
@@ -557,24 +555,29 @@ echo "Review and move relevant contexts manually (create contexts/ when needed)"
 ## Common Issues and Solutions
 
 1. **Unclear Scope**:
+
    - Issue: Feature scope too broad or undefined
    - Solution: Break down into smaller features or define clear boundaries
 
 2. **Missing Plans**:
+
    - Issue: Feature created without implementation plans
-   - Solution: Use @create-plan.md to create at least one initial plan
+   - Solution: Use `/plan-feature` to create at least one initial plan
 
 3. **Creating Empty Directories**:
+
    - Issue: Creating plans/, contexts/, reports/, notes/ upfront
    - Solution: Create directories only when you have content for them
 
 4. **Contexts vs Notes Confusion**:
+
    - Issue: Unclear what goes in contexts/ vs notes/
    - Solution:
-     - contexts/ = structured analysis, decisions, architecture (use @create-context.md)
+     - contexts/ = structured analysis, decisions, architecture (use `/context-feature`)
      - notes/ = explorations, research, informal documentation
 
 5. **Task vs Feature Decision**:
+
    - Issue: Uncertain whether to use task or feature
    - Solution: If work requires plans + contexts → feature; otherwise → task
 
@@ -588,8 +591,9 @@ This command integrates with other Pythia components:
 
 ### Related Commands
 
-- **`@create-plan.md`** - Create implementation plans for feature
-- **`@create-context.md`** - Create context documentation
+- **`/plan-feature`** - Create implementation plans for feature
+- **`/context-feature`** - Create context documentation for feature
+- **`@create-context.md`** - Create general context documentation
 - **`@create-task.md`** - For simpler work items
 - **`@report-workflows.md`** - Generate workflow status reports
 - **`@validate-documentation.md`** - Validate feature documentation
@@ -603,7 +607,6 @@ This command integrates with other Pythia components:
 ## Related Documents
 
 - [Feature Template](mdc:templates/feature-template.md)
-- [Create Feature Plan](mdc:commands/create-feature-plan.md)
 - [Create Context](mdc:commands/create-context.md)
 - [Create Task](mdc:commands/create-task.md)
 - [Report Workflows](mdc:commands/report-workflows.md)

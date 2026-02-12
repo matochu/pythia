@@ -6,7 +6,7 @@
 
 - Provide **FEATURE_ID** or path to feature doc and **plan slug** (e.g. `1-agents-commands-data-exchange` for plan `1-agents-commands-data-exchange.plan.md`).
 - Optionally REPO_REF.
-- Append output to **`{feature-dir}/notes/{plan-slug}.review.md`** under a new round header, or copy for `/replan-feature`.
+- Append output to **`{feature-dir}/reports/{plan-slug}.review.md`** under a new round header, or copy for `/replan-feature`.
 
 ## Instructions for model
 
@@ -18,7 +18,7 @@ You are the **Reviewer subagent** (delegate via `/reviewer`). **Doc context = th
 
 **Output**:
 
-1. **Review block** for appending to `{feature-dir}/notes/{plan-slug}.review.md` with round header **`## {plan-slug} R{round} — YYYY-MM-DD`** (use date from `date +%Y-%m-%d`). Round = next after existing rounds in that file (count existing `## … R…` headers), or 1 if the file is new. Feature directory is determined from feature context (feat doc path).
+1. **Review block** for appending to `{feature-dir}/reports/{plan-slug}.review.md` with round header **`## {plan-slug} R{round} — YYYY-MM-DD`** (use date from `date +%Y-%m-%d`). Round = next after existing rounds in that file (count existing `## … R…` headers), or 1 if the file is new. Feature directory is determined from feature context (feat doc path).
 2. **Structured response** in chat using Reviewer Response Format (plain Markdown) — see `references/response-formats.md` for format specification.
 3. **Link to this round** in your response (full path to file + section header) so Architect or user can copy/reference it for `/replan-feature`.
 4. If this is a **follow-up round** (plan was revised), also fill **"Addressed by Architect"** for the **previous** round (checkboxes per S1, S2… from that round).

@@ -4,7 +4,7 @@
 
 ## Reviewer Subagent Response Format
 
-**Chat Response** (in addition to writing `{feature-dir}/notes/{plan-slug}.review.md`):
+**Chat Response** (in addition to writing `{feature-dir}/reports/{plan-slug}.review.md`):
 
 ```markdown
 # Review Complete: {plan-slug} R{round}
@@ -12,7 +12,7 @@
 **Plan**: {plan-slug} v{version}  
 **Round**: R{round}  
 **Verdict**: {READY | NEEDS_REVISION}  
-**Review File**: `{feature-dir}/notes/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
+**Review File**: `{feature-dir}/reports/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
 
 ## Summary
 [2-3 sentence overview of review findings]
@@ -36,13 +36,13 @@
 - ...
 
 ## Review Artifact
-- **File**: `{feature-dir}/notes/{plan-slug}.review.md`
+- **File**: `{feature-dir}/reports/{plan-slug}.review.md`
 - **Section**: `## {plan-slug} R{round} — YYYY-MM-DD`
 - **Link**: [Full file path + section anchor]
 
 ## Next Steps
 {If NEEDS_REVISION}
-1. Review findings in `{feature-dir}/notes/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
+1. Review findings in `{feature-dir}/reports/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
 2. Call `/replan-feature` with plan-slug `{plan-slug}` and review round `R{round}`
 3. After revision, call `/review-plan-feature` again (max 2 rounds)
 
@@ -132,6 +132,22 @@
 - **Key Changes**: [Brief list of main changes]
 - **Plan Revision Log**: Updated with new entry
 
+## Review Findings Assessment
+{If revision from review}
+- **Findings Analyzed**: {number} findings from review round R{round}
+- **Accepted**: {number} findings accepted and included in plan
+- **Rejected**: {number} findings rejected
+- **Modified**: {number} findings modified/adapted
+
+**Accepted Findings**:
+- S{n}: [Finding description] — [Why accepted, how addressed]
+
+**Rejected Findings**:
+- S{n}: [Finding description] — [Why rejected: invalid/out of scope/contradicts objectives]
+
+**Modified Findings**:
+- S{n}: [Original finding] — [How modified] — [Reasoning]
+
 ## Next Steps
 1. Save plan to `{feature-dir}/plans/{plan-slug}.plan.md`
 2. Call `/review-plan-feature` with plan-slug `{plan-slug}`
@@ -146,7 +162,7 @@
 
 **Plan**: {plan-slug} v{version}  
 **Implementation File**: `{feature-dir}/reports/{plan-slug}.implementation.md`  
-**Audit File**: `{feature-dir}/reports/{plan-slug}.architect-audit.md`  
+**Audit File**: `{feature-dir}/reports/{plan-slug}.audit.md`  
 **Conformance**: {done | partial | no}  
 **Acceptance Criteria Met**: {number}/{total}  
 **Decision**: {ready | needs_fixes | re_plan}
@@ -176,7 +192,7 @@
 **Next Steps**: [What to do next]
 
 ## Audit Artifact
-- **File**: `{feature-dir}/reports/{plan-slug}.architect-audit.md`
+- **File**: `{feature-dir}/reports/{plan-slug}.audit.md`
 - **Contains**: Full audit report with details
 
 ## Plan Update (if Verdict is "ready")
@@ -197,6 +213,62 @@
 - Exact file paths for all artifacts
 - Plan update status (if verdict is "ready")
 - Feature document update status (if verdict is "ready")
+
+### C. Retrospective Response
+
+```markdown
+# Retrospective Complete: {plan-slug}
+
+**Plan**: {plan-slug} v{version}  
+**Status**: Implemented  
+**Retrospective File**: `{feature-dir}/notes/{plan-slug}.retro.md`  
+**Artifacts Analyzed**: {plan, review, implementation, audit}
+
+## Summary
+[2-3 sentence overview of retrospective findings]
+
+## Key Insights
+**Discoveries**: {number} key discoveries identified
+**Patterns**: {number} patterns identified
+**Challenges**: {number} challenges encountered
+**Solutions**: {number} solutions found
+
+## Highlights
+- **Most Significant Discovery**: [brief description]
+- **Most Impactful Pattern**: [brief description]
+- **Most Critical Challenge**: [brief description]
+- **Most Effective Solution**: [brief description]
+
+## Risk Retrospective
+**Risks Analyzed**: {number} risks from plan
+**Risks Materialized**: {number} risks that actually occurred
+**New Risks Discovered**: {number} risks discovered during implementation
+
+## Recommendations
+**For Planning**: {number} recommendations
+**For Review Process**: {number} recommendations
+**For Implementation**: {number} recommendations
+**For Risk Management**: {number} recommendations
+
+## Retrospective Artifact
+- **File**: `{feature-dir}/notes/{plan-slug}.retro.md`
+- **Contains**: Full retrospective report with detailed analysis
+- **Sections**: Plan Summary, Key Discoveries, Patterns, Challenges, Solutions, Review Insights, Implementation Insights, Risk Retrospective, Recommendations, Knowledge Gaps
+
+## Artifacts Analyzed
+- Plan: `plans/{plan-slug}.plan.md` (v{version})
+- Review: `reports/{plan-slug}.review.md` ({rounds} rounds) {if exists}
+- Implementation: `reports/{plan-slug}.implementation.md` {if exists}
+- Audit: `reports/{plan-slug}.audit.md` {if exists}
+```
+
+**Key Information Preserved**:
+- Plan version and status
+- Counts of discoveries, patterns, challenges, solutions
+- Risk retrospective summary
+- Recommendation counts by category
+- Exact file path for retrospective report
+- List of artifacts analyzed
 
 ## Format Benefits
 

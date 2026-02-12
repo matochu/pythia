@@ -10,8 +10,8 @@ command -v jq &>/dev/null || exit 0
 read -r json_input
 file_path=$(echo "$json_input" | jq -r '.file_path // empty')
 
-# Early exit if file doesn't match pattern notes/*.review.md
-if [[ ! "$file_path" =~ notes/(.+).review.md$ ]]; then
+# Early exit if file doesn't match pattern reports/*.review.md
+if [[ ! "$file_path" =~ reports/(.+).review.md$ ]]; then
   exit 0
 fi
 

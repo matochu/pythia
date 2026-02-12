@@ -1,6 +1,6 @@
 # Review Format Specification
 
-**File**: `notes/{plan-slug}.review.md`
+**File**: `reports/{plan-slug}.review.md`
 
 ## Round Header
 

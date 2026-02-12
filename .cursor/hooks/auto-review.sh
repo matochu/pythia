@@ -21,11 +21,11 @@ plan_file="$file_path"
 # Extract feature directory from plan file path (remove /plans/{plan-slug}.plan.md)
 # Handle both relative and absolute paths
 feature_dir=$(dirname "$(dirname "$file_path")")
-review_file="${feature_dir}/notes/${plan_slug}.review.md"
+review_file="${feature_dir}/reports/${plan_slug}.review.md"
 
 # Normalize paths for timestamp comparison (handle relative vs absolute)
 # If file_path is relative, use workspace_roots from JSON if available
 # For now, assume paths are consistent (both relative or both absolute)
 if [ ! -f "$review_file" ] || [ "$plan_file" -nt "$review_file" ]; then
-  echo "Plan updated: ${plan_slug}. Call /review-plan-feature to delegate Reviewer subagent. Review plan strictly without recommendations. Write to notes/${plan_slug}.review.md"
+  echo "Plan updated: ${plan_slug}. Call /review-plan-feature to delegate Reviewer subagent. Review plan strictly without recommendations. Write to reports/${plan_slug}.review.md"
 fi
