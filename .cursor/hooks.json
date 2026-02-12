@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/cursor-hooks@latest/schema/hooks.schema.json",
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/auto-review.sh"
+      },
+      {
+        "command": ".cursor/hooks/review-loop.sh"
+      }
+    ]
+  }
+}

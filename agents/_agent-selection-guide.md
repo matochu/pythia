@@ -36,7 +36,7 @@ flowchart TD
 | Agent | When to Use | Key Differentiator |
 |-------|-------------|-------------------|
 | **agent-feature-developer** | • Implementing features in production code<br/>• Fixing bugs in UI/components<br/>• Refactoring production code<br/>• API integrations, routing | Focused on feature implementation and UI work |
-| **agent-developer** | • Implementing from plans/specs<br/>• Analyzing plans before implementing<br/>• General code changes<br/>• Plan-based development | Analyzes plans first, asks questions, then implements |
+| **agent-developer** | • Implementing from plans/specs<br/>• Analyzing plans before implementing<br/>• General code changes<br/>• Plan-based development<br/>• Executing plans (`/implement-plan-feature`) | Analyzes plans first, asks questions, then implements |
 
 **Decision Rule**: 
 - Use `agent-feature-developer` for direct feature/bug work
@@ -59,12 +59,14 @@ flowchart TD
 
 | Agent | When to Use | Key Differentiator |
 |-------|-------------|-------------------|
-| **agent-architect** | • Planning features<br/>• Evaluating approaches<br/>• Risk analysis<br/>• Reviewing implementations | Planning and architectural guidance only |
+| **agent-architect** | • Planning features<br/>• Evaluating approaches<br/>• Risk analysis<br/>• Reviewing implementations<br/>• Creating/revising plans (`/plan-feature`, `/replan-feature`)<br/>• Auditing implementations (`/audit-implementation-feature`) | Planning and architectural guidance only |
 | **agent-code-analyzer** | • Analyzing bugs/issues<br/>• Investigating logs<br/>• Root cause analysis<br/>• Providing recommendations | Read-only analysis, no implementation |
+| **reviewer** (Cursor subagent) | • Reviewing plans (`/review-plan-feature`)<br/>• Identifying issues, risks, gaps<br/>• **DO NOT** provide recommendations or solutions | Review-only role, no recommendations, no terminal commands |
 
 **Decision Rule**:
-- Use `agent-architect` for planning and design
+- Use `agent-architect` for planning, design, and implementation audits
 - Use `agent-code-analyzer` for debugging and investigation
+- Use `reviewer` subagent for plan review (via `/review-plan-feature` command)
 
 ### Documentation Agents
 
@@ -124,10 +126,13 @@ flowchart TD
 **Task**: "Add user authentication with JWT tokens"
 
 **Recommended Flow**:
-1. Start with `agent-architect` → Plan authentication approach, evaluate options
-2. Move to `agent-developer` → Analyze plan, ask questions, implement
-3. Use `agent-qa-automation-head` → Write comprehensive tests
-4. Use `agent-tdd-dev` → Run tests, fix any production code issues
+1. Start with `agent-architect` or `/plan-feature` → Plan authentication approach, evaluate options
+2. Use `reviewer` subagent or `/review-plan-feature` → Review plan for issues, risks, gaps
+3. If needed: Use `agent-architect` or `/replan-feature` → Revise plan based on review
+4. Move to `agent-developer` or `/implement-plan-feature` → Analyze plan, ask questions, implement
+5. Use `agent-architect` or `/audit-implementation-feature` → Audit implementation against plan
+6. Use `agent-qa-automation-head` → Write comprehensive tests
+7. Use `agent-tdd-dev` → Run tests, fix any production code issues
 
 ### Scenario 2: Bug Fix
 **Task**: "Video player crashes when pausing during buffering"
@@ -171,10 +176,14 @@ flowchart TD
 
 ## Quick Reference Card
 
-| Need | Agent |
-|------|-------|
-| Plan a feature | `agent-architect` |
+| Need | Agent / Command |
+|------|----------------|
+| Plan a feature | `agent-architect` or `/plan-feature` |
+| Review a plan | `reviewer` subagent or `/review-plan-feature` |
+| Revise a plan | `agent-architect` or `/replan-feature` |
 | Implement feature | `agent-feature-developer` or `agent-developer` |
+| Implement from plan | `agent-developer` or `/implement-plan-feature` |
+| Audit implementation | `agent-architect` or `/audit-implementation-feature` |
 | Fix bug | `agent-feature-developer` |
 | Analyze bug | `agent-code-analyzer` |
 | Write tests | `agent-qa-automation-head` or `agent-tdd-writer` |
@@ -196,8 +205,9 @@ flowchart TD
 - ✅ `agent-tdd-dev`: Run tests, fix production code (TDD workflow)
 
 **Analysis**:
-- ✅ `agent-architect`: Planning, evaluation, risk analysis
+- ✅ `agent-architect`: Planning, evaluation, risk analysis, implementation audits
 - ✅ `agent-code-analyzer`: Bug investigation, log analysis
+- ✅ `reviewer` subagent: Plan review (identify issues, risks, gaps — no recommendations)
 
 **Documentation**:
 - ✅ `agent-documentation-writer`: Project documentation, codebase change docs, code docs
@@ -207,4 +217,5 @@ flowchart TD
 - ❌ Analysis agents don't implement solutions
 - ❌ Production agents don't write test code (except `agent-tdd-dev` in TDD workflow)
 - ❌ Documentation agent doesn't modify source code or workflow documents
+- ❌ Reviewer subagent doesn't provide recommendations or run terminal commands
 

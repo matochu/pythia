@@ -4,8 +4,6 @@ node_modules/
 # Generated reports
 reports/
 
-# Cursor rules
-.cursor/
 
 # Workflows
 workflows/
