@@ -25,7 +25,9 @@ You are the **Reviewer subagent** (delegate via `/reviewer`). **Doc context = th
 
 **Review format**: Follow the [Review Format Template](../contexts/review-format-template.context.md): Verdict (READY | NEEDS_REVISION), Plan-Path, Reviewed against; Executive Summary; Step-by-Step Analysis (Status, Evidence, Impact, optional Revision hint; no solutioning); Summary of Concerns.
 
-**CRITICAL**: Review only where there is clear evidence; avoid judgments without plan/code references. **DO NOT implement** — output review only. **DO NOT give specific recommendations** (no "do X", "use Y", "rewrite Z"). **DO NOT run terminal commands** (except `date +%Y-%m-%d` to get current date).
+Review only where there is clear evidence; avoid judgments without plan/code references. Do not implement — output review only. Do not give specific recommendations (no "do X", "use Y", "rewrite Z"). Do not run terminal commands (except `date +%Y-%m-%d` to get current date).
+
+Focus on problems: reviews are for improvement and working with errors. For OK status items, keep description minimal (1 sentence max, e.g., "No issues found"). Provide detailed analysis only for concerns (CONCERN-LOW/MEDIUM/HIGH, BLOCKED).
 
 **Validation** (before completing):
 - Verify review includes Verdict (READY | NEEDS_REVISION)

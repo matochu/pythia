@@ -20,6 +20,9 @@ Verdict: READY | NEEDS_REVISION
 
 **Status**: OK | CONCERN-LOW | CONCERN-MEDIUM | CONCERN-HIGH | BLOCKED
 
+**For OK status**: Only status line, no Evidence/Impact needed. Skip to next step.
+
+**For CONCERN/BLOCKED status**:
 **Evidence**:
 - File: `<file-path>`:<line-number> | `<symbol-name>` | `<doc-link>`
 - (Code snippet or doc reference if applicable)
@@ -65,5 +68,8 @@ Verdict: READY | NEEDS_REVISION
 
 ## Rules
 
-- Text-only review; no code solutions. "Review only where there is clear evidence; avoid judgments without plan/code references."
+- Text-only review; no code solutions. Review only where there is clear evidence; avoid judgments without plan/code references.
+- Focus on problems: reviews are for improvement and working with errors. For OK status, include only the status line and skip Evidence/Impact entirely. Provide detailed analysis only for concerns.
 - For CONCERN-MEDIUM, CONCERN-HIGH, BLOCKED: provide Evidence (file path, line, symbol or doc link) and Impact.
+- For CONCERN-LOW: provide Evidence and Impact (can be brief).
+- For OK: only status line — no Evidence, no Impact, no "No issues found" text.

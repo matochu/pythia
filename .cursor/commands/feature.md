@@ -8,6 +8,8 @@
 
 This command provides step-by-step instructions for creating a comprehensive feature document that defines complex, multi-phase work. Features are self-contained work units with their own plans, contexts, reports, and notes - unlike simple tasks which are single files.
 
+The command orchestrates a two-stage process: first, the Product Manager subagent enriches the feature description with business context, problem statements, objectives, scope, and success criteria. The PM may also propose high-level subtasks based on business logic. Then, the Architect subagent builds technical development phases based on the PM's output, creating a structured foundation for implementation planning.
+
 ## When to Use Features vs Tasks
 
 ### Use Feature When:
@@ -25,6 +27,63 @@ This command provides step-by-step instructions for creating a comprehensive fea
 - Timeline: days to 1 week
 - Single file is sufficient
 - No need for separate plans/contexts
+
+## Instructions for model
+
+You are executing the `/feature` command. This command follows a two-stage delegation process: first to the Product Manager subagent, then to the Architect subagent.
+
+### Step 1: Delegate to Product Manager
+
+Delegate to Product Manager subagent via `/product-manager` with:
+- User-provided feature description/context
+- Optional: Jira ticket ID (if `--jira TICKET-123` flag provided)
+- Optional: Atlassian issue ID (if `--atlassian ISSUE-456` flag provided)
+- Project context (if available)
+
+The PM will:
+1. Fetch ticket/issue data via MCP if `--jira` or `--atlassian` flag is provided
+2. Enrich feature description with problem statement, business value, objectives, scope, and success criteria
+3. Optionally propose high-level subtasks based on business/product logic
+
+The PM outputs an enriched feature description ready for the feature document template: Summary, Problem Statement, Objectives, Context, Scope, Success Criteria, and optionally Proposed Subtasks.
+
+### Step 2: Delegate to Architect
+
+After PM completes, delegate to Architect subagent via `/architect` with:
+- PM-enriched feature description
+- PM's objectives and subtasks
+- PM's scope definition
+- Project context (if available)
+
+The Architect will:
+1. Analyze PM's objectives and subtasks
+2. Build technical development phases based on PM's output
+3. Structure phases logically with dependencies, sequencing, and milestones
+4. Define phase deliverables and acceptance criteria
+5. Identify technical risks and dependencies
+
+The Architect outputs a technical development phases structure:
+- Phase breakdown (Phase 1, Phase 2, Phase 3, etc.)
+- Phase descriptions (what will be built in each phase)
+- Phase dependencies and sequencing
+- Phase deliverables and acceptance criteria
+- Technical risks and dependencies
+
+This phases structure is added to the feature document. Detailed implementation plans are created later via `/plan-feature` command.
+
+### Step 3: Create Feature Document
+
+After receiving PM-enriched content and Architect's development phases:
+1. Get current date using `date +%Y-%m-%d`
+2. Validate feature uniqueness against existing documentation
+3. Create feature directory structure (feat-YYYY-MM-name/)
+4. Create main feature file (feat-YYYY-MM-name.md) combining:
+   - PM-enriched content (Summary, Problem Statement, Objectives, Context, Scope, Success Criteria)
+   - Architect's development phases structure
+5. Fill in all template sections with combined PM + Architect output
+6. Create subdirectories (plans/, contexts/, reports/, notes/) only as needed
+7. Add cross-references to related documentation
+8. Run documentation validation
 
 ## Prerequisites
 
@@ -50,28 +109,85 @@ This command can be used in any project workspace:
 # Execute with project context
 Execute this command for my project at [project-path]
 
-# Example usage
+# Example usage (basic)
 @feature.md
 Context: Building custom Chromium with WASM integration
 Objective: Complete browser modification with plugin system
 Complexity: High
 Timeline: 2-3 months
+
+# Example usage (with Jira ticket)
+@feature.md --jira PROJECT-123
+Context: Building custom Chromium with WASM integration
+
+# Example usage (with Atlassian issue)
+@feature.md --atlassian ISSUE-456
+Context: Building custom Chromium with WASM integration
 ```
+
+If `--jira` or `--atlassian` flag is provided, Product Manager fetches ticket/issue data and enriches the feature description accordingly.
 
 ## Command Checklist
 
 - [ ] Get current date using `date +%Y-%m-%d`
+- [ ] Delegate to Product Manager subagent (`/product-manager`) to enrich feature description
+- [ ] If `--jira` or `--atlassian` flag provided, PM fetches ticket/issue data via MCP
+- [ ] Delegate to Architect subagent (`/architect`) to build development phases
+- [ ] Architect analyzes PM's objectives and subtasks
+- [ ] Architect builds technical development phases structure
 - [ ] Validate feature uniqueness against existing documentation
-- [ ] Define scope and objectives clearly
-- [ ] Identify if converting from existing task
 - [ ] Create feature directory structure (feat-YYYY-MM-name/)
-- [ ] Create main feature file (feat-YYYY-MM-name.md)
-- [ ] Create subdirectories (plans/, contexts/, reports/, notes/)
-- [ ] Fill in all template sections completely
+- [ ] Create main feature file (feat-YYYY-MM-name.md) with PM-enriched content + Architect phases
+- [ ] Create subdirectories (plans/, contexts/, reports/, notes/) as needed
 - [ ] Add cross-references to related documentation
 - [ ] Run documentation validation
 - [ ] Generate workflows report
 - [ ] Verify all checklist items are complete
+
+## Subagent Delegation Flow
+
+This command follows a two-stage delegation process: first to Product Manager, then to Architect.
+
+### Flow: PM → Architect → Feature Document
+
+```
+User Input → PM Subagent → Architect Subagent → Feature Document
+              (WHAT/WHY)      (HOW/PHASES)
+```
+
+### Step 1: Product Manager Delegation
+
+The command delegates to Product Manager subagent before creating the feature document.
+
+The PM enriches the feature description with:
+- Clear problem statement
+- Business value and rationale
+- User stories (if applicable)
+- Well-defined objectives
+- Clear scope (in-scope / out-of-scope)
+- Measurable success criteria
+- Optionally proposes subtasks based on business/product logic
+
+If `--jira` or `--atlassian` flag is provided, the PM fetches ticket/issue data via MCP, extracts relevant fields (title, description, acceptance criteria, user stories, labels, priority), and maps them to feature document sections.
+
+The PM outputs an enriched feature description including: Summary (2-3 paragraphs), Problem Statement, Objectives, Context/Background, Scope (In Scope / Out of Scope), Success Criteria, and optionally Proposed Subtasks (product/business view).
+
+### Step 2: Architect Delegation
+
+After PM completes, the command delegates to Architect subagent to build development phases.
+
+The Architect:
+1. Analyzes PM's output: reviews objectives and subtasks, understands scope and success criteria, identifies technical requirements
+2. Builds technical development phases: structures phases logically with dependencies and sequencing, defines what will be built in each phase, identifies phase deliverables and acceptance criteria, maps PM's subtasks to technical phases
+3. Identifies technical considerations: technical risks and dependencies, architecture decisions needed, integration points
+
+The Architect outputs a technical development phases structure: Phase breakdown (Phase 1, Phase 2, Phase 3, etc.), phase descriptions, phase dependencies and sequencing, phase deliverables and acceptance criteria, and technical risks and dependencies.
+
+This phases structure is added to the feature document. Detailed implementation plans are created later via `/plan-feature` command.
+
+### Step 3: Feature Document Creation
+
+After receiving PM-enriched content and Architect's development phases, combine PM output (WHAT/WHY) with Architect output (HOW/PHASES) to create the feature document. PM content populates business/product sections, while Architect phases populate the Development phases section.
 
 ## Step 1: Prepare for Feature Creation
 
@@ -184,9 +300,40 @@ echo ""
 echo "Note: Create reports/ and notes/ directories only when needed"
 ```
 
-## Step 3: Use the Feature Template
+## Step 3: Delegate to Product Manager Subagent
 
-Create the main feature file with these sections:
+Before creating the feature document, delegate to Product Manager subagent (`/product-manager`) with:
+- User-provided feature description/context
+- Optional: Jira ticket ID (`--jira TICKET-123`) or Atlassian issue ID (`--atlassian ISSUE-456`)
+- Project context (if available)
+
+The PM will:
+1. Fetch ticket/issue data via MCP Atlassian/Jira if `--jira` or `--atlassian` flag is provided, extracting title, description, acceptance criteria, user stories, labels, priority, and mapping them to feature document structure
+2. Enrich feature description with clear problem statement, business value and rationale, user stories (if applicable), well-defined objectives, clear scope (in-scope / out-of-scope), and measurable success criteria
+3. Optionally propose high-level subtasks based on business/product logic
+
+The PM returns an enriched feature description ready for the feature document template: Summary (2-3 paragraphs), Problem Statement, Objectives (clear, actionable), Context/Background, Scope (In Scope / Out of Scope), Success Criteria (measurable), and optionally Proposed Subtasks (product/business view).
+
+## Step 4: Delegate to Architect Subagent
+
+After PM completes, delegate to Architect subagent (`/architect`) to build development phases with:
+- PM-enriched feature description
+- PM's objectives and subtasks
+- PM's scope definition
+- Project context (if available)
+
+The Architect will:
+1. Analyze PM's objectives and subtasks
+2. Build technical development phases based on PM's output: structure phases logically with dependencies and sequencing, define what will be built in each phase, map PM's subtasks to technical phases
+3. Identify technical considerations: technical risks and dependencies, architecture decisions needed, integration points
+
+The Architect returns a technical development phases structure: Phase breakdown (Phase 1, Phase 2, Phase 3, etc.), phase descriptions, phase dependencies and sequencing, phase deliverables and acceptance criteria, and technical risks and dependencies.
+
+This phases structure is added to the feature document. Detailed implementation plans are created later via `/plan-feature` command.
+
+## Step 5: Use the Feature Template
+
+Create the main feature file with PM-enriched content and Architect's development phases using these sections:
 
 ### Feature Document Structure
 
@@ -278,16 +425,44 @@ List any technical, resource, or platform constraints.
 - Item 1
 - Item 2
 
+## Development Phases
+
+Technical development phases structure built by Architect subagent based on Product Manager's objectives and subtasks:
+
+### Phase 1: [Phase Name]
+- **Description**: [What will be built in this phase]
+- **Deliverables**: [What will be delivered]
+- **Dependencies**: [What this phase depends on]
+- **Acceptance Criteria**: [How we'll know this phase is complete]
+
+### Phase 2: [Phase Name]
+- **Description**: [What will be built in this phase]
+- **Deliverables**: [What will be delivered]
+- **Dependencies**: [What this phase depends on (may depend on Phase 1)]
+- **Acceptance Criteria**: [How we'll know this phase is complete]
+
+### Phase 3: [Phase Name]
+- **Description**: [What will be built in this phase]
+- **Deliverables**: [What will be delivered]
+- **Dependencies**: [What this phase depends on]
+- **Acceptance Criteria**: [How we'll know this phase is complete]
+
+### Technical Risks and Dependencies
+- [Technical risk 1]
+- [Technical risk 2]
+- [Dependency 1]
+- [Dependency 2]
+
 ## Implementation Plans
 
-Link to all implementation plans for this feature:
+Link to all detailed implementation plans for this feature:
 
 - [Plan 1: Phase Name](plans/1-phase-name.plan.md)
 - [Plan 2: Phase Name](plans/2-phase-name.plan.md)
 
 ### Creating New Plans
 
-Use `/plan-feature` command to create detailed implementation plans.
+Use `/plan-feature` command to create detailed implementation plans for each development phase.
 
 ## Related Contexts
 
@@ -396,7 +571,7 @@ Any additional information, caveats, or considerations:
 **Last Updated**: YYYY-MM-DD
 \`\`\`
 
-## Step 4: Create Subdirectories (As Needed)
+## Step 6: Create Subdirectories (As Needed)
 
 Subdirectories are created only when needed:
 
@@ -435,7 +610,7 @@ mkdir -p "$FEATURE_DIR/notes"
 
 **Note**: Do NOT create empty directories upfront. Create them only when you have content to put in them.
 
-## Step 5: Add Cross-References
+## Step 7: Add Cross-References
 
 Update related documents to reference this new feature:
 
@@ -458,7 +633,7 @@ Update related documents to reference this new feature:
 | YYYY-MM-DD | New    | Initial creation |
 ```
 
-## Step 6: Generate Workflows Report
+## Step 8: Generate Workflows Report
 
 Use the `@report-workflows.md` command to update the workflows status report:
 
@@ -470,7 +645,7 @@ Use the `@report-workflows.md` command to update the workflows status report:
 Execute this command for my project at [project-path]
 ```
 
-## Step 7: Validation and Verification
+## Step 9: Validation and Verification
 
 Run documentation validation tools:
 

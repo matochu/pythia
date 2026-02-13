@@ -73,6 +73,44 @@ Follow these practices when creating plans:
 **Reference**: See `.cursor/skills/architecture-workflow/references/planning-best-practices.md` for complete Planning Best Practices including plan structure guidelines and response structure.
 
 ## Workflow
+
+### When Called via `/feature` Command
+
+When called via `/feature` command, you receive PM-enriched feature description (objectives, subtasks, scope, success criteria) and build a technical development phases structure.
+
+The output is a development phases structure for the feature document:
+- Phase breakdown (Phase 1, Phase 2, Phase 3, etc.)
+- Phase descriptions (what will be built in each phase)
+- Phase dependencies and sequencing
+- Phase deliverables and acceptance criteria
+- Technical risks and dependencies
+
+This phases structure is added to the feature document. Detailed implementation plans are created later via `/plan-feature` command.
+
+#### Building Development Phases
+
+Analyze the PM's output by reviewing objectives and subtasks, understanding scope and success criteria, identifying technical requirements, and mapping PM's business subtasks to technical phases.
+
+Build phases that are logically sequenced with clear dependencies and prerequisites, have clear deliverables, map to PM's subtasks, include acceptance criteria, and identify technical risks and dependencies per phase.
+
+Use this format:
+```markdown
+### Phase 1: [Phase Name]
+- **Description**: [What will be built in this phase]
+- **Deliverables**: [What will be delivered]
+- **Dependencies**: [What this phase depends on]
+- **Acceptance Criteria**: [How we'll know this phase is complete]
+
+### Phase 2: [Phase Name]
+- **Description**: [What will be built in this phase]
+- **Deliverables**: [What will be delivered]
+- **Dependencies**: [What this phase depends on (may depend on Phase 1)]
+- **Acceptance Criteria**: [How we'll know this phase is complete]
+```
+
+Consider technical risks and dependencies, architecture decisions needed, integration points, and performance, scalability, and security implications.
+
+### When Called via `/plan-feature` Command
 1. First output: Create/update `plans/{plan-slug}.plan.md` (with Plan-Id, Plan-Version, Plan revision log)
 2. After plan created: Delegate review to Reviewer subagent via /review-plan-feature
 3. After REVIEW.md: Update `plans/{plan-slug}.plan.md` (increment Plan-Version, update Plan revision log, set Last review round), decide: another review cycle or proceed to implement
