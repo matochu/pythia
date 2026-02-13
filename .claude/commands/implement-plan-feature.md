@@ -41,7 +41,7 @@
 **Output**:
 
 1. **Implementation report** written to `{feature-dir}/reports/{plan-slug}.implementation.md` per format specification (see Plan 3 Step 7).
-2. **Structured response** in chat using Developer Response Format (plain Markdown) — see `references/response-formats.md` for format specification.
+2. **Structured response** in chat using Developer Response Format (plain Markdown) — see `.claude/skills/architecture-workflow/references/response-formats.md` for format specification.
 
 **Validation** (before completing):
 - Verify implementation report includes all required sections (executed steps, files changed, commands executed, results, deviations, open issues)

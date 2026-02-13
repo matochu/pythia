@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(for:*)",
+      "Bash(do sed -i '' 's/docs\\//\\.pythia\\//g' \"$file\")",
+      "Bash(done)",
+      "Bash(npm test)",
+      "Bash(npm run validate-links:*)",
+      "Bash(do sed -i '' 's/docs\\//.pythia\\//g' \"$file\")",
+      "Read(/Users/Serhii/workspace/titanos/thea/.pythia/**)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(npm install)",
+      "Bash(npm view:*)",
+      "Bash(npm run:*)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(cat:*)",
+      "Bash(npx tsc:*)",
+      "Read(/Users/Serhii/workspace/titanos/thea/.cursor/**)",
+      "Read(/Users/Serhii/workspace/titanos/thea/.cursor/**)",
+      "Bash(xargs ls:*)",
+      "Bash(timeout 5s npm run mcp-server)",
+      "Bash(node:*)",
+      "WebFetch(domain:mcp-framework.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:docs.cursor.com)",
+      "Bash(npm pack:*)",
+      "WebFetch(domain:cursor.com)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

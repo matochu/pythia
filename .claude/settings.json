@@ -1,0 +1,17 @@
+{
+  "PostToolUse": [
+    {
+      "matcher": "Edit|Write",
+      "hooks": [
+        {
+          "type": "command",
+          "command": ".claude/hooks/auto-review.sh"
+        },
+        {
+          "type": "command",
+          "command": ".claude/hooks/review-loop.sh"
+        }
+      ]
+    }
+  ]
+}

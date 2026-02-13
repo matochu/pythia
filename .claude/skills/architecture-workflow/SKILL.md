@@ -1,6 +1,7 @@
 ---
 name: architecture-workflow
 description: Plan stabilization workflow for features. Use when working on feature plans, reviews, or implementation. Provides procedures and formats for plan stabilization loop.
+compatibility: 'Cursor, VS Code Copilot, Claude Desktop, OpenCode'
 ---
 
 **Note**: Cursor Skills provide one slash command per skill (`/architecture-workflow`). Individual commands (`/plan-feature`, `/review-plan-feature`, etc.) remain in `.cursor/commands/` directory. This skill contains procedures, formats, and workflow logic referenced by commands.
@@ -16,6 +17,7 @@ This skill provides procedures and formats for the plan stabilization workflow. 
 ## Commands Reference
 
 Commands are located in `.cursor/commands/`:
+
 - `/feature` → `.cursor/commands/feature.md`
 - `/context-feature` → `.cursor/commands/context-feature.md`
 - `/plan-feature` → `.cursor/commands/plan-feature.md`
@@ -28,33 +30,39 @@ Commands are located in `.cursor/commands/`:
 ## Workflow Procedures
 
 ### Feature Creation
+
 - Input: Feature requirements, scope, objectives
 - Output: Feature document in `feat-XXX/feat-XXX.md`
 - Format: See feature template structure
 
 ### Context Creation
+
 - Input: Feature context + context topic/type
 - Output: Context document in `feat-XXX/contexts/{name}.context.md`
 - Format: See context template structure
 
 ### Plan Creation/Revision
+
 - Input: Feature context + plan slug (required) + optional review text or link to round
 - Output: Full plan document with Plan-Id, Plan-Version, Plan revision log
 - Format: See `references/plan-format.md`
 
 ### Review Process
+
 - Input: Feature context + plan slug
 - Output: Review document with Verdict, Step-by-Step Analysis
 - Format: See `references/review-format.md`
 - Max rounds: 2 (MAX_REVIEW_LOOPS)
 
 ### Implementation
+
 - Gate: Check review file exists and Verdict is READY
 - Input: Feature context + plan slug (after review pass)
 - Output: Implementation report
 - Format: See `references/implementation-format.md`
 
 ### Audit
+
 - Input: Feature context + plan slug + implementation report
 - Output: Architect audit report + plan update + feature document update (if verdict is "ready")
 - Format: See `references/audit-format.md`
@@ -67,6 +75,7 @@ Commands are located in `.cursor/commands/`:
   - Add `**Status: Implemented**` marker to plan entry
 
 ### Retrospective
+
 - Input: Feature context + plan slug (completed plan with Status: "Implemented")
 - Output: Retrospective report in notes/
 - Format: See `references/retro-format.md`
@@ -83,6 +92,7 @@ Commands are located in `.cursor/commands/`:
 ## Feature Binding
 
 All artifacts are hermetic per feature:
+
 - Plans: `feat-XXX/plans/{plan-slug}.plan.md`
 - Reviews: `feat-XXX/reports/{plan-slug}.review.md`
 - Implementation: `feat-XXX/reports/{plan-slug}.implementation.md`

@@ -1,7 +1,7 @@
 ---
 name: skill-sync-cursor-to-claude
 description: Synchronize agents and skills from Cursor to Claude Code/Desktop at project-level. Use when you want to copy your Cursor configuration to Claude Code or Claude Desktop, handle compatibility differences, and detect conflicts. Supports project-level sync only (`.github/` for Claude Code, `.claude/` for Claude Desktop).
-compatibility: "Cursor, Claude Code, Claude Desktop"
+compatibility: "Cursor, VS Code Copilot, Claude Desktop, OpenCode"
 ---
 
 # Sync Cursor to Claude

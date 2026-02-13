@@ -48,7 +48,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 - Verify Last review round links to the review round provided
 - Verify date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`)
 
-**Structured response**: Output structured response in chat using Architect Plan Revision Response Format (plain Markdown) — see `references/response-formats.md` for format specification.
+**Structured response**: Output structured response in chat using Architect Plan Revision Response Format (plain Markdown) — see `.claude/skills/architecture-workflow/references/response-formats.md` for format specification.
 
 **Review Findings Assessment** (required in structured response):
 - List all review findings analyzed

@@ -1,7 +1,7 @@
 ---
 name: skill-search-and-fit
 description: Search and evaluate Agent Skills from major catalogs (Skills.sh, AgentSkills.io, GitHub repos), evaluate quality, and adapt skills to project needs. Use when you need to find relevant skills, check skill quality before installing, or adapt existing skills.
-compatibility: "Cursor (2.4+), Claude Code, VS Code Copilot, any agent supporting Agent Skills standard"
+compatibility: 'Cursor, VS Code Copilot, Claude Desktop, OpenCode'
 ---
 
 # Skill Search and Fit
@@ -13,6 +13,7 @@ compatibility: "Cursor (2.4+), Claude Code, VS Code Copilot, any agent supportin
 **What it does**: Provides procedures for searching skills across major catalogs (Cursor community repos, Skills.sh, AgentSkills.io, GitHub), evaluating quality using established criteria, and adapting skills to project needs.
 
 **Key capabilities**:
+
 - Search skills across multiple catalogs with prioritized sources
 - Evaluate skill quality using structured checklist
 - Detect conflicts with existing skills
@@ -35,6 +36,7 @@ Follow these steps in order when searching for skills:
 ### Step 0: Check Existing Skills (Conflict Detection)
 
 **Before searching external catalogs**, scan `.cursor/skills/` directory:
+
 - List all existing skills
 - Check for skills with similar names or functionality
 - Identify potential conflicts (name collisions, overlapping functionality)
@@ -46,6 +48,7 @@ Follow these steps in order when searching for skills:
 **Priority**: Highest — Cursor-specific skills are most compatible.
 
 **Repositories to search**:
+
 - `chrisboden/cursor-skills` — Starter template with role-based rules
 - `daniel-scrivner/cursor-skills` — AI-powered workflows
 - `araguaci/cursor-skills` — Best practices and guidelines
@@ -60,6 +63,7 @@ Follow these steps in order when searching for skills:
 **Priority**: High — Popular skills with installation metrics.
 
 **Search locations**:
+
 - All-time leaderboard (by installations)
 - Hot/Trending tabs (time-based dynamics)
 
@@ -80,6 +84,7 @@ Follow these steps in order when searching for skills:
 **Priority**: Lower — Use if no matches in primary sources.
 
 **Repositories to consider**:
+
 - `vercel-labs/skills` — Meta-skills, find-skills
 - `vercel-labs/agent-skills` — React, Web Design, RN best practices
 - `anthropics/skills` — Official Claude skills (68K+ stars)
@@ -92,6 +97,7 @@ Follow these steps in order when searching for skills:
 ### Step 5: Filter by Compatibility
 
 Check each result for:
+
 - Cursor version requirements (2.4+)
 - Project type compatibility
 - Required dependencies
@@ -100,6 +106,7 @@ Check each result for:
 ### Step 6: Check for Conflicts
 
 For each potential skill, verify:
+
 - No name collision with existing skills
 - No functionality overlap with installed skills
 - Compatible with project requirements
@@ -107,6 +114,7 @@ For each potential skill, verify:
 ### Step 7: Rank Results
 
 Rank skills by priority:
+
 1. **Compatibility match** (Cursor-specific > cross-platform)
 2. **Conflict status** (no conflicts > minor conflicts)
 3. **Popularity** (install count, stars)
@@ -121,6 +129,7 @@ Present results in this format:
 ## Search Results
 
 ### Skill: {name}
+
 - **Repo**: {owner/repo}
 - **Description**: {description}
 - **Compatibility**: {compatibility} (explicit check)
@@ -157,6 +166,7 @@ For each skill, check:
 ### Evaluation Output
 
 For each skill, provide:
+
 - Quality score (0-10)
 - Specific issues found (if any)
 - Recommendation (install / review / skip)
@@ -172,6 +182,7 @@ When adapting skills for project needs, follow these scenarios:
 **When**: Skill is mostly suitable but needs project-specific customization.
 
 **Steps**:
+
 1. Check if original skill should be preserved (git submodule or `npx skills add`)
 2. Analyze skill structure (SKILL.md, references/, scripts/)
 3. Identify customizable parts (metadata, examples, rules, procedures)
@@ -188,6 +199,7 @@ When adapting skills for project needs, follow these scenarios:
 **When**: Multiple skills have overlapping or complementary functionality.
 
 **Steps**:
+
 1. Identify overlapping functionality between skills
 2. Detect conflicts (conflicting rules, duplicate commands)
 3. Merge compatible parts (rules, procedures)
@@ -202,6 +214,7 @@ When adapting skills for project needs, follow these scenarios:
 **When**: Need to fork skill with significant modifications.
 
 **Steps**:
+
 1. Fork skill with preserved attribution (link to original)
 2. Adapt skill to specific project stack (tech, conventions)
 3. Document differences from original skill
@@ -232,6 +245,7 @@ When adapting skills for project needs, follow these scenarios:
 ### Post-Installation Validation
 
 After installation, verify:
+
 - SKILL.md file exists in `.cursor/skills/{skill-name}/`
 - YAML frontmatter format is valid
 - Skill loads in Cursor (verify skill appears in available skills)
@@ -244,6 +258,7 @@ After installation, verify:
 **User query**: "Find skills for project planning and task management"
 
 **Skill response**:
+
 1. Scan `.cursor/skills/` for existing planning skills
 2. Search Cursor community repos (chrisboden, daniel-scrivner, etc.) for "planning" skills
 3. Search Skills.sh leaderboard for planning-related skills
@@ -258,6 +273,7 @@ After installation, verify:
 **User query**: "Should I install the 'test-generator' skill from vercel-labs/skills?"
 
 **Skill response**:
+
 1. Search for skill in vercel-labs/skills repository
 2. Retrieve skill metadata and structure
 3. Apply quality evaluation checklist:
@@ -277,6 +293,7 @@ After installation, verify:
 **User query**: "I found a React skill but need to adapt it for Next.js"
 
 **Skill response**:
+
 1. Analyze original React skill structure
 2. Identify parts to modify (examples, rules, compatibility)
 3. Guide adaptation:
