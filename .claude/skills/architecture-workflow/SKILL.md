@@ -25,7 +25,8 @@ Commands are located in `.cursor/commands/`:
 - `/replan-feature` → `.cursor/commands/replan-feature.md`
 - `/implement-plan-feature` → `.cursor/commands/implement-plan-feature.md` (with gate logic)
 - `/audit-implementation-feature` → `.cursor/commands/audit-implementation-feature.md`
-- `/retro-feature` → `.cursor/commands/retro-feature.md`
+- `/retro-feature` → `.cursor/commands/retro-feature.md` — feature-level: all plans in a feature
+- `/retro-project` → `.cursor/commands/retro-project.md` — project-level: all features consolidated
 
 ## Workflow Procedures
 
@@ -74,14 +75,63 @@ Commands are located in `.cursor/commands/`:
   - Add/update plan entry in "Existing External Plans" section
   - Add `**Status: Implemented**` marker to plan entry
 
-### Retrospective
+### Feature Retrospective
 
-- Input: Feature context + plan slug (completed plan with Status: "Implemented")
-- Output: Retrospective report in notes/
-- Format: See `references/retro-format.md`
-- **Gate**: Plan must have Status: "Implemented"
-- **Analysis**: Collects data from plan, review, implementation, and audit artifacts
-- **Output**: Comprehensive retrospective report with insights, patterns, challenges, solutions, and recommendations
+- Input: Feature directory path (no gate — works on in-progress or completed features)
+- Scope: **all plans** within the feature
+- Output: `{feature-dir}/notes/retro.md` — unified retro across all plans
+- Collects: all `## Architect Retrospective` blocks from plans, all `### Developer Retrospective` blocks from implementation reports, chat context, skills analysis
+- Synthesizes: cross-plan patterns, risk register (predicted vs materialized), knowledge base, recommendations
+
+### Project Retrospective
+
+- Input: Optional list of FEATURE_IDs (default: all features)
+- Scope: **all features** in `.pythia/workflows/features/`
+- Output: `.pythia/notes/retro-project.md` — single persistent file, new run block appended each time
+- Sources: uses existing `notes/retro.md` per feature if available; otherwise collects raw
+- Synthesizes: cross-feature patterns, codebase knowledge base, process improvement register, project-level risk register
+
+## Workflow Diagram
+
+```mermaid
+flowchart TD
+    A([/feature]) --> B([/context-feature])
+    B --> C([/plan-feature\nv1])
+
+    C --> D([/review-plan-feature\nR1])
+
+    D -->|Verdict: READY| E{Gate:\nReview passed?}
+    D -->|Verdict: NEEDS_WORK| F([/replan-feature\nTrigger 1: Review\nvN+1])
+    F --> D
+
+    E -->|yes| G([/implement-plan-feature\nI1])
+    E -->|no — max loops reached| Z([re-scope / ask user])
+
+    G -->|all pass| H([/audit-implementation-feature])
+    G -->|blockers / failures| I([/replan-feature\nTrigger 2: Implementation\nvN+1])
+    I --> D2([/review-plan-feature\nR_next])
+    D2 -->|READY| G2([/implement-plan-feature\nI_next])
+    G2 --> H
+
+    H -->|Verdict: ready| J([/retro-feature\nall plans in feature\nnotes/retro.md])
+    H -->|Verdict: needs-work| G
+
+    J --> K([Feature Done ✓])
+    J -.->|optional| L([/retro-project\nall features\nnotes/retro-project.md])
+    L --> M([Project Knowledge Base ✓])
+
+    subgraph Artifacts per feature
+        P1[plan.md — Architect Retrospective]
+        P2[review.md — R1…Rn]
+        P3[implementation.md — I1…In + Developer Retro]
+        P4[audit.md]
+        P5[notes/retro.md — feature retro]
+    end
+
+    subgraph Artifacts project
+        Q1[.pythia/notes/retro-project.md\npersistent append-only]
+    end
+```
 
 ## Review Loop Policy
 

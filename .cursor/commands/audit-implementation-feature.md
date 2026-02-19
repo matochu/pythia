@@ -13,31 +13,52 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
 
 **Input**: Feature context + **plan slug** (required). Implementation report path = `reports/{plan-slug}.implementation.md`. Plan path = `plans/{plan-slug}.plan.md`.
 
-**Output**:
+---
 
-1. **Architect audit report** written to `{feature-dir}/reports/{plan-slug}.audit.md` per format specification (see Plan 3 Step 7).
-2. **Structured response** in chat using Architect Audit Response Format (plain Markdown) — see `references/response-formats.md` for format specification.
+## Mandatory context load (before audit)
+
+1. Read `plans/{plan-slug}.plan.md` — section `## Architect Retrospective`. Extract all `### v{N} — {round-ref} — {date}` blocks. Use as context — especially `[risk]` entries to know what issues were anticipated.
+2. Read `reports/{plan-slug}.implementation.md` — section `## Developer Retrospective`. Extract all `### I{n} — {date}` blocks. Use as context — know what the Developer learned and what risks were flagged.
+3. Use both to inform the audit — assess whether known risks materialized and whether Developer learnings are reflected in the outcome.
+4. **Context documents**: If the plan lists contexts in `## Contexts`, read those context documents from `{feature-dir}/contexts/`. Note any requirements defined there — these will be checked in the Audit Process (step 4a below).
+
+---
+
+## Audit Process
+
+1. **Read implementation report**: Extract all `## Implementation Round I{n}` sections — step results, issues, out-of-plan work.
+2. **Compare against plan**: Check each plan step against implementation round results.
+3. **Check acceptance criteria**: For each criterion in plan — met / not met / partial.
+4. **Re-evaluate risks**: Which plan risks materialized? Which were mitigated?
+   - **4a. Context conformance** (if contexts exist): If feature has context documents with requirements (loaded in Mandatory context load step 4) — check that the implementation conforms to those requirements. Flag any non-conformance as a finding. Non-conformance with a requirement context is grounds for "needs fixes" or "re-plan" verdict.
+5. **Decision**: ready | needs fixes | re-plan.
+
+---
+
+## Output
+
+1. **Architect audit report** written to `{feature-dir}/reports/{plan-slug}.audit.md` per `references/audit-format.md`.
+2. **Structured response** in chat using Architect Audit Response Format — see `references/response-formats.md`.
 3. **Plan update** (if decision is "ready"): Update plan file `plans/{plan-slug}.plan.md`:
    - Change `Status` from "In Progress" to "Implemented"
    - Add `**Status**: done` to each Step that was completed (based on implementation report)
-   - Mark all acceptance criteria checkboxes as `[x]` if they were met (based on audit report)
+   - Mark all acceptance criteria checkboxes as `[x]` if they were met
    - Keep plan metadata (Plan-Version, Last review round) unchanged
 4. **Feature document update** (if decision is "ready"): Update feature document `{feature-dir}/{feature-id}.md`:
    - Find section "## Detailed Implementation Plans (External)" → "**Existing External Plans:**"
-   - Check if plan is already listed (search for plan-slug or Plan Number in list)
-   - If plan NOT listed: Add new entry with format: `- [Plan {Number}: {Title}](plans/{plan-slug}.plan.md) — {description from plan Problem Analysis or Goal section}. **Status: Implemented**`
-   - If plan IS listed: Update existing entry to add `**Status: Implemented**` at the end (or replace existing status if present)
-   - Extract plan title from plan file: `# Plan {Number}: {Title}` → use as link text
-   - Extract description from plan's Problem Analysis or Goal section (1-2 sentences summary)
-   - Format: `- [Plan {Number}: {Title}](plans/{plan-slug}.plan.md) — {description}. **Status: Implemented**`
+   - If plan NOT listed: Add new entry with format: `- [{plan title}](plans/{plan-slug}.plan.md) — {description}. **Status: Implemented**`
+   - If plan IS listed: Update existing entry to add `**Status: Implemented**` at the end
 5. **Final decision** to user: ready | needs fixes | re-plan
 
-**Validation** (before completing):
+---
+
+## Validation (before completing)
+
 - Verify audit report includes conformance assessment (done | partial | no)
 - Verify acceptance criteria are checked (met count/total)
 - Verify risk re-evaluation is included
 - Verify decision (ready | needs fixes | re-plan) with reasoning
-- Verify report follows `references/audit-format.md` specification
+- Verify report follows `references/audit-format.md`
 - **If decision is "ready"**: Verify plan file is updated:
   - Status changed to "Implemented"
   - Steps have status markers (`**Status**: done`)
@@ -45,12 +66,5 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
 - **If decision is "ready"**: Verify feature document is updated:
   - Plan added/updated in "Existing External Plans" section
   - Plan entry includes `**Status: Implemented**` marker
-  - Plan entry format is correct (link, description, status)
-
-**Audit format**: See Plan 3 Step 7 for Architect Audit format specification:
-- Conformance: done | partial | no
-- Acceptance criteria check
-- Risk re-evaluation
-- Decision: ready | needs fixes | re-plan
 
 See [agent-selection-guide](../agents/_agent-selection-guide.md): use Architect for planning and audit; use Developer for implementation.

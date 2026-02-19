@@ -442,6 +442,7 @@ Before completing this command, verify:
 - [ ] **Location**: Context is in `feat-XXX/contexts/` directory (NOT `.pythia/contexts/`)
 - [ ] **File Naming**: Format is `{descriptive-name}.context.md` (no date, no numbering)
 - [ ] **Bidirectional Links**: Context references feature AND feature references context
+- [ ] **Used by**: `## Used by` section present (may be empty on creation; updated when plans reference this context)
 - [ ] **Complete Content**: All template sections are filled
 - [ ] **Clear Scope**: Context scope is specific to analysis topic
 - [ ] **Technical Details**: Includes code references, file paths, analysis findings
@@ -474,7 +475,13 @@ When using the template from `@create-context.md`, ensure the **Links to Related
 - Related Plans: [N-plan-name.plan.md](../plans/N-plan-name.plan.md)
 - Related Contexts: [other-context.context.md](./other-context.context.md)
 - Code Reference: `path/to/file.rs` - Description
+
+## Used by
+
+- [plans/N-plan-name.plan.md](../plans/N-plan-name.plan.md) — brief note on what was used
 ```
+
+**Note**: `## Used by` lists all plans that reference this context. Update it when a plan adds a link to this context in its `## Contexts` section.
 
 **Note**: The feature link is **required** for feature contexts and should use relative path `../feat-YYYY-MM-name.md`.
 

@@ -7,6 +7,9 @@
 ```markdown
 # Architect Audit: {plan-slug}
 
+Plan: [plans/{plan-slug}.plan.md](../plans/{plan-slug}.plan.md)
+Implementation: [reports/{plan-slug}.implementation.md](./{plan-slug}.implementation.md)
+
 ## Conformance
 - Status: done | partial | no
 - Details: [what was done vs plan]

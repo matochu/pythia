@@ -15,24 +15,27 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/).
 
 **Input**: Feature context + **plan slug** (required). Plan path = `plans/{plan-slug}.plan.md`. Optional: existing plan content, review text or link to round (for revision), or **user's edits to the plan** — if the user asks to "apply automatically" or "agree with these changes", output the plan with those edits incorporated.
 
-**Before generating plan**: Get current date via `date +%Y-%m-%d`. Use this date for Plan revision log entry.
+**Before generating plan**: Get current date via `date +%Y-%m-%d`. Use this date in the **Date Created** field.
 
 **Output**: **Full plan document (Markdown)**. Do not write files; output the full document for the user to save. The plan MUST include:
 
 - **Plan-Id** (e.g. plan slug or feature-scoped id)
 - **Plan-Version**: v1 for initial plan (if plan exists but lacks Plan-Version field, add it — migration from create-feature-plan format)
 - **Last review round**: "Initial plan — no review yet" for v1 (or link to review round if revised)
-- **## Plan revision log** with one entry (e.g. R1 — current date from `date +%Y-%m-%d` — v1) — format: Round | Date | Plan version (no Changes column)
+- **## Plan revision log** — empty table for initial plan (entries are added by review rounds) — format: Version | Round | Date | Changed Steps | Summary
+
+**Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
 **Validation** (before completing):
-- Verify plan includes all required fields (Plan-Id, Plan-Version, Last review round, Plan revision log)
-- Verify Plan revision log format is correct (3 columns: Round | Date | Plan version)
+- Verify plan includes all required fields (Plan-Id, Plan-Version, Branch, Last review round, Plan revision log)
+- Verify Plan revision log format is correct (5 columns: Version | Round | Date | Changed Steps | Summary)
 - Verify date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`)
+- Verify each context in `## Contexts` has this plan listed in its `## Used by` section
 
 **Migration Note**: If an existing plan (created via create-feature-plan) lacks Plan-Version field, add:
 - Plan-Version: v1 (if no revisions yet)
 - Last review round: "Initial plan — no review yet"
-- Plan revision log section with one entry (R1 — date — v1)
+- Plan revision log section — empty table (no entries until first review)
 
 **Structured response**: Output structured response in chat using Architect Plan Response Format (plain Markdown) — see `references/response-formats.md` for format specification.
 

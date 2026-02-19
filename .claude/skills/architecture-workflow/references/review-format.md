@@ -14,9 +14,7 @@ Each round starts with:
 ```markdown
 ## {plan-slug} R1 — YYYY-MM-DD
 
-Review for: {Plan-Id} {Plan-Version}
-Plan-Path: plans/{plan-slug}.plan.md
-Reviewed against: [REPO_REF]
+Review for: [{Plan-Id} {Plan-Version}](../plans/{plan-slug}.plan.md)
 Verdict: READY | NEEDS_REVISION
 
 ## Executive Summary

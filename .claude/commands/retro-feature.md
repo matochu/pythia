@@ -1,148 +1,248 @@
 # Command: /retro-feature
 
-**Purpose**: Invoke Architect to analyze completed plan and generate retrospective report. Hermetic per feature; agent doc context = feature.
+**Purpose**: Generate a retrospective report for a feature by collecting all Architect Retrospective and Developer Retrospective entries across **all plans** of the feature. Output is saved to `{feature-dir}/notes/{feature-slug}.retro.md`.
 
 ## Instructions for user
 
-- Provide **FEATURE_ID** or path to feature doc and **plan slug** (e.g. `4-sync-cursor-to-claude`).
-- Plan should have Status: "Implemented" (completed plan).
+- Provide **FEATURE_ID** or path to feature directory (e.g. `feat-2026-02-migrate-cypress-to-playwright`).
+- No gate — can be run at any time (in-progress or completed feature).
+- Existing `notes/{feature-slug}.retro.md` will be **overwritten** with a fresh report.
 
 ## Instructions for model
 
-You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + notes/ + reports/).
+You are the **Architect**. **Doc context = this feature** (feat doc + all plans/ + all reports/).
 
-**Input**: Feature context + **plan slug** (required). 
-- Plan path = `plans/{plan-slug}.plan.md`
-- Review path = `reports/{plan-slug}.review.md` (if exists)
-- Implementation path = `reports/{plan-slug}.implementation.md` (if exists)
-- Audit path = `reports/{plan-slug}.audit.md` (if exists)
+**Input**: Feature directory path. Discover all artifacts automatically.
 
-**Gate Logic** (execute before generating retrospective):
+---
 
-1. Check if plan file exists at `plans/{plan-slug}.plan.md`.
-2. Parse plan file for `Status: Implemented` (search for line containing `Status`).
-3. If plan status is not "Implemented":
-   - Return error: "Cannot generate retrospective: plan must have Status: 'Implemented'. Current status: {status}. Complete plan implementation and audit first."
-   - Do not proceed to retrospective generation.
-4. If plan status is "Implemented":
-   - Proceed to generate retrospective report.
+### Discovery Phase
 
-**Output**:
+1. **List all plan files**: glob `plans/*.plan.md` in feature directory.
+2. **List all implementation reports**: glob `reports/*.implementation.md`.
+3. **List all review files**: glob `reports/*.review.md`.
+4. **List all audit files**: glob `reports/*.audit.md`.
+5. **Check existing feature retro**: check if `notes/{feature-slug}.retro.md` exists (will be overwritten).
 
-1. **Retrospective report** written to `{feature-dir}/notes/{plan-slug}.retro.md` per format specification (see `references/retro-format.md`).
-2. **Structured response** in chat using Architect Retrospective Response Format (plain Markdown) — see `.claude/skills/architecture-workflow/references/response-formats.md` for format specification.
+---
 
-**Analysis Process**:
+### Collection Phase
 
-1. **Read plan file** (`plans/{plan-slug}.plan.md`):
-   - Extract metadata (Plan-Id, Plan-Version, Status, Creation Date, Last review round)
-   - Extract steps (with status markers if present)
-   - Extract risks from "Risks / Unknowns" section
-   - Extract acceptance criteria
-   - Extract plan revision log
+For each plan file found:
 
-2. **Read review file** (if exists at `reports/{plan-slug}.review.md`):
-   - Count review rounds (count `## {plan-slug} R{n}` headers)
-   - Extract verdicts for each round
-   - Extract key concerns (BLOCKED, CONCERN-HIGH findings)
-   - Extract step-by-step analysis findings
-   - Extract "Addressed by Architect" checkboxes (if filled)
+**From `plans/{slug}.plan.md`**:
+- Extract plan title, Plan-Version, status, date created
+- Extract all `### v{N} — {round-ref} — {date}` blocks from `## Architect Retrospective` section
+- Extract revision log (how many rounds, which triggers)
+- Extract risks from Technical Risks section
+- Extract acceptance criteria and their status
 
-3. **Read implementation file** (if exists at `reports/{plan-slug}.implementation.md`):
-   - Extract executed steps and their status
-   - Extract deviations from plan
-   - Extract open issues
-   - Extract files changed and commands executed
-   - Extract any discoveries or unexpected outcomes mentioned
+**From `reports/{slug}.implementation.md`** (if exists):
+- Extract all `## Implementation Round I{n}` blocks
+- From each round: extract `### Developer Retrospective` section
+- Extract `### Out-of-Plan Work` section (if exists)
+- Extract BLOCKER/PROBLEM issues — these are materialized risks
+- Extract deviations from plan
 
-4. **Read audit file** (if exists at `reports/{plan-slug}.audit.md`):
-   - Extract conformance assessment
-   - Extract acceptance criteria check results
-   - Extract risk re-evaluation (which risks materialized, which didn't)
-   - Extract decision and reasoning
-   - Extract audit date
+**From `reports/{slug}.review.md`** (if exists):
+- Count review rounds, extract final Verdict per round
+- Extract key concerns (BLOCKED, CONCERN-HIGH findings)
 
-5. **Collect important chat context** (from conversation history):
-   - Review conversation history for important context not captured in artifacts
-   - Extract key decisions made during discussions
-   - Extract clarifications or corrections that affected implementation
-   - Extract user feedback or concerns raised during execution
-   - Extract any "lessons learned" mentioned in chat but not documented in artifacts
-   - Document chat context in retrospective report with clear attribution (e.g., "From chat discussion: ...")
+**From `reports/{slug}.audit.md`** (if exists):
+- Extract final decision (ready | needs fixes | re-plan)
+- Extract risk re-evaluation (which risks materialized, which didn't)
 
-6. **Analyze skills used** (using `skill-search-and-fit` skill):
-   - Identify skills used during plan execution (from plan steps, implementation report, commands executed)
-   - For `.cursor/skills/architecture-workflow` skill specifically:
-     - Analyze skill structure and usage patterns
-     - Identify potential improvements based on retrospective findings
-     - Check for conflicts or gaps in skill coverage
-   - For other skills used:
-     - Evaluate quality and effectiveness
-     - Identify potential improvements or alternatives
-   - Use `skill-search-and-fit` skill to:
-     - Search for improved versions of skills used
-     - Search for alternative skills that might work better
-     - Evaluate current skills against quality criteria
-     - Generate recommendations for skill improvements
-   - Document skill analysis and recommendations in retrospective report
+**From conversation history** (chat context):
+- Review conversation history for important context not captured in artifacts
+- Extract key decisions, clarifications, corrections that affected implementation
+- Extract "lessons learned" mentioned in chat but not documented in files
+- Document with clear attribution ("From chat discussion: ...")
 
-7. **Analyze patterns across all artifacts**:
-   - Cross-reference findings between artifacts
-   - Identify recurring themes
-   - Connect review findings to plan changes
-   - Connect implementation deviations to plan steps
-   - Connect audit risk re-evaluation to original plan risks
-   - Include chat context insights in pattern analysis
+**Skills used** (using `skill-search-and-fit` skill if available):
+- Identify skills used during plan execution
+- Evaluate quality and effectiveness
+- Search for improved versions or alternatives
+- Generate recommendations for skill improvements
 
-8. **Generate retrospective report** following format specification:
-   - Include all required sections from `references/retro-format.md`
-   - Provide evidence citations for all insights (reference specific sections/files)
-   - Extract specific information from artifacts (not generic insights)
-   - Include important chat context with clear attribution
-   - Include skills improvement recommendations from skill-search-and-fit analysis
-   - Synthesize patterns and discoveries with evidence
+---
 
-**Validation** (before completing):
+### Analysis Phase
 
-- Verify plan status is "Implemented" (gate check passed)
-- Verify report includes all required sections from `references/retro-format.md`:
-  - Plan Summary
-  - Key Discoveries (with evidence)
-  - Patterns Identified
-  - Challenges Encountered (with sources)
-  - Solutions Found
-  - Review Insights
-  - Implementation Insights
-  - Risk Assessment Retrospective
-  - Chat Context (important context from conversation)
-  - Skills Improvement Recommendations (from skill-search-and-fit analysis)
-  - Recommendations for Future Plans
-  - Knowledge Gaps Identified
-- Verify report follows format specification
-- Verify insights are extracted from actual artifacts (not generic)
-- Verify all insights include evidence citations (references to specific files/sections)
-- Verify report references specific plan steps, review rounds, implementation sections, audit sections
-- Verify chat context section includes important context from conversation with clear attribution
-- Verify skills improvement recommendations section includes analysis using skill-search-and-fit skill
+After collecting all raw data:
 
-**Retrospective format**: See `references/retro-format.md` for format specification:
-- Plan Summary
-- Key Discoveries (with evidence)
-- Patterns Identified
-- Challenges Encountered (with sources)
-- Solutions Found
-- Review Insights
-- Implementation Insights
-- Risk Assessment Retrospective
-- Chat Context (important context from conversation not captured in artifacts)
-- Skills Improvement Recommendations (from skill-search-and-fit analysis)
-- Recommendations for Future Plans
-- Knowledge Gaps Identified
+1. **Cross-plan patterns**: identify `[plan]`, `[codebase]`, `[process]`, `[risk]` entries that appear in 2+ plans or rounds — these are recurring patterns
+2. **Risk tracking**: match `[risk]` entries from Architect Retrospective against materialized BLOCKERs/PROBLEMs in Developer Retrospectives
+3. **Knowledge distillation**: group all `[codebase]` entries — these form the codebase knowledge base for this feature area
+4. **Process insights**: group all `[process]` entries — identify systemic workflow friction points
+5. **Cross-reference findings** between artifacts: connect review findings → plan changes → implementation outcomes → audit results
 
-**Critical**: 
-- Do NOT generate generic insights. All insights must reference specific artifacts and sections.
-- Extract actual information from plan, review, implementation, and audit files.
-- Cross-reference findings between artifacts to identify patterns.
-- Provide evidence citations for all insights (e.g., "Plan Step 3", "Review R2 S5", "Implementation Report: Deviations section").
+---
 
-See [agent-selection-guide](../agents/_agent-selection-guide.md): use Architect for retrospective analysis; use Developer for implementation; use Reviewer for plan review.
+### Output
+
+Write report to `{feature-dir}/notes/{feature-slug}.retro.md`:
+
+```markdown
+# Feature Retrospective — {feature-id} — {date}
+
+**Generated**: {date}
+**Feature**: [{feature-title}]({feature-id}.md)
+**Plans covered**: {N} — {list of plan slugs with links}
+
+---
+
+## Plans Summary
+
+| Plan | Version | Review rounds | Impl rounds | Status | Retro blocks |
+|------|---------|---------------|-------------|--------|--------------|
+| [{slug}](plans/{slug}.plan.md) | v{N} | {Rn count} | {In count} | {status} | A:{n} D:{n} |
+
+---
+
+## Architect Retrospective
+
+*(All blocks collected from plans/{slug}.plan.md → ## Architect Retrospective)*
+
+### {plan-slug}
+
+#### v{N} — {round-ref} — {date}
+
+- [plan] ...
+- [codebase] ...
+- [process] ...
+- [risk] ...
+
+*(repeat for each block across all plans)*
+
+---
+
+## Developer Retrospective
+
+*(All blocks collected from reports/{slug}.implementation.md → ## Implementation Round I{n} → ### Developer Retrospective)*
+
+### {plan-slug} — I{n} — {date}
+
+- [project] ...
+- [code] ...
+- [tooling] ...
+
+*(repeat for each round across all plans)*
+
+---
+
+## Key Discoveries
+
+*(Evidence-backed discoveries — not generic, must reference specific artifacts)*
+
+- **{discovery title}** — {description}. Evidence: {Plan Step N / Review R{n} S{n} / Implementation I{n} Issues section}
+
+---
+
+## Cross-Plan Patterns
+
+### Recurring [codebase] Insights
+- {insight} ← {plan-slug} v{N}, {plan-slug} v{M}
+
+### Recurring [process] Friction
+- {insight} ← ...
+
+### Recurring [plan] Gaps
+- {insight} ← ...
+
+---
+
+## Risk Register
+
+| Risk (predicted) | Source | Materialized? | Evidence |
+|-----------------|--------|---------------|----------|
+| {risk text} | {plan-slug} v{N} {round-ref} | yes / no / partial | {BLOCKER/PROBLEM ref or "—"} |
+
+---
+
+## Challenges Encountered
+
+*(With source references)*
+
+- **{challenge}** — Source: {artifact + section}. Resolution: {how it was resolved or "unresolved"}
+
+---
+
+## Solutions Found
+
+- **{solution}** — Context: {what problem it solved}. Reference: {artifact}
+
+---
+
+## Chat Context
+
+*(Important context from conversation not captured in artifacts)*
+
+- From chat discussion: {insight/decision/correction} — relevant to: {plan-slug / step N}
+
+---
+
+## Skills Improvement Recommendations
+
+*(From skill-search-and-fit analysis, if performed)*
+
+- {skill name}: {recommendation}
+
+---
+
+## Knowledge Gaps
+
+*(What remained unknown or unresolved)*
+
+- {gap description} — referenced in: {artifact}
+
+---
+
+## Recommendations for Future Plans
+
+- [plan] {recommendation for future plans in this area}
+- [process] {recommendation for workflow improvement}
+- [codebase] {recommendation for codebase/test infrastructure}
+- [tooling] {recommendation for tooling}
+```
+
+Also output a **structured summary in chat**:
+
+```markdown
+## Feature Retrospective Summary — {feature-id}
+
+**Plans analyzed**: {N} ({list})
+**Total Architect Retro blocks**: {count}
+**Total Developer Retro blocks**: {count}
+**Review rounds total**: {count} | **Impl rounds total**: {count}
+
+### Key Discoveries
+- {top 3-5 evidence-backed findings}
+
+### Recurring Patterns
+- {cross-plan patterns}
+
+### Materialized Risks
+- {risks that actually happened with evidence}
+
+### Top Recommendations
+- {top 3-5 actionable recommendations}
+
+**Full report**: {feature-dir}/notes/{feature-slug}.retro.md
+```
+
+---
+
+### Validation (before completing)
+
+- Verify `notes/{feature-slug}.retro.md` is written
+- Verify all plan files were processed (count matches discovered plans)
+- Verify `## Architect Retrospective` contains entries from all plans that had retro blocks
+- Verify `## Developer Retrospective` contains entries from all implementation rounds that had retro sections
+- Verify `## Cross-Plan Patterns` contains actual synthesis (not copy-paste of individual entries)
+- Verify `## Risk Register` cross-references `[risk]` entries against BLOCKERs/PROBLEMs in implementation reports
+- Verify all discoveries in `## Key Discoveries` have evidence citations
+- Verify chat summary is output in chat
+
+**Critical**: Do NOT generate generic insights. All insights must reference specific artifacts and sections. Extract actual information from plan, review, implementation, and audit files.
+
+See [agent-selection-guide](../agents/_agent-selection-guide.md): use Architect for retrospective analysis.
