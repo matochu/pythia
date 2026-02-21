@@ -71,9 +71,13 @@ If no implementation report exists yet (first round) — skip this step and proc
 > **Constraints**:
 > - Execute only what is in PLAN.md — do NOT change the plan
 > - If something blocks — document in Deviations section
-> - Always run validation commands from the plan (or explain why not)
+> - **Validation is mandatory**: run ALL validation commands listed in each Step's `- **Validation**:` block before marking that step done
+>   - If a validation command cannot be run (environment issue) — mark Step as `partial`, document the reason as a PROBLEM entry, and still attempt all other validations
+>   - A Step is `done` only when its validation commands have been executed and passed
+>   - A Step is `partial` when code changes are made but validation was not run or did not pass
+>   - **Never mark a Step `done` if its validation commands were not executed**
 > - After each validation run, append a new `## Implementation Round I{n}` section (see below)
-> - Rounds are append-only — never delete previous rounds
+> - Rounds are append-only — **always append at the END of the file**, after all existing rounds — never insert before or between existing rounds, never delete previous rounds
 >
 > **Implementation Round** (append after each validation run):
 > - Step Results table (done/partial/failed per step)
@@ -89,10 +93,21 @@ If no implementation report exists yet (first round) — skip this step and proc
 >   - If nothing was done outside the plan: write `Out-of-Plan Work: none`
 >
 > **Developer Retrospective** (top-level section, NOT inside the round):
-> - After each round, append `### I{n} — {YYYY-MM-DD}` block to `## Developer Retrospective` at the bottom of the file
+> - `### I{n} — {YYYY-MM-DD}` block is **optional** — write only if there are real discoveries
+> - **Write when**: unexpected codebase facts, environment constraints that changed the approach, risks that materialized, something you would do differently next time
+> - **Do NOT write**: paraphrasing of the Issues section, summary of what was done, facts already captured in the Round — these add no value
+> - If the round produced no discoveries — skip the block entirely
+> - This section is located **BEFORE** all `## Implementation Round` sections — NOT at the end of the file
+> - Correct order: `## Open Issues` → `## Developer Retrospective` → `## Developer Observations` → `## Implementation Round I1` → `## Implementation Round I2`...
 > - Append-only — never delete previous blocks
 > - Labels: `[codebase]`, `[tooling]`, `[plan]`, `[process]`, `[risk]`
 > - Mirrors `## Architect Retrospective` in the plan file
+>
+> **Developer Observations** (top-level section, optional, NOT inside the round):
+> - Place for observations **outside the current plan scope**: technical debt noticed during work, improvements worth considering, risks in adjacent code, architectural concerns
+> - Not round-specific — accumulates throughout the implementation
+> - Write only when there is something concrete to note; omit entirely if nothing observed
+> - Format: bullet list, no required labels
 >
 > See full format: `references/implementation-format.md`
 
@@ -111,7 +126,7 @@ The implementation report MUST include a compatibility table in the top-level he
 | I2                   | v{N+1}       | YYYY-MM-DD | N passed / M failed |
 ```
 
-- Each row is added when a new `## Implementation Round R{n}` is written
+- Each row is added when a new `## Implementation Round I{n}` is written
 - **Plan Version** = the plan version that was active when this round was executed
 - **Result** = summary outcome (test count, build status, etc.)
 - Table is append-only — rows are never deleted
@@ -128,7 +143,10 @@ The implementation report MUST include a compatibility table in the top-level he
 - Verify report includes all required top-level sections (executed steps, files changed, commands executed, results, deviations, open issues)
 - Verify Plan–Implementation Compatibility table is present and up to date
 - Verify all deviations from plan are documented with reasons
-- Verify validation commands from plan were run (or explanation why not)
+- Verify validation commands from plan were run — if NOT run, the round is NOT complete:
+  - Steps with unrun validation must be marked `partial` in Step Results table
+  - Developer must attempt to run them before closing the round
+  - If environment prevents running (e.g. no Docker, no network), document as PROBLEM entry with environment reason — but still attempt all other validations
 - Verify report contains `## Implementation Round I{n}` for each validation run
 - Verify report follows `references/implementation-format.md`
 

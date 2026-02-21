@@ -43,12 +43,12 @@
 ## Next Steps
 {If NEEDS_REVISION}
 1. Review findings in `{feature-dir}/reports/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
-2. Call `/replan-feature` with plan-slug `{plan-slug}` and review round `R{round}`
+2. Call `/replan-feature` on `{feature-dir}/reports/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
 3. After revision, call `/review-plan-feature` again (max 2 rounds)
 
 {If READY}
 1. Review is complete. Plan is ready for implementation.
-2. Call `/implement-plan-feature` with plan-slug `{plan-slug}`
+2. Call `/implement-plan-feature` on `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 ```
 
 **Key Information Preserved**:
@@ -95,7 +95,7 @@
 
 ## Next Steps
 1. Review implementation report: `{feature-dir}/reports/{plan-slug}.implementation.md`
-2. Call `/audit-implementation-feature` with plan-slug `{plan-slug}`
+2. Call `/audit-implementation-feature` on `{feature-dir}/reports/{plan-slug}.implementation.md`
 ```
 
 **Key Information Preserved**:
@@ -149,10 +149,8 @@
 - S{n}: [Original finding] — [How modified] — [Reasoning]
 
 ## Next Steps
-1. Save plan to `{feature-dir}/plans/{plan-slug}.plan.md`
-2. Call `/review-plan-feature` with plan-slug `{plan-slug}`
-{If revision}
-3. Reviewer will check "Addressed by Architect" for previous round
+1. Plan saved: `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
+2. Call `/review-plan-feature` on `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 ```
 
 ### B. Implementation Audit Response

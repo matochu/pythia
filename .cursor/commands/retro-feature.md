@@ -1,6 +1,6 @@
 # Command: /retro-feature
 
-**Purpose**: Generate a retrospective report for a feature by collecting all Architect Retrospective and Developer Retrospective entries across **all plans** of the feature. Output is saved to `{feature-dir}/notes/{feature-slug}.retro.md`.
+**Purpose**: Synthesize a retrospective report for a feature — not a copy of retro blocks, but distilled insights, patterns, and recommendations for future plans. Output is saved to `{feature-dir}/notes/{feature-slug}.retro.md`.
 
 ## Instructions for user
 
@@ -32,14 +32,16 @@ For each plan file found:
 
 **From `plans/{slug}.plan.md`**:
 - Extract plan title, Plan-Version, status, date created
-- Extract all `### v{N} — {round-ref} — {date}` blocks from `## Architect Retrospective` section
+- Extract all `### v{N} — {round-ref} — {date}` blocks from `## Architect Retrospective` section (may be absent for cycles with no discoveries — that is expected)
+- Extract all bullet points from `## Architect Observations` section (if present)
 - Extract revision log (how many rounds, which triggers)
 - Extract risks from Technical Risks section
 - Extract acceptance criteria and their status
 
 **From `reports/{slug}.implementation.md`** (if exists):
 - Extract all `## Implementation Round I{n}` blocks
-- From each round: extract `### Developer Retrospective` section
+- From each round: extract `### Developer Retrospective` section (may be absent for rounds with no discoveries — that is expected)
+- Extract `## Developer Observations` section if present (top-level, not inside rounds)
 - Extract `### Out-of-Plan Work` section (if exists)
 - Extract BLOCKER/PROBLEM issues — these are materialized risks
 - Extract deviations from plan
@@ -75,6 +77,7 @@ After collecting all raw data:
 3. **Knowledge distillation**: group all `[codebase]` entries — these form the codebase knowledge base for this feature area
 4. **Process insights**: group all `[process]` entries — identify systemic workflow friction points
 5. **Cross-reference findings** between artifacts: connect review findings → plan changes → implementation outcomes → audit results
+6. **Observations synthesis**: collect all Architect Observations and Developer Observations — these are forward-looking signals; group by theme (tech debt, architectural concerns, future candidates) and include in Recommendations
 
 ---
 
@@ -93,65 +96,25 @@ Write report to `{feature-dir}/notes/{feature-slug}.retro.md`:
 
 ## Plans Summary
 
-| Plan | Version | Review rounds | Impl rounds | Status | Retro blocks |
-|------|---------|---------------|-------------|--------|--------------|
-| [{slug}](plans/{slug}.plan.md) | v{N} | {Rn count} | {In count} | {status} | A:{n} D:{n} |
+| Plan | Version | Review rounds | Impl rounds | Status |
+|------|---------|---------------|-------------|--------|
+| [{slug}](plans/{slug}.plan.md) | v{N} | {Rn count} | {In count} | {status} |
 
 ---
 
-## Architect Retrospective
+## Codebase Knowledge Base
 
-*(All blocks collected from plans/{slug}.plan.md → ## Architect Retrospective)*
+*(Distilled from all [codebase] entries across Architect and Developer Retrospectives — grouped by theme, not copied verbatim. Each entry references the source artifact.)*
 
-### {plan-slug}
+### {theme — e.g. "WAMR API", "Build System", "Permission Model"}
 
-#### v{N} — {round-ref} — {date}
-
-- [plan] ...
-- [codebase] ...
-- [process] ...
-- [risk] ...
-
-*(repeat for each block across all plans)*
+- {synthesized insight} ← {plan-slug} v{N} / I{n}
 
 ---
 
-## Developer Retrospective
+## Risk Analysis
 
-*(All blocks collected from reports/{slug}.implementation.md → ## Implementation Round I{n} → ### Developer Retrospective)*
-
-### {plan-slug} — I{n} — {date}
-
-- [project] ...
-- [code] ...
-- [tooling] ...
-
-*(repeat for each round across all plans)*
-
----
-
-## Key Discoveries
-
-*(Evidence-backed discoveries — not generic, must reference specific artifacts)*
-
-- **{discovery title}** — {description}. Evidence: {Plan Step N / Review R{n} S{n} / Implementation I{n} Issues section}
-
----
-
-## Cross-Plan Patterns
-
-### Recurring [codebase] Insights
-- {insight} ← {plan-slug} v{N}, {plan-slug} v{M}
-
-### Recurring [process] Friction
-- {insight} ← ...
-
-### Recurring [plan] Gaps
-- {insight} ← ...
-
----
-
-## Risk Register
+*(Predicted risks vs what actually materialized — cross-referenced with BLOCKERs/PROBLEMs)*
 
 | Risk (predicted) | Source | Materialized? | Evidence |
 |-----------------|--------|---------------|----------|
@@ -159,41 +122,34 @@ Write report to `{feature-dir}/notes/{feature-slug}.retro.md`:
 
 ---
 
-## Challenges Encountered
+## Key Discoveries
 
-*(With source references)*
+*(Evidence-backed discoveries that were not anticipated — not generic, must reference specific artifacts)*
 
-- **{challenge}** — Source: {artifact + section}. Resolution: {how it was resolved or "unresolved"}
-
----
-
-## Solutions Found
-
-- **{solution}** — Context: {what problem it solved}. Reference: {artifact}
+- **{discovery title}** — {description}. Evidence: {artifact + section}
 
 ---
 
-## Chat Context
+## Process Insights
 
-*(Important context from conversation not captured in artifacts)*
+*(Recurring [process] friction, workflow failures, what slowed down delivery — synthesized, not copied)*
 
-- From chat discussion: {insight/decision/correction} — relevant to: {plan-slug / step N}
-
----
-
-## Skills Improvement Recommendations
-
-*(From skill-search-and-fit analysis, if performed)*
-
-- {skill name}: {recommendation}
+- **{insight}** — observed in: {artifact refs}
 
 ---
 
-## Knowledge Gaps
+## Forward-Looking: Observations & Improvements
 
-*(What remained unknown or unresolved)*
+*(Synthesized from Architect Observations, Developer Observations, and chat context — grouped by theme. These are candidates for future plans, tech debt backlog, or workflow changes.)*
 
-- {gap description} — referenced in: {artifact}
+### Technical Debt / Future Work
+- {item} ← {source}
+
+### Workflow / Process Improvements
+- {item} ← {source}
+
+### Architectural Concerns
+- {item} ← {source}
 
 ---
 
@@ -203,6 +159,14 @@ Write report to `{feature-dir}/notes/{feature-slug}.retro.md`:
 - [process] {recommendation for workflow improvement}
 - [codebase] {recommendation for codebase/test infrastructure}
 - [tooling] {recommendation for tooling}
+
+---
+
+## Knowledge Gaps
+
+*(What remained unknown or unresolved at the end of the feature)*
+
+- {gap description} — referenced in: {artifact}
 ```
 
 Also output a **structured summary in chat**:
@@ -211,15 +175,10 @@ Also output a **structured summary in chat**:
 ## Feature Retrospective Summary — {feature-id}
 
 **Plans analyzed**: {N} ({list})
-**Total Architect Retro blocks**: {count}
-**Total Developer Retro blocks**: {count}
 **Review rounds total**: {count} | **Impl rounds total**: {count}
 
 ### Key Discoveries
 - {top 3-5 evidence-backed findings}
-
-### Recurring Patterns
-- {cross-plan patterns}
 
 ### Materialized Risks
 - {risks that actually happened with evidence}
@@ -236,13 +195,12 @@ Also output a **structured summary in chat**:
 
 - Verify `notes/{feature-slug}.retro.md` is written
 - Verify all plan files were processed (count matches discovered plans)
-- Verify `## Architect Retrospective` contains entries from all plans that had retro blocks
-- Verify `## Developer Retrospective` contains entries from all implementation rounds that had retro sections
-- Verify `## Cross-Plan Patterns` contains actual synthesis (not copy-paste of individual entries)
-- Verify `## Risk Register` cross-references `[risk]` entries against BLOCKERs/PROBLEMs in implementation reports
-- Verify all discoveries in `## Key Discoveries` have evidence citations
+- Verify `## Codebase Knowledge Base` contains synthesized entries grouped by theme — not raw copy of retro blocks
+- Verify `## Risk Analysis` cross-references `[risk]` entries against BLOCKERs/PROBLEMs in implementation reports
+- Verify `## Key Discoveries` entries are evidence-backed and reference specific artifacts
+- Verify `## Forward-Looking` section incorporates content from Architect Observations, Developer Observations, and chat context (if any)
 - Verify chat summary is output in chat
 
-**Critical**: Do NOT generate generic insights. All insights must reference specific artifacts and sections. Extract actual information from plan, review, implementation, and audit files.
+**Critical**: Do NOT copy retro blocks verbatim into the output. Raw blocks remain in their source artifacts (plans, implementation reports). The retro report is synthesis only — distilled insights, patterns, and recommendations. All claims must reference specific artifacts.
 
 See [agent-selection-guide](../agents/_agent-selection-guide.md): use Architect for retrospective analysis.

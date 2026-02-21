@@ -48,7 +48,13 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
    - Find section "## Detailed Implementation Plans (External)" → "**Existing External Plans:**"
    - If plan NOT listed: Add new entry with format: `- [{plan title}](plans/{plan-slug}.plan.md) — {description}. **Status: Implemented**`
    - If plan IS listed: Update existing entry to add `**Status: Implemented**` at the end
-5. **Final decision** to user: ready | needs fixes | re-plan
+5. **Commit message** (if decision is "ready"): Generate a git commit message based on the implementation report and output it in the structured response:
+   - **Subject line**: `feat: {1-sentence summary of what was implemented}` — derive from plan title + `## Steps Executed` summary; max 72 chars
+   - **Body**: bullet list from `## Steps Executed` in implementation report (each step → one bullet, imperative mood)
+   - **Footer**: `Plan: {plan-slug}` and `Files: {count of unique files from ## Files Changed}`
+   - Format as a fenced code block so user can copy directly
+   - Do NOT include implementation round details, command lists, or audit verdict in the commit message
+6. **Final decision** to user: ready | needs fixes | re-plan
 
 ---
 
@@ -66,5 +72,9 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
 - **If decision is "ready"**: Verify feature document is updated:
   - Plan added/updated in "Existing External Plans" section
   - Plan entry includes `**Status: Implemented**` marker
+- **If decision is "ready"**: Verify commit message is present in structured response:
+  - Subject line starts with `feat:` and is ≤ 72 chars
+  - Body bullets match `## Steps Executed` from implementation report
+  - Formatted as a fenced code block
 
 See [agent-selection-guide](../agents/_agent-selection-guide.md): use Architect for planning and audit; use Developer for implementation.
