@@ -6,7 +6,7 @@
 
 - Provide **FEATURE_ID** or feature doc path, **plan slug** (required), and one of:
   - **Review text or link to round** — paste markdown from Reviewer's response or use the link Reviewer gave (file path + section header).
-  - **Implementation issues** — reference `## Implementation Round R{n}` section from `reports/{plan-slug}.implementation.md`.
+  - **Implementation issues** — reference `## Implementation Round I{n}` section from `reports/{plan-slug}.implementation.md`.
 - Save the revised plan to `plans/{plan-slug}.plan.md`.
 - Alternatively: if you **made edits to the plan** and ask to "apply automatically" or "agree with these changes", the Architect will output the plan with those edits incorporated (no review needed).
 
@@ -25,7 +25,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 **Trigger detection**: Before starting, determine the trigger type:
 
 - **Trigger 1: Review** — input contains Reviewer findings (`Verdict:`, `CONCERN-*`, `BLOCKED`)
-- **Trigger 2: Implementation Issues** — input references `## Implementation Round R{n}` or contains BLOCKER/PROBLEM entries from implementation report
+- **Trigger 2: Implementation Issues** — input references `## Implementation Round I{n}` or contains BLOCKER/PROBLEM entries from implementation report
 - **Trigger 3: Manual edits** — user says "apply my edits" or "agree with these changes"
 
 ---
@@ -56,7 +56,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 
 **Implementation Issues Analysis Process**:
 
-1. **Read implementation round**: Extract all BLOCKER and PROBLEM entries from the referenced `## Implementation Round R{n}` section.
+1. **Read implementation round**: Extract all BLOCKER and PROBLEM entries from the referenced `## Implementation Round I{n}` section.
 2. **Analyze each issue**:
    - Understand root cause hypothesis from Developer
    - Verify if the issue indicates a gap in the plan (missing step, wrong assumption, underspecified requirement)
@@ -99,7 +99,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 
 - **Plan-Id**
 - **Plan-Version**: increment from previous (e.g. v2, v3)
-- **Last review round**: link to the round the user provided (if Trigger 1); or `Implementation Round R{n} — {date}` (if Trigger 2)
+- **Last review round**: link to the round the user provided (if Trigger 1); or `Implementation Round I{n} — {date}` (if Trigger 2)
 - **## Plan revision log**: add one new row — Plan-Version, round reference, date, list of steps added/amended (e.g. `Step 9 amended, Step 12 added`), 1-line summary of what changed and why
 - **## Architect Retrospective**: append a new versioned block (see below) — never delete previous blocks
 
@@ -149,7 +149,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 - For Trigger 2: verify no existing steps were deleted, renumbered, or reordered
 - For Trigger 2: verify every new/amended step has `**Added**` or `**Amended**` version marker
 
-**Structured response**: Output structured response in chat using Architect Plan Revision Response Format (plain Markdown) — see `references/response-formats.md` for format specification.
+**Structured response**: Output structured response in chat using Architect Plan Revision Response Format from `references/response-formats.md`. Copy the format template exactly — do NOT summarize or abbreviate. Every section including `## Next Steps` is mandatory.
 
 **Findings / Issue Assessment** (required in structured response):
 

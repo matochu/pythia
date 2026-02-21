@@ -116,6 +116,6 @@ Steps may include `**Status**: {done | partial | skipped | not started}` field:
 - **partial**: Step partially completed (added by `/audit-implementation-feature` if audit shows partial completion)
 - **skipped**: Step was skipped (added by `/audit-implementation-feature` if step was intentionally skipped)
 
-**Note**: 
+**Note**:
 - `/plan-feature` and `/replan-feature` do NOT add status to steps (plan not yet implemented)
 - `/audit-implementation-feature` adds status to steps ONLY if decision is "ready" (based on implementation report)

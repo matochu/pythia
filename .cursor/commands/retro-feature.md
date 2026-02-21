@@ -49,6 +49,7 @@ For each plan file found:
 **From `reports/{slug}.review.md`** (if exists):
 - Count review rounds, extract final Verdict per round
 - Extract key concerns (BLOCKED, CONCERN-HIGH findings)
+- Extract `## Reviewer Observations` section (if present) — forward-looking signals from the Reviewer
 
 **From `reports/{slug}.audit.md`** (if exists):
 - Extract final decision (ready | needs fixes | re-plan)
@@ -77,7 +78,7 @@ After collecting all raw data:
 3. **Knowledge distillation**: group all `[codebase]` entries — these form the codebase knowledge base for this feature area
 4. **Process insights**: group all `[process]` entries — identify systemic workflow friction points
 5. **Cross-reference findings** between artifacts: connect review findings → plan changes → implementation outcomes → audit results
-6. **Observations synthesis**: collect all Architect Observations and Developer Observations — these are forward-looking signals; group by theme (tech debt, architectural concerns, future candidates) and include in Recommendations
+6. **Observations synthesis**: collect all Architect Observations, Developer Observations, and Reviewer Observations — these are forward-looking signals; group by theme (tech debt, architectural concerns, future candidates) and include in Recommendations
 
 ---
 
@@ -198,7 +199,7 @@ Also output a **structured summary in chat**:
 - Verify `## Codebase Knowledge Base` contains synthesized entries grouped by theme — not raw copy of retro blocks
 - Verify `## Risk Analysis` cross-references `[risk]` entries against BLOCKERs/PROBLEMs in implementation reports
 - Verify `## Key Discoveries` entries are evidence-backed and reference specific artifacts
-- Verify `## Forward-Looking` section incorporates content from Architect Observations, Developer Observations, and chat context (if any)
+- Verify `## Forward-Looking` section incorporates content from Architect Observations, Developer Observations, Reviewer Observations, and chat context (if any)
 - Verify chat summary is output in chat
 
 **Critical**: Do NOT copy retro blocks verbatim into the output. Raw blocks remain in their source artifacts (plans, implementation reports). The retro report is synthesis only — distilled insights, patterns, and recommendations. All claims must reference specific artifacts.
