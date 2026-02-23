@@ -7,13 +7,31 @@
 ## File Structure (top to bottom)
 
 ```
+## Navigation                     ← updated after each round; links to all rounds
 ## Reviewer Observations          ← top-level, before all rounds; accumulates across all rounds
 ## {plan-slug} R1 — YYYY-MM-DD   ← first round block
 ## {plan-slug} R2 — YYYY-MM-DD   ← second round block (appended after each review)
 ...                               ← rounds grow downward
 ```
 
-**Rule**: static sections (Reviewer Observations) come first. Round blocks are appended at the end as the review progresses.
+**Rule**: Navigation and Reviewer Observations come first. Round blocks are appended at the end as the review progresses.
+
+---
+
+## Navigation
+
+Top-level section at the very beginning of the file. Updated after each round by appending a new entry.
+
+```markdown
+## Navigation
+
+- [Reviewer Observations](#reviewer-observations)
+- Rounds: [R1 — YYYY-MM-DD — NEEDS_REVISION](#plan-slug-r1--yyyy-mm-dd) · [R2 — YYYY-MM-DD — READY](#plan-slug-r2--yyyy-mm-dd) · ...
+```
+
+- One line per category; Rounds line grows with each new round
+- Include verdict in each round link so LLM can scan without opening rounds
+- Anchor format: lowercase, spaces→hyphens, special chars removed (e.g. `## 4-wamr R1 — 2026-02-20` → `#4-wamr-r1--2026-02-20`)
 
 ---
 

@@ -23,12 +23,20 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/).
 - **Plan-Version**: v1 for initial plan (if plan exists but lacks Plan-Version field, add it — migration from create-feature-plan format)
 - **Last review round**: "Initial plan — no review yet" for v1 (or link to review round if revised)
 - **## Plan revision log** — empty table for initial plan (entries are added by review rounds) — format: Version | Round | Date | Changed Steps | Summary
+- **## Navigation** — placed after Plan revision log; flat list with links to all top-level sections and all steps:
+  ```
+  - [Architect Retrospective](#architect-retrospective) · [Architect Observations](#architect-observations)
+  - [Context](#context) · [Goal](#goal)
+  - Plan: [Step 1: {Title}](#step-1-title) · [Step 2: {Title}](#step-2-title) · ...
+  - [Risks / Unknowns](#risks--unknowns) · [Acceptance Criteria](#acceptance-criteria)
+  ```
 
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
 **Validation** (before completing):
 - Verify plan includes all required fields (Plan-Id, Plan-Version, Branch, Last review round, Plan revision log)
 - Verify Plan revision log format is correct (5 columns: Version | Round | Date | Changed Steps | Summary)
+- Verify `## Navigation` is present with links to all steps
 - Verify date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`)
 - Verify each context in `## Contexts` has this plan listed in its `## Used by` section
 

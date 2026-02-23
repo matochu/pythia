@@ -101,6 +101,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 - **Plan-Version**: increment from previous (e.g. v2, v3)
 - **Last review round**: link to the round the user provided (if Trigger 1); or `Implementation Round I{n} — {date}` (if Trigger 2)
 - **## Plan revision log**: add one new row — Plan-Version, round reference, date, list of steps added/amended (e.g. `Step 9 amended, Step 12 added`), 1-line summary of what changed and why
+- **## Navigation**: update to reflect any new or amended steps — add new step links to the Plan line, keep existing links unchanged
 - **## Architect Retrospective**: append a new versioned block (see below) — never delete previous blocks
 
 **Architect Retrospective section** (append to plan after `## Plan revision log`):
@@ -143,6 +144,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 **Validation** (before completing):
 - Verify Plan-Version is incremented from previous version
 - Verify Plan revision log is updated with new entry (version, round, date, changed steps, summary)
+- Verify `## Navigation` is updated with links to all new or amended steps
 - Verify `## Architect Retrospective` block added to plan file for this replan cycle **if discoveries exist** (skip if nothing new was learned)
 - Verify date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`)
 - Verify each context in `## Contexts` has this plan listed in its `## Used by` section

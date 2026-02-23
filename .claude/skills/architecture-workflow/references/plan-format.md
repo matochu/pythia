@@ -6,12 +6,13 @@
 
 ```
 # header (Metadata, Contexts, Plan revision log)   ← static metadata
+## Navigation                                       ← updated on every plan/replan; links to all steps
 ## Architect Retrospective                          ← append-only, one v{N} block per replan
 ## Architect Observations                           ← append-only, accumulates across replans
 ## Context / Goal / Plan / Risks / Acceptance       ← plan body (steps grow downward)
 ```
 
-**Rule**: metadata and accumulating sections (Retrospective, Observations) come before the plan body. New steps are appended at the end of `## Plan`.
+**Rule**: metadata and accumulating sections (Navigation, Retrospective, Observations) come before the plan body. New steps are appended at the end of `## Plan`.
 
 ---
 
@@ -38,6 +39,15 @@
 |---------|-------|------------|----------------------------------|---------------------------------------------|
 | v1      | —     | YYYY-MM-DD | Steps 1–N (initial)              | Initial plan                                |
 | v2      | R1    | YYYY-MM-DD | Step 3 amended, Step 4 added     | Short description of what changed and why   |
+
+## Navigation
+
+- [Architect Retrospective](#architect-retrospective) · [Architect Observations](#architect-observations)
+- [Context](#context) · [Goal](#goal)
+- Plan: [Step 1: {Title}](#step-1-title) · [Step 2: {Title}](#step-2-title) · ...
+- [Risks / Unknowns](#risks--unknowns) · [Acceptance Criteria](#acceptance-criteria)
+
+*(Updated by `/plan-feature` on creation and by `/replan-feature` when steps are added or amended.)*
 
 ## Architect Retrospective
 
