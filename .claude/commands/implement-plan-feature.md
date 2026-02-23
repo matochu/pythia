@@ -46,6 +46,7 @@ If no implementation report exists yet (first round) — skip this step and proc
 - Multiple validation runs within the same plan version → multiple `I{n}` sections, same round numbering sequence
 - A new plan version received from Architect starts the next round number
 - Do NOT treat repeated test runs or debug iterations as separate rounds — append to the current round's Out-of-Plan Work instead
+- Implementation rounds are appended at end: `I{n}` must be the final section in the file, after all prior rounds (`I1… I{n-1}`) and after `Developer Retrospective`/`Developer Observations`.
 
 **Example**: Run tests (I1), fix issue, run tests again (I2) — both are within the same plan version. Only when Architect updates the plan does the next round begin.
 
@@ -149,5 +150,6 @@ The implementation report MUST include a compatibility table in the header block
 - Verify report contains `## Implementation Round I{n}` for each validation run
 - Verify Developer Retrospective and Developer Observations are located **before** the round sections
 - Verify report follows `references/implementation-format.md`
+- Verify ordering: the last `## Implementation Round` section is the current `I{n}` and rounds increase monotonically (`I1, I2, … I{n}`) with no out-of-order inserts.
 
 See [agent-selection-guide](../agents/_agent-selection-guide.md): use Developer for implementation; use Architect for planning and audit.
