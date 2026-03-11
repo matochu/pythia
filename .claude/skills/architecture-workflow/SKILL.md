@@ -54,6 +54,8 @@ Commands are located in `.cursor/commands/`:
 - Output: Review document with Verdict, Step-by-Step Analysis
 - Format: See `references/review-format.md`
 - Max rounds: 2 (MAX_REVIEW_LOOPS)
+- Review depth is adaptive within `/review-plan-feature` (Deep mode for R1 and major architect-driven vector/structural changes)
+- **Delegation**: Review runs only in Reviewer subagent context (see Delegation policy below); when triggered automatically (e.g. after `/replan-feature`), the caller must launch the subagent and must not run review in the current context.
 
 ### Implementation
 
@@ -61,6 +63,7 @@ Commands are located in `.cursor/commands/`:
 - Input: Feature context + plan slug (after review pass)
 - Output: Implementation report
 - Format: See `references/implementation-format.md`
+- **Modes**: Plan execution (new Implementation Round I{n}; **one implementation round per plan version** — each v{N} at most once; plan version can be e.g. v12, v5) or **refinement** (user-requested bug fixes / follow-up; progress in last round's Out-of-Plan Work only, no new round).
 
 ### Audit
 
@@ -133,11 +136,18 @@ flowchart TD
     end
 ```
 
+## Delegation policy (automatic follow-ups)
+
+Any step that is triggered automatically by another command (e.g. review after replan) **must** be run by **launching the corresponding subagent** in a separate context. It must **not** be executed in the current agent’s context.
+
+- **Rationale**: Role isolation — the follow-up role (e.g. Reviewer) has different constraints and context; running it in the caller’s context bypasses that isolation and can mix roles.
+- **Consequence**: If the subagent cannot be launched, the triggering command must not perform the follow-up (fail fast with a clear message); it must not fall back to running the follow-up in the current context.
+
 ## Review Loop Policy
 
 - **MAX_REVIEW_LOOPS = 2** (recommended 2–3 rounds per Plan 1)
 - If after max cycles there are Impact: high findings → stop: re-scope / ask user / re-plan
-- Loop: /replan-feature → /review-plan-feature (max 2 cycles)
+- Loop: /replan-feature → /review-plan-feature (max 2 cycles); the review leg runs only via Reviewer subagent (Delegation policy).
 
 ## Feature Binding
 

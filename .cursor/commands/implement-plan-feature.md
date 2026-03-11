@@ -6,6 +6,7 @@
 
 - Provide **FEATURE_ID** or path to feature doc and **plan slug** (e.g. `1-agents-commands-data-exchange` for plan `1-agents-commands-data-exchange.plan.md`).
 - **Gate check**: Command will verify review pass before proceeding.
+- **Mode**: Default is plan execution. To run **refinement** (bug fixes, follow-up work by request): indicate that you want follow-up work or bug fixes on the current implementation; the Developer will perform the work and record progress in the **last** Implementation Round's **Out-of-Plan Work** only — no new round is created.
 
 ## Instructions for model
 
@@ -37,17 +38,27 @@ If no implementation report exists yet (first round) — skip this step and proc
 5. If the plan lists contexts in `## Contexts`, read those context documents from `{feature-dir}/contexts/`.
 6. Note which context information is relevant to the current plan steps — this may be referenced in `### Contexts consulted` per Implementation Round.
 
+**Mode detection**: From the user's message, determine whether this run is **plan execution** (execute plan / first run / after replan) or **refinement** (bug fixes, follow-up work on current implementation). In refinement mode, an implementation report must already exist (last round will be extended).
+
+---
+
+## Mode: Plan execution vs Refinement
+
+**Plan execution** (default): Execute plan steps, run validation, append a new `## Implementation Round I{n}`. **One plan version → at most one implementation round**: each plan version (v{N}) may appear only once in the compatibility table; the next implementation run is for the next plan version after replan. Plan version can be any v{N} (e.g. v12, v5), since it advances with review/replan cycles.
+
+**Refinement**: User requests follow-up work (bug fixes, small changes) with **no new plan version**. Developer performs the work and records all progress in the **last** `## Implementation Round I{n}`'s **Out-of-Plan Work** section (append entries). No new round is created; Plan Version in the compatibility table stays unchanged. Static sections (Summary, Files Changed, Commands Executed, etc.) are updated to reflect the refinement work.
+
+- **When to use refinement**: User explicitly asks for bug fixes, follow-up tasks, or small changes on top of the current implementation.
+- **When to use plan execution**: First run, or after Architect delivered a new plan version (replan), or user asks to "continue implementing the plan".
+
 ---
 
 ## Round Lifecycle
 
-**One round = one validation run.** Each time validation commands are run, a new `## Implementation Round I{n}` section is appended.
-
-- Multiple validation runs within the same plan version → multiple `I{n}` sections, same round numbering sequence
-- A new plan version received from Architect starts the next round number
-- Do NOT treat repeated test runs or debug iterations as separate rounds — append to the current round's Out-of-Plan Work instead
-
-**Example**: Run tests (I1), fix issue, run tests again (I2) — both are within the same plan version. Only when Architect updates the plan does the next round begin.
+- **New `## Implementation Round I{n}`**: Created when executing the plan (first run or after a new plan version). **Only one implementation round per plan version** — each v{N} appears at most once in the table; plan version can be e.g. v12, v5 (advances with review/replan).
+- **Refinement**: No new round, no new plan version. Append to the **last** round's **Out-of-Plan Work**; update static sections. Plan Version in the table stays unchanged (keeps one-implementation-per-plan-version).
+- Implementation rounds are appended at end: `I{n}` must be the final section in the file, after all prior rounds (`I1… I{n-1}`) and after `Developer Retrospective`/`Developer Observations`.
+- Repeated validation runs or debug iterations within the same plan version can be folded into the current round's Out-of-Plan Work.
 
 ---
 
@@ -108,6 +119,8 @@ If no implementation report exists yet (first round) — skip this step and proc
 >   - **Purpose**: Architect reads this to understand real changes — omissions cause plan drift
 >   - If nothing was done outside the plan: write `Out-of-Plan Work: none`
 >
+> **Refinement mode** (when user requested bug fixes or follow-up work): Do not create a new `## Implementation Round I{n}`. Perform the requested work, then **append** all changes to the **last** existing round's **Out-of-Plan Work** (add new bullet entries). Update static sections (Summary, Files Changed, Commands Executed, etc.) to reflect the refinement. Plan Version in the compatibility table stays unchanged.
+>
 > See full format: `references/implementation-format.md`
 
 ---
@@ -146,7 +159,7 @@ The implementation report MUST include a compatibility table in the header block
   - Steps with unrun validation must be marked `partial` in Step Results table
   - Developer must attempt to run them before closing the round
   - If environment prevents running (e.g. no Docker, no network), document as PROBLEM entry with environment reason — but still attempt all other validations
-- Verify report contains `## Implementation Round I{n}` for each validation run
+- Verify report contains `## Implementation Round I{n}` for each validation run (refinement mode: no new round; only last round's Out-of-Plan Work extended)
 - Verify Developer Retrospective and Developer Observations are located **before** the round sections
 - Verify report follows `references/implementation-format.md`
 

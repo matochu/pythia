@@ -135,7 +135,7 @@ Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
 
 - [type] {what was done} → {reason} → {result}
 
-*(Mandatory — write "none" if all work was within plan steps. Document ALL changes outside plan steps: debug scripts, config tweaks, workarounds, extra test runs.)*
+*(Mandatory — write "none" if all work was within plan steps. Document ALL changes outside plan steps: debug scripts, config tweaks, workarounds, extra test runs. In **refinement mode** (bug fixes / follow-up by request), append new entries here; do not create a new Implementation Round.)*
 ```
 
 ---
@@ -145,8 +145,9 @@ Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
 ### Plan–Implementation Compatibility Table
 
 - Located in the header block (after Date/Plan links)
-- One row added per Implementation Round — append-only, never delete rows
-- **Plan Version**: the plan version active when this round was executed
+- One row per Implementation Round — append-only, never delete rows
+- **One plan version → one row**: each Plan Version (v{N}) must appear at most once; one implementation round per plan version
+- **Plan Version**: the plan version active when this round was executed (can be e.g. v12, v5 — advances with review/replan)
 - **Result**: short outcome (e.g. `7 passed / 1 failed`, `build ok`)
 
 ### Developer Retrospective
@@ -172,7 +173,14 @@ Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
 
 - Appended at the **end of the file** after all previous rounds
 - Never insert between existing rounds, never delete previous rounds
-- One round per validation run (tests, build, etc.)
+- One round per validation run (tests, build, etc.) when in plan execution mode
+- **One plan version → at most one implementation round**: each plan version (v{N}) may appear only once in the compatibility table. Plan version can be any v{N} (e.g. v12, v5), since it advances with review/replan cycles. Refinement work (bug fixes, follow-up by request) does not create a new round — it is recorded in the last round's **Out-of-Plan Work** (see Refinement below).
+
+### Refinement (out-of-plan follow-up)
+
+- When the user requests **bug fixes or follow-up work** with no new plan version, the Developer works in **refinement mode**: no new `## Implementation Round I{n}` is created.
+- All changes are **appended** to the **last** existing round's **Out-of-Plan Work** section (new bullet entries). Static sections (Summary, Files Changed, Commands Executed, etc.) are updated.
+- Plan Version in the compatibility table stays unchanged.
 
 ### Issue Severity
 

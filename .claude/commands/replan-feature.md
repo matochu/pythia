@@ -16,6 +16,16 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 
 **Input**: Feature context, plan path = `plans/{plan-slug}.plan.md`, **full review text OR implementation round section** (from the round the user linked or pasted).
 
+**Architecture Ambiguity Checkpoint** (required before revising plan):
+- If review/implementation findings can be addressed by multiple architectural directions with materially different trade-offs, **ask user before emitting revised plan**.
+- Do not proceed to full revised plan output until user selects direction (unless user explicitly delegates decision to Architect).
+- Use this short structure for the checkpoint message:
+  1. **Decision point**: what architectural choice is ambiguous
+  2. **Overview**: why this choice matters for this replan cycle
+  3. **Options** (2-4): each with brief `Pros`, `Cons`, impact on risks/scope/complexity
+  4. **Question**: explicit selection request from user
+- Keep options tied to the current plan version and findings; avoid abstract alternatives detached from evidence.
+
 **Mandatory context load** (before any analysis):
 
 1. Read `plans/{plan-slug}.plan.md` — section `## Architect Retrospective`
@@ -48,7 +58,10 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 
 **Critical**: Architect is NOT required to accept all review findings. Architect must exercise professional judgment and may disagree with Reviewer's recommendations if they are invalid, out of scope, or contradict plan objectives.
 
-**Automatic Follow-up**: After saving the revised plan, **automatically invoke `/review-plan-feature`** with the same plan-slug.
+**Automatic Follow-up (strict gate)** — Delegation only, never in current context:
+
+- After saving the revised plan, the next step is a new review round. That step **must** run only by **launching the Reviewer subagent** (e.g. `/reviewer` or Task tool with Reviewer role) in a **separate context**. Do **not** run `/review-plan-feature` or produce the review in this (Architect) context.
+- If the Reviewer subagent cannot be launched, **do not execute `/replan-feature`**: exit with a blocking message that the follow-up requires the Reviewer subagent and it is unavailable; do not fall back to running review here.
 
 ---
 
@@ -142,6 +155,10 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
 **Validation** (before completing):
+- For Trigger 1: verify follow-up review was run only by launching Reviewer subagent (separate context), not in current (Architect) context
+- For Trigger 1: if Reviewer subagent could not be launched, verify command exited without executing replan and without running review in current context
+- Verify ambiguity checkpoint was used when non-trivial alternative directions existed
+- Verify user choice was captured before revised plan output (or user explicitly delegated choice to Architect)
 - Verify Plan-Version is incremented from previous version
 - Verify Plan revision log is updated with new entry (version, round, date, changed steps, summary)
 - Verify `## Navigation` is updated with links to all new or amended steps

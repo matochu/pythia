@@ -44,7 +44,7 @@
 {If NEEDS_REVISION}
 1. Review findings in `{feature-dir}/reports/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
 2. Call `/replan-feature` on `{feature-dir}/reports/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
-3. After revision, call `/review-plan-feature` again (max 2 rounds)
+3. After revision, run the next review **only by launching the Reviewer subagent** (do not run `/review-plan-feature` in the current context); max 2 rounds.
 
 {If READY}
 1. Review is complete. Plan is ready for implementation.
