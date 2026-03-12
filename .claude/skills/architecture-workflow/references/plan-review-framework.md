@@ -60,7 +60,7 @@ When reviewing a plan, systematically check these dimensions:
 - **risk**: Potential problems during implementation (thread safety, performance, security, architectural risks)
 - **wrong-assumption**: Incorrect assumptions that could lead to problems
 
-### 5. Testability
+### 5. Testability and test coverage of changes
 
 **Questions to ask:**
 - How will we test this?
@@ -68,10 +68,11 @@ When reviewing a plan, systematically check these dimensions:
 - Can we write unit tests?
 - Can we test integration points?
 - Are validation methods specified and executable?
+- **Test coverage of changes**: For each step or acceptance criterion that introduces or changes behavior, is there a corresponding test or validation (e.g. `- **Validation**:` in the plan, explicit test scenario, or verifiable acceptance criterion)? Are there gaps where changes are not covered by tests?
 
 **Finding Types to identify:**
-- **missing-validation**: No validation method specified
-- **gap**: Missing test scenarios or unclear testing approach
+- **missing-validation**: No validation method specified; or planned changes lack corresponding test/validation coverage
+- **gap**: Missing test scenarios, unclear testing approach, or changes without clear test coverage
 
 ## Review Process
 

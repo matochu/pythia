@@ -16,17 +16,19 @@ This skill provides procedures and formats for the plan stabilization workflow. 
 
 ## Commands Reference
 
-Commands are located in `.cursor/commands/`:
+Commands: **Cursor** `.cursor/commands/`, **Claude** `.claude/commands/` (same names).
 
-- `/feature` → `.cursor/commands/feature.md`
-- `/context-feature` → `.cursor/commands/context-feature.md`
-- `/plan-feature` → `.cursor/commands/plan-feature.md`
-- `/review-plan-feature` → `.cursor/commands/review-plan-feature.md`
-- `/replan-feature` → `.cursor/commands/replan-feature.md`
-- `/implement-plan-feature` → `.cursor/commands/implement-plan-feature.md` (with gate logic)
-- `/audit-implementation-feature` → `.cursor/commands/audit-implementation-feature.md`
-- `/retro-feature` → `.cursor/commands/retro-feature.md` — feature-level: all plans in a feature
-- `/retro-project` → `.cursor/commands/retro-project.md` — project-level: all features consolidated
+- `/feature` → `feature.md`
+- `/context-feature` → `context-feature.md` — context creation for feature; for research-type context, delegate to Researcher or tell user to run `/researcher` or `/research-feature`
+- `/research-feature` → `research-feature.md` — research **per feature**: pre-search pythia docs first (scattered), then Researcher → context doc in `feat-XXX/contexts/`
+- `/researcher` → `researcher.md` — invoke Researcher subagent (research → context doc in feature/project)
+- `/plan-feature` → `plan-feature.md`
+- `/review-plan-feature` → `review-plan-feature.md`
+- `/replan-feature` → `replan-feature.md`
+- `/implement-plan-feature` → `implement-plan-feature.md` (with gate logic)
+- `/audit-implementation-feature` → `audit-implementation-feature.md`
+- `/retro-feature` → `retro-feature.md` — feature-level: all plans in a feature
+- `/retro-project` → `retro-project.md` — project-level: all features consolidated
 
 ## Workflow Procedures
 
@@ -41,6 +43,13 @@ Commands are located in `.cursor/commands/`:
 - Input: Feature context + context topic/type
 - Output: Context document in `feat-XXX/contexts/{name}.context.md`
 - Format: See context template structure
+
+### Research (Researcher subagent)
+
+- **Purpose**: Broad and deep research on problems, solution options, best practices, 3rd party solutions. Output = context document in feature or project.
+- **Command per feature**: `/research-feature` — run research for a feature; **pre-search** across all pythia/project docs first (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — docs are scattered), then full research procedure; output in `feat-XXX/contexts/{topic}.context.md`. Also `/researcher` for ad-hoc invoke.
+- **Pre-search (mandatory)**: Before external/codebase search, search pythia and project documents (semantic search / grep) for the topic; use findings to ground research and avoid duplication. See `references/research-procedure.md` step 0.
+- **Procedure**: See `references/research-procedure.md`. When researching agent skills/tooling, use `.agents/skills/skill-search-and-fit/SKILL.md` (catalogs: Cursor, Skills.sh, AgentSkills.io, GitHub).
 
 ### Plan Creation/Revision
 
@@ -98,7 +107,7 @@ Commands are located in `.cursor/commands/`:
 
 ```mermaid
 flowchart TD
-    A([/feature]) --> B([/context-feature])
+    A([/feature]) --> B([/context-feature\nor /research-feature])
     B --> C([/plan-feature\nv1])
 
     C --> D([/review-plan-feature\nR1])

@@ -75,6 +75,13 @@ For general context creation guidelines, structure, and templates, see [@create-
 - Context must reference feature: `**Related Feature**: [Feature Name](../feat-YYYY-MM-name.md)`
 - Feature should list contexts: In "Related Contexts" section
 
+### Research-type context
+
+When the requested context is **research** (solution options, best practices, 3rd party solutions, broad/deep exploration):
+
+- **Preferred**: Delegate to the **Researcher** subagent (Task tool / researcher agent) with feature + topic; Researcher produces the context document in `feat-XXX/contexts/{topic}.context.md` using this command's structure and linking.
+- **If Researcher cannot be launched**: Do not produce the context yourself. Tell the user: *"This context needs research (options, best practices, 3rd party). Run **/researcher** with this feature and topic so the Researcher agent can produce the context document."*
+
 ## Prerequisites
 
 Before creating a feature context document, ensure you have:

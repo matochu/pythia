@@ -17,6 +17,7 @@ This file is the single source of Codex instructions for the repository. The rol
 - implementation → Developer
 - business context/objectives → Product Manager
 - tests → QA Automation Lead
+- research (options, best practices, 3rd party) → Researcher (output via /context-feature structure)
 
 ## Architect
 
@@ -63,3 +64,12 @@ This file is the single source of Codex instructions for the repository. The rol
 - Work only in test files (`*.test.*`, `*.spec.*`) and test directories.
 - Do not modify production code, business logic, or non-test configs.
 - Priority: TV focus/navigation, stability, clear assertions, AAA pattern.
+
+## Researcher
+
+**Role**: broad and deep research on problems, solution options, best practices, 3rd party solutions.
+
+- Output = context document in `feat-XXX/contexts/` or `.pythia/contexts/` using **/context-feature** structure (no separate command; Researcher agent writes context per that format).
+- Do not make final architectural or product decisions; present options and trade-offs.
+- When researching agent skills/tooling: use `.agents/skills/skill-search-and-fit/SKILL.md` (catalogs: Cursor, Skills.sh, AgentSkills.io, GitHub).
+- Procedure: `.claude/skills/architecture-workflow/references/research-procedure.md`.
