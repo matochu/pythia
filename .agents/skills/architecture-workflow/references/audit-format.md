@@ -18,6 +18,19 @@ Implementation: [reports/{plan-slug}.implementation.md](./{plan-slug}.implementa
 - [ ] Criterion 1 — [status]
 - [ ] Criterion 2 — [status]
 
+## Implementation quality check
+- Status: pass | concerns | fail
+- **Test/criteria integrity**: [Code that only satisfies tests/criteria for narrow cases, bypasses or stubs tests, hardcoded "pass" outcomes, shallow edge/error handling — or "None found."]
+- **Maintainability**: [Alignment with implementation-quality-guidelines: defensive code, error handling, logging, tests that verify behavior; brittleness or convention violations — or "OK."]
+- **Architecture & design**: [KISS, DRY; layering (core/upper layers depend on abstractions/contracts, not on concrete names/identities); no magic strings that should be parameters/config; no context- or environment-specific workarounds in production; explicit API/contracts — or "OK." **Out-of-plan changes**: explicit architectural assessment for each; list any violations.]
+- Details: [Concrete file/area and finding if concerns/fail]
+
+**Example architectural findings** (generic; project may add its own):
+- *Wrong layering*: A higher-level component has hardcoded knowledge of a concrete lower-level or extension by name/ID; should depend on abstraction/contract only.
+- *Magic string*: A literal is baked in instead of a parameter or config — brittle and not portable.
+- *Wrong abstraction*: A context- or environment-specific workaround was baked into production code; masks the real issue.
+- *Implicit behavior*: Behavior depends on one specific name or case without an explicit API/contract — unpredictable and hard to reason about.
+
 ## Risk Re-evaluation
 [Reassess risks from plan]
 
@@ -78,5 +91,6 @@ After creating audit report, if Verdict is "ready", Architect MUST also update t
 
 - **Conformance**: done | partial | no
 - **Acceptance Criteria Check**: Status per criterion from plan
+- **Implementation quality check**: pass | concerns | fail (test/criteria integrity + maintainability + architecture & design, generic; out-of-plan changes get explicit architectural assessment)
 - **Risk Re-evaluation**: Updated risk assessment
 - **Decision**: ready | needs fixes | re-plan

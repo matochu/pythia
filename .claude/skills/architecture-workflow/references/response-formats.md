@@ -162,6 +162,7 @@
 **Implementation File**: `{feature-dir}/reports/{plan-slug}.implementation.md`  
 **Audit File**: `{feature-dir}/reports/{plan-slug}.audit.md`  
 **Conformance**: {done | partial | no}  
+**Implementation quality**: {pass | concerns | fail}  
 **Acceptance Criteria Met**: {number}/{total}  
 **Decision**: {ready | needs_fixes | re_plan}
 
@@ -178,6 +179,12 @@
 - [ ] Criterion 1 — {status}
 - [ ] Criterion 2 — {status}
 - ...
+
+## Implementation quality check
+**Status**: {pass | concerns | fail}
+- Test/criteria integrity: [brief]
+- Maintainability: [brief]
+- Architecture & design (KISS, DRY, layering, magic strings, explicit contracts): [brief]; out-of-plan: [assessment if any]
 
 ## Risk Re-evaluation
 [Reassess risks from plan — any new risks or mitigated risks]

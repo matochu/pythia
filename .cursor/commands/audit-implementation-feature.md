@@ -31,7 +31,12 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
 3. **Check acceptance criteria**: For each criterion in plan — met / not met / partial.
 4. **Re-evaluate risks**: Which plan risks materialized? Which were mitigated?
    - **4a. Context conformance** (if contexts exist): If feature has context documents with requirements (loaded in Mandatory context load step 4) — check that the implementation conforms to those requirements. Flag any non-conformance as a finding. Non-conformance with a requirement context is grounds for "needs fixes" or "re-plan" verdict.
-5. **Decision**: ready | needs fixes | re-plan.
+5. **Implementation quality check** (mandatory): Review the **actual code changes** listed in the implementation report (`## Files Changed`). Read the modified files (or relevant diffs) and assess:
+   - **Test/criteria integrity**: Code that only satisfies tests or acceptance criteria for narrow or specific cases; logic that bypasses or stubs tests; hardcoded outcomes for "passing" scenarios; missing or shallow handling of edge cases and errors. Flag as finding if present.
+   - **Maintainability**: Alignment with `references/implementation-quality-guidelines.md` — defensive code, explicit error handling, logging, tests that verify behavior (not implementation), no swallowed errors or unsafe assumptions. Code that is brittle, hard to extend, or violates project conventions. Flag as finding if present.
+   - **Architecture & design**: KISS, DRY; **layering**: higher-level / core must not depend on concrete extension points or lower-level components by name or identity — only on abstractions or contracts (otherwise renaming or removing a dependency breaks the system). No **magic strings** that should be parameters or config. **Correct abstraction**: no context- or environment-specific workarounds baked into production code (they mask the real problem). **Explicit contracts**: behavior (e.g. where data is read from, which branch is taken) must be driven by explicit API/contract, not implicit rules that depend on one specific name or case. Apply this especially to **out-of-plan** changes — give an explicit architectural assessment for each; violations can justify "needs fixes" or "re-plan".
+   - **Verdict for this step**: pass | concerns | fail. "Concerns" or "fail" must be reflected in the audit report and can justify "needs fixes" (or "re-plan" if severe).
+6. **Decision**: ready | needs fixes | re-plan.
 
 ---
 
@@ -61,6 +66,7 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
 ## Validation (before completing)
 
 - Verify audit report includes conformance assessment (done | partial | no)
+- Verify **implementation quality check** is present (pass | concerns | fail) with concrete findings if concerns/fail
 - Verify acceptance criteria are checked (met count/total)
 - Verify risk re-evaluation is included
 - Verify decision (ready | needs fixes | re-plan) with reasoning
