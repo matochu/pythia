@@ -16,6 +16,7 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/).
 **Input**: Feature context + **plan slug** (required). Plan path = `plans/{plan-slug}.plan.md`. Optional: existing plan content, review text or link to round (for revision), or **user's edits to the plan** — if the user asks to "apply automatically" or "agree with these changes", output the plan with those edits incorporated.
 
 **Architecture Ambiguity Checkpoint** (required before writing plan):
+
 - If there are ambiguous architectural choices with materially different trade-offs, **ask user before generating plan changes**.
 - Do not proceed to full plan output until user selects direction (unless user explicitly asks Architect to decide autonomously).
 - Use this short structure for the checkpoint message:
@@ -27,23 +28,22 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/).
 
 **Before generating plan**: Get current date via `date +%Y-%m-%d`. Use this date in the **Date Created** field.
 
+**Step detail (mandatory)**: Each step MUST follow the step structure in `references/plan-format.md`. Steps must be **concrete and reviewable**: (a) Developer can implement without guessing what "done" means, (b) Reviewer can verify completeness, feasibility, and test coverage. Include per step: **Change** (concrete, bounded), **Where** (files/modules), **Preconditions** (if any), **Concrete outcome** (verifiable "done"), **Edge cases / errors** (if the step touches I/O, persistence, or integration), **Validation** (explicit command(s); when the step adds behavior, state which new tests are required), **Tests to add** (if the step requires new tests — list test names or scenarios so Developer knows exactly what to write), **API / types** (if the step introduces or changes public API or data format — signatures, struct/schema, or example JSON), **Pattern / approach** (if relevant), **Acceptance**. Prefer more, smaller steps with clear boundaries over fewer vague steps. Vague steps (e.g. "Add error handling", "Refactor X") are not acceptable — they block good review.
+
 **Output**: **Full plan document (Markdown)**. Do not write files; output the full document for the user to save. The plan MUST include:
 
 - **Plan-Id** (e.g. plan slug or feature-scoped id)
 - **Plan-Version**: v1 for initial plan (if plan exists but lacks Plan-Version field, add it — migration from create-feature-plan format)
 - **Last review round**: "Initial plan — no review yet" for v1 (or link to review round if revised)
 - **## Plan revision log** — empty table for initial plan (entries are added by review rounds) — format: Version | Round | Date | Changed Steps | Summary
-- **## Navigation** — placed after Plan revision log; flat list with links to all top-level sections and all steps:
-  ```
-  - [Architect Retrospective](#architect-retrospective) · [Architect Observations](#architect-observations)
-  - [Context](#context) · [Goal](#goal)
-  - Plan: [Step 1: {Title}](#step-1-title) · [Step 2: {Title}](#step-2-title) · ...
-  - [Risks / Unknowns](#risks--unknowns) · [Acceptance Criteria](#acceptance-criteria)
-  ```
+- **## Navigation** — placed after Plan revision log; flat list with links to all top-level sections and all steps (include Code / patterns and Out of scope when present). See `references/plan-format.md`.
+- When applicable, include **Code / patterns** and **Out of scope** per plan-format (optional sections after Goal).
+- **## Plan** — steps with full detail per plan-format.
 
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
 **Validation** (before completing):
+
 - Verify ambiguity checkpoint was used when decision trade-offs were materially different
 - Verify user choice was captured before plan output (or user explicitly delegated choice to Architect)
 - Verify plan includes all required fields (Plan-Id, Plan-Version, Branch, Last review round, Plan revision log)
@@ -53,6 +53,7 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/).
 - Verify each context in `## Contexts` has this plan listed in its `## Used by` section
 
 **Migration Note**: If an existing plan (created via create-feature-plan) lacks Plan-Version field, add:
+
 - Plan-Version: v1 (if no revisions yet)
 - Last review round: "Initial plan — no review yet"
 - Plan revision log section — empty table (no entries until first review)

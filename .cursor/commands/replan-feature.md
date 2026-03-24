@@ -17,6 +17,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 **Input**: Feature context, plan path = `plans/{plan-slug}.plan.md`, **full review text OR implementation round section** (from the round the user linked or pasted).
 
 **Architecture Ambiguity Checkpoint** (required before revising plan):
+
 - If review/implementation findings can be addressed by multiple architectural directions with materially different trade-offs, **ask user before emitting revised plan**.
 - Do not proceed to full revised plan output until user selects direction (unless user explicitly delegates decision to Architect).
 - Use this short structure for the checkpoint message:
@@ -31,6 +32,13 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 1. Read `plans/{plan-slug}.plan.md` — section `## Architect Retrospective`
 2. Extract all existing blocks (keyed by `### v{N} — {round-ref} — {date}`)
 3. Use this as context for the current replan — do NOT repeat issues already identified in previous blocks, and use `[risk]` entries to anticipate likely problems in this round
+
+**Mandatory open-concern sweep** (before any edits):
+
+4. Read the entire referenced review round or implementation round, not just the executive summary
+5. Enumerate every still-open concern from `Summary of Concerns` and any unchecked items in `Addressed by Architect`
+6. Verify each open concern against the current plan text **and** any linked context/doc files named in the concern
+7. Do not start editing until you can state the full set of unresolved items for this round; replan must address the round as a whole, not one concern at a time
 
 **Trigger detection**: Before starting, determine the trigger type:
 
@@ -55,6 +63,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
    - **Reject**: Do NOT include changes if finding is invalid, out of scope, or contradicts plan objectives
    - **Modify**: Adapt recommendations if partially valid but need adjustment
 4. **Document decisions**: In structured response, clearly document accepted/rejected/modified findings with reasoning.
+5. **Round closure check before editing**: Verify whether any concern in the same review round remains unresolved after your planned changes. If yes, revise the plan for all of them in the same pass unless you explicitly reject a concern with reasoning.
 
 **Critical**: Architect is NOT required to accept all review findings. Architect must exercise professional judgment and may disagree with Reviewer's recommendations if they are invalid, out of scope, or contradict plan objectives.
 
@@ -81,6 +90,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 4. **Document decisions**: In structured response, for each issue indicate what plan change was made and why.
 
 **Critical rules for implementation-driven replan**:
+
 - **NEVER delete or replace existing steps** — only ADD new steps or amend existing ones
 - **NEVER renumber or reorder existing steps** — step numbers are permanent identifiers; Step 9 remains Step 9 forever regardless of where new steps are inserted
 - New steps go **after** the last existing step only — do NOT insert between existing steps (e.g. if last step is 9, new steps are 10, 11, 12…)
@@ -93,8 +103,8 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 ```markdown
 ### Step N: {title}
 
-**Added**: v{N} ({round-ref})        ← for new steps
-**Amended**: v{N} ({round-ref})      ← for amended steps (keep original text, add amendment note at end)
+**Added**: v{N} ({round-ref}) ← for new steps
+**Amended**: v{N} ({round-ref}) ← for amended steps (keep original text, add amendment note at end)
 ```
 
 - `{round-ref}` = `I{n}` for implementation-driven replan, `R{n}` for review-driven replan
@@ -107,6 +117,8 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 ### Common Output Rules (all triggers)
 
 **Before generating revised plan**: Get current date via `date +%Y-%m-%d`. Use this date for new Plan revision log entry.
+
+**Step structure**: When adding or amending steps, use the full step structure in `references/plan-format.md` (Change, Where, Preconditions, Concrete outcome, Edge cases/errors, Validation, Tests to add when step requires new tests, API/types when step adds API or data format, Pattern/approach if relevant, Acceptance) so new or amended steps are implementable and reviewable.
 
 **Output**: **Full revised plan document (Markdown) only**. Do **not** edit the review or implementation report files (Architect stays read-only on those). The plan output MUST include:
 
@@ -155,11 +167,14 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
 **Validation** (before completing):
+
 - For Trigger 1: verify follow-up review was run only by launching Reviewer subagent (separate context), not in current (Architect) context
 - For Trigger 1: if Reviewer subagent could not be launched, verify command exited without executing replan and without running review in current context
 - Verify ambiguity checkpoint was used when non-trivial alternative directions existed
 - Verify user choice was captured before revised plan output (or user explicitly delegated choice to Architect)
 - Verify Plan-Version is incremented from previous version
+- Verify every open concern from the referenced round was either addressed in the revised plan or explicitly rejected with reasoning
+- Verify no linked context/doc file named by an open concern still contradicts the revised plan text without that contradiction being called out as remaining follow-up work
 - Verify Plan revision log is updated with new entry (version, round, date, changed steps, summary)
 - Verify `## Navigation` is updated with links to all new or amended steps
 - Verify `## Architect Retrospective` block added to plan file for this replan cycle **if discoveries exist** (skip if nothing new was learned)
@@ -193,7 +208,7 @@ The Architect reflects on what was learned or observed during this replan cycle.
 
 Labels: `[plan]`, `[codebase]`, `[process]`, `[risk]` — use whichever are relevant, skip others.
 
-When revising from review, address BLOCKED and CONCERN-* first, but critically evaluate each one — you may reject invalid concerns.
+When revising from review, address BLOCKED and CONCERN-\* first, but critically evaluate each one — you may reject invalid concerns.
 
 **Note**: Do NOT add `**Status**:` field to Steps in plan. Steps are not yet implemented, so status is not applicable. Status will be added by `/audit-implementation-feature` after successful audit.
 

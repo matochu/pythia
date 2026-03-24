@@ -78,9 +78,10 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
 - **If decision is "ready"**: Verify feature document is updated:
   - Plan added/updated in "Existing External Plans" section
   - Plan entry includes `**Status: Implemented**` marker
-- **If decision is "ready"**: Verify commit message is present in structured response:
+- **If decision is "ready"**: Verify suggested commit message is present in structured response:
   - Subject line starts with `feat:` and is ≤ 72 chars
-  - Body bullets match `## Steps Executed` from implementation report
+  - Body describes repo changes (imperative bullets); aligned with implementation where applicable
+  - **No** plan slug, plan number, `.pythia/`, or workflow-only paths in the message
   - Formatted as a fenced code block
 
 See [agent-selection-guide](../agents/_agent-selection-guide.md): use Architect for planning and audit; use Developer for implementation.

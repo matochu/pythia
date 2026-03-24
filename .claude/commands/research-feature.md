@@ -24,6 +24,20 @@ Delegate to the **Researcher** subagent (Task tool with `subagent_type="research
 1. **Pre-search pythia first**: Search **all** relevant pythia/project documents (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — contexts, plans, reports, notes). Documents are scattered; use semantic search and/or grep for the topic and related terms. Use findings to avoid duplicate work and to ground the research.
 2. Then follow the full research procedure: frame and decompose, multi-source search (web, codebase, 3rd party, skill-search when relevant), evaluate and score sources, resolve contradictions, synthesize.
 3. Produce a context document in `{feature-dir}/contexts/{topic}.context.md` using `/context-feature` structure; update the feature’s Related Contexts.
+4. Every new research context should include, when applicable:
+   - **Architectural analysis / option variants**
+   - **One recommended option/architecture** (do not leave only a neutral list when a recommendation is possible)
+   - **Implementation split guidance**: how this could be broken into future plans depending on complexity/scope
+   - **Clear statement of what is still unresolved** vs what is ready for planning
+5. Prefer one recommended direction. If multiple variants are presented, explicitly say:
+   - which one is recommended
+   - why it is preferred over the others
+   - whether other variants are fallback-only, later-phase, or rejected
+6. If the topic is large enough to imply implementation work, include a short section on **possible plan decomposition**, for example:
+   - one larger plan
+   - two-plan split
+   - three-plan split
+   and recommend one of those decompositions.
 
 If Researcher cannot be launched, tell the user to run `/researcher` with the same feature and topic, or retry when the agent is available.
 

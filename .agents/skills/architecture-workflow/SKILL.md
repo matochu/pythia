@@ -42,6 +42,7 @@ Commands are located in `.cursor/commands/`:
 - Input: Feature context + plan slug (required) + optional review text or link to round
 - Output: Full plan document with Plan-Id, Plan-Version, Plan revision log
 - Format: See `references/plan-format.md`
+- Plan-level optional: Code/patterns (reference to quality guidelines + implementation constraints), Out of scope
 
 ### Review Process
 - Input: Feature context + plan slug

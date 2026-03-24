@@ -53,12 +53,14 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
    - Find section "## Detailed Implementation Plans (External)" → "**Existing External Plans:**"
    - If plan NOT listed: Add new entry with format: `- [{plan title}](plans/{plan-slug}.plan.md) — {description}. **Status: Implemented**`
    - If plan IS listed: Update existing entry to add `**Status: Implemented**` at the end
-5. **Commit message** (if decision is "ready"): Generate a git commit message based on the implementation report and output it in the structured response:
-   - **Subject line**: `feat: {1-sentence summary of what was implemented}` — derive from plan title + `## Steps Executed` summary; max 72 chars
-   - **Body**: bullet list from `## Steps Executed` in implementation report (each step → one bullet, imperative mood)
-   - **Footer**: `Plan: {plan-slug}` and `Files: {count of unique files from ## Files Changed}`
-   - Format as a fenced code block so user can copy directly
-   - Do NOT include implementation round details, command lists, or audit verdict in the commit message
+5. **Suggested git commit message** (if decision is "ready"): Output a message suitable for the **application repository** (the code repo), not for workflow/docs that live outside git.
+   - **Subject line**: `feat: {1-sentence summary}` — from what actually changed in the repo + `## Steps Executed` / `## Files Changed`; max 72 chars
+   - **Body**: bullet list, imperative mood, one bullet per meaningful change (aligned with `## Steps Executed` where it maps to code)
+   - **Optional footer**: `Files: {count}` — count of unique paths under `## Files Changed` **in the repo** (omit if unknown)
+   - **Hard rule — never in commit message**: plan slugs, plan numbers (`Plan 3`, `17-copilot-…`), `.pythia/`, `.claude/` workflow paths, feature workflow filenames, or any reference to internal planning artifacts. Those are not part of the code repo; git history must stay free of them.
+   - **Jira/task IDs**: only if the team already uses them in commits (e.g. from branch name); never substitute plan IDs for ticket IDs.
+   - Format as a fenced code block for copy/paste
+   - Do NOT include implementation round details, command lists, audit verdict, or plan metadata in the commit message
 6. **Final decision** to user: ready | needs fixes | re-plan
 
 ---
@@ -78,9 +80,10 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/ + n
 - **If decision is "ready"**: Verify feature document is updated:
   - Plan added/updated in "Existing External Plans" section
   - Plan entry includes `**Status: Implemented**` marker
-- **If decision is "ready"**: Verify commit message is present in structured response:
+- **If decision is "ready"**: Verify suggested commit message is present in structured response:
   - Subject line starts with `feat:` and is ≤ 72 chars
-  - Body bullets match `## Steps Executed` from implementation report
+  - Body describes repo changes (imperative bullets); aligned with implementation where applicable
+  - **No** plan slug, plan number, `.pythia/`, or workflow-only paths in the message
   - Formatted as a fenced code block
 
 See [agent-selection-guide](../agents/_agent-selection-guide.md): use Architect for planning and audit; use Developer for implementation.

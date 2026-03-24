@@ -94,3 +94,4 @@ After creating audit report, if Verdict is "ready", Architect MUST also update t
 - **Implementation quality check**: pass | concerns | fail (test/criteria integrity + maintainability + architecture & design, generic; out-of-plan changes get explicit architectural assessment)
 - **Risk Re-evaluation**: Updated risk assessment
 - **Decision**: ready | needs fixes | re-plan
+- **Suggested git commit**: required **in `reports/{plan-slug}.audit.md`** when Verdict is **ready** (see Required Structure above); also repeated in chat

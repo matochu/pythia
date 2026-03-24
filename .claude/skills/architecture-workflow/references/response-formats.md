@@ -208,6 +208,14 @@
 - **File**: `{feature-dir}/{feature-id}.md`
 - **Section**: "## Detailed Implementation Plans (External)" → "**Existing External Plans:**"
 - **Changes**: Plan added/updated in list with `**Status: Implemented**` marker
+
+## Suggested git commit (if Verdict is "ready")
+
+Repository-only message for the **code repo** (copy/paste as fenced block). **Do not** include plan slugs, plan numbers, `.pythia/`, workflow paths, or other non-repo planning references — see `/audit-implementation-feature` command.
+
+- **Subject**: `feat: …` (≤ 72 chars)
+- **Body**: imperative bullets for code changes
+- **Optional**: `Files: N` (repo paths only)
 ```
 
 **Key Information Preserved**:

@@ -38,6 +38,22 @@ Implementation: [reports/{plan-slug}.implementation.md](./{plan-slug}.implementa
 - **Verdict**: ready | needs fixes | re-plan
 - **Reasoning**: [why]
 - **Next Steps**: [what to do]
+
+## Suggested git commit (application repository)
+
+**If and only if Verdict is `ready`:** include this section **in the audit file** immediately after **Decision** (before plan/feature update notes). Same message MUST appear in the Architect chat response as a fenced block.
+
+- **Subject**: `feat: …` — one line, ≤ 72 characters, from real repo changes (`## Files Changed` / `## Steps Executed` in implementation report).
+- **Body**: imperative bullets, one per meaningful change; no plan/workflow-doc references.
+- **Forbidden in the message**: plan slugs, `Plan N`, `.pythia/`, `.claude/` command paths, feature workflow filenames, audit/implementation report names. Optional: `Files: {n}` footer counting repo paths only.
+
+```text
+feat: {subject}
+
+- {bullet}
+```
+
+*(Omit entire **Suggested git commit** section when Verdict is `needs fixes` or `re-plan`.)*
 ```
 
 ## Plan Update (if Verdict is "ready")
@@ -94,3 +110,4 @@ After creating audit report, if Verdict is "ready", Architect MUST also update t
 - **Implementation quality check**: pass | concerns | fail (test/criteria integrity + maintainability + architecture & design, generic; out-of-plan changes get explicit architectural assessment)
 - **Risk Re-evaluation**: Updated risk assessment
 - **Decision**: ready | needs fixes | re-plan
+- **Suggested git commit**: required **in `reports/{plan-slug}.audit.md`** when Verdict is **ready** (see Required Structure above); also repeated in chat
