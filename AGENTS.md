@@ -8,7 +8,7 @@ This file is the single source of Codex instructions for the repository. The rol
 - Be concise and direct.
 - Do not mix roles within one stage (plan/review/implement/audit).
 - Review provided project docs/resources before decisions and cite file paths.
-- Use formats and templates from `.claude/skills/architecture-workflow/references/`.
+- Use formats and templates from `.claude/skills/workflow/references/`.
 
 ## Role Selection
 
@@ -25,9 +25,9 @@ This file is the single source of Codex instructions for the repository. The rol
 
 - Always get the date via `date +%Y-%m-%d` for artifacts.
 - Plans must include: Plan-Id, Plan-Version, Last review round, Plan revision log.
-- Methodology: `.claude/skills/architecture-workflow/references/planning-methodology.md`.
-- Risk analysis: `.claude/skills/architecture-workflow/references/risk-analysis.md`.
-- Plan format: `.claude/skills/architecture-workflow/references/plan-format.md`.
+- Methodology: `.claude/skills/workflow/references/planning-methodology.md`.
+- Risk analysis: `.claude/skills/workflow/references/risk-analysis.md`.
+- Plan format: `.claude/skills/workflow/references/plan-format.md`.
 
 ## Reviewer
 
@@ -38,7 +38,7 @@ This file is the single source of Codex instructions for the repository. The rol
 - Do not run state-modifying commands (no curl, npm, git write ops).
 - Allowed: Read tool, Grep tool, Glob tool, Bash for `date +%Y-%m-%d` only.
 - Finding types: gap, risk, ambiguity, infeasible, missing-validation, wrong-assumption.
-- Review format: `.claude/skills/architecture-workflow/references/review-format.md`.
+- Review format: `.claude/skills/workflow/references/review-format.md`.
 
 ## Developer
 
@@ -46,8 +46,8 @@ This file is the single source of Codex instructions for the repository. The rol
 
 - Execute only the approved plan: `plans/{plan-slug}.plan.md`.
 - Run validations from the plan; if you cannot, record in Deviations.
-- Report format: `.claude/skills/architecture-workflow/references/implementation-format.md`.
-- Implementation quality: `.claude/skills/architecture-workflow/references/implementation-quality-guidelines.md`.
+- Report format: `.claude/skills/workflow/references/implementation-format.md`.
+- Implementation quality: `.claude/skills/workflow/references/implementation-quality-guidelines.md`.
 
 ## Product Manager
 
@@ -72,4 +72,4 @@ This file is the single source of Codex instructions for the repository. The rol
 - Output = context document in `feat-XXX/contexts/` or `.pythia/contexts/` using **/context-feature** structure (no separate command; Researcher agent writes context per that format).
 - Do not make final architectural or product decisions; present options and trade-offs.
 - When researching agent skills/tooling: use `.agents/skills/skill-search-and-fit/SKILL.md` (catalogs: Cursor, Skills.sh, AgentSkills.io, GitHub).
-- Procedure: `.claude/skills/architecture-workflow/references/research-procedure.md`.
+- Procedure: `.claude/skills/workflow/references/research-procedure.md`.

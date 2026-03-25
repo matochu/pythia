@@ -252,15 +252,15 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
 
 ### Example 2: Sync Specific Skill to Claude Desktop
 
-**User query**: "Sync the architecture-workflow skill to Claude Desktop"
+**User query**: "Sync the workflow skill to Claude Desktop"
 
 **Skill response**:
 
-1. Locate skill in `.cursor/skills/architecture-workflow/`
+1. Locate skill in `.cursor/skills/workflow/`
 2. Detect target platform: User query mentions "Claude Desktop" → use `.claude/skills/` (project-level)
 3. Check compatibility
 4. Detect conflicts
-5. Copy skill directory to `.claude/skills/architecture-workflow/`
+5. Copy skill directory to `.claude/skills/workflow/`
 6. Update compatibility metadata in target SKILL.md (add "Claude Desktop" to compatibility field)
 7. Validate compatibility field length ≤500 chars
 8. Verify sync completed
@@ -281,16 +281,16 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
    ```
    ## Conflicts Detected
 
-   ### Skill: architecture-workflow
-   - **Source**: `.cursor/skills/architecture-workflow/`
-   - **Target**: `.github/skills/architecture-workflow/`
+   ### Skill: workflow
+   - **Source**: `.cursor/skills/workflow/`
+   - **Target**: `.github/skills/workflow/`
    - **Conflict**: Name collision (already exists in target)
    - **Resolution Options**: Skip, Overwrite, Rename
    ```
 
-5. Wait for user decisions: "skip architecture-workflow, overwrite skill-search-and-fit"
+5. Wait for user decisions: "skip workflow, overwrite skill-search-and-fit"
 6. Apply user decisions:
-   - Skip `architecture-workflow` (don't sync)
+   - Skip `workflow` (don't sync)
    - Overwrite `skill-search-and-fit` (replace target with source)
 7. Sync non-conflicting skills
 8. Report sync results

@@ -24,6 +24,7 @@
 ## Key Discoveries
 
 [What was learned during implementation]
+
 - Discovery 1: [description with evidence from artifacts]
 - Discovery 2: [description with evidence from artifacts]
 - ...
@@ -33,6 +34,7 @@
 ## Patterns Identified
 
 [Recurring themes, approaches that worked well]
+
 - Pattern 1: [description]
 - Pattern 2: [description]
 - ...
@@ -42,6 +44,7 @@
 ## Challenges Encountered
 
 [Problems faced, blockers]
+
 - Challenge 1: [description]
   - **Source**: [plan step / review finding / implementation issue]
   - **Impact**: [how it affected the plan]
@@ -51,6 +54,7 @@
 ## Solutions Found
 
 [How challenges were resolved]
+
 - Solution 1: [description]
   - **Addresses**: [which challenge]
   - **Effectiveness**: [how well it worked]
@@ -60,6 +64,7 @@
 ## Review Insights
 
 [Key findings from review rounds]
+
 - **Review Rounds**: {number} rounds completed
 - **Key Concerns**: [main concerns raised in reviews]
 - **Most Impactful Findings**: [findings that led to plan changes]
@@ -70,6 +75,7 @@
 ## Implementation Insights
 
 [Deviations, unexpected outcomes]
+
 - **Deviations from Plan**: [list of deviations and why they occurred]
 - **Unexpected Outcomes**: [positive or negative surprises]
 - **Implementation Challenges**: [specific implementation issues]
@@ -80,6 +86,7 @@
 ## Risk Assessment Retrospective
 
 [Which risks materialized, which didn't]
+
 - **Risk 1**: [from plan]
   - **Materialized**: Yes/No
   - **Actual Impact**: [what happened]
@@ -108,10 +115,12 @@
 [Analysis of skills used and recommendations for improvement]
 
 **Skills Used**: [list of skills used during plan execution]
-- `.cursor/skills/architecture-workflow` (primary workflow skill)
+
+- `.cursor/skills/workflow` (primary workflow skill)
 - [other skills used]
 
 **Analysis Method**: Used `skill-search-and-fit` skill to:
+
 - Evaluate current skills against quality criteria
 - Search for improved versions or alternatives
 - Identify gaps or conflicts in skill coverage
@@ -119,13 +128,15 @@
 
 **Recommendations**:
 
-### For `.cursor/skills/architecture-workflow`:
+### For `.cursor/skills/workflow`:
+
 - **Current State**: [assessment of current skill based on retrospective findings]
 - **Improvements Needed**: [specific improvements identified]
 - **Alternative Skills Found**: [if any better alternatives discovered]
 - **Quality Score**: [if evaluated]
 
 ### For Other Skills Used:
+
 - **Skill 1**: [name]
   - **Current Assessment**: [quality/effectiveness]
   - **Improvements**: [recommendations]
@@ -136,6 +147,7 @@
 ## Recommendations for Future Plans
 
 [What to do differently next time]
+
 - **Planning**: [recommendations for plan creation]
 - **Review Process**: [recommendations for review]
 - **Implementation**: [recommendations for implementation]
@@ -144,6 +156,7 @@
 ## Knowledge Gaps Identified
 
 [What we still don't know]
+
 - Gap 1: [description]
 - Gap 2: [description]
 - ...
@@ -178,12 +191,14 @@
 ## Evidence Requirements
 
 All insights MUST reference specific artifacts:
+
 - Plan sections (Step numbers, Risk IDs)
 - Review rounds (R1, R2) and specific findings
 - Implementation report sections
 - Audit report sections
 
 **Example citations**:
+
 - "Plan Step 3 identified risk X, which materialized as described in Implementation Report section 'Deviations'"
 - "Review R2 raised concern S5 about Y, which was addressed in Plan v3 Step 4"
 - "Audit report Risk Re-evaluation section confirmed Risk 2 did not materialize"

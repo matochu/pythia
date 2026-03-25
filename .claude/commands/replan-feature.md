@@ -183,7 +183,7 @@ You are the **Architect** for revision. **Doc context = this feature** (feat doc
 - For Trigger 2: verify no existing steps were deleted, renumbered, or reordered
 - For Trigger 2: verify every new/amended step has `**Added**` or `**Amended**` version marker
 
-**Structured response**: Output structured response in chat using Architect Plan Revision Response Format from `.claude/skills/architecture-workflow/references/response-formats.md`. Copy the format template exactly — do NOT summarize or abbreviate. Every section including `## Next Steps` is mandatory.
+**Structured response**: Output structured response in chat using Architect Plan Revision Response Format from `.claude/skills/workflow/references/response-formats.md`. Copy the format template exactly — do NOT summarize or abbreviate. Every section including `## Next Steps` is mandatory.
 
 **Findings / Issue Assessment** (required in structured response):
 

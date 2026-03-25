@@ -1,7 +1,7 @@
 ---
 name: skill-sync-cursor-to-claude
 description: Synchronize agents and skills from Cursor to Claude Code/Desktop at project-level. Use when you want to copy your Cursor configuration to Claude Code or Claude Desktop, handle compatibility differences, and detect conflicts. Supports project-level sync only (`.github/` for Claude Code, `.claude/` for Claude Desktop).
-compatibility: "Cursor, VS Code Copilot, Claude Desktop, OpenCode"
+compatibility: 'Cursor, VS Code Copilot, Claude Desktop, OpenCode'
 ---
 
 # Sync Cursor to Claude
@@ -13,6 +13,7 @@ compatibility: "Cursor, VS Code Copilot, Claude Desktop, OpenCode"
 **What it does**: Provides procedures for copying agents and skills from `.cursor/` to `.github/` (Claude Code) or `.claude/` (Claude Desktop), handling compatibility differences, detecting conflicts, and updating compatibility metadata.
 
 **Key capabilities**:
+
 - Sync agents from `.cursor/agents/` to Claude Code/Desktop
 - Sync skills from `.cursor/skills/` to Claude Code/Desktop
 - Detect and report conflicts (name collisions, version mismatches)
@@ -52,33 +53,39 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
 ## Agent Sync Workflow
 
 ### Step 1: Source Detection
+
 - Scan `.cursor/agents/` directory for agent files (`*.md`)
 - List all agents found
 - Check agent format (YAML frontmatter validation)
 
 ### Step 2: Target Selection
+
 - Use target platform detection logic (see above)
 - Create target directory if it doesn't exist
 - Verify target directory is writable
 
 ### Step 3: Compatibility Check
+
 - Verify agent YAML frontmatter format (name, description, model)
 - Check for Cursor-specific features (if any)
 - Verify compatibility with Claude Code/Desktop format
 
 ### Step 4: Conflict Detection
+
 - Check if agent already exists in target directory
 - Compare source and target versions (if metadata available)
 - Detect name collisions
 - Report conflicts to user
 
 ### Step 5: Sync Execution
+
 - Copy agent file from `.cursor/agents/{name}.md` to target directory
 - **Important**: Source file remains unchanged
 - Preserve YAML frontmatter format in copied file
 - Update compatibility metadata in target file only (add Claude Code/Desktop to compatibility field)
 
 ### Step 6: Verification
+
 - Verify file copied successfully
 - Check file permissions
 - Validate YAML frontmatter in target file
@@ -89,6 +96,7 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
 ## Agent Sync Results
 
 ### Agent: {name}
+
 - **Source**: `.cursor/agents/{name}.md`
 - **Target**: `.github/agents/{name}.md` (or `.claude/agents/`)
 - **Status**: {synced | skipped | conflict}
@@ -99,22 +107,26 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
 ## Skill Sync Workflow
 
 ### Step 1: Source Detection
+
 - Scan `.cursor/skills/` directory for skill directories
 - List all skills found
 - Check each skill for SKILL.md file
 - Verify skill structure (SKILL.md, optional references/, scripts/)
 
 ### Step 2: Target Selection
+
 - Use target platform detection logic (same as agents)
 - Create target directory if it doesn't exist
 - Verify target directory is writable
 
 ### Step 3: Compatibility Check
+
 - Verify SKILL.md YAML frontmatter format (name, description, compatibility)
 - Check compatibility field for Claude Code/Desktop support
 - Verify skill structure follows Agent Skills spec
 
 ### Step 4: Conflict Detection
+
 - Check if skill already exists in target directory
 - Compare source and target versions (if metadata available)
 - Detect name collisions
@@ -122,12 +134,14 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
 - Report conflicts to user
 
 ### Step 5: Sync Execution
+
 - Copy skill directory from `.cursor/skills/{skill-name}/` to target directory
 - **Important**: Source directory remains unchanged
 - Preserve directory structure (SKILL.md, references/, scripts/)
 - Update compatibility metadata in target SKILL.md only (add Claude Code/Desktop to compatibility field)
 
 ### Step 6: Verification
+
 - Verify directory copied successfully
 - Check SKILL.md exists in target
 - Validate YAML frontmatter in target SKILL.md
@@ -139,6 +153,7 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
 ## Skill Sync Results
 
 ### Skill: {skill-name}
+
 - **Source**: `.cursor/skills/{skill-name}/`
 - **Target**: `.github/skills/{skill-name}/` (or `.claude/skills/`)
 - **Status**: {synced | skipped | conflict}
@@ -223,6 +238,7 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
 **User query**: "Sync all my Cursor agents to Claude Code"
 
 **Skill response**:
+
 1. Scan `.cursor/agents/` for agent files
 2. Detect target platform: User query mentions "Claude Code" → use `.github/agents/` (project-level)
 3. Check compatibility for each agent
@@ -236,14 +252,15 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
 
 ### Example 2: Sync Specific Skill to Claude Desktop
 
-**User query**: "Sync the architecture-workflow skill to Claude Desktop"
+**User query**: "Sync the workflow skill to Claude Desktop"
 
 **Skill response**:
-1. Locate skill in `.cursor/skills/architecture-workflow/`
+
+1. Locate skill in `.cursor/skills/workflow/`
 2. Detect target platform: User query mentions "Claude Desktop" → use `.claude/skills/` (project-level)
 3. Check compatibility
 4. Detect conflicts
-5. Copy skill directory to `.claude/skills/architecture-workflow/`
+5. Copy skill directory to `.claude/skills/workflow/`
 6. Update compatibility metadata in target SKILL.md (add "Claude Desktop" to compatibility field)
 7. Validate compatibility field length ≤500 chars
 8. Verify sync completed
@@ -255,22 +272,25 @@ This skill guides LLM to help users synchronize their Cursor configuration to Cl
 **User query**: "Sync my skills to Claude Code and show conflicts"
 
 **Skill response**:
+
 1. Scan `.cursor/skills/` for all skills
 2. Detect target platform: User query mentions "Claude Code" → use `.github/skills/` (project-level)
 3. Detect conflicts (check if skills exist in `.github/skills/`)
 4. Report conflicts in structured format:
+
    ```
    ## Conflicts Detected
-   
-   ### Skill: architecture-workflow
-   - **Source**: `.cursor/skills/architecture-workflow/`
-   - **Target**: `.github/skills/architecture-workflow/`
+
+   ### Skill: workflow
+   - **Source**: `.cursor/skills/workflow/`
+   - **Target**: `.github/skills/workflow/`
    - **Conflict**: Name collision (already exists in target)
    - **Resolution Options**: Skip, Overwrite, Rename
    ```
-5. Wait for user decisions: "skip architecture-workflow, overwrite skill-search-and-fit"
+
+5. Wait for user decisions: "skip workflow, overwrite skill-search-and-fit"
 6. Apply user decisions:
-   - Skip `architecture-workflow` (don't sync)
+   - Skip `workflow` (don't sync)
    - Overwrite `skill-search-and-fit` (replace target with source)
 7. Sync non-conflicting skills
 8. Report sync results

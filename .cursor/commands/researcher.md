@@ -9,6 +9,6 @@
 
 ## Instructions for model
 
-Delegate to the **Researcher** subagent (Task tool with `subagent_type="researcher"` or Researcher agent). Input: feature (or project) + research topic. Researcher produces a context document in `feat-XXX/contexts/{topic}.context.md` (or `.pythia/contexts/`) using `/context-feature` structure and updates the feature's Related Contexts. See `.claude/agents/researcher.md` and `.claude/skills/architecture-workflow/references/research-procedure.md`.
+Delegate to the **Researcher** subagent (Task tool with `subagent_type="researcher"` or Researcher agent). Input: feature (or project) + research topic. Researcher produces a context document in `feat-XXX/contexts/{topic}.context.md` (or `.pythia/contexts/`) using `/context-feature` structure and updates the feature's Related Contexts. See `.claude/agents/researcher.md` and `.claude/skills/workflow/references/research-procedure.md`.
 
 If Researcher cannot be launched, tell the user and suggest retrying when the agent is available.

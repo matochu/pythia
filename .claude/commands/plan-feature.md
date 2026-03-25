@@ -16,6 +16,7 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/).
 **Input**: Feature context + **plan slug** (required). Plan path = `plans/{plan-slug}.plan.md`. Optional: existing plan content, review text or link to round (for revision), or **user's edits to the plan** — if the user asks to "apply automatically" or "agree with these changes", output the plan with those edits incorporated.
 
 **Architecture Ambiguity Checkpoint** (required before writing plan):
+
 - If there are ambiguous architectural choices with materially different trade-offs, **ask user before generating plan changes**.
 - Do not proceed to full plan output until user selects direction (unless user explicitly asks Architect to decide autonomously).
 - Use this short structure for the checkpoint message:
@@ -42,6 +43,7 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/).
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
 **Validation** (before completing):
+
 - When the plan is **saved to a file**, run `scripts/validate-plan.sh <plan-file-path>` (from pythia repo or project root; see `references/plan-format.md` § Validation script) and fix any reported structure errors before finishing.
 - Verify ambiguity checkpoint was used when decision trade-offs were materially different
 - Verify user choice was captured before plan output (or user explicitly delegated choice to Architect)
@@ -52,11 +54,12 @@ You are the **Architect**. **Doc context = this feature** (feat doc + plans/).
 - Verify each context in `## Contexts` has this plan listed in its `## Used by` section
 
 **Migration Note**: If an existing plan (created via create-feature-plan) lacks Plan-Version field, add:
+
 - Plan-Version: v1 (if no revisions yet)
 - Last review round: "Initial plan — no review yet"
 - Plan revision log section — empty table (no entries until first review)
 
-**Structured response**: Output structured response in chat using Architect Plan Response Format (plain Markdown) — see `.claude/skills/architecture-workflow/references/response-formats.md` for format specification.
+**Structured response**: Output structured response in chat using Architect Plan Response Format (plain Markdown) — see `.claude/skills/workflow/references/response-formats.md` for format specification.
 
 **Note**: Do NOT add `**Status**:` field to Steps in plan. Steps are not yet implemented, so status is not applicable. Status will be added by `/audit-implementation-feature` after successful audit.
 

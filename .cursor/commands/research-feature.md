@@ -13,14 +13,16 @@
 
 Delegate to the **Researcher** subagent (Task tool with `subagent_type="researcher"` or Researcher agent). Input: feature context (feature doc path, existing contexts, plans) + research topic; **if user passed an existing context** (path or content), also pass it.
 
-**Researcher must** (see `.claude/skills/architecture-workflow/references/research-procedure.md`):
+**Researcher must** (see `.claude/skills/workflow/references/research-procedure.md`):
 
 **When user passes an existing context document:**
+
 1. **Verify** the document: check cited sources (URLs, file paths), validate that claims match sources, note outdated or broken links, missing citations, or contradictions.
 2. **Report in chat** (verification report): summary of findings (what is valid, what is outdated or unverified, what should be updated or improved). Do **not** overwrite the context file automatically — present the report so the user can decide on update or improvement.
 3. If the user then asks to update/improve, proceed with edits or a fresh research pass as requested.
 
 **When no existing context is passed (new research):**
+
 1. **Pre-search pythia first**: Search **all** relevant pythia/project documents (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — contexts, plans, reports, notes). Documents are scattered; use semantic search and/or grep for the topic and related terms. Use findings to avoid duplicate work and to ground the research.
 2. Then follow the full research procedure: frame and decompose, multi-source search (web, codebase, 3rd party, skill-search when relevant), evaluate and score sources, resolve contradictions, synthesize.
 3. Produce a context document in `{feature-dir}/contexts/{topic}.context.md` using `/context-feature` structure; update the feature's Related Contexts.
