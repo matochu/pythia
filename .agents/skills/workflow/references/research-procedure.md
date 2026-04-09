@@ -16,7 +16,7 @@ If the user provides an **existing context document** (path or content) to `/res
 2. **Report in chat**: Produce a **verification report** (do not edit the file yet):
    - What is **valid** (sources OK, claims still supported).
    - What is **outdated or unverified** (broken links, missing refs, claims needing re-check).
-   - **Recommendations**: what to update or improve (e.g. "Replace link X", "Add source for claim Y", "Section Z is superseded by …").
+   - **Recommendations**: what to update or improve (e.g. “Replace link X”, “Add source for claim Y”, “Section Z is superseded by …”).
 3. **User decides**: Present the report so the user can choose — update now, improve in a follow-up, or leave as-is. Only after user asks to update/improve, apply edits or run a fresh research pass.
 
 ## Research Steps
@@ -27,7 +27,7 @@ Project and feature knowledge is **scattered** across many locations. Before any
 
 - **Scope**: `.pythia/` (if present): `workflows/features/` (feature docs, plans, contexts, reports, notes per feature), `contexts/`, `notes/` (e.g. retro-project.md). Also project root and feature directories for any other docs (templates, references).
 - **Action**: Use semantic search and/or grep across these paths for the research topic and related terms. Collect: existing context docs, plan decisions, retro findings, feature objectives that touch the topic.
-- **Use**: Summarize what is already known or decided; feed into "Frame the problem" (step 1) and into later steps so external search complements rather than duplicates pythia knowledge.
+- **Use**: Summarize what is already known or decided; feed into “Frame the problem” (step 1) and into later steps so external search complements rather than duplicates pythia knowledge.
 
 ### 1. Frame the problem and decompose
 
@@ -47,16 +47,16 @@ Project and feature knowledge is **scattered** across many locations. Before any
 - **3rd party solutions**: Tools, libraries, frameworks, services — name, link, brief pros/cons, compatibility with current stack.
 - **Agent skills / tooling** (when topic is agent skills, catalogs, or tooling): Follow `.agents/skills/skill-search-and-fit/SKILL.md`:
   - **Search order**: Cursor community repos → Skills.sh → AgentSkills.io → GitHub (vercel-labs, anthropics/skills, etc.).
-  - **Quality**: Use the skill's checklist (description, compatibility, progressive disclosure, etc.); score 0–10; note conflicts with existing skills.
+  - **Quality**: Use the skill’s checklist (description, compatibility, progressive disclosure, etc.); score 0–10; note conflicts with existing skills.
   - In context output: skill name, repo/source, description, compatibility, quality score, install path; cite URLs.
 
 ### 3. Evaluate, score sources, resolve contradictions
 
 - For each option: pros, cons, trade-offs (complexity, maintenance, risk, fit with codebase).
 - **Source scoring**: Rate relevance/quality (e.g. 0–10): authoritative sources 8–10, implementation/code 7–9, community 5–7.
-- **Credibility hierarchy** (when sources conflict): primary source code > official docs > community consensus. Cross-check (official docs, actual code, version-specific behavior); state resolution or "unresolved" with evidence.
+- **Credibility hierarchy** (when sources conflict): primary source code > official docs > community consensus. Cross-check (official docs, actual code, version-specific behavior); state resolution or “unresolved” with evidence.
 - Note gaps (missing info, unclear licensing, no recent updates).
-- Do not decide "the" solution; present options so Architect or PM can choose.
+- Do not decide “the” solution; present options so Architect or PM can choose.
 
 ### 4. Synthesize into context document
 
@@ -64,7 +64,7 @@ Project and feature knowledge is **scattered** across many locations. Before any
   - **Feature**: `{feature-dir}/contexts/{topic}.context.md`
   - **Project**: `.pythia/contexts/` or project-defined location
 - Structure: Problem/scope, Options (with sources), Best practices (with citations), 3rd party solutions (with links), Summary of trade-offs, **Confidence and gaps** (see Output Format). Include metadata (Related Feature, Created, Last Updated).
-- Update feature's Related Contexts section if output is feature-scoped.
+- Update feature’s Related Contexts section if output is feature-scoped.
 
 ## Output Format (context document)
 
@@ -75,6 +75,6 @@ Project and feature knowledge is **scattered** across many locations. Before any
 
 ## Integration with workflow
 
-- Research can run **before** `/plan-feature` (to feed options into the plan) or **in parallel** with context creation.
+- Research can run **before** `/plan` (to feed options into the plan) or **in parallel** with context creation.
 - Output of research is a **context document**; plans can reference it in `## Contexts` and use it during planning and review.
-- Researcher does not run `/plan-feature` or `/context-feature` as separate commands — it produces the context file and links directly, following the same conventions as `/context-feature`.
+- Researcher does not run `/plan` or `/ctx` as separate commands — it produces the context file and links directly, following the same conventions as `/ctx`.

@@ -1,53 +1,127 @@
 ---
 name: workflow
-description: Plan stabilization workflow for features. Use when working on feature plans, reviews, or implementation. Provides procedures and formats for plan stabilization loop.
-compatibility: 'Cursor, VS Code Copilot, Claude Desktop, OpenCode'
+description: Master workflow orchestrating feature planning, review, implementation, audit, and retrospectives. Entry point for feature development lifecycle.
 ---
 
-**Note**: This skill contains procedures, formats, and workflow logic. Individual commands (`/plan-feature`, `/review-plan-feature`, etc.) remain in `.claude/commands/` directory, and specialized skill workflows in `.claude/skills/` (e.g., `/plan`, `/implement`, `/audit`, `/loop`).
+# Feature Workflow Skill
 
-**Context Budget**: Skill descriptions have 2% context window budget (fallback 16,000 chars). Keep detailed procedures in `references/` directory within skill, not in main SKILL.md.
+Master skill for feature development workflow. All steps below have dedicated skilluploads.
 
-# Architecture Workflow Skill
+## Skilluploads Reference
 
-## Overview
+**Feature Lifecycle**:
 
-This skill provides procedures and formats for the plan stabilization workflow. Commands are defined in `.cursor/commands/` and reference this skill for detailed procedures.
+1. **[/feat](../feat/SKILL.md)** — Create comprehensive feature documents (2-stage: PM + Architect)
+2. **[/plan](../plan/SKILL.md)** — Create/update feature plans (Architect)
+3. **[/review](../review/SKILL.md)** — Review plans for architecture quality (Reviewer)
+4. **[/replan](../replan/SKILL.md)** — Revise plans based on findings (Architect)
+5. **[/implement](../implement/SKILL.md)** — Execute plan step-by-step (Developer)
+6. **[/audit](../audit/SKILL.md)** — Verify implementation vs plan (Architect)
+7. **[/loop](../loop/SKILL.md)** — Orchestrate full cycle auto-detection & routing
 
-## Commands Reference
+**Context & Research**:
 
-Commands: **Cursor** `.cursor/commands/`, **Claude** `.claude/commands/` (same names).
+- **[/research](../research/SKILL.md)** — Research for feature (Researcher) → context document
+- **[/ctx](../ctx/SKILL.md)** — Create context documents for features (Architect)
 
-- `/feature` → `feature.md`
-- `/context-feature` → `context-feature.md` — context creation for feature; for research-type context, delegate to Researcher or tell user to run `/researcher` or `/research-feature`
-- `/research-feature` → `research-feature.md` — research **per feature**: pre-search pythia docs first (scattered), then Researcher → context doc in `feat-XXX/contexts/`
-- `/researcher` → `researcher.md` — invoke Researcher subagent (research → context doc in feature/project)
-- `/plan-feature` → `plan-feature.md`
-- `/review-plan-feature` → `review-plan-feature.md`
-- `/replan-feature` → `replan-feature.md`
-- `/implement-plan-feature` → `implement-plan-feature.md` (with gate logic)
-- `/audit-implementation-feature` → `audit-implementation-feature.md`
-- `/run-feature-plan-loop` → `run-feature-plan-loop.md` — loop orchestrator from any checkpoint
-- `/retro-feature` → `retro-feature.md` — feature-level: all plans in a feature
-- `/retro-project` → `retro-project.md` — project-level: all features consolidated
+**Retrospectives**:
+
+- **[/retro](../retro/SKILL.md)** — Feature-level retrospective (Architect)
+- **[/retro-all](../retro-all/SKILL.md)** — Project-level retrospective (Architect)
 
 ## Workflow Procedures
 
-### Feature Creation
+### Typical Feature Workflow
 
-- Input: Feature requirements, scope, objectives
-- Output: Feature document in `feat-XXX/feat-XXX.md`
-- Format: See feature template structure
+```
+1. /feat                → Create feature document (PM + Architect)
+2. /plan                → Create first plan (Architect)
+3. /review              → Review plan (Reviewer)
+   - If READY           → proceed
+   - If NEEDS_REVISION  → /replan
+4. /implement           → Execute plan (Developer)
+5. /audit               → Verify implementation (Architect)
+   - If ready           → DONE
+   - If needs-fixes     → Developer fixes + re-audit
+   - If plan-fix        → Architect patches plan + re-implement + re-audit
+   - If re-plan         → Use /replan for scope decisions
+```
 
-### Context Creation
+### Orchestrated Loop
 
-- Input: Feature context + context topic/type
-- Output: Context document in `feat-XXX/contexts/{name}.context.md`
-- Format: See context template structure
+Use **[/loop](../loop/SKILL.md)** to auto-detect state and orchestrate full cycle in one call:
 
-### Research (Researcher subagent)
+```
+/loop [feature-id] [plan-slug]
+```
 
-- **Purpose**: Broad and deep research on problems, solution options, best practices, 3rd party solutions. Output = context document in feature or project.
+Orchestrator detects artifact state and auto-routes:
+
+- No plan → error (use /plan)
+- No review → spawn Reviewer
+- No implementation → spawn Developer
+- No audit → spawn Architect
+- Verdict routes to fix/replan/done
+
+### Research-Driven Context
+
+Use **[/research](../research/SKILL.md)** for exploring options, best practices, 3rd party solutions:
+
+```
+/research [feature-id] [research-topic]
+```
+
+Output: Context document in `feat-XXX/contexts/{topic}.context.md`
+
+### Feature Analysis
+
+Feature retrospectives synthesize learnings:
+
+- **[/retro](../retro/SKILL.md)** → Feature-level: all plans/reviews/implementations
+- **[/retro-all](../retro-all/SKILL.md)** → Project-level: cross-feature patterns
+
+## Artifact Structure
+
+Each feature lives in:
+
+```
+.pythia/workflows/features/
+└── feat-YYYY-MM-{slug}/
+    ├── feat-YYYY-MM-{slug}.md          # Feature document
+    ├── plans/
+    │   ├── 1-{plan-slug}.plan.md
+    │   ├── 2-{plan-slug}.plan.md       # (after replan)
+    │   └── ...
+    ├── reports/
+    │   ├── 1-{plan-slug}.review.md     # One per plan version
+    │   ├── 1-{plan-slug}.implementation.md
+    │   ├── 1-{plan-slug}.audit.md
+    │   └── ...
+    ├── contexts/
+    │   ├── technical-analysis.context.md
+    │   ├── architecture-decisions.context.md
+    │   └── ...
+    └── notes/
+        ├── {plan-slug}.retro.md        # Feature retrospective
+        └── {plan-slug}.problems.md     # Audit findings (if verdict ≠ ready)
+```
+
+## Procedures Reference
+
+Detailed procedures and formats in `references/` subdirectory:
+
+- `plan-format.md` — Plan document structure and requirements
+- `review-format.md` — Review report structure
+- `audit-format.md` — Audit report structure
+- `implementation-format.md` — Implementation report structure
+- `response-formats.md` — Structured chat response formats for each role
+- `planning-methodology.md` — Planning principles and methodology
+- `plan-review-framework.md` — Architecture review framework
+- `research-procedure.md` — Research procedure for Researcher subagent
+- `implementation-quality-guidelines.md` — Code quality expectations
+
+See [references/](./references/) for full documentation.
+
 - **Command per feature**: `/research-feature` — run research for a feature; **pre-search** across all pythia/project docs first (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — docs are scattered), then full research procedure; output in `feat-XXX/contexts/{topic}.context.md`. Also `/researcher` for ad-hoc invoke.
 - **Pre-search (mandatory)**: Before external/codebase search, search pythia and project documents (semantic search / grep) for the topic; use findings to ground research and avoid duplication. See `references/research-procedure.md` step 0.
 - **Procedure**: See `references/research-procedure.md`. When researching agent skills/tooling, use `.agents/skills/skill-search-and-fit/SKILL.md` (catalogs: Cursor, Skills.sh, AgentSkills.io, GitHub).
@@ -65,8 +139,8 @@ Commands: **Cursor** `.cursor/commands/`, **Claude** `.claude/commands/` (same n
 - Output: Review document with Verdict, Step-by-Step Analysis
 - Format: See `references/review-format.md`
 - Max rounds: 2 (MAX_REVIEW_LOOPS)
-- Review depth is adaptive within `/review-plan-feature` (Deep mode for R1 and major architect-driven vector/structural changes)
-- **Delegation**: Review runs only in Reviewer subagent context (see Delegation policy below); when triggered automatically (e.g. after `/replan-feature`), the caller must launch the subagent and must not run review in the current context.
+- Review depth is adaptive within `/review` (Deep mode for R1 and major architect-driven vector/structural changes)
+- **Delegation**: Review runs only in Reviewer subagent context (see Delegation policy below); when triggered automatically (e.g. after `/replan`), the caller must launch the subagent and must not run review in the current context.
 
 ### Implementation
 
@@ -109,29 +183,29 @@ Commands: **Cursor** `.cursor/commands/`, **Claude** `.claude/commands/` (same n
 
 ```mermaid
 flowchart TD
-    A([/feature]) --> B([/context-feature\nor /research-feature])
-    B --> C([/plan-feature\nv1])
+    A([/feat]) --> B([/ctx or /research])
+    B --> C([/plan\nv1])
 
-    C --> D([/review-plan-feature\nR1])
+    C --> D([/review\nR1])
 
     D -->|Verdict: READY| E{Gate:\nReview passed?}
-    D -->|Verdict: NEEDS_WORK| F([/replan-feature\nTrigger 1: Review\nvN+1])
+    D -->|Verdict: NEEDS_WORK| F([/replan\nTrigger 1: Review\nvN+1])
     F --> D
 
-    E -->|yes| G([/implement-plan-feature\nI1])
+    E -->|yes| G([/implement\nI1])
     E -->|no — max loops reached| Z([re-scope / ask user])
 
-    G -->|all pass| H([/audit-implementation-feature])
-    G -->|blockers / failures| I([/replan-feature\nTrigger 2: Implementation\nvN+1])
-    I --> D2([/review-plan-feature\nR_next])
-    D2 -->|READY| G2([/implement-plan-feature\nI_next])
+    G -->|all pass| H([/audit])
+    G -->|blockers / failures| I([/replan\nTrigger 2: Implementation\nvN+1])
+    I --> D2([/review\nR_next])
+    D2 -->|READY| G2([/implement\nI_next])
     G2 --> H
 
-    H -->|Verdict: ready| J([/retro-feature\nall plans in feature\nnotes/retro.md])
+    H -->|Verdict: ready| J([/retro\nall plans in feature\nnotes/retro.md])
     H -->|Verdict: needs-work| G
 
     J --> K([Feature Done ✓])
-    J -.->|optional| L([/retro-project\nall features\nnotes/retro-project.md])
+    J -.->|optional| L([/retro-all\nall features\nnotes/retro-project.md])
     L --> M([Project Knowledge Base ✓])
 
     subgraph Artifacts per feature
@@ -158,18 +232,18 @@ Any step that is triggered automatically by another command (e.g. review after r
 
 - **MAX_REVIEW_LOOPS = 2** (recommended 2–3 rounds per Plan 1)
 - If after max cycles there are Impact: high findings → stop: re-scope / ask user / re-plan
-- Loop: /replan-feature → /review-plan-feature (max 2 cycles); the review leg runs only via Reviewer subagent (Delegation policy).
+- Loop: `/replan` → `/review` (max 2 cycles); the review leg runs only via Reviewer subagent (Delegation policy).
 
 ## Post-Audit Loop Policy
 
-After `/audit-implementation-feature`, the verdict drives the next step automatically. Do not stop at audit — continue the loop.
+After `/audit`, the verdict drives the next step automatically. Do not stop at audit — continue the loop.
 
 | Verdict       | Root cause                                                                                                           | Next action                                                                    | Max iterations |
 | ------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------- |
 | `ready`       | —                                                                                                                    | DONE                                                                           | —              |
 | `needs-fixes` | Implementation issues; plan is correct                                                                               | Developer refinement → fresh audit subagent                                    | 2              |
 | `plan-fix`    | Plan had errors (wrong step spec, bad assumption, missing constraint); implementation followed wrong spec faithfully | Architect patches plan (no review gate) → Developer re-implement → fresh audit | 1              |
-| `re-plan`     | Approach wrong, major scope gap, fundamental issues                                                                  | /replan-feature → /review-plan-feature → /implement-plan-feature → /audit      | 1              |
+| `re-plan`     | Approach wrong, major scope gap, fundamental issues                                                                  | `/replan` → `/review` → `/implement` → `/audit`                               | 1              |
 
 **Escalation rules:**
 

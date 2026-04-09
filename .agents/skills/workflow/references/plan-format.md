@@ -49,7 +49,7 @@ _(Omit section if no contexts were consulted)_
 - Plan: [Step 1: {Title}](#step-1-title) · [Step 2: {Title}](#step-2-title) · ...
 - [Risks / Unknowns](#risks--unknowns) · [Acceptance Criteria](#acceptance-criteria)
 
-_(Updated by `/plan-feature` on creation and by `/replan-feature` when steps are added or amended.)_
+_(Updated by `/plan` on creation and by `/replan` when steps are added or amended.)_
 
 ## Architect Retrospective
 
@@ -60,13 +60,13 @@ _(Updated by `/plan-feature` on creation and by `/replan-feature` when steps are
 - [process] {what complicated this replan}
 - [risk] {newly identified risk for next round}
 
-_(Top-level append-only section — one `### v{N}` block per replan cycle, added by `/replan-feature`. Omit section until first replan. Never delete previous blocks.)_
+_(Top-level append-only section — one `### v{N}` block per replan cycle, added by `/replan`. Omit section until first replan. Never delete previous blocks.)_
 
 ## Architect Observations
 
 - {observation about adjacent code, technical debt, future work candidates, cross-plan patterns}
 
-_(Top-level section — accumulates across all replan cycles. Added by `/replan-feature`. Omit section if nothing observed. No required labels.)_
+_(Top-level section — accumulates across all replan cycles. Added by `/replan`. Omit section if nothing observed. No required labels.)_
 
 ## Context
 
@@ -151,11 +151,11 @@ Done when:
 Steps may include `**Status**: {done | partial | skipped | not started}` field:
 
 - **not started**: Default status when plan is created (may be omitted)
-- **done**: Step completed successfully (added by `/audit-implementation-feature` after successful audit)
-- **partial**: Step partially completed (added by `/audit-implementation-feature` if audit shows partial completion)
-- **skipped**: Step was skipped (added by `/audit-implementation-feature` if step was intentionally skipped)
+- **done**: Step completed successfully (added by `/audit` after successful audit)
+- **partial**: Step partially completed (added by `/audit` if audit shows partial completion)
+- **skipped**: Step was skipped (added by `/audit` if step was intentionally skipped)
 
 **Note**:
-- `/plan-feature` and `/replan-feature` do NOT add status to steps (plan not yet implemented)
-- `/audit-implementation-feature` adds status to steps ONLY if decision is "ready" (based on implementation report)
+- `/plan` and `/replan` do NOT add status to steps (plan not yet implemented)
+- `/audit` adds status to steps ONLY if decision is "ready" (based on implementation report)
 ```

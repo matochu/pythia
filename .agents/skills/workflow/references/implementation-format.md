@@ -2,7 +2,32 @@
 
 **File**: `reports/{plan-slug}.implementation.md`
 
-## Required Structure
+---
+
+## File Structure (top to bottom)
+
+```
+# header + Compatibility table    ← static, filled on first round
+## Summary                        ← static, current overall summary
+## Steps Executed                 ← static, updated as steps complete
+## Files Changed                  ← static, updated as files change
+## Commands Executed              ← static, running list of all commands
+## Validation                     ← static, validation status
+## Results                        ← static, current overall outcome
+## Deviations                     ← static, updated when deviations occur
+## Open Issues                    ← static, updated each round
+## Developer Retrospective        ← append-only, before rounds; one I{n} block per round
+## Developer Observations         ← append-only, before rounds; accumulates across all rounds
+## Implementation Round I1        ← rounds grow downward
+## Implementation Round I2
+...
+```
+
+**Rule**: static sections and top-level accumulating sections come first. Round blocks are appended at the end as implementation progresses.
+
+---
+
+## Full Format
 
 ```markdown
 # Implementation Report: {plan-slug}
@@ -16,8 +41,13 @@ Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
 | Implementation Round | Plan Version | Date       | Result              |
 |----------------------|--------------|------------|---------------------|
 | I1                   | v{N}         | YYYY-MM-DD | N passed / M failed |
+| I2                   | v{N+1}       | YYYY-MM-DD | N passed / M failed |
 
-## Executed Steps
+## Summary
+
+[Current overall summary of implementation status]
+
+## Steps Executed
 
 - Step 1: [Brief description of what was done]
 - Step 2: [Brief description of what was done]
@@ -29,8 +59,12 @@ Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
 
 ## Commands Executed
 
-- `npm test` — [result]
-- `npm run build` — [result]
+- `make test` — [result]
+- `make build` — [result]
+
+## Validation
+
+[Validation commands run and their outcomes]
 
 ## Results
 
@@ -50,15 +84,21 @@ Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
 
 ### I{n} — {YYYY-MM-DD}
 
-Knowledge gained during this implementation round — about the codebase, tools, architecture, or the plan itself:
-
-- [codebase] {insight about how something works}
-- [tooling] {insight about test setup, mocks, framework behavior}
+- [codebase] {unexpected codebase fact, constraint, or behavior discovered}
+- [tooling] {insight about build setup, test runner, framework behavior}
 - [plan] {what was over/underspecified, what should have been in the plan}
 - [process] {what helped or slowed down the work}
 - [risk] {newly identified risk for next round}
 
-"None" if no new insights.
+*(Omit block entirely if no discoveries this round. Do NOT write paraphrasing of Issues or summary of what was done.)*
+
+---
+
+## Developer Observations
+
+- {observation about adjacent code, technical debt, future work candidates, architectural concerns outside current plan scope}
+
+*(Top-level section — accumulates across all rounds. Write only when there is something concrete; omit section entirely if nothing observed.)*
 
 ---
 
@@ -79,93 +119,70 @@ Knowledge gained during this implementation round — about the codebase, tools,
 
 ### Issues
 
-For each BLOCKER or PROBLEM found during this round:
-
 **[BLOCKER|PROBLEM] Step {N}: {short title}**
 - Problem: {what went wrong}
 - Evidence: {log line, error message, file:line, test name}
 - Root cause hypothesis: {why it happened}
 - Impact: {what is blocked or affected}
 
-### Contexts consulted (optional)
+### Contexts consulted
 
 - [context-name](../contexts/{name}.context.md) — what was used from this context during this round
 
 *(Omit if no context documents were consulted)*
 
-### Out-of-Plan Work (Debug)
+### Out-of-Plan Work
 
-Actions taken outside the plan steps — debugging, investigation, workarounds:
+- [type] {what was done} → {reason} → {result}
 
-- [{file or area}] {what was tried and outcome}
-- [investigation] {what was checked, what was ruled out}
-
-"None" if all work was within plan steps.
+*(Mandatory — write "none" if all work was within plan steps. Document ALL changes outside plan steps: debug scripts, config tweaks, workarounds, extra test runs. In **refinement mode** (bug fixes / follow-up by request), append new entries here; do not create a new Implementation Round.)*
 ```
 
-> **Note**: `## Developer Retrospective` is a **top-level append-only section** — one `### I{n} — {date}` block per round, never delete previous blocks. Mirrors `## Architect Retrospective` in the plan file.
+---
 
-## Key Sections
+## Key Rules
 
 ### Plan–Implementation Compatibility Table
 
-Located in the header block (after Date/Plan). One row per Implementation Round — append-only, never delete rows.
+- Located in the header block (after Date/Plan links)
+- One row per Implementation Round — append-only, never delete rows
+- **One plan version → one row**: each Plan Version (v{N}) must appear at most once; one implementation round per plan version
+- **Plan Version**: the plan version active when this round was executed (can be e.g. v12, v5 — advances with review/replan)
+- **Result**: short outcome (e.g. `7 passed / 1 failed`, `build ok`)
 
-- **Implementation Round**: I1, I2, I3...
-- **Plan Version**: the plan version active when this round was executed
-- **Date**: date of the run
-- **Result**: short summary (e.g. `7 passed / 1 failed`, `build ok`, `8 failed`)
+### Developer Retrospective
 
-This table gives an at-a-glance history of which plan version was tested and what happened — mirrors the Review round table in review files.
+- Top-level section — **before all `## Implementation Round` sections**
+- One `### I{n} — {date}` block per round, appended after each run
+- **Write when**: unexpected codebase facts, environment constraints, risks that materialized, something you would do differently next time
+- **Do NOT write**: paraphrasing of Issues, summary of what was done
+- If round produced no discoveries — skip the block entirely
+- Append-only — never delete previous blocks
+- Labels: `[codebase]`, `[tooling]`, `[plan]`, `[process]`, `[risk]`
+- Mirrors `## Architect Retrospective` in the plan file
 
-### Top-Level Sections (filled once, after first implementation attempt)
+### Developer Observations
 
-- **Executed Steps**: One line per step — what was done
-- **Files Changed**: List of modified files with descriptions
-- **Commands Executed**: Validation commands and results
-- **Results**: Overall outcome
-- **Deviations**: Any deviations from plan with explanations
-- **Open Issues**: Remaining issues or blockers
+- Top-level section — **before all `## Implementation Round` sections**, after Developer Retrospective
+- For observations **outside the current plan scope**: technical debt noticed, future work candidates, architectural concerns in adjacent code
+- Not round-specific — accumulates throughout the implementation
+- Write only when there is something concrete; omit section entirely if nothing observed
+- No required labels — plain bullet list
 
-### Implementation Round (appended after each run of validation commands)
+### Implementation Round
 
-Each time the Developer runs the validation command (tests, build, etc.), a new `## Implementation Round I{n}` section is **appended** to the report. Previous rounds are never deleted.
+- Appended at the **end of the file** after all previous rounds
+- Never insert between existing rounds, never delete previous rounds
+- One round per validation run (tests, build, etc.) when in plan execution mode
+- **One plan version → at most one implementation round**: each plan version (v{N}) may appear only once in the compatibility table. Plan version can be any v{N} (e.g. v12, v5), since it advances with review/replan cycles. Refinement work (bug fixes, follow-up by request) does not create a new round — it is recorded in the last round's **Out-of-Plan Work** (see Refinement below).
 
-- **Summary**: Plan version + command + result
-- **Step Results**: Per-step status table
-- **Issues**: Structured BLOCKER/PROBLEM entries for each failure — used by Architect for replan
-- **Contexts consulted** (optional): context docs referenced during this round — links to `contexts/` files
-- **Out-of-Plan Work**: Debug actions, investigations, workarounds not in plan steps
+### Refinement (out-of-plan follow-up)
 
-### Developer Retrospective (top-level section, append-only)
+- When the user requests **bug fixes or follow-up work** with no new plan version, the Developer works in **refinement mode**: no new `## Implementation Round I{n}` is created.
+- All changes are **appended** to the **last** existing round's **Out-of-Plan Work** section (new bullet entries). Static sections (Summary, Files Changed, Commands Executed, etc.) are updated.
+- Plan Version in the compatibility table stays unchanged.
 
-Located **before** the `## Implementation Round` sections (after the header block). Mirrors `## Architect Retrospective` in the plan file.
+### Issue Severity
 
-Each round appends one block:
-
-```markdown
-### I{n} — {YYYY-MM-DD}
-- [codebase] ...
-- [tooling] ...
-- [plan] ...
-- [process] ...
-- [risk] ...
-```
-
-- Keyed by `I{n} — {date}` for traceability
-- Append-only — previous blocks are never deleted
-- Labels: `[codebase]`, `[tooling]`, `[plan]`, `[process]`, `[risk]` — use whichever are relevant
-- Read by Developer at the start of each new round (Mandatory context load in `/implement-plan-feature`)
-
-## Round Numbering
-
-- I1 = first validation run
-- I2 = after first replan/fix cycle
-- I3 = etc.
-- Round number is independent of plan version — one plan version may have multiple rounds
-
-## Issue Severity
-
-- **BLOCKER**: Test/build fails, cannot proceed without fix
-- **PROBLEM**: Partial failure, workaround possible but fix needed
-- **INSIGHT**: Observation for Architect — no immediate action required
+- **BLOCKER**: test/build fails, cannot proceed without fix
+- **PROBLEM**: partial failure, workaround possible but fix needed

@@ -43,12 +43,12 @@
 ## Next Steps
 {If NEEDS_REVISION}
 1. Review findings in `{feature-dir}/reports/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
-2. Call `/replan-feature` on `{feature-dir}/reports/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
-3. After revision, call `/review-plan-feature` again (max 2 rounds)
+2. Call `/replan` on `{feature-dir}/reports/{plan-slug}.review.md` → `## {plan-slug} R{round} — YYYY-MM-DD`
+3. After revision, run the next review **only by launching the Reviewer subagent** (do not run `/review` in the current context); max 2 rounds.
 
 {If READY}
 1. Review is complete. Plan is ready for implementation.
-2. Call `/implement-plan-feature` on `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
+2. Call `/implement` on `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 ```
 
 **Key Information Preserved**:
@@ -95,7 +95,7 @@
 
 ## Next Steps
 1. Review implementation report: `{feature-dir}/reports/{plan-slug}.implementation.md`
-2. Call `/audit-implementation-feature` on `{feature-dir}/reports/{plan-slug}.implementation.md`
+2. Call `/audit` on `{feature-dir}/reports/{plan-slug}.implementation.md`
 ```
 
 **Key Information Preserved**:
@@ -149,10 +149,8 @@
 - S{n}: [Original finding] — [How modified] — [Reasoning]
 
 ## Next Steps
-1. Save plan to `{feature-dir}/plans/{plan-slug}.plan.md`
-2. Call `/review-plan-feature` on `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
-{If revision}
-3. Reviewer will check "Addressed by Architect" for previous round
+1. Plan saved: `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
+2. Call `/review` on `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 ```
 
 ### B. Implementation Audit Response
@@ -213,7 +211,7 @@
 
 ## Suggested git commit (if Verdict is "ready")
 
-Repository-only message for the **code repo** (copy/paste as fenced block). **Do not** include plan slugs, plan numbers, `.pythia/`, workflow paths, or other non-repo planning references — see `/audit-implementation-feature` command.
+Repository-only message for the **code repo** (copy/paste as fenced block). **Do not** include plan slugs, plan numbers, `.pythia/`, workflow paths, or other non-repo planning references — see `/audit` skill.
 
 - **Subject**: `feat: …` (≤ 72 chars)
 - **Body**: imperative bullets for code changes

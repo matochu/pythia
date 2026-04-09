@@ -1,0 +1,285 @@
+# Skill: /replan
+
+**Purpose**: Invoke the Architect to revise **the plan of this feature** using the review or implementation issues. Hermetic per feature; agent doc context = feature.
+
+## Input Formats
+
+Choose any of the following:
+
+```
+/replan                                   # No args: auto-detect from chat history
+/replan feat-2026-01-123                 # With FEATURE_ID: infer plan-slug from feature dir
+/replan plan                              # Artifact ref: use current feature + assume review/implementation trigger
+/replan R{n}                              # Review ref: load Review Round R{n} from current feature
+/replan I{n}                              # Implementation ref: load Implementation Round I{n} from current feature
+/replan feat-2026-01-123 from R2         # Force entry point (rare; use only to override auto-detect)
+```
+
+**When no args**: auto-detect from chat — find most recent FEATURE_ID reference + most recent Review/Implementation round mentioned, or validate if already in feature context.
+
+**Artifact references**:
+
+- `plan` = use review pass or implement round from current feature (context should be clear from chat)
+- `R{n}` = explicitly load Review Round n
+- `I{n}` = explicitly load Implementation Round n
+
+**When to use `from`**: Only when auto-detect is wrong (rare). Use `from R2` to force replan from Review Round 2, or `from I3` for Implementation Round 3.
+
+## Instructions for user
+
+- **Minimal case**: Just say `/replan` — skill will infer context from chat or prompt you if ambiguous.
+- **With artifact**: Reference the trigger — `/replan plan` (use current review/implement), `/replan R2` (specific review round), `/replan I1` (specific implementation round).
+- **If ambiguity persists**: Provide FEATURE_ID or plan-slug explicitly.
+- **Alternative trigger** (manual edits): If you **made edits to the plan** and ask to "apply automatically" or "agree with these changes", the Architect will output the plan with those edits incorporated (no review needed).
+
+## Instructions for model
+
+You are the **Architect** ([architect.md](../agents/architect.md)) for revision. **Doc context = this feature** (feat doc + plans/).
+
+**CRITICAL — Execution context**: Execute the replan work **directly in the current context**. You ARE the Architect — do the work yourself. Do **NOT** launch a subagent (Task tool, runSubagent, or equivalent) to perform the replan. Subagents are only used for **follow-up steps** (e.g. review after replan in loop/auto mode), never for the replan itself. This applies in both inline and loop modes — see workflow Subagent roles table: `Architect (plan/replan) → Current context`.
+
+### Input Parsing
+
+Parse the user's input using this order:
+
+1. **Extract FEATURE_ID** from:
+   - Explicit arg (e.g. `feat-2026-01-123`)
+   - Chat history (most recent feature reference)
+   - Current feature context (if already in feature namespace)
+
+   If unable to determine: **Prompt user** for FEATURE_ID before proceeding.
+
+2. **Extract trigger type** from remaining args:
+   - `R{n}` → Review Round (load from `reports/{plan-slug}.review.md` section `## {plan-slug} R{n}`)
+   - `I{n}` → Implementation Round (load from `reports/{plan-slug}.implementation.md` section `## Implementation Round I{n}`)
+   - `plan` → Auto-detect review pass OR latest implementation round (check which exists/is more recent)
+   - `from {trigger}` → Use this specific trigger (override auto-detect)
+   - No trigger arg → check if plan exists; if so, default to most recent review/implementation round
+
+3. **Infer plan-slug** from:
+   - Feature directory structure (if FEATURE_ID is provided, find `plans/` directory)
+   - If multiple plans exist: **Prompt user** which plan to revise
+   - If exactly one plan exists: use it
+
+4. **Validate review/implementation exists** (HARD GATE — must read file before proceeding):
+   - **You MUST read the actual file** (`reports/{plan-slug}.review.md` or `reports/{plan-slug}.implementation.md`) and search for the exact section header. Do NOT assume it exists based on round numbers, chat history, or inference.
+   - If trigger is `R{n}`: open `reports/{plan-slug}.review.md`, search for `## {plan-slug} R{n}` section. If the section does not exist in the file → **STOP immediately**.
+   - If trigger is `I{n}`: open `reports/{plan-slug}.implementation.md`, search for `## Implementation Round I{n}` section. If the section does not exist → **STOP immediately**.
+   - **On missing trigger artifact**: Output error and STOP. Do NOT fall back to a different action, do NOT run `/review`, do NOT proceed with replan. Error message: _"Cannot replan from R{n}: section `## {plan-slug} R{n}` not found in `reports/{plan-slug}.review.md`. Run `/review` first to produce R{n}, then retry `/replan R{n}`."_ (adjust for I{n} similarly).
+   - **This is a blocking gate**: no code after this point should execute if the trigger artifact is missing.
+
+### State Detection
+
+After input parsing, determine the trigger type for the replan:
+
+- **Trigger 1: Review** — trigger is `R{n}` or `plan` resolved to a review round
+- **Trigger 2: Implementation Issues** — trigger is `I{n}` or `plan` resolved to an implementation round
+- **Trigger 3: Manual edits** — user message indicates "apply my edits" or "agree with these changes"
+
+**Proceed only after trigger is confirmed AND the trigger artifact has been read from disk.** If the file or section was not found in step 4 of Input Parsing, you must have already stopped. If you reach this point without having read the trigger content from the file, STOP and go back to step 4.
+
+**NEVER fall back to running a different command** (e.g. `/review`) when the trigger artifact is missing. Report the error and stop.
+
+---
+
+**Architecture Ambiguity Checkpoint** (required before revising plan):
+
+- If review/implementation findings can be addressed by multiple architectural directions with materially different trade-offs, **ask user before emitting revised plan**.
+- Do not proceed to full revised plan output until user selects direction (unless user explicitly delegates decision to Architect).
+- Use this short structure for the checkpoint message:
+  1. **Decision point**: what architectural choice is ambiguous
+  2. **Overview**: why this choice matters for this replan cycle
+  3. **Options** (2-4): each with brief `Pros`, `Cons`, impact on risks/scope/complexity
+  4. **Question**: explicit selection request from user
+- Keep options tied to the current plan version and findings; avoid abstract alternatives detached from evidence.
+
+**Mandatory context load** (before any analysis):
+
+1. Read `plans/{plan-slug}.plan.md` — section `## Architect Retrospective`
+2. Extract all existing blocks (keyed by `### v{N} — {round-ref} — {date}`)
+3. Use this as context for the current replan — do NOT repeat issues already identified in previous blocks, and use `[risk]` entries to anticipate likely problems in this round
+
+**Mandatory open-concern sweep** (before any edits):
+
+4. Read the entire referenced review round or implementation round, not just the executive summary
+5. Enumerate every still-open concern from `Summary of Concerns` and any unchecked items in `Addressed by Architect`
+6. Verify each open concern against the current plan text **and** any linked context/doc files named in the concern
+7. Do not start editing until you can state the full set of unresolved items for this round; replan must address the round as a whole, not one concern at a time
+
+**Trigger detection**: Before starting, determine the trigger type:
+
+- **Trigger 1: Review** — input contains Reviewer findings (`Verdict:`, `CONCERN-*`, `BLOCKED`)
+- **Trigger 2: Implementation Issues** — input references `## Implementation Round I{n}` or contains BLOCKER/PROBLEM entries from implementation report
+- **Trigger 3: Manual edits** — user says "apply my edits" or "agree with these changes"
+
+---
+
+### Trigger 1: Review-driven replan
+
+**Review Analysis Process**:
+
+1. **Read and analyze review findings**: Extract all concerns, findings, and recommendations from the review.
+2. **Critical evaluation**: Architect must critically evaluate each review finding:
+   - **Verify validity**: Check if concerns are valid based on plan content, feature context, and technical constraints
+   - **Assess impact**: Determine if addressing the concern improves the plan or introduces unnecessary complexity
+   - **Consider trade-offs**: Evaluate if addressing the concern aligns with plan goals and feature objectives
+   - **Check feasibility**: Verify if recommendations are technically feasible and align with project constraints
+3. **Decision on each finding**:
+   - **Accept**: Include changes in revised plan if finding is valid and improves the plan
+   - **Reject**: Do NOT include changes if finding is invalid, out of scope, or contradicts plan objectives
+   - **Modify**: Adapt recommendations if partially valid but need adjustment
+4. **Document decisions**: In structured response, clearly document accepted/rejected/modified findings with reasoning.
+5. **Round closure check before editing**: Verify whether any concern in the same review round remains unresolved after your planned changes. If yes, revise the plan for all of them in the same pass unless you explicitly reject a concern with reasoning.
+
+**Critical**: Architect is NOT required to accept all review findings. Architect must exercise professional judgment and may disagree with Reviewer's recommendations if they are invalid, out of scope, or contradict plan objectives.
+
+**Follow-up after replan** — mode-dependent:
+
+- **Default (inline) mode**: Do **NOT** auto-launch review. Output the revised plan, state that the next step is `/review`, and **stop**. The user decides when to run it.
+- **Loop/auto mode only** (user explicitly said "loop", "auto", or invoked `/loop`): Launch the Reviewer subagent (e.g. `/review` or Task tool with Reviewer role) in a **separate context**. Do **not** run `/review` or produce the review in this (Architect) context.
+- **Never run review in the current (Architect) context** regardless of mode — this is a hard constraint from Delegation policy.
+- If in loop/auto mode and the Reviewer subagent cannot be launched: exit with a blocking message; do not fall back to running review in the current context.
+
+---
+
+### Trigger 2: Implementation Issues-driven replan
+
+**Implementation Issues Analysis Process**:
+
+1. **Read implementation round**: Extract all BLOCKER and PROBLEM entries from the referenced `## Implementation Round I{n}` section.
+2. **Analyze each issue**:
+   - Understand root cause hypothesis from Developer
+   - Verify if the issue indicates a gap in the plan (missing step, wrong assumption, underspecified requirement)
+   - Determine what new plan step(s) are needed to address the issue
+3. **Decision on each issue**:
+   - **New Step**: Add a new step to the plan to address the issue
+   - **Amend existing step**: Clarify or extend an existing step if the issue is a specification gap
+   - **Reject**: If the issue is outside plan scope or already handled
+4. **Document decisions**: In structured response, for each issue indicate what plan change was made and why.
+
+**Critical rules for implementation-driven replan**:
+
+- **NEVER delete or replace existing steps** — only ADD new steps or amend existing ones
+- **NEVER renumber or reorder existing steps** — step numbers are permanent identifiers; Step 9 remains Step 9 forever regardless of where new steps are inserted
+- New steps go **after** the last existing step only — do NOT insert between existing steps (e.g. if last step is 9, new steps are 10, 11, 12…)
+- Preserve full step history — old steps remain as-is even if superseded
+- Every new or amended step MUST have a version marker (see Step Version Marker below)
+- Plan-Version must be incremented
+
+**Step Version Marker** (required on every new or amended step):
+
+```markdown
+### Step N: {title}
+
+**Added**: v{N} ({round-ref}) ← for new steps
+**Amended**: v{N} ({round-ref}) ← for amended steps (keep original text, add amendment note at end)
+```
+
+- `{round-ref}` = `I{n}` for implementation-driven replan, `R{n}` for review-driven replan
+- Original steps (without a marker) were part of the initial plan — do NOT add markers retroactively
+
+**No automatic follow-up**: Implementation-driven replan does NOT auto-trigger `/review`. The Architect decides whether a new review cycle is needed.
+
+---
+
+### Common Output Rules (all triggers)
+
+**Before generating revised plan**: Get current date via `date +%Y-%m-%d`. Use this date for new Plan revision log entry.
+
+**Step structure**: When adding or amending steps, use the full step structure in [plan-format.md](../workflow/references/plan-format.md) (Change, Where, Preconditions, Concrete outcome, Edge cases/errors, Validation, Tests to add when step requires new tests, API/types when step adds API or data format, Pattern/approach if relevant, Acceptance) so new or amended steps are implementable and reviewable.
+
+**Output**: **Full revised plan document (Markdown) only**. Do **not** edit the review or implementation report files (Architect stays read-only on those). The plan output MUST include:
+
+- **Plan-Id**
+- **Plan-Version**: increment from previous (e.g. v2, v3)
+- **Last review round**: link to the round the user provided (if Trigger 1); or `Implementation Round I{n} — {date}` (if Trigger 2)
+- **## Plan revision log**: add one new row — Plan-Version, round reference, date, list of steps added/amended (e.g. `Step 9 amended, Step 12 added`), 1-line summary of what changed and why
+- **## Navigation**: update to reflect any new or amended steps — add new step links to the Plan line, keep existing links unchanged
+- **## Architect Retrospective**: append a new versioned block (see below) — never delete previous blocks
+
+**Architect Retrospective section** (append to plan after `## Plan revision log`):
+
+```markdown
+## Architect Retrospective
+
+### v{N} — {round-ref} — {date}
+
+- [plan] {insight about plan structure, scope, or gaps}
+- [codebase] {insight about codebase behavior or constraints}
+- [process] {what complicated this replan}
+- [risk] {newly identified risk for next round}
+```
+
+- `### v{N}` block is **optional** — write only if there are real discoveries
+- **Write when**: codebase behavior that surprised you, plan structure failure mode identified, process insight, new risk identified
+- **Do NOT write**: summary of what changed in the plan, restatement of the issues analyzed — those belong in revision log and findings section
+- If this replan cycle produced no discoveries — omit the block entirely
+- One block per replan cycle, keyed by plan version + round reference
+- **Append-only — add new block AFTER all existing blocks** (chronological order: oldest first, newest last)
+- Never delete or reorder previous blocks
+- Labels: `[plan]`, `[codebase]`, `[process]`, `[risk]` — use whichever are relevant
+
+**Architect Observations section** (optional, append to plan after `## Architect Retrospective`):
+
+```markdown
+## Architect Observations
+
+- {observation about adjacent code, technical debt, future work candidates, cross-plan patterns}
+```
+
+- Not round-specific — accumulates throughout replanning cycles
+- Place for observations **outside the current plan scope**: technical debt in adjacent code, architectural concerns, future improvements worth considering
+- Write only when there is something concrete to note; omit entirely if nothing observed
+- Format: bullet list, no required labels
+
+**Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
+
+**Validation** (before completing):
+
+- For Trigger 1 in inline mode: verify replan completed WITHOUT launching review — only suggest `/review` as next step
+- For Trigger 1 in loop/auto mode: verify follow-up review was run only by launching Reviewer subagent (separate context), not in current (Architect) context
+- For Trigger 1 in loop/auto mode: if Reviewer subagent could not be launched, verify command exited without running review in current context
+- Verify review was NEVER executed in the current (Architect) context regardless of mode
+- Verify ambiguity checkpoint was used when non-trivial alternative directions existed
+- Verify user choice was captured before revised plan output (or user explicitly delegated choice to Architect)
+- Verify Plan-Version is incremented from previous version
+- Verify every open concern from the referenced round was either addressed in the revised plan or explicitly rejected with reasoning
+- Verify no linked context/doc file named by an open concern still contradicts the revised plan text without that contradiction being called out as remaining follow-up work
+- Verify Plan revision log is updated with new entry (version, round, date, changed steps, summary)
+- Verify `## Navigation` is updated with links to all new or amended steps
+- Verify `## Architect Retrospective` block added to plan file for this replan cycle **if discoveries exist** (skip if nothing new was learned)
+- Verify date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`)
+- Verify each context in `## Contexts` has this plan listed in its `## Used by` section
+- For Trigger 2: verify no existing steps were deleted, renumbered, or reordered
+- For Trigger 2: verify every new/amended step has `**Added**` or `**Amended**` version marker
+
+**Structured response**: Output structured response in chat using Architect Plan Revision Response Format from [response-formats.md](../workflow/references/response-formats.md). Copy the format template exactly — do NOT summarize or abbreviate. Every section including `## Next Steps` is mandatory.
+
+**Findings / Issue Assessment** (required in structured response):
+
+- List all findings/issues analyzed
+- For each, indicate the decision using the label matching the trigger:
+  - Trigger 1 (Review): **Accepted** | **Rejected** | **Modified**
+  - Trigger 2 (Implementation): **New Step** | **Amended** | **Rejected**
+- Provide reasoning for every non-trivial decision
+
+**Architect Retrospective** (optional in structured response AND saved to plan file only if discoveries exist):
+
+The Architect reflects on what was learned or observed during this replan cycle. This content is **both** output in chat summary **and** appended to `## Architect Retrospective` in the plan file — **only if there are real discoveries**. If nothing new was learned, omit entirely from both.
+
+```markdown
+### Architect Retrospective
+
+- [plan] {insight about plan structure, scope, or gaps that became apparent}
+- [codebase] {insight about codebase behavior or constraints discovered while analyzing issues}
+- [process] {what slowed down or complicated this replan — e.g. ambiguous evidence, missing context}
+- [risk] {newly identified risk or unknown that should be watched in next implementation round}
+```
+
+Labels: `[plan]`, `[codebase]`, `[process]`, `[risk]` — use whichever are relevant, skip others.
+
+When revising from review, address BLOCKED and CONCERN-\* first, but critically evaluate each one — you may reject invalid concerns.
+
+**Note**: Do NOT add `**Status**:` field to Steps in plan. Steps are not yet implemented, so status is not applicable. Status will be added by `/audit` after successful audit.
+
+**See also**: After revision, request [/review skill](../review/SKILL.md) for new review round.

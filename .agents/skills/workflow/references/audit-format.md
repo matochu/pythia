@@ -4,7 +4,7 @@
 
 ## Required Structure
 
-```markdown
+````markdown
 # Architect Audit: {plan-slug}
 
 Plan: [plans/{plan-slug}.plan.md](../plans/{plan-slug}.plan.md)
@@ -68,8 +68,26 @@ If any condition is false → use `re-plan`.
 | `ready`       | —                                                 | DONE                                                          | —              |
 | `needs-fixes` | Implementation issues; plan correct               | Developer refinement → fresh audit                            | 2              |
 | `plan-fix`    | Plan errors; implementation correct to wrong spec | Architect patches plan → Developer re-implement → fresh audit | 1              |
-| `re-plan`     | Approach wrong or ≥ 3 steps broken                | /replan-feature → /review → /implement → /audit               | 1              |
+| `re-plan`     | Approach wrong or ≥ 3 steps broken                | /replan → /review → /implement → /audit               | 1              |
+
+## Suggested git commit (application repository)
+
+**If and only if Verdict is `ready`:** include this section **in the audit file** immediately after **Decision** (before plan/feature update notes). Same message MUST appear in the Architect chat response as a fenced block.
+
+- **Subject**: `feat: …` — one line, ≤ 72 characters, from real repo changes (`## Files Changed` / `## Steps Executed` in implementation report).
+- **Body**: imperative bullets, one per meaningful change; no plan/workflow-doc references.
+- **Forbidden in the message**: plan slugs, `Plan N`, `.pythia/`, `.claude/` command paths, feature workflow filenames, audit/implementation report names. Optional: `Files: {n}` footer counting repo paths only.
+
+```text
+feat: {subject}
+
+- {bullet}
 ```
+````
+
+_(Omit entire **Suggested git commit** section when Verdict is `needs fixes` or `re-plan`.)_
+
+````
 
 ## Plan Update (if Verdict is "ready")
 
@@ -88,15 +106,14 @@ After creating audit report, if Verdict is "ready", Architect MUST also update t
    - Keep unmet criteria as `[ ]`
 
 **Example Step update**:
-
 ```markdown
 ### Step 1: Create Skill Directory Structure
 
 **Status**: done
 
 - **Change**: Create skill directory structure for sync skill
-  ...
-```
+...
+````
 
 4. **Update feature document**:
    - Find section "## Detailed Implementation Plans (External)" → "**Existing External Plans:**"
@@ -112,7 +129,7 @@ After creating audit report, if Verdict is "ready", Architect MUST also update t
 ```markdown
 **Existing External Plans:**
 
-- [Plan 1: Agents and Commands — Creation and Data Exchange](plans/1-agents-commands-data-exchange.plan.md) — Architect + Developer (review-only mode), commands **hermetic per feature** (/plan-feature, /review-plan-feature, /replan-feature), data exchange (plan ↔ review), integration with create-feature-plan
+- [Plan 1: Agents and Commands — Creation and Data Exchange](plans/1-agents-commands-data-exchange.plan.md) — Architect + Developer (review-only mode), skilluploads **hermetic per feature** (/plan, /review, /replan), data exchange (plan ↔ review), integration with /feat
 - [Plan 2: Skill Search and Fit — Agent Skill Discovery and Adaptation](plans/2-skill-search-and-fit.plan.md) — Cursor Skill for searching and evaluating Agent Skills from major catalogs, evaluating quality, and adapting skills to project needs
 - [Plan 3: Cursor Architecture — Rules, Skills, Subagents, and Hooks Integration](plans/3-cursor-architecture-rules-skills-subagents-hooks.plan.md) — Complete Cursor architecture mapping: Rules (always-on policy), Skills (on-demand procedures + commands), Subagents (three roles with isolated context), Hooks (auto-transitions and gates) — all hermetic per feature
 - [Plan 4: Sync Cursor to Claude — Agent and Skill Synchronization](plans/4-sync-cursor-to-claude.plan.md) — Synchronize agents and skills from Cursor to Claude Code/Desktop at project-level. **Status: Implemented**
@@ -127,6 +144,7 @@ After creating audit report, if Verdict is "ready", Architect MUST also update t
 - **Implementation quality check**: pass | concerns | fail (test/criteria integrity + maintainability + architecture & design, generic; out-of-plan changes get explicit architectural assessment)
 - **Risk Re-evaluation**: Updated risk assessment
 - **Decision**: ready | needs-fixes | plan-fix | re-plan
+- **Suggested git commit**: required **in `reports/{plan-slug}.audit.md`** when Verdict is **ready** (see Required Structure above); also repeated in chat
 
 ## problems.md (when verdict ≠ ready)
 
@@ -161,4 +179,3 @@ Write this file whenever verdict is `needs-fixes`, `plan-fix`, or `re-plan`. It 
 - For `plan-fix`: describe the plan text that was wrong and what it should say
 - For `needs-fixes`: describe the implementation behavior that is wrong
 - Auditor must not prescribe exact implementation — only direction
-- **Suggested git commit**: required **in `reports/{plan-slug}.audit.md`** when Verdict is **ready** (see Required Structure above); also repeated in chat
