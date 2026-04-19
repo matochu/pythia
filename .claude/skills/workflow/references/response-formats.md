@@ -115,6 +115,7 @@
 
 **Plan File**: `{feature-dir}/plans/{plan-slug}.plan.md`  
 **Version**: v{version}  
+**Status**: {Draft | Ready for implementation | In progress | Implemented | Blocked | Archived | Cancelled}  
 **Revision Source**: {initial | review_round_{round} | user_edits}  
 **Last Review Round**: {R{round} link or "Initial plan — no review yet"}
 
@@ -202,7 +203,7 @@
 
 ## Plan Update (if Verdict is "ready")
 - **File**: `{feature-dir}/plans/{plan-slug}.plan.md`
-- **Changes**: Status updated to "Implemented", Steps marked with status, Acceptance criteria checkboxes marked
+- **Changes**: Document **Status** updated to **Implemented**, Steps marked with per-step status, Acceptance criteria checkboxes marked
 
 ## Feature Document Update (if Verdict is "ready")
 - **File**: `{feature-dir}/{feature-id}.md`

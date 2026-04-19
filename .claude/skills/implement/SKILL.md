@@ -126,17 +126,24 @@ Pass to Developer:
 > **Developer Retrospective** (section 3 above):
 >
 > - One `### I{n} — {YYYY-MM-DD}` block per validation run — appended after each run, never deleted
-> - **Write when**: unexpected codebase facts, environment constraints that changed the approach, risks that materialized
+> - **Write when**: unexpected codebase facts, environment constraints that changed the approach, risks that materialized, or patterns that could be automated
 > - **Do NOT write**: paraphrasing of Issues, summary of what was done — no value
 > - If round produced no discoveries — skip the block entirely
-> - Labels: `[codebase]`, `[tooling]`, `[plan]`, `[process]`, `[risk]`
+> - Labels: `[codebase]`, `[tooling]`, `[plan]`, `[process]`, `[risk]`, `[automation]`
+> - **Automation entries**: Record repetitive validation commands, boilerplate configuration steps, or manual verification cycles observed during implementation (e.g., `[automation]: Validation in Step 3 and 5 both involve running cfg-check.sh — candidate for parametric skill`, `[automation]: Manual patch-state verification pattern could be scripted`). These inform future replan/retrospective decisions and skill creation.
 > - Mirrors `## Architect Retrospective` in the plan file
 >
 > **Developer Observations** (section 4 above):
 >
-> - Place for observations **outside the current plan scope**: technical debt, future work, architectural concerns in adjacent code
-> - Not round-specific — accumulates throughout the implementation
-> - Write only when there is something concrete; omit section entirely if nothing observed
+> **IMPORTANT: Do not skip this.** Place for observations **outside the current plan scope**: bugs, technical debt, architecture issues discovered in code. **Each observation must include a priority label**: `[high|mid|low|nit]`.
+>
+> **Priority guide** (importance to project):
+> - `[high]` → Critical for current or future work, blocks productivity, or is a critical bug
+> - `[mid]` → Important technical debt, fragile patterns, or moderate issues
+> - `[low]` → Code quality improvements, efficiency improvements, or minor issues
+> - `[nit]` → Cosmetic, minor cleanups, or nice-to-haves
+>
+> Not round-specific — accumulates throughout the implementation. Write only when there is something concrete; omit section entirely **only if truly nothing was observed** (rare). Observations build organizational knowledge of codebase state and protect future features from repeating mistakes.
 >
 > **Implementation Round** (section 5 above — append after each validation run):
 >
@@ -184,6 +191,10 @@ The implementation report MUST include a compatibility table in the header block
 
 ## Validation (before completing)
 
+- **Workflow-doc validation (Validator subagent)**: After `reports/{plan-slug}.implementation.md` is updated on disk, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to the implementation report. **Do not** complete until **exit `0`**.
+  - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** Start a **separate delegated task** (e.g. Cursor **Task**) so validation runs **outside** this Developer thread — commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot handoffs. Delegated body = **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent; **do not** paste implementation report text, command transcripts, or step results — only validation instructions.
+  - **When `/loop` already documented successful validation** for this revision, you may skip nested Validator — state that.
+  - **Inline fallback** (no subagent): open the validate skill and complete **one** run **as defined in that skill**; label **inline fallback**.
 - Verify report includes all required top-level sections (Summary, Steps Executed, Files Changed, Commands Executed, Validation, Results, Deviations, Open Issues)
 - Verify Plan–Implementation Compatibility table is present and up to date
 - Verify all deviations from plan are documented with reasons

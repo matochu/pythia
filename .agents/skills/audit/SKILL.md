@@ -138,6 +138,10 @@ You are the **Architect** ([architect.md](../agents/architect.md)). **Doc contex
 
 ## Validation (before completing)
 
+- **Workflow-doc validation (Validator subagent)**: After `reports/{plan-slug}.audit.md` is written on disk, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to the audit file. **Do not** complete until **exit `0`**.
+  - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** Start a **separate delegated task** (e.g. Cursor **Task**) so validation runs **outside** this Architect (audit) thread — commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot handoffs. Delegated body = **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent; **do not** paste audit verdict narrative, findings, or implementation excerpts — only validation instructions.
+  - **When `/loop` already documented successful validation** for this revision, you may skip nested Validator — state that.
+  - **Inline fallback** (no subagent): open the validate skill and complete **one** run **as defined in that skill**; label **inline fallback**.
 - Verify audit report includes conformance assessment (done | partial | no)
 - Verify **implementation quality check** is present (pass | concerns | fail) with concrete findings if concerns/fail
 - Verify acceptance criteria are checked (met count/total)

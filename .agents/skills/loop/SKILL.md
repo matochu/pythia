@@ -9,18 +9,22 @@ applyTo: []
 ## Instructions for user
 
 **No arguments** (auto-detect from chat):
+
 - `/loop` — infer FEATURE_ID and plan-slug from chat history, auto-detect artifact state
 
 **With FEATURE_ID**:
+
 - `/loop feat-2026-01-xxx` — auto-detect plan-slug from dir, auto-detect state
 - `/loop feat-2026-01-xxx 1-plan-slug` — explicit feature + plan
 
 **Reference by artifact**:
+
 - `/loop plan` — reference current plan from chat (infer feature + slug)
 - `/loop R{n}` — reference review round (e.g. `loop R2` → find review.md round 2, infer feature + plan)
 - `/loop I{n}` — reference impl round (e.g. `loop I1` → find implementation.md round 1, infer feature + plan)
 
 **Entry point override** (optional, rarely used):
+
 - `/loop feat-2026-01-xxx from review` — force start from review
 - `/loop feat-2026-01-xxx from implement` — force from implementation
 - `/loop feat-2026-01-xxx from audit` — force from audit
@@ -79,46 +83,56 @@ Read artifact files to determine lifecycle position:
 
 **Orchestrator MUST NOT** create or edit role artifacts meant for subagents: `reports/{plan-slug}.review.md`, `reports/{plan-slug}.implementation.md`, or `reports/{plan-slug}.audit.md`. The orchestrator only reads them, routes, and (for plan-fix only) patches `plans/{plan-slug}.plan.md`. Skipping a real subagent handoff and writing those files in the orchestrator context is incorrect.
 
+**Workflow-doc validation (orchestrator-owned)**: After any subagent (Reviewer / Developer / Audit) writes or materially updates a workflow Markdown artifact, **or** after the orchestrator saves `plans/{plan-slug}.plan.md` in **ENTRY: fix (plan-fix)**, the orchestrator **must** run workflow-doc validation before routing onward: spawn a **Validator subagent** using the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation) (**absolute** validate skill path + **absolute** artifact path), or use **inline fallback** per that skill and state so. **Exit `0` required** before parsing verdicts or entering the next ENTRY. This satisfies the child-skill validation requirement so Reviewer/Developer/Audit subagents may skip nested Validator when the orchestrator documents the run.
+
+**Concrete tooling (orchestrator — if “Validator subagent” is unclear)**: Use a **separate delegated task** (e.g. Cursor **Task**) so validation does not run inside the orchestrator thread — commonly `subagent_type="generalPurpose"` or another **short, shell-capable** one-shot type your host documents. Put **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent in that task (two absolute paths); **do not** paste ENTRY routing notes, parsed verdicts, or the workflow artifact body — only validation instructions.
+
 **ENTRY: review** → Spawn Reviewer subagent (full procedure: `### ENTRY: review` below)
+
 - Subagent reads plan + contexts, appends review round to `review.md`
 - Route: READY → implement | NEEDS_REVISION → replan (see review loop limits)
 
 **ENTRY: implement** → Spawn Developer subagent
+
 - Read plan.md + review.md
 - Execute steps, run validation
 - Write implementation.md (results + errors)
 - Route: → audit
 
 **ENTRY: audit** → Spawn fresh Architect subagent (independent of Developer)
+
 - Read plan.md + implementation.md
 - Verify acceptance criteria, assess code quality
 - Write audit.md + problems.md (if verdict ≠ ready)
 - Route: ready → DONE | needs-fixes/plan-fix → fix | re-plan → BLOCKED
 
 **ENTRY: fix (needs-fixes)** → Spawn Developer subagent (refinement mode)
+
 - Read problems.md
 - Minimal fixes only (append to impl.md Out-of-Plan Work, no new round)
 - Re-audit
 
 **ENTRY: fix (plan-fix)** → Orchestrator (current context)
+
 - Patch plan.md (≤ 2 steps only)
 - Increment Plan-Version, add revision log
 - Spawn Developer subagent to re-implement amended steps
 - Re-audit (if second plan-fix → escalate to re-plan)
 
 **ENTRY: re-plan** → Report BLOCKED
+
 - User must use `/replan skill` for scope decisions
 - (Optional: if user authorized "full auto loop" → Architect patches plan + re-review)
 
 ### Exit Conditions
 
-| Status          | Action |
-|-----------------|--------|
-| `ready`         | **DONE** — report success, commit message, artifact paths |
-| `needs-fixes ≥ 2` | **STUCK** — manual fix needed |
-| `plan-fix ≥ 2`  | **ESCALATE** → re-plan |
-| `re-plan`       | **BLOCKED** — user decision required |
-| Review ≥ 2      | **DEADLOCKED** — user decision required |
+| Status            | Action                                                    |
+| ----------------- | --------------------------------------------------------- |
+| `ready`           | **DONE** — report success, commit message, artifact paths |
+| `needs-fixes ≥ 2` | **STUCK** — manual fix needed                             |
+| `plan-fix ≥ 2`    | **ESCALATE** → re-plan                                    |
+| `re-plan`         | **BLOCKED** — user decision required                      |
+| Review ≥ 2        | **DEADLOCKED** — user decision required                   |
 
 **See also**: [/replan skill](../replan/SKILL.md), [/plan skill](../plan/SKILL.md)
 
@@ -147,6 +161,8 @@ Read artifact files to determine lifecycle position:
 
 3. Wait for the subagent to finish.
 
+3b. Workflow-doc validation: Validator subagent (or inline fallback per [/validate skill](../validate/SKILL.md)) for `reports/{plan-slug}.review.md`. Exit `0` required.
+
 4. Verify reports/{plan-slug}.review.md exists and the latest round contains an explicit verdict
    line the orchestrator can parse (Verdict: READY | NEEDS_REVISION).
 
@@ -164,6 +180,8 @@ Read artifact files to determine lifecycle position:
    Follow the [/implement skill](../implement/SKILL.md)."
    Wait.
 
+1b. Workflow-doc validation: Validator subagent (or inline fallback per [/validate skill](../validate/SKILL.md)) for `reports/{plan-slug}.implementation.md`. Exit `0` required.
+
 2. Verify reports/{plan-slug}.implementation.md was written (check file exists and is non-empty).
    → ENTRY: audit
 ```
@@ -179,6 +197,8 @@ Read artifact files to determine lifecycle position:
    Follow the [/audit skill](../audit/SKILL.md).
    Do NOT continue the loop — only audit and write artifacts."
    Wait.
+
+1b. Workflow-doc validation: Validator subagent (or inline fallback per [/validate skill](../validate/SKILL.md)) for `reports/{plan-slug}.audit.md`. Exit `0` required.
 
 2. Read reports/{plan-slug}.audit.md — find verdict.
    → route by verdict (see Post-audit routing below)
@@ -204,6 +224,8 @@ If iteration_count > 2:
    Follow the [/implement skill](../implement/SKILL.md) (refinement mode)."
    Wait.
 
+1b. Workflow-doc validation: Validator subagent (or inline fallback per [/validate skill](../validate/SKILL.md)) for `reports/{plan-slug}.implementation.md`. Exit `0` required.
+
 2. → ENTRY: audit (fresh re-audit)
 ```
 
@@ -220,6 +242,8 @@ If iteration_count > 2:
    - Increment Plan-Version.
    - Add revision log entry (trigger: Audit A{audit-round}).
 4. Save updated plan to plans/{plan-slug}.plan.md.
+
+4b. Workflow-doc validation: Validator subagent (or inline fallback per [/validate skill](../validate/SKILL.md)) for `plans/{plan-slug}.plan.md`. Exit `0` required.
 
 5. Spawn Developer subagent (full re-implement of affected steps)
    Prompt: "You are the Developer. Re-execute the plan for {plan-slug}, feature {feature-dir}.

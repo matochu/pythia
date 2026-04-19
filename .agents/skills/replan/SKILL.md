@@ -30,13 +30,13 @@ Choose any of the following:
 - **Minimal case**: Just say `/replan` — skill will infer context from chat or prompt you if ambiguous.
 - **With artifact**: Reference the trigger — `/replan plan` (use current review/implement), `/replan R2` (specific review round), `/replan I1` (specific implementation round).
 - **If ambiguity persists**: Provide FEATURE_ID or plan-slug explicitly.
-- **Alternative trigger** (manual edits): If you **made edits to the plan** and ask to "apply automatically" or "agree with these changes", the Architect will output the plan with those edits incorporated (no review needed).
+- **Alternative trigger** (manual edits): If you **made edits to the plan** and ask to "apply automatically" or "agree with these changes", the Architect will output the plan with those edits incorporated (no review needed). The new row in **`## Plan revision log`** must use **`Manual`** in the **Round** column (see skill — **Trigger 3: Manual edits (logging)**).
 
 ## Instructions for model
 
 You are the **Architect** ([architect.md](../agents/architect.md)) for revision. **Doc context = this feature** (feat doc + plans/).
 
-**CRITICAL — Execution context**: Execute the replan work **directly in the current context**. You ARE the Architect — do the work yourself. Do **NOT** launch a subagent (Task tool, runSubagent, or equivalent) to perform the replan. Subagents are only used for **follow-up steps** (e.g. review after replan in loop/auto mode), never for the replan itself. This applies in both inline and loop modes — see workflow Subagent roles table: `Architect (plan/replan) → Current context`.
+**CRITICAL — Execution context**: Execute the replan work **directly in the current context**. You ARE the Architect — do the work yourself. Do **NOT** launch a subagent (Task tool, runSubagent, or equivalent) to perform the replan. Subagents are only used for **follow-up steps** (e.g. review after replan in loop/auto mode), never for the replan itself. This applies in both inline and loop modes — see workflow Subagent roles table: `Architect (plan/replan) → Current context`. **Exception**: after the revised plan exists on disk, you **must** launch a **Validator subagent** for workflow-doc validation (see **Validation**).
 
 ### Input Parsing
 
@@ -61,12 +61,13 @@ Parse the user's input using this order:
    - If multiple plans exist: **Prompt user** which plan to revise
    - If exactly one plan exists: use it
 
-4. **Validate review/implementation exists** (HARD GATE — must read file before proceeding):
-   - **You MUST read the actual file** (`reports/{plan-slug}.review.md` or `reports/{plan-slug}.implementation.md`) and search for the exact section header. Do NOT assume it exists based on round numbers, chat history, or inference.
+4. **Validate review/implementation exists** (HARD GATE — must read file before proceeding) **only when the trigger is not Trigger 3**:
+   - **Trigger 3 (Manual edits)** does **not** use a review or implementation section — **skip this entire step** (no `reports/*.review.md` / `reports/*.implementation.md` requirement).
+   - For **Trigger 1** and **Trigger 2** (including `plan` resolved to an R/I round): **You MUST read the actual file** (`reports/{plan-slug}.review.md` or `reports/{plan-slug}.implementation.md`) and search for the exact section header. Do NOT assume it exists based on round numbers, chat history, or inference.
    - If trigger is `R{n}`: open `reports/{plan-slug}.review.md`, search for `## {plan-slug} R{n}` section. If the section does not exist in the file → **STOP immediately**.
    - If trigger is `I{n}`: open `reports/{plan-slug}.implementation.md`, search for `## Implementation Round I{n}` section. If the section does not exist → **STOP immediately**.
    - **On missing trigger artifact**: Output error and STOP. Do NOT fall back to a different action, do NOT run `/review`, do NOT proceed with replan. Error message: _"Cannot replan from R{n}: section `## {plan-slug} R{n}` not found in `reports/{plan-slug}.review.md`. Run `/review` first to produce R{n}, then retry `/replan R{n}`."_ (adjust for I{n} similarly).
-   - **This is a blocking gate**: no code after this point should execute if the trigger artifact is missing.
+   - **This is a blocking gate**: no code after this point should execute if the trigger artifact is missing (for R/I triggers only).
 
 ### State Detection
 
@@ -76,7 +77,7 @@ After input parsing, determine the trigger type for the replan:
 - **Trigger 2: Implementation Issues** — trigger is `I{n}` or `plan` resolved to an implementation round
 - **Trigger 3: Manual edits** — user message indicates "apply my edits" or "agree with these changes"
 
-**Proceed only after trigger is confirmed AND the trigger artifact has been read from disk.** If the file or section was not found in step 4 of Input Parsing, you must have already stopped. If you reach this point without having read the trigger content from the file, STOP and go back to step 4.
+**Proceed only after trigger is confirmed.** For **Trigger 1** and **Trigger 2**, the trigger artifact **must** have been read from disk in step 4; if the file or section was not found, you must have already stopped. For **Trigger 3 (Manual edits)**, step 4 is skipped — confirm `plans/{plan-slug}.plan.md` exists and the user’s edit intent is clear.
 
 **NEVER fall back to running a different command** (e.g. `/review`) when the trigger artifact is missing. Report the error and stop.
 
@@ -99,7 +100,7 @@ After input parsing, determine the trigger type for the replan:
 2. Extract all existing blocks (keyed by `### v{N} — {round-ref} — {date}`)
 3. Use this as context for the current replan — do NOT repeat issues already identified in previous blocks, and use `[risk]` entries to anticipate likely problems in this round
 
-**Mandatory open-concern sweep** (before any edits):
+**Mandatory open-concern sweep** (before any edits) — **skip when trigger is Trigger 3 (Manual edits)**; for Trigger 3, reconcile the user’s edits with the current plan (and linked contexts if needed) for internal consistency instead.
 
 4. Read the entire referenced review round or implementation round, not just the executive summary
 5. Enumerate every still-open concern from `Summary of Concerns` and any unchecked items in `Addressed by Architect`
@@ -175,10 +176,20 @@ After input parsing, determine the trigger type for the replan:
 **Amended**: v{N} ({round-ref}) ← for amended steps (keep original text, add amendment note at end)
 ```
 
-- `{round-ref}` = `I{n}` for implementation-driven replan, `R{n}` for review-driven replan
+- `{round-ref}` = `I{n}` for implementation-driven replan, `R{n}` for review-driven replan, **`Manual`** for Trigger 3 (Manual edits)
 - Original steps (without a marker) were part of the initial plan — do NOT add markers retroactively
 
 **No automatic follow-up**: Implementation-driven replan does NOT auto-trigger `/review`. The Architect decides whether a new review cycle is needed.
+
+---
+
+### Trigger 3: Manual edits (logging — required)
+
+When the replan is **Trigger 3: Manual edits** (user applied edits to the plan and asked to merge / “agree with changes” / chat-driven revision **without** a formal `R{n}` or `I{n}` artifact):
+
+- **`## Plan revision log` — Round column**: You **must** write exactly **`Manual`**. This is the canonical token for this trigger (same name as in State Detection). Do **not** use `chat`, `user`, `ad-hoc`, `direct`, or other synonyms — they break traceability and reporting.
+- **`## Architect Retrospective`** (if you append a block): use `### v{N} — Manual — {date}` so `{round-ref}` matches the revision log.
+- **Step version markers**: use `(Manual)` as `{round-ref}` on any **Added** or **Amended** steps in this cycle.
 
 ---
 
@@ -192,8 +203,8 @@ After input parsing, determine the trigger type for the replan:
 
 - **Plan-Id**
 - **Plan-Version**: increment from previous (e.g. v2, v3)
-- **Last review round**: link to the round the user provided (if Trigger 1); or `Implementation Round I{n} — {date}` (if Trigger 2)
-- **## Plan revision log**: add one new row — Plan-Version, round reference, date, list of steps added/amended (e.g. `Step 9 amended, Step 12 added`), 1-line summary of what changed and why
+- **Last review round**: link to the round the user provided (if Trigger 1); or `Implementation Round I{n} — {date}` (if Trigger 2); if **Trigger 3**, keep the existing **Last review round** value unless a real review round completed — do not fake an `R{n}` link
+- **## Plan revision log**: add one new row — Plan-Version, **Round** (`R{n}` | `I{n}` | **`Manual`** for Trigger 3 — see **Trigger 3: Manual edits (logging)**), date, list of steps added/amended (e.g. `Step 9 amended, Step 12 added`), 1-line summary of what changed and why
 - **## Navigation**: update to reflect any new or amended steps — add new step links to the Plan line, keep existing links unchanged
 - **## Architect Retrospective**: append a new versioned block (see below) — never delete previous blocks
 
@@ -236,6 +247,9 @@ After input parsing, determine the trigger type for the replan:
 
 **Validation** (before completing):
 
+- **Workflow-doc validation (Validator subagent)**: After `plans/{plan-slug}.plan.md` is updated on disk, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to the plan file. **Do not** claim the plan matches the format contract until **exit `0`**.
+  - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** Same delegation mechanics as [/plan skill](../plan/SKILL.md) § **Validation** — **Concrete tooling**: separate delegated task (e.g. Cursor **Task**), commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot handoffs. Delegated body = **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent; **do not** paste revised plan text or review concern dumps — only validation instructions.
+  - **Inline fallback** (no subagent): open that validate skill and complete **one** run for that path **as defined in that skill**; report exit code + stderr; label **inline fallback**.
 - For Trigger 1 in inline mode: verify replan completed WITHOUT launching review — only suggest `/review` as next step
 - For Trigger 1 in loop/auto mode: verify follow-up review was run only by launching Reviewer subagent (separate context), not in current (Architect) context
 - For Trigger 1 in loop/auto mode: if Reviewer subagent could not be launched, verify command exited without running review in current context
@@ -243,8 +257,8 @@ After input parsing, determine the trigger type for the replan:
 - Verify ambiguity checkpoint was used when non-trivial alternative directions existed
 - Verify user choice was captured before revised plan output (or user explicitly delegated choice to Architect)
 - Verify Plan-Version is incremented from previous version
-- Verify every open concern from the referenced round was either addressed in the revised plan or explicitly rejected with reasoning
-- Verify no linked context/doc file named by an open concern still contradicts the revised plan text without that contradiction being called out as remaining follow-up work
+- For Trigger 1 or 2: verify every open concern from the referenced round was either addressed in the revised plan or explicitly rejected with reasoning
+- For Trigger 1 or 2: verify no linked context/doc file named by an open concern still contradicts the revised plan text without that contradiction being called out as remaining follow-up work
 - Verify Plan revision log is updated with new entry (version, round, date, changed steps, summary)
 - Verify `## Navigation` is updated with links to all new or amended steps
 - Verify `## Architect Retrospective` block added to plan file for this replan cycle **if discoveries exist** (skip if nothing new was learned)
@@ -252,6 +266,7 @@ After input parsing, determine the trigger type for the replan:
 - Verify each context in `## Contexts` has this plan listed in its `## Used by` section
 - For Trigger 2: verify no existing steps were deleted, renumbered, or reordered
 - For Trigger 2: verify every new/amended step has `**Added**` or `**Amended**` version marker
+- For Trigger 3: verify **`## Plan revision log`** **Round** is exactly **`Manual`** (not `chat` or other labels); verify **Last review round** was not falsified; verify step markers use `(Manual)` where steps were added/amended
 
 **Structured response**: Output structured response in chat using Architect Plan Revision Response Format from [response-formats.md](../workflow/references/response-formats.md). Copy the format template exactly — do NOT summarize or abbreviate. Every section including `## Next Steps` is mandatory.
 
@@ -261,6 +276,7 @@ After input parsing, determine the trigger type for the replan:
 - For each, indicate the decision using the label matching the trigger:
   - Trigger 1 (Review): **Accepted** | **Rejected** | **Modified**
   - Trigger 2 (Implementation): **New Step** | **Amended** | **Rejected**
+  - Trigger 3 (Manual edits): **Accepted** | **Rejected** | **Modified** (per user edit or instruction)
 - Provide reasoning for every non-trivial decision
 
 **Architect Retrospective** (optional in structured response AND saved to plan file only if discoveries exist):

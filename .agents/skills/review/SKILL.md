@@ -106,7 +106,9 @@ You are the **Reviewer** ([reviewer.md](../agents/reviewer.md)). **Doc context =
 
 1. **Decision quality and alternatives**
    - Check whether major decisions are justified against realistic alternatives in this codebase.
+   - Explicitly look for **weak spots** in the chosen plan shape: brittle assumptions, hidden coupling, oversized steps, ownership gaps, migration ambiguity, or places where the plan can accidentally preserve legacy debt.
    - If alternatives are not considered where trade-offs are significant, report `gap` or `wrong-assumption`.
+   - In **Deep mode**, actively compare the chosen path against plausible **alternative toolchains, existing libraries/frameworks, or ready-made solutions** that could reduce bespoke codegen or operational burden. If the plan ignores a realistic external/tooling option, report that as `gap`, `risk`, or `wrong-assumption` with evidence.
 2. **Architecture fit (real codebase fit)**
    - Verify alignment with current modules, boundaries, ownership, and established patterns in actual code/docs.
    - If plan assumes non-existing capabilities or conflicts with current architecture, report `wrong-assumption`, `risk`, or `infeasible`.
@@ -130,6 +132,8 @@ You are the **Reviewer** ([reviewer.md](../agents/reviewer.md)). **Doc context =
   - plan/context evidence (local)
   - codebase evidence (local)
   - at least one external source URL (official docs/specs)
+- Deep mode is expected to test the plan against the outside ecosystem, not only against the local codebase. When relevant, explicitly check whether there are established toolchains, standards-based approaches, or off-the-shelf solutions that the plan should have considered.
+- If the chosen approach still wins, state why the alternative is weaker for this codebase. If the plan does not engage with a realistic alternative at all, report that as a weakness.
 
 **Reviewer Observations** (top-level section in `.review.md`, before all round blocks — see [review-format.md](../workflow/references/review-format.md)):
 
@@ -138,7 +142,7 @@ You are the **Reviewer** ([reviewer.md](../agents/reviewer.md)). **Doc context =
 - Write only when there is something concrete to note; omit section entirely if nothing observed
 - Labels: `[codebase]`, `[risk]`, `[process]`, `[tooling]` — observations only, no recommendations
 
-Review only where there is clear evidence; avoid judgments without plan/code references. Do not implement — output review only. Do not give specific recommendations (no "do X", "use Y", "rewrite Z"). Terminal commands allowed: `date +%Y-%m-%d` (current date), `cat` (read files), `grep` (search in files), `find` (locate files). Web lookup allowed: use `WebSearch` + `WebFetch` for official sources and cite URLs in `Evidence`. Do not run build, test, or any other commands.
+Review only where there is clear evidence; avoid judgments without plan/code references. Do not implement — output review only. Do not give specific recommendations (no "do X", "use Y", "rewrite Z"). Terminal commands allowed: `date +%Y-%m-%d` (current date), `cat` (read files), `grep` (search in files), `find` (locate files). Web lookup allowed: use `WebSearch` + `WebFetch` for official sources and cite URLs in `Evidence`. Do not run build, test, or any other commands. **Exception (workflow-doc validation, inline fallback only)**: if the host cannot spawn a Validator subagent, open [/validate skill](../validate/SKILL.md) and perform **exactly one** validation run for the absolute path to `reports/{plan-slug}.review.md` **using only the procedure defined in that skill**; report exit code + stderr; label **inline fallback**. No other shell commands beyond the allowlist above.
 
 Focus on problems: reviews are for improvement and working with errors. For OK status items, keep description minimal (1 sentence max, e.g., "No issues found"). Provide detailed analysis only for concerns (CONCERN-LOW/MEDIUM/HIGH, BLOCKED).
 
@@ -150,13 +154,20 @@ Focus on problems: reviews are for improvement and working with errors. For OK s
 
 **Validation** (before completing):
 
+- **Workflow-doc contract vs this review**: The **format** of `.review.md` (sections, navigation, verdict line, etc.) is checked by the procedure in [/validate skill](../validate/SKILL.md). That check does **not** judge whether your architecture findings are right — that is **this** Reviewer skill. Optional **QA Automation Lead** is separate (test coverage).
+- **Validator subagent (mandatory for inline `/review`)**: After `{feature-dir}/reports/{plan-slug}.review.md` is updated on disk, you **MUST** spawn a **Validator subagent** in a **separate context**. Use the **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): pass **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to `reports/{plan-slug}.review.md`. **Do not** finish the Reviewer turn until **exit `0`** (or **inline fallback** below).
+  - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** “Validator subagent” **does not** mean a magic built-in role. It means: start a **separate delegated task** (e.g. Cursor **Task** tool, or your product’s equivalent) so validation runs **outside** this Reviewer thread. Use a **short, shell-capable** delegation profile your stack already supports for one-off commands — commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot subagent handoffs when no dedicated Validator type exists. Put **only** the filled-in **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent in the delegated task body (plus the two absolute paths); **do not** paste review verdict text or plan analysis there — only validation instructions.
+  - **Wait** for the subagent; if **non-zero**, fix contract violations in `.review.md` (or stop with a clear blocker), then **re-run** Validator until **exit `0`**.
+  - **`/loop` exception**: If the orchestrator already documented a successful validation (**exit `0`**) for this file revision, you may **skip** a nested Validator — state that explicitly.
+  - **Inline fallback**: see **Exception** in the terminal rules above; do **not** skip validation entirely.
 - Verify review includes Verdict (READY | NEEDS_REVISION)
 - Verify round header format is correct: `## {plan-slug} R{round} — YYYY-MM-DD` (date from `date +%Y-%m-%d`)
 - Verify `## Navigation` is updated with new round entry (verdict included)
 - Verify findings are categorized (gap, risk, ambiguity, infeasible, missing-validation, wrong-assumption)
 - Verify no recommendations or solutions provided
 - Verify selected review mode (Deep/Standard) matches round and change magnitude rules
-- Verify concerns reflect architecture quality checks (alternatives, fit, complexity, system impact, source validation, **test coverage of changes**) where relevant
+- Verify concerns reflect architecture quality checks (alternatives, weak spots in the chosen shape, fit, complexity, system impact, source validation, **test coverage of changes**) where relevant
+- In **Deep mode**, verify the review explicitly considered plausible alternatives, relevant toolchains, and existing solutions where the plan proposes custom infrastructure or significant new architecture
 - Verify **test coverage of changes** was assessed (plan steps/acceptance criteria vs validation and test expectations); if QA Automation Lead was used, verify findings were incorporated into the review without solutioning
 - Verify high-impact technical claims include at least one external source URL in `Evidence`
 - Verify structured chat response contains ALL mandatory sections from `response-formats.md` Reviewer format: `## Summary`, `## Verdict`, `## Critical Findings`, `## High Priority Concerns`, `## Review Artifact`, `## Next Steps` — **`## Next Steps` is REQUIRED even when verdict is READY**

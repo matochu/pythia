@@ -1,6 +1,10 @@
 # Review Format Specification
 
 **File**: `reports/{plan-slug}.review.md`
+**Plan**: `plans/{plan-slug}.plan.md`
+**Plan Version**: {plan-version} (v1, v2, v3...)
+**Last Status**: {status} (READY | NEEDS_REVISION)
+**Last Review Round**: {review-round}
 
 ---
 
@@ -71,30 +75,38 @@ Verdict: READY | NEEDS_REVISION
 ## Step-by-Step Analysis
 
 ### S1: {Step Title}
+
 **Status**: OK | CONCERN-LOW | CONCERN-MEDIUM | CONCERN-HIGH | BLOCKED
 **Evidence**: File: `path/to/file.ts:123` | Symbol: `functionName` | Doc: `link`
 **Impact**: [1-2 sentences why this matters]
 **Revision hint** (optional): [Direction without code/solution]
 
 ### S2: {Step Title}
+
 [Same structure]
 
 ## Summary of Concerns
 
 ### Blocked Steps (Must Fix)
+
 - S{n}: [Brief description]
 
 ### High Priority Concerns
+
 - S{n}: [Brief description]
 
 ### Medium Priority Concerns
+
 - S{n}: [Brief description]
 
 ### Low Priority Concerns
+
 - S{n}: [Brief description]
 
 ## Addressed by Architect
+
 [Filled by Reviewer on next round after seeing revised plan]
+
 - [ ] S1 addressed
 - [ ] S2 addressed
 ```
@@ -112,6 +124,7 @@ Verdict: READY | NEEDS_REVISION
 ## Finding Categories
 
 Use in parentheses after concern description:
+
 - `gap` — plan step is incomplete or missing detail
 - `risk` — identified risk that may block implementation
 - `ambiguity` — unclear or contradictory specification
@@ -123,4 +136,4 @@ Use in parentheses after concern description:
 
 - Never write "do X", "use Y", "rewrite Z" — only identify issues, risks, gaps
 - For OK status items: 1 sentence max (e.g., "No issues found")
-- Focus on problems — detailed analysis only for CONCERN-*/BLOCKED findings
+- Focus on problems — detailed analysis only for CONCERN-\*/BLOCKED findings

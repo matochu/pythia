@@ -27,41 +27,43 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
 
 **Before generating plan**: Get current date via `date +%Y-%m-%d`. Use this date in the **Date Created** field.
 
-**Step detail (mandatory)**: Each step MUST follow the step structure in [plan-format.md](../workflow/references/plan-format.md). Steps must be **concrete and reviewable**: (a) Developer can implement without guessing what "done" means, (b) Reviewer can verify completeness, feasibility, and test coverage. Include per step: **Change** (concrete, bounded), **Where** (files/modules), **Preconditions** (if any), **Concrete outcome** (verifiable "done"), **Edge cases / errors** (if the step touches I/O, persistence, or integration), **Validation** (explicit command(s); when the step adds behavior, state which new tests are required), **Tests to add** (if the step requires new tests — list test names or scenarios so Developer knows exactly what to write), **API / types** (if the step introduces or changes public API or data format — signatures, struct/schema, or example JSON), **Pattern / approach** (if relevant), **Acceptance**. Prefer more, smaller steps with clear boundaries over fewer vague steps. Vague steps (e.g. "Add error handling", "Refactor X") are not acceptable — they block good review.
+**Plan artefact (normative)**: Emit the **full plan document (Markdown)** for the user to save; do not write files from this skill. The document is defined end-to-end in [plan-format.md](../workflow/references/plan-format.md): section order, `## Metadata` fields (including document **Status** per **Plan document status** — **Draft** for every new `/plan` output), **Plan revision log**, **Navigation**, Context / Goal / Plan body, Risks or Acceptance, and step field requirements. Treat that file as the single specification; your output must conform to it. Steps must be **concrete and reviewable** (Developer knows scope, Reviewer can verify): each `### Step N` uses the required fields from plan-format (**Change**, **Where**, **Validation**, **Acceptance**, plus optional fields there). Do **not** add per-step `**Status**:` in `/plan` output — `/audit` adds step status after implementation. When the plan **changes observable behavior of a system** (generator output, validator rules, plugin response, contract shape, CLI output), include `## Before / After: System Behavior` after Acceptance Criteria (see plan-format.md § Before / After: System Behavior for guidance and template).
 
-**Output**: **Full plan document (Markdown)**. Do not write files; output the full document for the user to save. The plan MUST include:
+**Codebase observations** (expected, not optional): While analyzing the codebase for planning, note issues you encounter. **Each observation must include a priority label**: `[high|mid|low|nit]`.
 
-- **Plan-Id** (e.g. plan slug or feature-scoped id)
-- **Plan-Version**: v1 for initial plan (if plan exists but lacks Plan-Version field, add it — migration from create-feature-plan format)
-- **Last review round**: "Initial plan — no review yet" for v1 (or link to review round if revised)
-- **## Plan revision log** — empty table for initial plan (entries are added by review rounds) — format: Version | Round | Date | Changed Steps | Summary
-- **## Navigation** — placed after Plan revision log; flat list with links to all top-level sections and all steps (include Code / patterns and Out of scope when present). See [plan-format.md](../workflow/references/plan-format.md).
-- When applicable, include **Code / patterns** and **Out of scope** per plan-format (optional sections after Goal).
-- **## Plan** — steps with full detail per plan-format
+**Priority guide** (importance to project):
+- `[high]` → Critical for current or future work, blocks productivity, or is a critical bug
+- `[mid]` → Important technical debt, fragile patterns, or moderate issues
+- `[low]` → Code quality improvements, efficiency improvements, or minor issues
+- `[nit]` → Cosmetic, minor cleanups, or nice-to-haves
+
+Record in `## Architect Observations` with priority label and clear description. Examples:
+```markdown
+## Architect Observations
+
+- `[high]` Module Y swallows validation errors; critical for debugging Step 3
+- `[mid]` Duplicated fetch logic across 3 services; suggests need for utility layer
+- `[low]` Inefficient loop in helper function; not blocking but impacts large datasets
+- `[nit]` JSDoc comments missing on util.js exports
+```
+
+**Do not skip this.** Observations build organizational knowledge of codebase state and importance.
+
+**Automation awareness** (optional, accumulated over iterations): While creating the plan, watch for repetitive manual operations, validation steps, or configuration patterns in the plan steps. If you notice opportunities for automation — e.g. repeated data validation, boilerplate configuration, manual verification cycles, or integration checklists — record them in `## Architect Observations` with prefix `[automation]:` suggesting skill purpose (e.g. `[automation]: Consider a skill to automate X validation workflow` or `[automation]: Pattern Y appears in steps 2, 5, 7 — candidate for parametric skill`). This accumulates across future iterations for retrospective analysis and skill creation decisions.
 
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
 **Validation** (before completing):
 
-- When the plan is **saved to a file**, run `scripts/validate-plan.sh <plan-file-path>` (from pythia repo or project root; see [plan-format.md](../workflow/references/plan-format.md) § Validation script) and fix any reported structure errors before finishing.
-- Verify ambiguity checkpoint was used when decision trade-offs were materially different
-- Verify user choice was captured before plan output (or user explicitly delegated choice to Architect)
-- Verify plan includes all required fields (Plan-Id, Plan-Version, Branch, Last review round, Plan revision log)
-- Verify Plan revision log format is correct (5 columns: Version | Round | Date | Changed Steps | Summary)
-- Verify `## Navigation` is present with links to all steps
-- Verify date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`)
-- Verify each context in `## Contexts` has this plan listed in its `## Used by` section
+- **Workflow-doc validation (Validator subagent)**: When the plan is **saved to disk**, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` (`.agents/skills/validate/SKILL.md` or `.claude/skills/validate/SKILL.md` in this repo) and **absolute** path to the plan file. **Do not** claim the plan matches the format contract until **exit `0`**.
+  - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** “Validator subagent” **does not** mean a magic built-in role. Start a **separate delegated task** (e.g. Cursor **Task**, or your product’s equivalent) so validation runs **outside** this Architect thread. Use a **short, shell-capable** profile your stack supports — commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot subagent handoffs when no dedicated Validator type exists. Put **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent in the delegated body (paths substituted); **do not** paste plan content, step drafts, or long architecture narrative — only validation instructions.
+  - **Inline fallback** (only if no subagent): open that validate skill and complete **one** validation run for that path **as defined in that skill**; report exit code + stderr; label **inline fallback**. Fix reported issues before finishing.
+- Confirm the ambiguity checkpoint and user choice where trade-offs matter; revision log uses the table format in plan-format; `## Navigation` links cover all steps; dates are `YYYY-MM-DD`; each listed context’s `## Used by` references this plan.
 
-**Migration Note**: If an existing plan (created via create-feature-plan) lacks Plan-Version field, add:
+**Migration**: If an existing plan lacks **Plan-Version**, add v1, set Last review round to "Initial plan — no review yet", and add an empty revision-log table as in plan-format.
 
-- Plan-Version: v1 (if no revisions yet)
-- Last review round: "Initial plan — no review yet"
-- Plan revision log section — empty table (no entries until first review)
+**Structured response**: Use the Architect Plan Response Format in [response-formats.md](../workflow/references/response-formats.md).
 
-**Structured response**: Output structured response in chat using Architect Plan Response Format (plain Markdown) — see [response-formats.md](../workflow/references/response-formats.md) for format specification.
+**See also**: [/review skill](../review/SKILL.md) after creating the plan.
 
-**See also**: Use [/review skill](../review/SKILL.md) to review the plan after creating it.
-
-**Note**: Do NOT add `**Status**:` field to Steps in plan. Steps are not yet implemented, so status is not applicable. Status will be added by `/audit` after successful audit.
-
-See [agent-selection-guide](../../agents/_agent-selection-guide.md): use Architect for planning; use Developer for implementation.
+See [agent-selection-guide](../../agents/_agent-selection-guide.md): Architect for planning; Developer for implementation.

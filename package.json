@@ -29,6 +29,7 @@
   "scripts": {
     "setup": "ts-node tools/installCore.ts",
     "test": "vitest run tools/tests/*.test.ts",
+    "test:workflow-doc": "bash scripts/test-validate-workflow-doc.sh",
     "mcp-server": "npm run build-mcp && ts-node --esm src/index.ts",
     "build": "tsc",
     "build-mcp": "tsc -p tsconfig.mcp.json",

@@ -33,7 +33,7 @@ Parse the user's input using this order:
    - Explicit arg (e.g. `feat-2026-01-123`)
    - Chat history (most recent feature reference)
    - Current feature context (if already in feature namespace)
-   
+
    If unable to determine: **Prompt user** for FEATURE_ID before proceeding.
 
 2. **Infer plan-slug** from:
@@ -43,7 +43,7 @@ Parse the user's input using this order:
    - If exactly one plan exists: use it
 
 3. **Extract implementation round reference** (optional):
-   - `I{n}` → audit specific Implementation Round n  
+   - `I{n}` → audit specific Implementation Round n
    - `plan` → audit latest implementation round for this plan
    - Not specified → audit latest round in implementation report
 
@@ -66,9 +66,9 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
 
 ## Mandatory context load (before audit)
 
-1. Read `plans/{plan-slug}.plan.md` — section `## Architect Retrospective`. Extract all `### v{N} — {round-ref} — {date}` blocks. Use as context — especially `[risk]` entries to know what issues were anticipated.
-2. Read `reports/{plan-slug}.implementation.md` — section `## Developer Retrospective`. Extract all `### I{n} — {date}` blocks. Use as context — know what the Developer learned and what risks were flagged.
-3. Use both to inform the audit — assess whether known risks materialized and whether Developer learnings are reflected in the outcome.
+1. Read `plans/{plan-slug}.plan.md` — sections `## Architect Retrospective` and `## Architect Observations`. Extract all `### v{N}` blocks and all observations with priority labels `[high|mid|low|nit]`. Use as context — especially `[risk]` entries and high-priority observations to know what issues were anticipated or discovered.
+2. Read `reports/{plan-slug}.implementation.md` — sections `## Developer Retrospective` and `## Developer Observations`. Extract all `### I{n}` blocks and observations. Use as context — know what the Developer learned, what risks were flagged, what observations they made (with priority), and what operations/patterns the Developer identified as candidates for automation.
+3. Use both to inform the audit — assess whether known risks materialized, whether Developer learnings are reflected in the outcome, and which Architect/Reviewer observations remain unfixed.
 4. **Context documents**: If the plan lists contexts in `## Contexts`, read those context documents from `{feature-dir}/contexts/`. Note any requirements defined there — these will be checked in the Audit Process (step 4a below).
 
 ---
@@ -80,6 +80,14 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
 3. **Check acceptance criteria**: For each criterion in plan — met / not met / partial.
 4. **Re-evaluate risks**: Which plan risks materialized? Which were mitigated?
    - **4a. Context conformance** (if contexts exist): If feature has context documents with requirements (loaded in Mandatory context load step 4) — check that the implementation conforms to those requirements. Flag any non-conformance as a finding. Non-conformance with a requirement context is grounds for "needs fixes" or "re-plan" verdict.
+   - **4b. Automation suggestions** (if present): Review any `[automation]` entries from Developer Retrospective. Synthesize them — if multiple rounds noted similar repeating patterns, note this as a potential skill candidate in your audit summary (does not affect verdict, but informs retrospective). Examples: "Developer observed manual validation step repeating in 3 places — skill candidate"; "Config pattern X appears in implementation steps — consider parametric skill for similar future features".
+   - **4c. Unfixed Observations** (if present): Review Architect Observations and Developer Observations from plan and implementation with priority labels `[high|mid|low|nit]`. Check which were addressed during implementation:
+     - `[high]` priority unfixed → serious concern; affects verdict (may justify "needs-fixes")
+     - `[mid]` priority unfixed → note for retrospective backlog; does not block verdict
+     - `[low]` priority unfixed → note for retrospective backlog; does not block verdict
+     - `[nit]` priority unfixed → lowest priority; generally does not affect verdict
+     
+     If any `[high]` observations remain unfixed AND are related to code quality, behavior, or architecture that affects the implementation, include in audit summary with recommendation role for others (quick fix candidate, risk for next feature, blocker if severe). Document for acknowledgment in retrospective step.
 5. **Implementation quality check** (mandatory): Review the **actual code changes** listed in the implementation report (`## Files Changed`). Read the modified files (or relevant diffs) and assess:
    - **Test/criteria integrity**: Code that only satisfies tests or acceptance criteria for narrow or specific cases; logic that bypasses or stubs tests; hardcoded outcomes for "passing" scenarios; missing or shallow handling of edge cases and errors. Flag as finding if present.
    - **Maintainability**: Alignment with [implementation-quality-guidelines.md](../workflow/references/implementation-quality-guidelines.md) — defensive code, explicit error handling, logging, tests that verify behavior (not implementation), no swallowed errors or unsafe assumptions. Code that is brittle, hard to extend, or violates project conventions. Flag as finding if present.
@@ -136,6 +144,10 @@ If the user invoked this command in **loop mode** (said "loop" or "auto", or cal
 
 ## Validation (before completing)
 
+- **Workflow-doc validation (Validator subagent)**: After `reports/{plan-slug}.audit.md` is written on disk, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to the audit file. **Do not** complete until **exit `0`**.
+  - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** Start a **separate delegated task** (e.g. Cursor **Task**) so validation runs **outside** this Architect (audit) thread — commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot handoffs. Delegated body = **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent; **do not** paste audit verdict narrative, findings, or implementation excerpts — only validation instructions.
+  - **When `/loop` already documented successful validation** for this revision, you may skip nested Validator — state that.
+  - **Inline fallback** (no subagent): open the validate skill and complete **one** run **as defined in that skill**; label **inline fallback**.
 - Verify audit report includes conformance assessment (done | partial | no)
 - Verify **implementation quality check** is present (pass | concerns | fail) with concrete findings if concerns/fail
 - Verify acceptance criteria are checked (met count/total)

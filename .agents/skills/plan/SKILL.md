@@ -12,7 +12,7 @@
 
 You are the **Architect** ([architect.md](../agents/architect.md)). **Doc context = this feature** (feat doc + plans/).
 
-**CRITICAL — Execution context**: Execute the plan work **directly in the current context**. You ARE the Architect — do the work yourself. Do **NOT** launch a subagent (Task tool, runSubagent, or equivalent) to create the plan. See workflow Subagent roles table: `Architect (plan/replan) → Current context`.
+**CRITICAL — Execution context**: Execute the plan work **directly in the current context**. You ARE the Architect — do the work yourself. Do **NOT** launch a subagent (Task tool, runSubagent, or equivalent) to create the plan. See workflow Subagent roles table: `Architect (plan/replan) → Current context`. **Exception**: after the plan file exists on disk, you **must** launch a **Validator subagent** for workflow-doc validation (see **Validation** — that subagent does not author the plan).
 
 **Input**: Feature context + **plan slug** (required). Plan path = `plans/{plan-slug}.plan.md`. Optional: existing plan content, review text or link to round (for revision), or **user's edits to the plan** — if the user asks to "apply automatically" or "agree with these changes", output the plan with those edits incorporated.
 
@@ -45,7 +45,9 @@ You are the **Architect** ([architect.md](../agents/architect.md)). **Doc contex
 
 **Validation** (before completing):
 
-- When the plan is **saved to a file**, run `scripts/validate-plan.sh <plan-file-path>` (from pythia repo or project root; see [plan-format.md](../workflow/references/plan-format.md) § Validation script) and fix any reported structure errors before finishing.
+- **Workflow-doc validation (Validator subagent)**: When the plan is **saved to a file**, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): pass **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` (this repo’s `.agents/skills/validate/SKILL.md` or `.claude/skills/validate/SKILL.md`) and **absolute** path to `plans/{plan-slug}.plan.md`. **Do not** claim the plan matches the format contract until **exit `0`**.
+  - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** “Validator subagent” **does not** mean a magic built-in role. Start a **separate delegated task** (e.g. Cursor **Task**, or your product’s equivalent) so validation runs **outside** this Architect thread. Use a **short, shell-capable** profile your stack supports — commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot subagent handoffs when no dedicated Validator type exists. Put **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent in the delegated body (paths substituted); **do not** paste plan content, step drafts, or long architecture narrative — only validation instructions.
+  - **Inline fallback** (only if no subagent): open that validate skill and complete **one** validation run for that plan path **as defined in that skill**; report exit code + stderr and label **inline fallback**. Fix any reported contract issues before finishing.
 - Verify ambiguity checkpoint was used when decision trade-offs were materially different
 - Verify user choice was captured before plan output (or user explicitly delegated choice to Architect)
 - Verify plan includes all required fields (Plan-Id, Plan-Version, Branch, Last review round, Plan revision log)

@@ -185,6 +185,10 @@ The implementation report MUST include a compatibility table in the header block
 
 ## Validation (before completing)
 
+- **Workflow-doc validation (Validator subagent)**: After `reports/{plan-slug}.implementation.md` is updated on disk, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to the implementation report. **Do not** complete until **exit `0`**.
+  - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** Start a **separate delegated task** (e.g. Cursor **Task**) so validation runs **outside** this Developer thread — commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot handoffs. Delegated body = **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent; **do not** paste implementation report text, command transcripts, or step results — only validation instructions.
+  - **When `/loop` already documented successful validation** for this revision, you may skip nested Validator — state that.
+  - **Inline fallback** (no subagent): open the validate skill and complete **one** run **as defined in that skill**; label **inline fallback**.
 - Verify report includes all required top-level sections (Summary, Steps Executed, Files Changed, Commands Executed, Validation, Results, Deviations, Open Issues)
 - Verify Plan–Implementation Compatibility table is present and up to date
 - Verify all deviations from plan are documented with reasons

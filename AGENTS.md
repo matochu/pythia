@@ -9,6 +9,7 @@ This file is the single source of Codex instructions for the repository. The rol
 - Do not mix roles within one stage (plan/review/implement/audit).
 - Review provided project docs/resources before decisions and cite file paths.
 - Use formats and templates from `.claude/skills/workflow/references/`.
+- After emitting or editing workflow Markdown under a feature (`.plan.md`, `.review.md`, `.implementation.md`, `.audit.md`), run workflow-doc validation per `.agents/skills/validate/SKILL.md` and do not claim the artifact matches the format contract unless that validation completes with exit code `0`. During validation, do not create auxiliary files in the workspace (no `.txt`/`.log` captures or shell redirects into the repo — see that skill).
 
 ## Role Selection
 

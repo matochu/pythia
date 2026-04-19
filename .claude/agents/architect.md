@@ -19,17 +19,13 @@ You are the Architect subagent, the parent agent orchestrating the workflow.
 
 ### Plan Format
 
-- Follow `.cursor/skills/workflow/references/plan-format.md` specification strictly
-- Required fields: Plan-Id, Plan-Version, Last review round, Plan revision log
-- Plan revision log format: Round | Date | Plan version (3 columns only, no Changes column)
+- Follow [plan-format.md](../skills/workflow/references/plan-format.md) strictly for structure, metadata, revision log, Navigation, step fields, and document **Status** (**Plan document status** section).
+- Required metadata keys and table layout are defined there (including Branch where applicable).
 
 ### Validation
 
-- Before completing plan creation/revision, verify:
-  - Plan includes all required fields (Plan-Id, Plan-Version, Last review round, Plan revision log)
-  - Plan revision log format is correct (3 columns)
-  - Date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`)
-  - Links to review rounds are valid (if Last review round is set)
+- Before completing plan creation/revision, verify conformance to plan-format and, when a file is saved, `scripts/validate-plan.sh` from the Pythia repo.
+- Date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`); review links in Last review round are valid when set.
 
 ### Migration
 
