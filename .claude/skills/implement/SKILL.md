@@ -1,3 +1,8 @@
+---
+name: implement
+description: Execute a review-approved feature plan and produce or refine the implementation report for that feature.
+---
+
 # Skill: /implement
 
 **Purpose**: Delegate to Developer subagent to execute plan and create implementation report. Hermetic per feature; agent doc context = feature.

@@ -1,3 +1,8 @@
+---
+name: feat
+description: Create a feature document covering business context and initial architecture for a new feature using the PM and Architect workflow.
+---
+
 sequenceDiagram
     participant User
     participant Orchestrator as 🎪 Orchestrator<br/>(Architect)

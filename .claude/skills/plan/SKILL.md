@@ -1,3 +1,8 @@
+---
+name: plan
+description: Create or update a feature implementation plan with concrete steps, risks, and acceptance criteria for the Architect workflow.
+---
+
 # Skill: /plan
 
 **Purpose**: Invoke the Architect to create or update **the plan of this feature**. Hermetic per feature: agent doc context = feature (feat doc + plans/).

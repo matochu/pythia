@@ -1,4 +1,6 @@
 ---
+name: research
+description: Run feature research with document pre-search and produce a context document covering options, best practices, and third-party findings.
 applyTo: []
 ---
 

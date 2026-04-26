@@ -1,4 +1,6 @@
 ---
+name: retro-all
+description: Generate or update the consolidated project-level retrospective across features and append the new run to the persistent retro report.
 applyTo: []
 ---
 

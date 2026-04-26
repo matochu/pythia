@@ -1,3 +1,8 @@
+---
+name: audit
+description: Audit a feature implementation against its approved plan and implementation report, then produce the architect verdict and follow-up direction.
+---
+
 # Skill: /audit
 
 **Purpose**: Invoke Architect to audit Developer's implementation report and provide final decision. Hermetic per feature; agent doc context = feature.

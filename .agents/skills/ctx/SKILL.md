@@ -1,4 +1,6 @@
 ---
+name: ctx
+description: Create a feature-specific context document and save it under the feature contexts directory for later planning, review, or implementation work.
 applyTo: []
 ---
 

@@ -1,3 +1,8 @@
+---
+name: review
+description: Review a feature plan for gaps, risks, ambiguities, and wrong assumptions, then write the structured review report.
+---
+
 # Skill: /review
 
 **Purpose**: Delegate to Reviewer subagent to produce a structured review of **the plan of this feature**. Hermetic per feature; agent doc context = feature. When this skill is invoked as an automatic follow-up (e.g. from `/replan`), the caller must have launched the Reviewer subagent; the review must not be executed in the caller's context (see workflow Delegation policy).

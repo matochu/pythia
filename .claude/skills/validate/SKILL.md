@@ -1,3 +1,8 @@
+---
+name: validate
+description: Validate workflow markdown documents such as plans, reviews, implementation reports, and audits against the required format contract.
+---
+
 # Skill: /validate
 
 **Purpose**: Check workflow Markdown against the **format contract** (plans, reviews, implementation reports, audits).

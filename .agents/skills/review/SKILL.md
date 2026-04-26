@@ -1,3 +1,8 @@
+---
+name: review
+description: Review a feature plan for gaps, risks, ambiguities, and wrong assumptions, then write the structured review report.
+---
+
 # Skill: /review
 
 **Purpose**: Produce a structured review of **the plan of this feature** as the Reviewer. Hermetic per feature; agent doc context = feature.

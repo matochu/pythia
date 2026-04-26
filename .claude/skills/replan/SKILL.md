@@ -1,3 +1,8 @@
+---
+name: replan
+description: Revise an existing feature plan after review findings, implementation issues, or manual edits while preserving plan history.
+---
+
 # Skill: /replan
 
 **Purpose**: Invoke the Architect to revise **the plan of this feature** using the review or implementation issues. Hermetic per feature; agent doc context = feature.

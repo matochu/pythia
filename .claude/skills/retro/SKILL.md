@@ -1,4 +1,6 @@
 ---
+name: retro
+description: Generate or update a feature-level retrospective that synthesizes patterns, risks, and lessons from all plans and reports in the feature.
 applyTo: []
 ---
 

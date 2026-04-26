@@ -1,4 +1,6 @@
 ---
+name: loop
+description: Orchestrate the full feature workflow loop by detecting artifact state and routing through review, implementation, audit, and follow-up steps.
 applyTo: []
 ---
 
