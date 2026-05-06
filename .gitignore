@@ -34,3 +34,4 @@ dist/
 mcp-server.log
 
 .pythia/
+*.code-workspace

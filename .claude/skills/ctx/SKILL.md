@@ -75,4 +75,12 @@ You are the **[Architect (architect.md)](../../agents/architect.md)**. Create co
 
 Get current date via `date +%Y-%m-%d`. Validate feature and context scope. Create context file in `feat-XXX/contexts/{topic}.context.md` with bidirectional references.
 
+**Inputs integration**:
+
+- `/ctx` produces `*.context.md` artifacts.
+- Create: run `scripts/inputs.sh add <context-file> <dep> [<dep>...]` to record all direct source files. Do not run `update` on first creation.
+- Revise stale context: rewrite the context content first. Run `scripts/inputs.sh update <context-file>` only after the document already reflects the current source files.
+- If there are no direct file dependencies, do not add an `inputs:` block.
+- If `scripts/inputs.sh add` or `scripts/inputs.sh update` returns an error, show that raw failure to the user.
+
 **See also**: [/research skill](../research/SKILL.md), [/feat skill](../feat/SKILL.md)

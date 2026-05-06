@@ -240,6 +240,15 @@ Not round-specific — accumulates throughout replanning cycles. Write observati
 
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
+**Inputs integration**:
+
+- Before replanning, run `scripts/inputs.sh check <artifact>` on the current plan and on each cited context, review, or implementation artifact that declares `inputs:`.
+- If any such check reports `STALE`, `MISSING`, or `INVALID`, surface that raw result to the user before continuing. `/replan` still does not assign a global warn/block policy and must not hide or reinterpret the result.
+- If a loaded artifact has no `inputs:` block, proceed normally and do not invent one for consumption.
+- Record the feature doc, each consulted context, and the triggering review or implementation artifact with `scripts/inputs.sh add <plan-file> <dep> [<dep>...]`.
+- For Trigger 3 (Manual edits), still record the feature doc and each consulted direct artifact, but do not fabricate a review input when no review artifact triggered the revision.
+- Rewrite the revised plan content first. Run `scripts/inputs.sh update <plan-file>` only after the document already reflects the current source files.
+
 **Validation** (before completing):
 
 - **Workflow-doc validation (Validator subagent)**: After `plans/{plan-slug}.plan.md` is updated on disk, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to the plan file. **Do not** claim the plan matches the format contract until **exit `0`**.

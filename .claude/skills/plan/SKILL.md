@@ -58,6 +58,14 @@ Record in `## Architect Observations` with priority label and clear description.
 
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
+**Inputs integration**:
+
+- Before trusting any context artifact listed in `## Contexts`, if that context file declares `inputs:`, run `scripts/inputs.sh check <context-file>`.
+- If the check reports `STALE`, `MISSING`, or `INVALID`, surface that raw result to the user before proceeding. This skill does not assign a global warn/block policy and must not hide the check output.
+- If a context file has no `inputs:` block, proceed normally and do not invent one just because the plan consumes it.
+- Create plan: run `scripts/inputs.sh add <plan-file> <dep> [<dep>...]` to record the feature doc and each consulted context as direct plan inputs. Do not run `update` on first creation.
+- Revise stale plan: rewrite the plan content first. Run `scripts/inputs.sh update <plan-file>` only after the document already reflects the current source files.
+
 **Validation** (before completing):
 
 - **Workflow-doc validation (Validator subagent)**: When the plan is **saved to disk**, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` (`.agents/skills/validate/SKILL.md` or `.claude/skills/validate/SKILL.md` in this repo) and **absolute** path to the plan file. **Do not** claim the plan matches the format contract until **exit `0`**.

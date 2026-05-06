@@ -159,6 +159,14 @@ After receiving PM-enriched content and Architect's development phases:
 4. Add cross-references to related documentation
 5. Run documentation validation
 
+**Inputs integration**:
+
+- `/feat` produces feature documents (`feat-YYYY-MM-{slug}.md`).
+- Create: when the feature doc is grounded in direct repo-file evidence, run `scripts/inputs.sh add <feature-doc> <dep> [<dep>...]` to record those direct source files. Do not run `update` on first creation.
+- Revise stale feature doc: rewrite the document content first. Run `scripts/inputs.sh update <feature-doc>` only after the document already reflects the current source files.
+- If there are no direct file dependencies, do not add an `inputs:` block.
+- If `scripts/inputs.sh add` or `scripts/inputs.sh update` returns an error, show that raw failure to the user.
+
 **Output**: Feature document in `.pythia/workflows/features/feat-YYYY-MM-{slug}/feat-YYYY-MM-{slug}.md`
 
 **See also**: [/plan skill](../plan/SKILL.md), [/ctx skill](../ctx/SKILL.md), [/research skill](../research/SKILL.md), [/retro skill](../retro/SKILL.md)

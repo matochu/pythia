@@ -67,6 +67,14 @@ Input: feature context (feature doc path, existing contexts, plans) + research t
    - three-plan split
      and recommend one of those decompositions.
 
+**Inputs integration**:
+
+- `/research` produces `*.context.md` artifacts.
+- Create: when the research output is grounded in direct repo-file evidence, run `scripts/inputs.sh add <context-file> <dep> [<dep>...]` to record those direct source files. Do not run `update` on first creation.
+- Revise stale research context: rewrite the context content first. Run `scripts/inputs.sh update <context-file>` only after the document already reflects the current source files.
+- If there are no direct file dependencies, do not add an `inputs:` block.
+- If `scripts/inputs.sh add` or `scripts/inputs.sh update` returns an error, show that raw failure to the user.
+
 If Researcher cannot be launched, tell the user to run `/research` with the same feature and topic, or retry when the agent is available.
 
 **Output**: For new research — context file in `feat-XXX/contexts/`, feature's Related Contexts updated, short chat summary. For existing context — **verification report in chat** (no file change until user decides).
