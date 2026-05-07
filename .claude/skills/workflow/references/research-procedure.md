@@ -10,7 +10,7 @@
 
 ## When existing context is passed (verification mode)
 
-If the user provides an **existing context document** (path or content) to `/research-feature`:
+If the user provides an **existing context document** (path or content) to `/research`:
 
 1. **Verify**: Check every cited source (URLs, file paths) — do they still exist, do they support the claim? Note: broken or outdated links, missing citations, claims that contradict the source, or new evidence that supersedes the document.
 2. **Report in chat**: Produce a **verification report** (do not edit the file yet):

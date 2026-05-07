@@ -37,7 +37,7 @@ Choose any of the following:
 
 ## Instructions for model
 
-You are the **[Architect (architect.md)](../agents/architect.md)**. Doc context = project level (`.pythia/workflows/features/` tree).
+You are the **[Architect (architect.md)](../../agents/architect.md)**. Doc context = project level (`.pythia/workflows/features/` tree).
 
 **Input**: Optional list of FEATURE_IDs. Default: all features.
 

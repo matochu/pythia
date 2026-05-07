@@ -61,7 +61,7 @@ Choose any of the following:
 When the requested context is **research** (solution options, best practices, 3rd party solutions, broad/deep exploration):
 
 - **Inline mode (default)**: You ARE the Researcher — execute the research and produce the context document yourself. Do NOT launch a subagent.
-- **Loop/auto mode only**: Delegate to the **Researcher** subagent via [researcher.md](../agents/researcher.md) with feature + topic; Researcher produces the context document in `feat-XXX/contexts/{topic}.context.md` using this command's structure and linking.
+- **Loop/auto mode only**: Delegate to the **Researcher** subagent via [researcher.md](../../agents/researcher.md) with feature + topic; Researcher produces the context document in `feat-XXX/contexts/{topic}.context.md` using this command's structure and linking.
 
 ## Instructions for user
 
@@ -71,7 +71,7 @@ When the requested context is **research** (solution options, best practices, 3r
 
 ## Instructions for model
 
-You are the **[Architect (architect.md)](../agents/architect.md)**. Create context documents for features.
+You are the **[Architect (architect.md)](../../agents/architect.md)**. Create context documents for features.
 
 Get current date via `date +%Y-%m-%d`. Validate feature and context scope. Create context file in `feat-XXX/contexts/{topic}.context.md` with bidirectional references.
 

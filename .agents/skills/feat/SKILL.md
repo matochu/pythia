@@ -3,65 +3,11 @@ name: feat
 description: Create a feature document covering business context and initial architecture for a new feature using the PM and Architect workflow.
 ---
 
-sequenceDiagram
-participant User
-participant Orchestrator as 🎪 Orchestrator<br/>(Architect)
-participant Reviewer as 👁️ Reviewer<br/>subagent
-participant Developer as 👨‍💻 Developer<br/>subagent
-participant Auditor as ✍️ Architect Auditor<br/>subagent
-participant Artifacts as 📁 Files
-
-    User->>Orchestrator: /loop [feature-id] [plan-slug]
-    Orchestrator->>Artifacts: Read status
-
-    alt No plan found
-        Orchestrator-->>User: ERROR: Use /plan first
-    else Review needed
-        Orchestrator->>Reviewer: Spawn subagent<br/>Review plan
-        Reviewer->>Artifacts: Read plan.md
-        Reviewer->>Artifacts: Write review.md
-        Reviewer-->>Orchestrator: Done, Verdict: READY
-        Orchestrator->>Artifacts: Verify review exists
-    else Implement needed
-        Orchestrator->>Developer: Spawn subagent<br/>Execute plan
-        Developer->>Artifacts: Read plan.md + review.md
-        Developer->>Artifacts: Write impl.md
-        Developer-->>Orchestrator: Done, Steps executed
-        Orchestrator->>Artifacts: Verify impl exists
-    else Audit needed
-        Orchestrator->>Auditor: Spawn fresh subagent<br/>Audit implementation
-        Auditor->>Artifacts: Read plan.md + impl.md
-        Auditor->>Artifacts: Write audit.md + problems.md
-        Auditor-->>Orchestrator: Done, Verdict: ready/needs-fixes/plan-fix/re-plan
-
-        alt Verdict: ready
-            Orchestrator-->>User: ✅ DONE!
-        else Verdict: needs-fixes
-            Orchestrator->>Developer: Spawn subagent (refinement)<br/>Minimal fixes
-            Developer->>Artifacts: Read problems.md
-            Developer->>Artifacts: Append to impl.md (Out-of-Plan)
-            Developer-->>Orchestrator: Done
-            Orchestrator->>Auditor: Spawn fresh subagent (re-audit)
-            Note over Auditor: Repeat audit...
-        else Verdict: plan-fix
-            Orchestrator->>Artifacts: Read + patch plan.md
-            Orchestrator->>Developer: Spawn subagent<br/>Re-implement amended steps
-            Developer->>Artifacts: Write new impl round
-            Developer-->>Orchestrator: Done
-            Orchestrator->>Auditor: Spawn fresh subagent (re-audit)
-            Note over Auditor: Repeat audit...
-        else Verdict: re-plan
-            Orchestrator-->>User: ⛔ BLOCKED<br/>Use /replan skill for user decision
-        end
-    end---
-
-## applyTo: []
-
 # Skill: /feat
 
 **Purpose**: Create comprehensive feature documents that define complex, multi-phase work. Features are self-contained work units with their own plans, contexts, reports, and notes - unlike simple tasks which are single files.
 
-The skill orchestrates a two-stage process: first, the Product Manager subagent enriches the feature description with business context, problem statements, objectives, scope, and success criteria. The PM may also propose high-level subtasks based on business logic. Then, the Architect subagent builds technical development phases based on the PM's output, creating a structured foundation for implementation planning.
+The skill orchestrates a two-stage process: first, the Product Manager stage enriches the feature description with business context, problem statements, objectives, scope, and success criteria. Then, the Architect stage decides whether there is enough context to propose a lightweight Draft Plans List and creates a feature document whose planning surface is `## Plans`.
 
 ## Input Formats
 
@@ -117,7 +63,7 @@ You are executing the `/feat` command. This command follows a two-stage process:
 
 ### Step 1: Execute as Product Manager
 
-Use [Product Manager (product-manager.md)](../agents/product-manager.md) role with:
+Use [Product Manager (product-manager.md)](../../agents/product-manager.md) role with:
 
 - User-provided feature description/context
 - Optional: Jira ticket ID (if `--jira TICKET-123` flag provided)
@@ -130,11 +76,11 @@ The PM will:
 2. Enrich feature description with problem statement, business value, objectives, scope, and success criteria
 3. Optionally propose high-level subtasks based on business/product logic
 
-The PM outputs an enriched feature description: Summary, Problem Statement, Objectives, Context, Scope, Success Criteria, and optionally Proposed Subtasks.
+The PM outputs an enriched feature description: Summary, Problem Statement, Objectives, Context, Scope, Success Criteria, and optionally Proposed Subtasks. For internal/tooling features, PM may use `Internal Value` and omit `User Stories`.
 
 ### Step 2: Execute as Architect
 
-After PM stage completes, switch to [Architect (architect.md)](../agents/architect.md) role with:
+After PM stage completes, switch to [Architect (architect.md)](../../agents/architect.md) role with:
 
 - PM-enriched feature description
 - PM's objectives and subtasks
@@ -143,21 +89,21 @@ After PM stage completes, switch to [Architect (architect.md)](../agents/archite
 
 The Architect will:
 
-1. Analyze PM's objectives and subtasks
-2. Build technical development phases based on PM's output
-3. Structure phases logically with dependencies and sequencing
-4. Define phase deliverables and acceptance criteria
-5. Identify technical risks and dependencies
+1. Analyze PM's objectives, scope, and subtasks
+2. Decide whether there is enough context to suggest draft plans
+3. Propose up to 5 draft plans when safe to do so
+4. Leave `## Plans` empty except for the hint when context is still insufficient
+5. Identify technical risks and missing information that affect plan decomposition
 
-The Architect outputs a technical development phases structure: Phase breakdown, dependencies, deliverables, and acceptance criteria.
+The Architect outputs a Draft Plans List only when context is sufficient. Each proposal is `N-{slug}` plus a one-line goal, not a phase specification.
 
 ### Step 3: Create Feature Document
 
-After receiving PM-enriched content and Architect's development phases:
+After receiving PM-enriched content and the Architect decision about draft plans:
 
 1. Get current date via `date +%Y-%m-%d`
 2. Create feature directory structure (feat-YYYY-MM-{slug}/)
-3. Create main feature file combining PM + Architect output
+3. Create main feature file combining PM output with a `## Plans` section
 4. Add cross-references to related documentation
 5. Run documentation validation
 
@@ -172,3 +118,94 @@ After receiving PM-enriched content and Architect's development phases:
 **Output**: Feature document in `.pythia/workflows/features/feat-YYYY-MM-{slug}/feat-YYYY-MM-{slug}.md`
 
 **See also**: [/plan skill](../plan/SKILL.md), [/ctx skill](../ctx/SKILL.md), [/research skill](../research/SKILL.md), [/retro skill](../retro/SKILL.md)
+
+### /feat sync
+
+`/feat sync` is a manual reconciliation command for the user. It is not auto-triggered by `/feat` or `/plan`.
+
+Behavior:
+
+1. Determine the feature from explicit arg, then active context, otherwise ask the user for `feat-id`
+2. Read all `plans/*.plan.md` files in the feature directory
+3. Extract each plan title from `# Plan {slug}: {Title}` and status from `## Metadata`
+4. Update `## Plans` in the feature doc:
+   - replace matching checklist items with `- [{slug}](plans/{slug}.plan.md) — {Title} · Status: {status}`
+   - keep unmatched checklist items unchanged
+   - remove the hint only when all entries were converted to links
+5. Write the updated feature doc
+6. Return a diff-style summary in chat
+
+Do not change frontmatter, feature status, or any sections outside `## Plans`.
+
+## Active context item
+
+At the end of every `/feat` or `/feat sync` response, output a verdict/state-aware `## Next Steps` block and active context footer.
+
+### `/feat` next steps
+
+After creating or updating a feature document:
+
+```markdown
+## Next Steps
+
+Feature saved: `{feature-dir}/{feature-id}.md`
+
+**[a]** Architect proposal - choose this to launch Architect ([architect.md](../../agents/architect.md)) to inspect the feature and propose the next concrete plan.
+**[q]** Deep questions - choose this to ask Product/Architect clarification questions about scope, risks, users, constraints, and missing context.
+**[r]** Research direction - choose this to launch Researcher ([researcher.md](../../agents/researcher.md)) only after a concrete uncertainty/topic is identified.
+**[s]** Sync plans - choose this to reconcile `## Plans` against existing plan files.
+
+Copy to sync in another chat:
+
+```text
+/feat sync {feature-dir}/{feature-id}.md
+```
+
+---
+**Active context**: feat: {feat-id} · skill: /feat
+```
+
+### `/feat sync` next steps
+
+After completing `/feat sync`:
+
+```markdown
+## Next Steps
+
+Feature sync complete: `{feature-dir}/{feature-id}.md`
+
+**[a]** Architect proposal - choose this to inspect synced `## Plans` and propose the next missing, blocked, or highest-value plan.
+**[q]** Deep questions - choose this to clarify stale scope, missing ownership, unclear plan boundaries, or context gaps.
+**[p]** Continue planning - choose this only after the target plan direction is clear.
+
+Copy to create/update a plan in another chat:
+
+```text
+/plan {feature-dir}/{feature-id}.md
+```
+
+---
+**Active context**: feat: {feat-id} · skill: /feat
+```
+
+### Next-step chooser handling
+
+After emitting `/feat` or `/feat sync` response, halt and wait for user input.
+
+When the next user input is exactly one of the offered chooser keys:
+
+- **`[a]` / `a`**: launch **Architect** subagent ([architect.md](../../agents/architect.md)) with the feature doc path and ask for next-plan proposal. Architect should not write a plan unless user confirms the proposed direction.
+- **`[q]` / `q`**: stay in current context and ask 3-5 deep Product/Architect questions. Do not edit artifacts.
+- **`[r]` / `r`** (`/feat` only): launch **Researcher** subagent ([researcher.md](../../agents/researcher.md)) only if the user supplies or confirms a concrete research topic/uncertainty. If topic is missing, ask for it first.
+- **`[s]` / `s`** (`/feat` only): run `/feat sync {feature-dir}/{feature-id}.md` in current context.
+- **`[p]` / `p`** (`/feat sync` only): launch Architect planning only when the plan direction is already clear; otherwise ask for the missing plan direction first.
+- Any key not offered for the current feature state: reprint valid chooser keys and stop.
+
+Do not treat arbitrary custom user messages as chooser input. Do not provide copyable `/ctx` or `/research` commands without a concrete topic because those commands need additional user context.
+
+### Active context footer
+
+Every `/feat` or `/feat sync` response must end with:
+
+---
+**Active context**: feat: {feat-id} · skill: /feat

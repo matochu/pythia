@@ -17,7 +17,7 @@ This file is the single source of Codex instructions for the repository. The rol
 - plan review → Reviewer
 - implementation → Developer
 - business context/objectives → Product Manager
-- tests → QA Automation Lead
+- tests → QA Automation
 - research (options, best practices, 3rd party) → Researcher (output via /context-feature structure)
 
 ## Architect
@@ -58,7 +58,7 @@ This file is the single source of Codex instructions for the repository. The rol
 - Required sections: Problem Statement, Business Value, Objectives, Scope (in/out), Success Criteria.
 - Feature format: `.claude/commands/feature.md`.
 
-## QA Automation Lead
+## QA Automation
 
 **Role**: tests and test infrastructure.
 

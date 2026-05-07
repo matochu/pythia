@@ -36,7 +36,7 @@ applyTo: []
 
 ## Instructions for model
 
-You are the **Architect orchestrator** ([architect.md](../agents/architect.md)). Job: detect artifact state, route to next step, spawn subagents, continue loop.
+You are the **Architect orchestrator** ([architect.md](../../agents/architect.md)). Job: detect artifact state, route to next step, spawn subagents, continue loop.
 
 ### Input Parsing
 
@@ -158,7 +158,7 @@ Read artifact files to determine lifecycle position:
    Write/update:
    - reports/{plan-slug}.review.md (Navigation + Observations + new round; follow review-format.md)
    Produce Verdict: READY or NEEDS_REVISION in the new round (per review-format.md).
-   Follow [/review skill](../review/SKILL.md) and [reviewer.md](../agents/reviewer.md) in full.
+   Follow [/review skill](../review/SKILL.md) and [reviewer.md](../../agents/reviewer.md) in full.
    Do NOT implement code, do NOT patch the plan, do NOT run later loop steps (implement/audit)."
 
 3. Wait for the subagent to finish.

@@ -35,7 +35,7 @@ Choose any of the following:
 
 ## Instructions for model
 
-**CRITICAL — Execution context**: When the user invokes `/research` directly (inline mode, no "loop" or "auto"), execute the research **in the current context** — you ARE the Researcher. Do **NOT** launch a subagent. Follow the Researcher role instructions from [researcher.md](../agents/researcher.md). Subagent delegation for `/research` happens ONLY in loop/auto mode.
+**CRITICAL — Execution context**: When the user invokes `/research` directly (inline mode, no "loop" or "auto"), execute the research **in the current context** — you ARE the Researcher. Do **NOT** launch a subagent. Follow the Researcher role instructions from [researcher.md](../../agents/researcher.md). Subagent delegation for `/research` happens ONLY in loop/auto mode.
 
 Input: feature context (feature doc path, existing contexts, plans) + research topic; **if user passed an existing context** (path or content), also pass it.
 
@@ -51,7 +51,7 @@ Input: feature context (feature doc path, existing contexts, plans) + research t
 
 1. **Pre-search pythia first**: Search **all** relevant pythia/project documents (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — contexts, plans, reports, notes). Documents are scattered; use semantic search and/or grep for the topic and related terms. Use findings to avoid duplicate work and to ground the research.
 2. Then follow the full research procedure: frame and decompose, multi-source search (web, codebase, 3rd party, skill-search when relevant), evaluate and score sources, resolve contradictions, synthesize.
-3. Produce a context document in `{feature-dir}/contexts/{topic}.context.md` using `/ctx` structure; update the feature's Related Contexts.
+3. Produce a context document in `{feature-dir}/contexts/{topic}.context.md` using `/context-feature` structure; update the feature's Related Contexts.
 4. Every new research context should include, when applicable:
    - **Architectural analysis / option variants**
    - **One recommended option/architecture** (do not leave only a neutral list when a recommendation is possible)

@@ -122,7 +122,7 @@ Detailed procedures and formats in `references/` subdirectory:
 
 See [references/](./references/) for full documentation.
 
-- **Command per feature**: `/research-feature` — run research for a feature; **pre-search** across all pythia/project docs first (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — docs are scattered), then full research procedure; output in `feat-XXX/contexts/{topic}.context.md`. Also `/researcher` for ad-hoc invoke.
+- **Command per feature**: `/research` — run research for a feature; **pre-search** across all pythia/project docs first (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — docs are scattered), then full research procedure; output in `feat-XXX/contexts/{topic}.context.md`. Researcher writes context using the `/context-feature` structure; do not invent legacy research command aliases.
 - **Pre-search (mandatory)**: Before external/codebase search, search pythia and project documents (semantic search / grep) for the topic; use findings to ground research and avoid duplication. See `references/research-procedure.md` step 0.
 - **Procedure**: See `references/research-procedure.md`. When researching agent skills/tooling, use `.agents/skills/skill-search-and-fit/SKILL.md` (catalogs: Cursor, Skills.sh, AgentSkills.io, GitHub).
 
@@ -160,8 +160,8 @@ See [references/](./references/) for full documentation.
   - Add `**Status**: done` to completed Steps
   - Mark acceptance criteria checkboxes as `[x]` for met criteria
 - **Feature Document Update**: If verdict is "ready", update feature document:
-  - Add/update plan entry in "Existing External Plans" section
-  - Add `**Status: Implemented**` marker to plan entry
+  - Add/update plan entry in `## Plans` by slug
+  - Add `Status: Implemented` to plan entry
 
 ### Feature Retrospective
 
@@ -189,7 +189,7 @@ flowchart TD
     C --> D([/review\nR1])
 
     D -->|Verdict: READY| E{Gate:\nReview passed?}
-    D -->|Verdict: NEEDS_WORK| F([/replan\nTrigger 1: Review\nvN+1])
+    D -->|Verdict: NEEDS_REVISION| F([/replan\nTrigger 1: Review\nvN+1])
     F --> D
 
     E -->|yes| G([/implement\nI1])
@@ -202,7 +202,7 @@ flowchart TD
     G2 --> H
 
     H -->|Verdict: ready| J([/retro\nall plans in feature\nnotes/retro.md])
-    H -->|Verdict: needs-work| G
+    H -->|Verdict: needs-fixes| G
 
     J --> K([Feature Done ✓])
     J -.->|optional| L([/retro-all\nall features\nnotes/retro-project.md])

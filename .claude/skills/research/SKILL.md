@@ -35,7 +35,9 @@ Choose any of the following:
 
 ## Instructions for model
 
-Delegate to the **Researcher** subagent via [researcher.md](../../agents/researcher.md). Input: feature context (feature doc path, existing contexts, plans) + research topic; **if user passed an existing context** (path or content), also pass it.
+**CRITICAL — Execution context**: When the user invokes `/research` directly (inline mode, no "loop" or "auto"), execute the research **in the current context** — you ARE the Researcher. Do **NOT** launch a subagent. Follow the Researcher role instructions from [researcher.md](../../agents/researcher.md). Subagent delegation for `/research` happens ONLY in loop/auto mode.
+
+Input: feature context (feature doc path, existing contexts, plans) + research topic; **if user passed an existing context** (path or content), also pass it.
 
 **Researcher must**:
 

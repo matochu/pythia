@@ -5,7 +5,7 @@ description: Audit a feature implementation against its approved plan and implem
 
 # Skill: /audit
 
-**Purpose**: Invoke Architect to audit Developer's implementation report and provide final decision. Hermetic per feature; agent doc context = feature.
+**Purpose**: Audit Developer's implementation report as Architect and provide final decision plus follow-up direction. Hermetic per feature; agent doc context = feature.
 
 ## Input Formats
 
@@ -52,12 +52,12 @@ Parse the user's input using this order:
    - `plan` → audit latest implementation round for this plan
    - Not specified → audit latest round in implementation report
 
-### State Detection
+### State Detection (HARD GATE — must read file before proceeding)
 
 After input parsing:
 
-1. Verify that `{feature-dir}/reports/{plan-slug}.implementation.md` exists.
-2. If missing: return error "Cannot audit: implementation report not found. Use /implement skill first."
+1. **You MUST read the actual file** `{feature-dir}/reports/{plan-slug}.implementation.md` from disk. Do NOT assume it exists based on chat history or inference.
+2. If missing: output error _"Cannot audit: implementation report not found at `reports/{plan-slug}.implementation.md`. Run `/implement` first."_ — **STOP immediately. Do NOT run `/implement`, do NOT fall back to any other action.**
 3. Load the implementation report and identify the implementation round(s) to audit.
 4. Confirm all prerequisites (plan file, contexts if referenced) are accessible.
 
@@ -91,7 +91,7 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
      - `[mid]` priority unfixed → note for retrospective backlog; does not block verdict
      - `[low]` priority unfixed → note for retrospective backlog; does not block verdict
      - `[nit]` priority unfixed → lowest priority; generally does not affect verdict
-     
+
      If any `[high]` observations remain unfixed AND are related to code quality, behavior, or architecture that affects the implementation, include in audit summary with recommendation role for others (quick fix candidate, risk for next feature, blocker if severe). Document for acknowledgment in retrospective step.
 5. **Implementation quality check** (mandatory): Review the **actual code changes** listed in the implementation report (`## Files Changed`). Read the modified files (or relevant diffs) and assess:
    - **Test/criteria integrity**: Code that only satisfies tests or acceptance criteria for narrow or specific cases; logic that bypasses or stubs tests; hardcoded outcomes for "passing" scenarios; missing or shallow handling of edge cases and errors. Flag as finding if present.
@@ -119,9 +119,11 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
    - Mark all acceptance criteria checkboxes as `[x]` if they were met
    - Keep plan metadata (Plan-Version, Last review round) unchanged
 5. **Feature document update** (if decision is "ready"): Update feature document `{feature-dir}/{feature-id}.md`:
-   - Find section "## Detailed Implementation Plans (External)" → "**Existing External Plans:**"
-   - If plan NOT listed: Add new entry with format: `- [{plan title}](plans/{plan-slug}.plan.md) — {description}. **Status: Implemented**`
-   - If plan IS listed: Update existing entry to add `**Status: Implemented**` at the end
+   - Find or create `## Plans`
+   - Match plan entries by `{plan-slug}`
+   - If plan NOT listed: add new entry with format: `- [{plan-slug}](plans/{plan-slug}.plan.md) — {title} · Status: Implemented`
+   - If plan IS listed: replace/update existing slug entry with the same format
+   - Do not mutate unrelated feature sections or frontmatter
 6. **Suggested git commit message** (if decision is "ready"): Output a message suitable for the **application repository** (the code repo), not for workflow/docs that live outside git.
    - **Subject line**: `feat: {1-sentence summary}` — from what actually changed in the repo + `## Steps Executed` / `## Files Changed`; max 72 chars
    - **Body**: bullet list, imperative mood, one bullet per meaningful change (aligned with `## Steps Executed` where it maps to code)
@@ -132,15 +134,39 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
    - Do NOT include implementation round details, command lists, audit verdict, or plan metadata in the commit message
 7. **Final decision** to user: ready | needs-fixes | plan-fix | re-plan
 
+### Next-step chooser handling
+
+After emitting Architect Audit Response, halt and wait for the user's next input. The response must end with:
+
+```markdown
+---
+**Active context**: feat: {feat-id} · plan: {plan-slug} · audit: A{round} · skill: /audit
+```
+
+When the next user input is exactly one of the offered chooser keys:
+
+- **`[t]` / `t`** (ready only): run `/retro {feature-dir}` in the current Architect context. Do not launch a subagent by default.
+- **`[x]` / `x`** (ready only): finish and stop.
+- **`[i]` / `i`** (needs-fixes only): launch a **Developer** subagent ([developer.md](../../agents/developer.md)) with `/implement {feature-dir}/plans/{plan-slug}.plan.md A{round}` in refinement mode. Pass the audit report, `problems.md`, implementation report, and active audit round as context. If subagent launch is unavailable, print only the copyable `/implement` command from the response template and stop.
+- **`[q]` / `q`** (needs-fixes only): launch **QA Automation** subagent ([qa-automation.md](../../agents/qa-automation.md), `subagent_type="qa-automation"`) for validation/test-evidence analysis of audit concerns. QA returns assessment only; Architect decides whether it changes the audit follow-up direction.
+- **`[r]` / `r`** (plan-fix or re-plan): stay in Architect context and run `/replan {feature-dir}/plans/{plan-slug}.plan.md A{round}`. If the host cannot execute `/replan` inline, print only the copyable `/replan` command from the response template and stop.
+- **`[d]` / `d`** (plan-fix or re-plan): stay in current Architect context and clarify whether this is a local plan fix or broader re-plan before editing artifacts. Do not edit artifacts until the user confirms direction.
+- **`[v]` / `v`** (needs-fixes, plan-fix, or re-plan only): stay in Architect audit context and rerun `/audit {feature-dir}/reports/{plan-slug}.implementation.md I{implementation_round}` after external changes. Append a new audit round; do not overwrite the existing round. If the implementation round is not explicit, read the implementation report and use the latest implementation round. If the host cannot execute `/audit` inline, print only the copyable `/audit` command from the response template and stop.
+- Any key not offered for the current verdict: reprint the valid chooser keys for that verdict and stop.
+
+Do not treat arbitrary custom user messages as chooser input. If the user writes a normal instruction instead of a chooser key, handle it as normal Architect/audit context and do not auto-launch workflow agents.
+
 ### Post-audit loop continuation
 
-If the user invoked this command in **loop mode** (said "loop" or "auto", or called `/run-feature-plan-loop`), continue automatically after writing the audit artifacts:
+**CRITICAL — Execution context**: When the user invokes `/audit` directly (inline mode, no "loop" or "auto"), execute the audit **in the current context** — you ARE the Architect auditor. Do **NOT** launch a subagent for the audit itself. After producing the audit artifacts, show the verdict-aware next-step chooser and stop.
+
+**Loop/auto mode only**: If the user invoked this command in **loop mode** (said "loop" or "auto", or called `/loop`), continue automatically after writing the audit artifacts:
 
 | Verdict       | Action                                                                                                                                                                                                                                                                                                                                                                                    |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ready`       | Report DONE. Output commit message. Stop.                                                                                                                                                                                                                                                                                                                                                 |
 | `needs-fixes` | Spawn **Developer subagent** (refinement mode) using `problems.md`. Wait. Then spawn **fresh Architect subagent** for re-audit. Max 2 `needs-fixes` iterations total.                                                                                                                                                                                                                     |
-| `plan-fix`    | Architect (current context) reads `problems.md` and patches plan: amend affected steps with `**Amended**: v{N} (A{n})` marker, increment Plan-Version, add revision log entry (trigger: Audit A{n}). Then spawn **Developer subagent** (re-implement). Then spawn **fresh Architect subagent** for re-audit. Max 1 `plan-fix` iteration; if second audit ≠ ready → escalate to `re-plan`. |
+| `plan-fix`    | Report BLOCKED. Do not auto-continue — plan repair still requires user decision before `/replan` or any later implementation.                                                                                                                                                                                                                                                              |
 | `re-plan`     | Report BLOCKED. Do not auto-continue — re-plan requires user-assisted scope decision unless user explicitly delegated full authority.                                                                                                                                                                                                                                                     |
 
 **Fresh-session constraint:** The re-audit subagent must be a different subagent instance from the Developer that just ran. Never re-audit in the same context that just implemented.
@@ -166,12 +192,13 @@ If the user invoked this command in **loop mode** (said "loop" or "auto", or cal
   - Steps have status markers (`**Status**: done`)
   - Acceptance criteria checkboxes marked as `[x]` for met criteria
 - **If decision is "ready"**: Verify feature document is updated:
-  - Plan added/updated in "Existing External Plans" section
-  - Plan entry includes `**Status: Implemented**` marker
+  - Plan added/updated in `## Plans` by slug
+  - Plan entry includes `Status: Implemented`
 - **If decision is "ready"**: Verify suggested commit message is present in structured response:
   - Subject line starts with `feat:` and is ≤ 72 chars
   - Body describes repo changes (imperative bullets); aligned with implementation where applicable
   - **No** plan slug, plan number, `.pythia/`, or workflow-only paths in the message
   - Formatted as a fenced code block
+- Verify structured chat response includes verdict-aware `## Next Steps` and the active audit footer from [response-formats.md](../workflow/references/response-formats.md).
 
 See also: Use [/loop skill](../loop/SKILL.md) for automated post-audit routing.

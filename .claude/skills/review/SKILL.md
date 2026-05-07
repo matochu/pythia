@@ -5,7 +5,7 @@ description: Review a feature plan for gaps, risks, ambiguities, and wrong assum
 
 # Skill: /review
 
-**Purpose**: Delegate to Reviewer subagent to produce a structured review of **the plan of this feature**. Hermetic per feature; agent doc context = feature. When this skill is invoked as an automatic follow-up (e.g. from `/replan`), the caller must have launched the Reviewer subagent; the review must not be executed in the caller's context (see workflow Delegation policy).
+**Purpose**: Produce a structured Reviewer assessment of **the plan of this feature**. Hermetic per feature; agent doc context = feature. When this skill is invoked as an automatic follow-up (e.g. from `/replan`), the caller must have launched this skill in a Reviewer context; the review must not be executed in the caller's Architect context (see workflow Delegation policy).
 
 ## Input Formats
 
@@ -59,7 +59,7 @@ After input parsing:
 
 ---
 
-You are the **Reviewer subagent** ([reviewer.md](../../agents/reviewer.md) or for deep review) — run in Reviewer context only (delegate via `/review` so execution is in the subagent context, not in the caller's). **Doc context = this feature** (feat doc + plans/).
+You are the **Reviewer** ([reviewer.md](../../agents/reviewer.md)). **Doc context = this feature** (feat doc + plans/). Execute the review directly in the active Reviewer context — do NOT delegate the review to another subagent.
 
 **Input**: Feature context + **plan slug** (required). Plan path = `plans/{plan-slug}.plan.md`.
 
@@ -93,6 +93,46 @@ You are the **Reviewer subagent** ([reviewer.md](../../agents/reviewer.md) or fo
 3. **Structured response** in chat using Reviewer Response Format (plain Markdown) — see [response-formats.md](../workflow/references/response-formats.md) for format specification.
 4. **Link to this round** in your response (full path to file + section header) so Architect or user can copy/reference it for `/replan`.
 5. If this is a **follow-up round** (plan was revised), also fill **"Addressed by Architect"** for the **previous** round (checkboxes per S1, S2… from that round).
+
+### QA follow-up option
+
+The Reviewer response may offer **`[r] Replan`**, **`[i] Implement`**, **`[q] QA follow-up`**, and **`[v] Re-review`** in `## Next Steps`. These chooser entries are interactive follow-up actions in the same chat, not slash commands. After emitting the Reviewer response, halt and wait for the user's next input.
+
+### Next-step chooser handling
+
+When the next user input is exactly one of the offered chooser keys:
+
+- **`[r]` / `r`** (only when verdict is `NEEDS_REVISION`): launch an **Architect** subagent ([architect.md](../../agents/architect.md)) with `/replan {feature-dir}/plans/{plan-slug}.plan.md R{round}`. Pass the review report path and section for `R{round}` as context. If subagent launch is unavailable, print only the copyable `/replan` command from the response template and stop.
+- **`[i]` / `i`** (only when verdict is `READY`): launch a **Developer** subagent ([developer.md](../../agents/developer.md)) with `/implement {feature-dir}/plans/{plan-slug}.plan.md v{version}`. Pass the review verdict and review report path as context. If subagent launch is unavailable, print only the copyable `/implement` command from the response template and stop.
+- **`[q]` / `q`**: run the QA follow-up flow below.
+- **`[v]` / `v`** (only when verdict is `NEEDS_REVISION`): stay in Reviewer context and rerun `/review {feature-dir}/plans/{plan-slug}.plan.md` after external changes. Append a new review round; do not overwrite the existing round. If the host cannot execute `/review` inline, print only the copyable `/review` command from the response template and stop.
+- Any key not offered for the current verdict: reprint the valid chooser keys for that verdict and stop.
+
+Do not treat arbitrary custom user messages as chooser input. If the user writes a normal instruction instead of a chooser key, handle it as normal chat context and do not auto-launch workflow agents.
+
+### QA follow-up flow
+
+The QA follow-up is not a slash command and must not be represented as a QA-flavored `/review` command.
+
+When the user chooses `[q]` after a review round:
+
+1. Launch **QA Automation** as a subagent ([qa-automation.md](../../agents/qa-automation.md), `subagent_type="qa-automation"`) with the current feature doc, plan path, review report path, and review round `R{round}`.
+2. Ask QA Automation to assess only testability, validation coverage, test strategy risks, and QA automation concerns for the current plan/review round.
+3. Require QA Automation to return a concise Markdown assessment with evidence and severity, not edits.
+4. Reviewer reads the QA assessment and decides whether to accept it into the review artifact.
+5. If accepted, append a short Reviewer-authored summary under the same review round using a subsection:
+
+```markdown
+### QA Automation Follow-up
+
+- **Source**: QA Automation assessment for R{round}
+- **Accepted Findings**: {count}
+- **Summary**:
+  - {Reviewer-authored QA concern summary with evidence}
+```
+
+6. Do not paste raw QA output verbatim into the review report. Convert accepted QA concerns into Reviewer-owned review language and keep the no-solutioning rule.
+7. Re-run workflow-doc validation for the review report after appending the QA follow-up.
 
 **Review format**: Follow [review-format.md](../workflow/references/review-format.md): Verdict (READY | NEEDS_REVISION), Plan-Path; Executive Summary; Step-by-Step Analysis (Status, Evidence, Impact, optional Revision hint; no solutioning); Summary of Concerns.
 
@@ -128,7 +168,7 @@ You are the **Reviewer subagent** ([reviewer.md](../../agents/reviewer.md) or fo
 6. **Test coverage of changes**
    - Assess whether the **planned changes** are adequately covered by tests: each step or acceptance criterion that introduces or modifies behavior should have a corresponding validation/test expectation in the plan (e.g. `- **Validation**:` blocks, test scenarios, acceptance criteria that are verifiable).
    - Report `gap` or `missing-validation` when changes are not clearly covered by tests or when validation is vague/absent for testable surface.
-   - **Optional — QA Automation Lead**: In **Deep mode** or when the plan has substantial testable surface, you may delegate to the **QA Automation Lead** subagent (Task tool, `subagent_type="qa-automation-lead"`) to assess test coverage of the planned changes. Provide the plan (and feature/context path). Use the returned assessment as input only: incorporate findings into your Step-by-Step Analysis and Summary of Concerns as Reviewer (gap/missing-validation); do not copy QA output verbatim; do not add solutions. If QA subagent is unavailable, perform the test-coverage check yourself.
+   - **Optional — QA Automation**: In **Deep mode** or when the plan has substantial testable surface, you may delegate to the **QA Automation** subagent (Task tool, `subagent_type="qa-automation"`) to assess test coverage of the planned changes. Provide the plan (and feature/context path). Use the returned assessment as input only: incorporate findings into your Step-by-Step Analysis and Summary of Concerns as Reviewer (gap/missing-validation); do not copy QA output verbatim; do not add solutions. If QA subagent is unavailable, perform the test-coverage check yourself.
 
 **Deep mode evidence expectations**:
 
@@ -181,7 +221,7 @@ Focus on problems: reviews are for improvement and working with errors. For OK s
 
 **Validation** (before completing):
 
-- **Workflow-doc contract vs this review**: The **format** of `.review.md` is checked by the procedure in [/validate skill](../validate/SKILL.md). That check does **not** judge architecture quality — this skill does. Optional **QA Automation Lead** is separate (test coverage).
+- **Workflow-doc contract vs this review**: The **format** of `.review.md` is checked by the procedure in [/validate skill](../validate/SKILL.md). That check does **not** judge architecture quality — this skill does. Optional **QA Automation** is separate (test coverage).
 - **Validator subagent (mandatory for inline `/review`)**: After `{feature-dir}/reports/{plan-slug}.review.md` is updated on disk, you **MUST** spawn a **Validator subagent** in a **separate context**. Use the **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to `reports/{plan-slug}.review.md`. **Do not** finish until **exit `0`** (or **inline fallback** below).
   - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** “Validator subagent” **does not** mean a magic built-in role. It means: start a **separate delegated task** (e.g. Cursor **Task** tool, or your product’s equivalent) so validation runs **outside** this Reviewer thread. Use a **short, shell-capable** delegation profile your stack already supports — commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot subagent handoffs when no dedicated Validator type exists. The delegated task body = **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent (paths substituted) — **not** your review narrative.
   - **Wait** for the subagent; on failure fix `.review.md` and re-run until **exit `0`**.
@@ -195,7 +235,7 @@ Focus on problems: reviews are for improvement and working with errors. For OK s
 - Verify selected review mode (Deep/Standard) matches round and change magnitude rules
 - Verify concerns reflect architecture quality checks (alternatives, weak spots in the chosen shape, fit, complexity, system impact, source validation, **test coverage of changes**) where relevant
 - In **Deep mode**, verify the review explicitly considered plausible alternatives, relevant toolchains, and existing solutions where the plan proposes custom infrastructure or significant new architecture
-- Verify **test coverage of changes** was assessed (plan steps/acceptance criteria vs validation and test expectations); if QA Automation Lead was used, verify findings were incorporated into the review without solutioning
+- Verify **test coverage of changes** was assessed (plan steps/acceptance criteria vs validation and test expectations); if QA Automation was used, verify findings were incorporated into the review without solutioning
 - Verify high-impact technical claims include at least one external source URL in `Evidence`
 - Verify structured chat response contains ALL mandatory sections from `response-formats.md` Reviewer format: `## Summary`, `## Verdict`, `## Critical Findings`, `## High Priority Concerns`, `## Review Artifact`, `## Next Steps` — **`## Next Steps` is REQUIRED even when verdict is READY**
 

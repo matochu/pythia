@@ -60,7 +60,7 @@ Choose any of the following:
 
 When the requested context is **research** (solution options, best practices, 3rd party solutions, broad/deep exploration):
 
-- **Preferred**: Delegate to the **Researcher** subagent via [researcher.md](../../agents/researcher.md) with feature + topic; Researcher produces the context document in `feat-XXX/contexts/{topic}.context.md` using this command's structure and linking.
+- **Loop/auto mode only**: Delegate to the **Researcher** subagent via [researcher.md](../../agents/researcher.md) with feature + topic; Researcher produces the context document in `feat-XXX/contexts/{topic}.context.md` using this command's structure and linking.
 - **If Researcher cannot be launched**: Do not produce the context yourself. Tell the user: _"This context needs research (options, best practices, 3rd party). Run **/research** with this feature and topic so the Researcher agent can produce the context document."_
 
 ## Instructions for user

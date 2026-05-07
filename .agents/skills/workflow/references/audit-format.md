@@ -68,7 +68,7 @@ If any condition is false → use `re-plan`.
 | `ready`       | —                                                 | DONE                                                          | —              |
 | `needs-fixes` | Implementation issues; plan correct               | Developer refinement → fresh audit                            | 2              |
 | `plan-fix`    | Plan errors; implementation correct to wrong spec | Architect patches plan → Developer re-implement → fresh audit | 1              |
-| `re-plan`     | Approach wrong or ≥ 3 steps broken                | /replan → /review → /implement → /audit               | 1              |
+| `re-plan`     | Approach wrong or ≥ 3 steps broken                | /replan -> /review -> /implement -> /audit                    | 1              |
 
 ## Suggested git commit (application repository)
 
@@ -116,23 +116,21 @@ After creating audit report, if Verdict is "ready", Architect MUST also update t
 ````
 
 4. **Update feature document**:
-   - Find section "## Detailed Implementation Plans (External)" → "**Existing External Plans:**"
-   - Check if plan is already listed (search for plan-slug or Plan Number in list)
-   - If plan NOT listed: Add new entry with format: `- [Plan {Number}: {Title}](plans/{plan-slug}.plan.md) — {description}. **Status: Implemented**`
-   - If plan IS listed: Update existing entry to add `**Status: Implemented**` at the end (or replace existing status if present)
-   - Extract plan title from plan file: `# Plan {Number}: {Title}` → use as link text
-   - Extract description from plan's Problem Analysis or Goal section (1-2 sentences summary)
-   - Format: `- [Plan {Number}: {Title}](plans/{plan-slug}.plan.md) — {description}. **Status: Implemented**`
+   - Find or create `## Plans`
+   - Match entries by plan slug
+   - If plan NOT listed: add `- [{plan-slug}](plans/{plan-slug}.plan.md) — {Title} · Status: Implemented`
+   - If plan IS listed: replace/update the existing slug line with that format
+   - Do not mutate unrelated feature doc sections or frontmatter
 
 **Example feature document update**:
 
 ```markdown
-**Existing External Plans:**
+## Plans
 
-- [Plan 1: Agents and Commands — Creation and Data Exchange](plans/1-agents-commands-data-exchange.plan.md) — Architect + Developer (review-only mode), skilluploads **hermetic per feature** (/plan, /review, /replan), data exchange (plan ↔ review), integration with /feat
-- [Plan 2: Skill Search and Fit — Agent Skill Discovery and Adaptation](plans/2-skill-search-and-fit.plan.md) — Cursor Skill for searching and evaluating Agent Skills from major catalogs, evaluating quality, and adapting skills to project needs
-- [Plan 3: Cursor Architecture — Rules, Skills, Subagents, and Hooks Integration](plans/3-cursor-architecture-rules-skills-subagents-hooks.plan.md) — Complete Cursor architecture mapping: Rules (always-on policy), Skills (on-demand procedures + commands), Subagents (three roles with isolated context), Hooks (auto-transitions and gates) — all hermetic per feature
-- [Plan 4: Sync Cursor to Claude — Agent and Skill Synchronization](plans/4-sync-cursor-to-claude.plan.md) — Synchronize agents and skills from Cursor to Claude Code/Desktop at project-level. **Status: Implemented**
+- [1-agents-commands-data-exchange](plans/1-agents-commands-data-exchange.plan.md) — Agents and Commands — Creation and Data Exchange · Status: Planned
+- [2-skill-search-and-fit](plans/2-skill-search-and-fit.plan.md) — Skill Search and Fit — Agent Skill Discovery and Adaptation · Status: Planned
+- [3-cursor-architecture-rules-skills-subagents-hooks](plans/3-cursor-architecture-rules-skills-subagents-hooks.plan.md) — Cursor Architecture — Rules, Skills, Subagents, and Hooks Integration · Status: Planned
+- [4-sync-cursor-to-claude](plans/4-sync-cursor-to-claude.plan.md) — Sync Cursor to Claude — Agent and Skill Synchronization · Status: Implemented
 ```
 
 **Note**: Plan and feature document updates are ONLY performed if Verdict is "ready". If Verdict is "needs fixes" or "re-plan", plan and feature document remain unchanged.

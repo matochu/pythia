@@ -122,7 +122,7 @@ Detailed procedures and formats in `references/` subdirectory:
 
 See [references/](./references/) for full documentation.
 
-- **Command per feature**: `/research-feature` — run research for a feature; **pre-search** across all pythia/project docs first (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — docs are scattered), then full research procedure; output in `feat-XXX/contexts/{topic}.context.md`. Also `/researcher` for ad-hoc invoke.
+- **Command per feature**: `/research` — run research for a feature; **pre-search** across all pythia/project docs first (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — docs are scattered), then full research procedure; output in `feat-XXX/contexts/{topic}.context.md`. Researcher writes context using the `/context-feature` structure; do not invent legacy research command aliases.
 - **Pre-search (mandatory)**: Before external/codebase search, search pythia and project documents (semantic search / grep) for the topic; use findings to ground research and avoid duplication. See `references/research-procedure.md` step 0.
 - **Procedure**: See `references/research-procedure.md`. When researching agent skills/tooling, use `.agents/skills/skill-search-and-fit/SKILL.md` (catalogs: Cursor, Skills.sh, AgentSkills.io, GitHub).
 
@@ -160,8 +160,8 @@ See [references/](./references/) for full documentation.
   - Add `**Status**: done` to completed Steps
   - Mark acceptance criteria checkboxes as `[x]` for met criteria
 - **Feature Document Update**: If verdict is "ready", update feature document:
-  - Add/update plan entry in "Existing External Plans" section
-  - Add `**Status: Implemented**` marker to plan entry
+  - Add/update plan entry in `## Plans` by slug
+  - Add `Status: Implemented` to plan entry
 
 ### Feature Retrospective
 
@@ -189,7 +189,7 @@ flowchart TD
     C --> D([/review\nR1])
 
     D -->|Verdict: READY| E{Gate:\nReview passed?}
-    D -->|Verdict: NEEDS_WORK| F([/replan\nTrigger 1: Review\nvN+1])
+    D -->|Verdict: NEEDS_REVISION| F([/replan\nTrigger 1: Review\nvN+1])
     F --> D
 
     E -->|yes| G([/implement\nI1])
@@ -202,7 +202,7 @@ flowchart TD
     G2 --> H
 
     H -->|Verdict: ready| J([/retro\nall plans in feature\nnotes/retro.md])
-    H -->|Verdict: needs-work| G
+    H -->|Verdict: needs-fixes| G
 
     J --> K([Feature Done ✓])
     J -.->|optional| L([/retro-all\nall features\nnotes/retro-project.md])
@@ -243,7 +243,7 @@ After `/audit`, the verdict drives the next step automatically. Do not stop at a
 | `ready`       | —                                                                                                                    | DONE                                                                           | —              |
 | `needs-fixes` | Implementation issues; plan is correct                                                                               | Developer refinement → fresh audit subagent                                    | 2              |
 | `plan-fix`    | Plan had errors (wrong step spec, bad assumption, missing constraint); implementation followed wrong spec faithfully | Architect patches plan (no review gate) → Developer re-implement → fresh audit | 1              |
-| `re-plan`     | Approach wrong, major scope gap, fundamental issues                                                                  | `/replan` → `/review` → `/implement` → `/audit`                               | 1              |
+| `re-plan`     | Approach wrong, major scope gap, fundamental issues                                                                  | `/replan` → `/review` → `/implement` → `/audit`                                | 1              |
 
 **Escalation rules:**
 
@@ -261,9 +261,9 @@ After `/audit`, the verdict drives the next step automatically. Do not stop at a
 ## Execution Mode
 
 - **inline** (default): each step runs in the current agent context. Suitable for single steps invoked manually.
-- **loop**: agent spawns a subagent per role, waits for the result artifact, then continues automatically. Use `/run-feature-plan-loop` or append `loop` to any command.
+- **loop**: agent spawns a subagent per role, waits for the result artifact, then continues automatically. Use `/loop` or append `loop` to any command.
 
-When the user says **"loop"**, **"auto"**, or invokes `/run-feature-plan-loop`:
+When the user says **"loop"**, **"auto"**, or invokes `/loop`:
 
 - All role transitions use subagent delegation (Task tool or equivalent)
 - Parent reads artifact files after each subagent completes to determine next step
@@ -272,12 +272,16 @@ When the user says **"loop"**, **"auto"**, or invokes `/run-feature-plan-loop`:
 
 **Subagent roles:**
 
-| Role                    | Inline mode                         | Loop mode                      |
-| ----------------------- | ----------------------------------- | ------------------------------ |
-| Architect (plan/replan) | Current context                     | Current context (orchestrator) |
-| Reviewer                | Always subagent (strict)            | Always subagent (strict)       |
-| Developer               | Preferred subagent, fallback inline | Always subagent                |
-| Architect (audit)       | Fresh subagent preferred            | Fresh subagent (strict)        |
+| Role                    | Inline mode (default) | Loop mode                      |
+| ----------------------- | --------------------- | ------------------------------ |
+| Architect (plan/replan) | Current context       | Current context (orchestrator) |
+| Reviewer                | Current context       | Always subagent (strict)       |
+| Developer               | Current context       | Always subagent                |
+| Researcher              | Current context       | Subagent                       |
+| Product Manager         | Current context       | Subagent                       |
+| Architect (audit)       | Current context       | Fresh subagent (strict)        |
+
+**"Current context" means: do NOT launch a subagent.** When the table says "Current context", the agent reading the skill IS the role — it must perform the work directly, not delegate via Task tool / runSubagent / any subagent mechanism. In inline mode (default), ALL roles execute in the current context. Subagents are spawned ONLY in loop/auto mode (user said "loop", "auto", or invoked `/loop`). The only exception: Reviewer subagent delegation when triggered as a follow-up from another role in loop/auto mode.
 
 ## Feature Binding
 

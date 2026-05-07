@@ -8,7 +8,7 @@
 
 This command provides step-by-step instructions for creating a comprehensive feature document that defines complex, multi-phase work. Features are self-contained work units with their own plans, contexts, reports, and notes - unlike simple tasks which are single files.
 
-The command orchestrates a two-stage process: first, the Product Manager subagent enriches the feature description with business context, problem statements, objectives, scope, and success criteria. The PM may also propose high-level subtasks based on business logic. Then, the Architect subagent builds technical development phases based on the PM's output, creating a structured foundation for implementation planning.
+The command orchestrates a two-stage process: first, the Product Manager enriches the feature description with business context, problem statements, objectives, scope, and success criteria. Then, the Architect decides whether there is enough context to propose a Draft Plans List and creates a feature document whose planning surface is `## Plans`.
 
 ## When to Use Features vs Tasks
 
@@ -56,30 +56,29 @@ After PM completes, delegate to Architect subagent via `/architect` with:
 - Project context (if available)
 
 The Architect will:
-1. Analyze PM's objectives and subtasks
-2. Build technical development phases based on PM's output
-3. Structure phases logically with dependencies, sequencing, and milestones
-4. Define phase deliverables and acceptance criteria
-5. Identify technical risks and dependencies
+1. Analyze PM objectives, scope, and optional subtasks
+2. Decide whether the context is sufficient for draft plan proposals
+3. Propose up to 5 draft plans when safe to do so
+4. Leave `## Plans` as a hint-only section when context is still insufficient
+5. Identify technical risks and missing information that affect plan decomposition
 
-The Architect outputs a technical development phases structure:
-- Phase breakdown (Phase 1, Phase 2, Phase 3, etc.)
-- Phase descriptions (what will be built in each phase)
-- Phase dependencies and sequencing
-- Phase deliverables and acceptance criteria
-- Technical risks and dependencies
+The Architect outputs a Draft Plans List:
+- `N-{slug}` plan identifiers
+- One-line goal per plan
+- No phase breakdown, deliverables, or acceptance criteria at this stage
 
-This phases structure is added to the feature document. Detailed implementation plans are created later via `/plan-feature` command.
+This plans surface is added to the feature document. Detailed implementation plans are created later via `/plan`.
 
 ### Step 3: Create Feature Document
 
-After receiving PM-enriched content and Architect's development phases:
+After receiving PM-enriched content and the Architect plan-index decision:
 1. Get current date using `date +%Y-%m-%d`
 2. Validate feature uniqueness against existing documentation
 3. Create feature directory structure (feat-YYYY-MM-name/)
 4. Create main feature file (feat-YYYY-MM-name.md) combining:
    - PM-enriched content (Summary, Problem Statement, Objectives, Context, Scope, Success Criteria)
-   - Architect's development phases structure
+   - `status: draft` in frontmatter
+   - `## Plans` section with the `/plan` hint and optional draft plan checklist items
 5. Fill in all template sections with combined PM + Architect output
 6. Create subdirectories (plans/, contexts/, reports/, notes/) only as needed
 7. Add cross-references to related documentation
@@ -132,12 +131,12 @@ If `--jira` or `--atlassian` flag is provided, Product Manager fetches ticket/is
 - [ ] Get current date using `date +%Y-%m-%d`
 - [ ] Delegate to Product Manager subagent (`/product-manager`) to enrich feature description
 - [ ] If `--jira` or `--atlassian` flag provided, PM fetches ticket/issue data via MCP
-- [ ] Delegate to Architect subagent (`/architect`) to build development phases
-- [ ] Architect analyzes PM's objectives and subtasks
-- [ ] Architect builds technical development phases structure
+- [ ] Delegate to Architect subagent (`/architect`) to decide draft plans
+- [ ] Architect analyzes PM objectives, scope, and subtasks
+- [ ] Architect proposes `## Plans` entries only when context is sufficient
 - [ ] Validate feature uniqueness against existing documentation
 - [ ] Create feature directory structure (feat-YYYY-MM-name/)
-- [ ] Create main feature file (feat-YYYY-MM-name.md) with PM-enriched content + Architect phases
+- [ ] Create main feature file (feat-YYYY-MM-name.md) with PM-enriched content + Architect `## Plans` output
 - [ ] Create subdirectories (plans/, contexts/, reports/, notes/) as needed
 - [ ] Add cross-references to related documentation
 - [ ] Run documentation validation
@@ -152,7 +151,7 @@ This command follows a two-stage delegation process: first to Product Manager, t
 
 ```
 User Input → PM Subagent → Architect Subagent → Feature Document
-              (WHAT/WHY)      (HOW/PHASES)
+              (WHAT/WHY)      (PLAN INDEX)
 ```
 
 ### Step 1: Product Manager Delegation
@@ -174,20 +173,20 @@ The PM outputs an enriched feature description including: Summary (2-3 paragraph
 
 ### Step 2: Architect Delegation
 
-After PM completes, the command delegates to Architect subagent to build development phases.
+After PM completes, the command delegates to Architect subagent to decide draft plans.
 
 The Architect:
 1. Analyzes PM's output: reviews objectives and subtasks, understands scope and success criteria, identifies technical requirements
-2. Builds technical development phases: structures phases logically with dependencies and sequencing, defines what will be built in each phase, identifies phase deliverables and acceptance criteria, maps PM's subtasks to technical phases
+2. Builds draft plan proposals: identifies coherent plan boundaries, proposes `N-{slug}` plus one-line goals, and skips proposals when context is still insufficient
 3. Identifies technical considerations: technical risks and dependencies, architecture decisions needed, integration points
 
-The Architect outputs a technical development phases structure: Phase breakdown (Phase 1, Phase 2, Phase 3, etc.), phase descriptions, phase dependencies and sequencing, phase deliverables and acceptance criteria, and technical risks and dependencies.
+The Architect outputs a Draft Plans List and the decision whether `## Plans` should contain checklist items or only the hint.
 
-This phases structure is added to the feature document. Detailed implementation plans are created later via `/plan-feature` command.
+This plans structure is added to the feature document. Detailed implementation plans are created later via `/plan`.
 
 ### Step 3: Feature Document Creation
 
-After receiving PM-enriched content and Architect's development phases, combine PM output (WHAT/WHY) with Architect output (HOW/PHASES) to create the feature document. PM content populates business/product sections, while Architect phases populate the Development phases section.
+After receiving PM-enriched content and the Architect draft-plan decision, combine PM output (WHAT/WHY) with Architect output (initial planning surface) to create the feature document. PM content populates business/product sections, while Architect output populates `## Plans`.
 
 ## Step 1: Prepare for Feature Creation
 
@@ -316,24 +315,26 @@ The PM returns an enriched feature description ready for the feature document te
 
 ## Step 4: Delegate to Architect Subagent
 
-After PM completes, delegate to Architect subagent (`/architect`) to build development phases with:
+After PM completes, delegate to Architect subagent (`/architect`) to decide draft plans with:
 - PM-enriched feature description
 - PM's objectives and subtasks
 - PM's scope definition
 - Project context (if available)
 
 The Architect will:
-1. Analyze PM's objectives and subtasks
-2. Build technical development phases based on PM's output: structure phases logically with dependencies and sequencing, define what will be built in each phase, map PM's subtasks to technical phases
-3. Identify technical considerations: technical risks and dependencies, architecture decisions needed, integration points
+1. Analyze PM's objectives, scope, and subtasks
+2. Propose draft plans only if the context is sufficient to define safe plan boundaries
+3. Identify technical considerations: technical risks, dependencies, architecture decisions, and integration points that affect plan decomposition
 
-The Architect returns a technical development phases structure: Phase breakdown (Phase 1, Phase 2, Phase 3, etc.), phase descriptions, phase dependencies and sequencing, phase deliverables and acceptance criteria, and technical risks and dependencies.
+The Architect returns either:
+- a Draft Plans List with `N-{slug}` entries and one-line goals, or
+- an empty `## Plans` section with only the `/plan` hint when the context is still insufficient
 
-This phases structure is added to the feature document. Detailed implementation plans are created later via `/plan-feature` command.
+This plans structure is added to the feature document. Detailed implementation plans are created later via `/plan`.
 
 ## Step 5: Use the Feature Template
 
-Create the main feature file with PM-enriched content and Architect's development phases using these sections:
+Create the main feature file with PM-enriched content and the Architect's `## Plans` output using these sections:
 
 ### Feature Document Structure
 
@@ -344,7 +345,7 @@ Create the main feature file with PM-enriched content and Architect's developmen
 
 **Feature ID**: feat-YYYY-MM-descriptive-name  
 **Date Created**: YYYY-MM-DD  
-**Status**: Not Started / In Progress / Under Review / Blocked / Completed  
+**Status**: draft  
 **Priority**: High / Medium / Low  
 **Complexity**: 🔴 High (Features are complex by definition)  
 **Owner**: {Name}  
@@ -425,44 +426,14 @@ List any technical, resource, or platform constraints.
 - Item 1
 - Item 2
 
-## Development Phases
+## Plans
 
-Technical development phases structure built by Architect subagent based on Product Manager's objectives and subtasks:
+> Run `/plan {slug}` to formalize each plan.
 
-### Phase 1: [Phase Name]
-- **Description**: [What will be built in this phase]
-- **Deliverables**: [What will be delivered]
-- **Dependencies**: [What this phase depends on]
-- **Acceptance Criteria**: [How we'll know this phase is complete]
+- [ ] 1-example-plan — One-line goal
+- [ ] 2-example-plan — One-line goal
 
-### Phase 2: [Phase Name]
-- **Description**: [What will be built in this phase]
-- **Deliverables**: [What will be delivered]
-- **Dependencies**: [What this phase depends on (may depend on Phase 1)]
-- **Acceptance Criteria**: [How we'll know this phase is complete]
-
-### Phase 3: [Phase Name]
-- **Description**: [What will be built in this phase]
-- **Deliverables**: [What will be delivered]
-- **Dependencies**: [What this phase depends on]
-- **Acceptance Criteria**: [How we'll know this phase is complete]
-
-### Technical Risks and Dependencies
-- [Technical risk 1]
-- [Technical risk 2]
-- [Dependency 1]
-- [Dependency 2]
-
-## Implementation Plans
-
-Link to all detailed implementation plans for this feature:
-
-- [Plan 1: Phase Name](plans/1-phase-name.plan.md)
-- [Plan 2: Phase Name](plans/2-phase-name.plan.md)
-
-### Creating New Plans
-
-Use `/plan-feature` command to create detailed implementation plans for each development phase.
+If the Architect does not have enough context yet, keep only the hint line and omit checklist items.
 
 ## Related Contexts
 
@@ -581,7 +552,7 @@ Subdirectories are created only when needed:
 # Create when first plan is needed
 mkdir -p "$FEATURE_DIR/plans"
 
-# Use /plan-feature to create plans
+# Use /plan to create plans
 ```
 ````
 
@@ -737,7 +708,7 @@ echo "Review and move relevant contexts manually (create contexts/ when needed)"
 2. **Missing Plans**:
 
    - Issue: Feature created without implementation plans
-   - Solution: Use `/plan-feature` to create at least one initial plan
+   - Solution: Use `/plan` to create at least one initial plan
 
 3. **Creating Empty Directories**:
 
@@ -766,7 +737,7 @@ This command integrates with other Pythia components:
 
 ### Related Commands
 
-- **`/plan-feature`** - Create implementation plans for feature
+- **`/plan`** - Create implementation plans for feature
 - **`/context-feature`** - Create context documentation for feature
 - **`@create-context.md`** - Create general context documentation
 - **`@create-task.md`** - For simpler work items
