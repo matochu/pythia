@@ -35,3 +35,4 @@ mcp-server.log
 
 .pythia/
 *.code-workspace
+.claude/settings.local.json
