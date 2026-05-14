@@ -163,7 +163,7 @@ Feature saved: `{feature-dir}/{feature-id}.md`
 ```
 
 ---
-**Active context**: feat: {feat-id} · mode: create · skill: /feat
+**Active context**: role: Product Manager · feat: {feat-id} · mode: create · skill: /feat
 ```
 
 ### `/feat sync` next steps
@@ -187,7 +187,7 @@ Feature sync complete: `{feature-dir}/{feature-id}.md`
 ```
 
 ---
-**Active context**: feat: {feat-id} · mode: sync · skill: /feat
+**Active context**: role: Product Manager · feat: {feat-id} · mode: sync · skill: /feat
 ```
 
 ### Next-step chooser handling
@@ -211,4 +211,4 @@ Do not treat arbitrary custom user messages as chooser input. Do not provide cop
 Every `/feat` or `/feat sync` response must end with:
 
 ---
-**Active context**: feat: {feat-id} · mode: {create|sync} · skill: /feat
+**Active context**: role: Product Manager · feat: {feat-id} · mode: {create|sync} · skill: /feat

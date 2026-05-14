@@ -75,7 +75,7 @@ Review result: READY · source: R{round}
 ```
 
 ---
-**Active context**: feat: {feat-id} · plan: {plan-slug} · review: R{round} · skill: /review
+**Active context**: role: Reviewer · feat: {feat-id} · plan: {plan-slug} · review: R{round} · skill: /review
 ````
 
 **Key Information Preserved**:
@@ -166,7 +166,7 @@ Implementation result: blocked · source: I{round}
 ```
 
 ---
-**Active context**: feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · mode: {execute | refine | validate} · skill: /implement
+**Active context**: role: Developer · feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · mode: {execute | refine | validate} · skill: /implement
 ````
 
 **Key Information Preserved**:
@@ -217,7 +217,7 @@ Plan saved: `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 ```
 
 ---
-**Active context**: feat: {feat-id}|fixes · plan: {plan-slug} · mode: create · skill: /plan
+**Active context**: role: Architect · feat: {feat-id}|fixes · plan: {plan-slug} · mode: create · skill: /plan
 ````
 
 ### A2. Plan Revision Response
@@ -275,7 +275,7 @@ Revised plan saved: `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 ```
 
 ---
-**Active context**: feat: {feat-id}|fixes · plan: {plan-slug} · mode: revise · skill: /replan
+**Active context**: role: Architect · feat: {feat-id}|fixes · plan: {plan-slug} · mode: revise · skill: /replan
 ````
 
 **Key Information Preserved**:
@@ -416,7 +416,7 @@ Audit result: re-plan · source: A{round}
 ```
 
 ---
-**Active context**: feat: {feat-id} · plan: {plan-slug} · audit: A{round} · skill: /audit
+**Active context**: role: Architect · feat: {feat-id} · plan: {plan-slug} · audit: A{round} · skill: /audit
 ```
 
 **Key Information Preserved**:
@@ -473,7 +473,7 @@ Audit result: re-plan · source: A{round}
 ```
 
 ---
-**Active context**: feat: {feat-id} · skill: /retro
+**Active context**: role: Retrospective · feat: {feat-id} · skill: /retro
 ```
 
 **Key Information Preserved**:

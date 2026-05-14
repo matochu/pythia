@@ -136,7 +136,7 @@ Every `/retro` response must end with:
 
 ```markdown
 ---
-**Active context**: feat: {feat-id} · skill: /retro
+**Active context**: role: Retrospective · feat: {feat-id} · skill: /retro
 ```
 
 ### Validation

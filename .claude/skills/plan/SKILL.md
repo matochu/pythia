@@ -254,16 +254,16 @@ At the end of every `/plan` response, output:
 Use the feature form when planning inside a feature create flow:
 
 ---
-**Active context**: feat: {feat-id} · plan: {plan-slug} · mode: create · skill: /plan
+**Active context**: role: Architect · feat: {feat-id} · plan: {plan-slug} · mode: create · skill: /plan
 
 Use the fixes form when planning in `.pythia/workflows/fixes/`:
 
 ---
-**Active context**: fixes · plan: {plan-slug} · mode: create · skill: /plan
+**Active context**: role: Architect · fixes · plan: {plan-slug} · mode: create · skill: /plan
 
 Use the brainstorm form when `/plan` is active on an existing plan path:
 
 ---
-**Active context**: feat: {feat-id}|fixes · plan: {plan-slug} · mode: brainstorm · skill: /plan
+**Active context**: role: Architect · feat: {feat-id}|fixes · plan: {plan-slug} · mode: brainstorm · skill: /plan
 
 Do not put brainstorm hints, review hints, or `See also` lines inside the active context footer itself.

@@ -140,7 +140,7 @@ After emitting Architect Audit Response, halt and wait for the user's next input
 
 ```markdown
 ---
-**Active context**: feat: {feat-id} · plan: {plan-slug} · audit: A{round} · skill: /audit
+**Active context**: role: Architect · feat: {feat-id} · plan: {plan-slug} · audit: A{round} · skill: /audit
 ```
 
 When the next user input is exactly one of the offered chooser keys:

@@ -6,7 +6,7 @@
 
 - Before or alongside planning: explore problem space, solution options, best practices, 3rd party solutions.
 - When a feature or project needs a dedicated context document that summarizes research (options, trade-offs, sources) without making the final decision.
-- **When user passes an existing context**: verify it (sources, claims), report in chat for user to decide on update or improvement (no automatic overwrite).
+- **When user passes an existing context path**: verify it (sources, claims), report in chat, and continue in brainstorm for user-directed follow-up (no automatic overwrite).
 
 ## Session Flow
 
@@ -14,23 +14,25 @@
 
 - `discover`: initial topic handling with pythia/project pre-search, existing artifact summary, known gaps, and possible research directions.
 - `brainstorm`: Research Brainstorm Mode; interactive work around a topic or context file after a context is opened, created, or explicitly used for alternatives, deeper investigation, or path brainstorming.
-- `verify`: existing-context verification via `--context`; report findings in chat and do not edit automatically.
+- `verify`: existing-context path verification; report findings in chat, do not edit automatically, then continue in `brainstorm` for that context.
 - `update`: write agreed findings back to a known context file after the user explicitly asks to write, revise, persist, or update them.
 
-New research may stop at a research map when more direction is needed, or create a context document and then continue in `brainstorm` mode. Existing `.context.md` paths enter `brainstorm` unless `--context` is supplied, which always means `verify`.
+New research may stop at a research map when more direction is needed, or create a context document and then continue in `brainstorm` mode. Existing `.context.md` or `.ctx.md` paths enter `verify` first and then continue in `brainstorm` for follow-up work.
 
 Research chooser actions are inline continuation intents for the same Researcher session. They can explore alternatives, clarify scope, dig deeper into a selected direction, brainstorm solution paths, assess plan-readiness, or update the active context after confirmation. They are not default handoffs to `/plan`, `/ctx`, or a subagent.
 
+When research is not tied to an active feature, or when the active context has no related feature, the Researcher should explicitly offer two placement paths before writing: create a feature with `/feat` and put the research under that feature's `contexts/`, or save the research as a global project context under `.pythia/contexts/{category}/`. The global path requires a user-confirmed category and target name before writing.
+
 ## When existing context is passed (verification mode)
 
-If the user provides an **existing context document** (path or content) to `/research`:
+If the user provides an **existing context document path** to `/research`:
 
 1. **Verify**: Check every cited source (URLs, file paths) — do they still exist, do they support the claim? Note: broken or outdated links, missing citations, claims that contradict the source, or new evidence that supersedes the document.
 2. **Report in chat**: Produce a **verification report** (do not edit the file yet):
    - What is **valid** (sources OK, claims still supported).
    - What is **outdated or unverified** (broken links, missing refs, claims needing re-check).
    - **Recommendations**: what to update or improve (e.g. “Replace link X”, “Add source for claim Y”, “Section Z is superseded by …”).
-3. **User decides**: Present the report so the user can choose — update now, improve in a follow-up, or leave as-is. Only after user asks to update/improve, apply edits or run a fresh research pass.
+3. **Brainstorm continuation**: Present the report so the user can choose — update now, improve in a follow-up, dig deeper, compare alternatives, assess planning readiness, or leave as-is. Only after user asks to update/improve, apply edits or run a fresh research pass.
 
 ## Research Steps
 
@@ -75,9 +77,11 @@ Project and feature knowledge is **scattered** across many locations. Before any
 
 - Write (or update) a context document in the correct location:
   - **Feature**: `{feature-dir}/contexts/{topic}.context.md`
-  - **Project**: `.pythia/contexts/` or project-defined location
+  - **Project**: `.pythia/contexts/{category}/{topic}.context.md` or project-defined category location
+- If no feature is active and no destination was requested, ask the user to choose between feature-scoped research via `/feat` and a global project context before writing. For global context, ask for category and context slug if either is ambiguous.
 - Structure: Problem/scope, Options (with sources), Best practices (with citations), 3rd party solutions (with links), Summary of trade-offs, **Confidence and gaps** (see Output Format). Include metadata (Related Feature, Created, Last Updated).
 - Update feature’s Related Contexts section if output is feature-scoped.
+- During brainstorm, verify, or update interactions, maintain `## Retrospective` and `## Decision Log` sections automatically when relevant. These sections capture transferable lessons and user research decisions; do not add a chooser action for extracting profile signals.
 
 ## Output Format (context document)
 
@@ -85,6 +89,8 @@ Project and feature knowledge is **scattered** across many locations. Before any
 - Use clear headings: e.g. Problem statement, Solution options, Best practices, 3rd party solutions, Trade-offs summary, **Confidence and gaps**.
 - **Citation discipline**: Every non-obvious claim must have a source (URL or file:line). Aim for 2–3 sources per major claim where possible.
 - **Confidence and gaps**: For important findings, note confidence (high / medium / low) or mark gaps; call out unresolved questions or contradictions and what evidence was checked.
+- **Retrospective**: Reusable lessons outside the current topic only, labeled when useful as `[domain]`, `[method]`, `[workflow]`, `[preference]`, or `[risk]`.
+- **Decision Log**: A concise table of user choices, corrections, rejected directions, accepted directions, and artifact-placement decisions that changed the research session.
 
 ## Integration with workflow
 

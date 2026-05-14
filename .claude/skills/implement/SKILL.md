@@ -220,7 +220,7 @@ After emitting Developer Response, halt and wait for the user's next input. The 
 
 ```markdown
 ---
-**Active context**: feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · mode: {execute | refine | validate} · skill: /implement
+**Active context**: role: Developer · feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · mode: {execute | refine | validate} · skill: /implement
 ```
 
 Use `mode: execute` for primary plan execution work, `mode: refine` for in-round follow-up or audit-driven refinement on the active implementation round, and `mode: validate` when the current turn is focused primarily on validation evidence, report closure, or validation-only follow-up.
@@ -286,6 +286,6 @@ When the user chooses `[q]` after an implementation round:
 - Verify report follows [implementation-format.md](../workflow/references/implementation-format.md)
 - Verify ordering: the last `## Implementation Round` section is the current `I{n}` and rounds increase monotonically (`I1, I2, … I{n}`) with no out-of-order inserts.
 - Verify structured chat response includes status-aware `## Next Steps` and the active implementation footer from [response-formats.md](../workflow/references/response-formats.md).
-- Verify every `/implement` response with known context ends with `**Active context**: feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · skill: /implement`.
+- Verify every `/implement` response with known context ends with `**Active context**: role: Developer · feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · skill: /implement`.
 
 See also: Requires [/review skill](../review/SKILL.md) verdict READY before executing.

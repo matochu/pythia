@@ -324,7 +324,7 @@ After the revised plan is saved in inline mode:
 
 - output `## Next Steps` using separate `**Actions**` and `**Copy to run elsewhere**` blocks from Architect Response Format **A2. Plan Revision Response**
 - final line must be an `**Active context**` footer with explicit mode:
-  - `**Active context**: feat: {feat-id}|fixes · plan: {plan-slug} · mode: revise · skill: /replan`
+  - `**Active context**: role: Architect · feat: {feat-id}|fixes · plan: {plan-slug} · mode: revise · skill: /replan`
 - **[b]** keeps the user in Architect brainstorm flow on the revised plan path
 - **[p]** must restart `/replan` as a skill invocation on the same plan path; do not continue with free-form Architect discussion when this chooser action is selected
 - **[r]** launches Reviewer in a separate context on the revised plan path
