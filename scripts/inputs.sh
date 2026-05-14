@@ -8,6 +8,7 @@ Usage:
   scripts/inputs.sh check <file.md>
   scripts/inputs.sh update <file.md>
   scripts/inputs.sh add <file.md> <dep> [<dep>...]
+  scripts/inputs.sh stamp <file.md>
 EOF
 }
 
@@ -27,7 +28,7 @@ command_name="${1:-}"
 target_file="${2:-}"
 
 case "$command_name" in
-  check|update)
+  check|update|stamp)
     [[ $# -eq 2 ]] || die_usage
     ;;
   add)
@@ -272,6 +273,32 @@ add_command() {
   rewrite_inputs_block "$file" "${entries[@]}"
 }
 
+stamp_command() {
+  local file="$1"
+  has_frontmatter "$file" || die_error "frontmatter required for stamp: $file" 2
+  if ! frontmatter_has_inputs "$file"; then
+    echo "no inputs declared"
+    return 0
+  fi
+
+  local entries=()
+  local entry rel_path hash
+  while IFS= read -r entry; do
+    [[ -n "$entry" ]] || continue
+    if validate_entry "$entry"; then
+      entries+=("$entry")
+    else
+      rel_path="$entry"
+      [[ "$rel_path" != /* ]] || die_error "dependency path must be repo-relative: $rel_path" 2
+      [[ -f "$rel_path" ]] || die_error "dependency file not found: $rel_path" 2
+      hash="$(hash_file "$rel_path")"
+      entries+=("${rel_path}:${hash}")
+    fi
+  done < <(collect_entries "$file")
+
+  rewrite_inputs_block "$file" "${entries[@]}"
+}
+
 case "$command_name" in
   check)
     check_command "$target_file"
@@ -281,5 +308,8 @@ case "$command_name" in
     ;;
   add)
     add_command "$target_file" "${@:3}"
+    ;;
+  stamp)
+    stamp_command "$target_file"
     ;;
 esac

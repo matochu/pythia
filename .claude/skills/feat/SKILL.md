@@ -150,19 +150,20 @@ After creating or updating a feature document:
 
 Feature saved: `{feature-dir}/{feature-id}.md`
 
-**[a]** Architect proposal - choose this to launch Architect ([architect.md](../../agents/architect.md)) to inspect the feature and propose the next concrete plan.
-**[q]** Deep questions - choose this to ask Product/Architect clarification questions about scope, risks, users, constraints, and missing context.
-**[r]** Research direction - choose this to launch Researcher ([researcher.md](../../agents/researcher.md)) only after a concrete uncertainty/topic is identified.
+**Actions**
+**[a]** Architect next plan - choose this to inspect the feature and propose the next concrete plan.
+**[q]** Clarify scope - choose this to ask Product/Architect clarification questions about scope, risks, constraints, and missing context.
+**[r]** Research topic - choose this to launch Researcher only after a concrete uncertainty/topic is identified.
 **[s]** Sync plans - choose this to reconcile `## Plans` against existing plan files.
 
-Copy to sync in another chat:
+**Copy to run elsewhere**
 
 ```text
 /feat sync {feature-dir}/{feature-id}.md
 ```
 
 ---
-**Active context**: feat: {feat-id} · skill: /feat
+**Active context**: feat: {feat-id} · mode: create · skill: /feat
 ```
 
 ### `/feat sync` next steps
@@ -174,18 +175,19 @@ After completing `/feat sync`:
 
 Feature sync complete: `{feature-dir}/{feature-id}.md`
 
-**[a]** Architect proposal - choose this to inspect synced `## Plans` and propose the next missing, blocked, or highest-value plan.
-**[q]** Deep questions - choose this to clarify stale scope, missing ownership, unclear plan boundaries, or context gaps.
-**[p]** Continue planning - choose this only after the target plan direction is clear.
+**Actions**
+**[a]** Architect next plan - choose this to inspect synced `## Plans` and propose the next missing, blocked, or highest-value plan.
+**[q]** Clarify gaps - choose this to inspect stale scope, missing ownership, unclear plan boundaries, or context gaps.
+**[p]** Plan now - choose this only after the target plan direction is clear.
 
-Copy to create/update a plan in another chat:
+**Copy to run elsewhere**
 
 ```text
 /plan {feature-dir}/{feature-id}.md
 ```
 
 ---
-**Active context**: feat: {feat-id} · skill: /feat
+**Active context**: feat: {feat-id} · mode: sync · skill: /feat
 ```
 
 ### Next-step chooser handling
@@ -195,7 +197,8 @@ After emitting `/feat` or `/feat sync` response, halt and wait for user input.
 When the next user input is exactly one of the offered chooser keys:
 
 - **`[a]` / `a`**: launch **Architect** subagent ([architect.md](../../agents/architect.md)) with the feature doc path and ask for next-plan proposal. Architect should not write a plan unless user confirms the proposed direction.
-- **`[q]` / `q`**: stay in current context and ask 3-5 deep Product/Architect questions. Do not edit artifacts.
+- **`[q]` / `q`** (`/feat` only): stay in current context and ask 3-5 Product/Architect clarification questions about scope, risks, constraints, and missing context. Do not edit artifacts.
+- **`[q]` / `q`** (`/feat sync` only): stay in current context and clarify stale scope, missing ownership, unclear plan boundaries, or context gaps. Do not edit artifacts.
 - **`[r]` / `r`** (`/feat` only): launch **Researcher** subagent ([researcher.md](../../agents/researcher.md)) only if the user supplies or confirms a concrete research topic/uncertainty. If topic is missing, ask for it first.
 - **`[s]` / `s`** (`/feat` only): run `/feat sync {feature-dir}/{feature-id}.md` in current context.
 - **`[p]` / `p`** (`/feat sync` only): launch Architect planning only when the plan direction is already clear; otherwise ask for the missing plan direction first.
@@ -208,4 +211,4 @@ Do not treat arbitrary custom user messages as chooser input. Do not provide cop
 Every `/feat` or `/feat sync` response must end with:
 
 ---
-**Active context**: feat: {feat-id} · skill: /feat
+**Active context**: feat: {feat-id} · mode: {create|sync} · skill: /feat

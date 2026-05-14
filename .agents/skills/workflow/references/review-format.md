@@ -7,6 +7,7 @@
 ## File Structure (top to bottom)
 
 ```
+## Metadata                       ← file-level current snapshot; updated every round
 ## Navigation                     ← updated after each round; links to all rounds
 ## Reviewer Observations          ← top-level, before all rounds; accumulates across all rounds
 ## {plan-slug} R1 — YYYY-MM-DD   ← first round block
@@ -14,7 +15,29 @@
 ...                               ← rounds grow downward
 ```
 
-**Rule**: Navigation and Reviewer Observations come first. Round blocks are appended at the end as the review progresses.
+**Rule**: `Metadata`, `Navigation`, and `Reviewer Observations` come first. Round blocks are appended at the end as the review progresses.
+
+---
+
+## Metadata
+
+Top-level section at the very beginning of the file. This is the current snapshot of the review artifact, not a history log.
+
+```markdown
+## Metadata
+
+- **Plan**: [plans/{plan-slug}.plan.md](../plans/{plan-slug}.plan.md)
+- **Plan Version**: v{plan-version}
+- **Last Status**: {READY | NEEDS_REVISION}
+- **Last Review Round**: R{round}
+```
+
+- Create this section if the file is new
+- Update it on every new review round
+- `Plan Version` = the version of the plan reviewed in the current round
+- `Last Status` = the verdict of the most recently appended review round
+- `Last Review Round` = the most recently appended round identifier
+- Keep this section file-level only; do not duplicate it inside round blocks
 
 ---
 
@@ -103,6 +126,10 @@ Verdict: READY | NEEDS_REVISION
 
 ## Key Fields
 
+- **Metadata.Plan**: canonical link to the current plan artifact
+- **Metadata.Plan Version**: latest plan version reviewed by this file
+- **Metadata.Last Status**: current top-level verdict snapshot for the file
+- **Metadata.Last Review Round**: latest review round appended to this file
 - **Verdict**: READY | NEEDS_REVISION
 - **Status per step**: OK | CONCERN-LOW | CONCERN-MEDIUM | CONCERN-HIGH | BLOCKED
 - **Evidence**: File paths with line numbers, symbol names, documentation links — concrete, not vague

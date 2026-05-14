@@ -125,8 +125,8 @@ When the next user input is exactly one of the offered chooser keys:
 
 - **`[a]` / `a`**: stay in current Architect context and convert evidence-backed retrospective recommendations into concrete follow-up proposals. Do not edit plan/feature docs unless user approves.
 - **`[q]` / `q`**: stay in current context and ask 3-5 deep questions about unresolved lessons, root causes, missing evidence, or recurring workflow failures.
-- **`[n]` / `n`**: act as Architect to inspect the feature and propose the next plan using evidence-backed retro findings. Do not create a plan until user confirms direction.
-- **`[p]` / `p`**: run `/retro-all` in current context.
+- **`[n]` / `n`**: start a next-plan proposal flow in the current Architect context using evidence-backed retro findings. Do not continue with free-form discussion in place when this chooser action is selected. Do not create a plan until user confirms direction.
+- **`[p]` / `p`**: run `/retro-all` in current context as a workflow step, not as free-form discussion.
 - **`[x]` / `x`**: finish and stop.
 - Any key not offered for current retro scope: reprint valid keys and stop.
 

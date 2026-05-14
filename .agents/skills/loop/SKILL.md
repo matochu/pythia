@@ -42,6 +42,19 @@ You are the **Architect orchestrator** ([architect.md](../../agents/architect.md
 
 **Parse user input intelligently**:
 
+### Fix context detection
+
+Before feature-id extraction, handle standalone fix aliases.
+
+- If the argument is exactly `fixes`, treat it as the standalone fixes workspace
+- If the argument is `fixes {plan-slug}` or `fixes/{plan-slug}`, resolve:
+  - feature-dir = `.pythia/workflows/fixes`
+  - feature doc path = `.pythia/workflows/fixes/fixes.md`
+  - plans path = `.pythia/workflows/fixes/plans/`
+  - reports path = `.pythia/workflows/fixes/reports/`
+- If only `fixes` is provided without a plan slug, ask the user for the plan slug or list available fixes
+- After this mapping, continue State Detection exactly like the feature workflow, using the resolved `feature-dir`
+
 1. **No arguments** → Search chat history for FEATURE_ID and plan-slug
    - Look for recent references to feature documents or plan slugs
    - If ambiguous → ask user to clarify

@@ -310,6 +310,22 @@ Not round-specific — accumulates throughout replanning cycles. Write observati
 
 **Structured response**: Output structured response in chat using Architect Response Format **A2. Plan Revision Response** from [response-formats.md](../workflow/references/response-formats.md). Copy the format template exactly — do NOT summarize or abbreviate. Every section including `## Next Steps` is mandatory.
 
+## Post-replan next step contract
+
+After the revised plan is saved in inline mode:
+
+- output `## Next Steps` using separate `**Actions**` and `**Copy to run elsewhere**` blocks from Architect Response Format **A2. Plan Revision Response**
+- final line must be an `**Active context**` footer with explicit mode:
+  - `**Active context**: feat: {feat-id}|fixes · plan: {plan-slug} · mode: revise · skill: /replan`
+- **[b]** keeps the user in Architect brainstorm flow on the revised plan path
+- **[p]** must restart `/replan` as a skill invocation on the same plan path; do not continue with free-form Architect discussion when this chooser action is selected
+- **[r]** launches Reviewer in a separate context on the revised plan path
+- always print copyable `/plan {path}`, `/replan {path}`, and `/review {path}` snippets below the chooser in the copy block
+- stop and wait for the user's choice
+- do not run review automatically without explicit `[r]`
+- if the user chooses `[p]`, rerun the `/replan` skill from the saved plan artifact and current chat context
+- if the user does not choose `[p]` or `[r]`, do nothing further because the revised plan is already saved
+
 **Findings / Issue Assessment** (required in structured response):
 
 - List all findings/issues analyzed
@@ -336,4 +352,4 @@ Labels: `[plan]`, `[codebase]`, `[process]`, `[risk]` — use whichever are rele
 
 When revising from review, address BLOCKED and CONCERN-\* first, but critically evaluate each one — you may reject invalid concerns.
 
-**See also**: After revision, request [/review skill](../review/SKILL.md) for new review round.
+Do not put brainstorm hints, review hints, or `See also` lines inside the active context footer itself.

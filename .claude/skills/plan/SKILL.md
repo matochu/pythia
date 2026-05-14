@@ -5,17 +5,56 @@ description: Create or update a feature implementation plan with concrete steps,
 
 # Skill: /plan
 
-**Purpose**: Invoke the Architect to create or update **the plan of this feature**. Hermetic per feature: agent doc context = feature (feat doc + plans/).
+**Purpose**: Invoke the Architect to create or update a workflow plan. The primary mode is feature-scoped planning, but this skill also supports standalone fixes under `.pythia/workflows/fixes/`.
 
 ## Instructions for user
 
-- Provide **FEATURE_ID** (e.g. `feat-2026-01-cursor-subagents-skills-planloop-ts`) or path to the feature doc (e.g. `.pythia/workflows/features/feat-XXX/feat-XXX.md`).
+- For feature planning: provide **FEATURE_ID** (e.g. `feat-2026-01-cursor-subagents-skills-planloop-ts`) or a path to the feature doc.
+- For standalone fixes: use the explicit `fix` trigger or rely on the corrective implicit routing rules below.
 - Provide **plan slug** (required), e.g. `1-agents-commands-data-exchange` for plan `1-agents-commands-data-exchange.plan.md`.
-- Plan path = `plans/{plan-slug}.plan.md` (under the feature directory).
+- Plan path = `plans/{plan-slug}.plan.md` under the resolved feature or fixes workspace.
+
+## Fix routing
+
+### Explicit trigger
+
+When `/plan` is called with `fix` keyword (for example `/plan fix auth-bug`):
+
+1. determine the next `N` from `.pythia/workflows/fixes/plans/*.plan.md`
+2. ensure `.pythia/workflows/fixes/plans/` exists
+3. ensure `.pythia/workflows/fixes/fixes.md` exists with a minimal `## Plans` section
+4. save the plan to `.pythia/workflows/fixes/plans/N-{slug}.plan.md`
+5. update `.pythia/workflows/fixes/fixes.md` using the fix-specific Plans Index rules below
+
+No confirmation is required for the explicit `fix` trigger.
+
+### Semantic implicit trigger
+
+When `/plan` is called without an explicit feature-id and:
+
+- no active feature is detected in conversation context, and
+- the request is corrective (bug fix, regression, tech debt, config change) rather than additive
+
+route to fixes and tell the user:
+
+`Routing to fixes (no active feature, corrective intent). Plan: fixes/plans/N-{slug}.plan.md`
+
+If the request is additive and no active feature is available, ask the user for a feature-id or direct them to `/feat` first.
+
+### Plans Index update — fix case
+
+The standard `## Plans Index update` section below is feature-specific. For the fixes case:
+
+- skip the feature-doc lookup at `{feature-dir}/{feature-id}.md`
+- treat `.pythia/workflows/fixes/fixes.md` as the parent index document
+- match entries by plan slug in `## Plans`
+- if the slug exists, update that line
+- if the slug does not exist, append a new line
+- use format `- [{slug}](plans/{slug}.plan.md) — {Title} · Status: {status}`
 
 ## Instructions for model
 
-You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc context = this feature** (feat doc + plans/).
+You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc context = resolved planning workspace**: either a feature directory (`feat doc + plans/`) or the standalone fixes workspace (`fixes.md + plans/`).
 
 **Input**: Feature context + **plan slug** (required). Plan path = `plans/{plan-slug}.plan.md`. Optional: existing plan content, review text or link to round (for revision), or **user's edits to the plan** — if the user asks to "apply automatically" or "agree with these changes", output the plan with those edits incorporated.
 
@@ -31,6 +70,73 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
 - Keep options concrete and codebase-relevant; avoid generic textbook alternatives.
 
 **Before generating plan**: Get current date via `date +%Y-%m-%d`. Use this date in the **Date Created** field.
+
+## Plan Brainstorm Mode
+
+### Activation
+
+When `/plan` is invoked with an argument that resolves to an existing `.plan.md` file, enter Plan Brainstorm Mode instead of create mode.
+
+Detect brainstorm mode only when:
+
+- the argument ends with `.plan.md`, and
+- the resolved file already exists on disk
+
+Do not enter brainstorm mode when:
+
+- the file does not exist
+- the argument is only a feature-id
+- the argument is only a plain slug without `.plan.md`
+
+Brainstorm mode suppresses Scenario B's overwrite question for existing plan paths.
+
+### Startup sequence
+
+Run this sequence once on activation before the first brainstorm response:
+
+1. **Inputs check**
+   - run `scripts/inputs.sh check <plan-file>`
+   - surface raw `STALE` or `MISSING` results
+   - if no `inputs:` block exists, skip silently
+   - if the script is missing or not executable, skip silently
+2. **Closed plans review**
+   - scan sibling `plans/` for implemented or archived plans
+   - extract `[risk]` and `[plan]` items from their `## Architect Retrospective`
+   - if no closed plans exist, skip silently
+3. **Context freshness**
+   - for each context in `## Contexts`, run `scripts/inputs.sh check <context-file>` when the context declares `inputs:`
+   - surface stale findings and which plan sections may be affected
+   - do not update contexts automatically
+4. **Proactive suggestions**
+   - list 2-4 concrete improvement candidates
+   - prioritize by likely impact
+   - ask what to address first
+
+### Session behavior
+
+After every brainstorm response:
+
+- output the session footer below
+- keep a short working-memory list of agreed changes
+- replace or remove bullets when the user changes direction
+- keep only changes that are ready to feed into `/replan`
+
+When the user is ready, `/replan <plan-path>` uses those agreed changes as Manual-trigger context.
+
+### Session footer
+
+Append this after every brainstorm response:
+
+```markdown
+Agreed changes:
+- {change 1}
+- {change 2}
+
+---
+Active plan: {plan-slug} v{version} · {Status} | Agreed: {comma-separated labels or "none yet"}
+```
+
+Omit the bullet list when no agreed changes exist, but always print the final `Active plan:` line.
 
 ## Plan output behavior
 
@@ -91,6 +197,8 @@ If the parent feature doc is missing, skip silently.
 
 `/feat sync` is a manual reconciliation path for `## Plans`, not an alternate authoring path. Both flows must use the same line format and replace-by-slug logic.
 
+For standalone fixes, do not use the feature-doc lookup above. Update `.pythia/workflows/fixes/fixes.md` instead, using the fix-case rules in `## Fix routing`.
+
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
 **Inputs integration**:
@@ -130,18 +238,32 @@ After a successful save in Scenario B, show the chooser and halt for user input.
 
 - **HALT rule**: after printing the chooser, stop and wait for the user
 - **[a]**: perform an Architect analysis pass on alternatives and trade-offs; do not write a new plan file unless explicitly asked
-- **[q]**: ask 3-5 deep questions about the plan; do not launch review
+- **[q]**: ask 3-5 clarification questions about the plan; do not launch review
+- **[b]**: enter Brainstorm mode for the current saved plan; use the current plan artifact as the working basis for iterative Architect exploration and reshaping
 - **[r]**: launch Reviewer in a separate context on the current plan path
-- **[p]**: allowed only when a review artifact already exists for this plan; otherwise reprint the chooser and note that review does not exist yet
-- **Unknown input**: reprint the chooser with `Enter a, q, r, or p`
+- **[p]**: launch `/replan` as a separate workflow for formal revision of the current plan; do not hide or disable this action based on whether a review artifact exists
+- **Unknown input**: reprint the chooser with `Enter a, q, b, r, or p`
 
 ## Active context item
 
 At the end of every `/plan` response, output:
 
+1. `## Next Steps` with separate `**Actions**` and `**Copy to run elsewhere**` blocks
+2. a final `**Active context**` footer with explicit mode
+
+Use the feature form when planning inside a feature create flow:
+
 ---
-**Active context**: feat: {feat-id} · plan: {plan-slug} · skill: /plan
+**Active context**: feat: {feat-id} · plan: {plan-slug} · mode: create · skill: /plan
 
-**See also**: [/review skill](../review/SKILL.md) after creating the plan.
+Use the fixes form when planning in `.pythia/workflows/fixes/`:
 
-See [Architect](../../agents/architect.md) for planning and [Developer](../../agents/developer.md) for implementation.
+---
+**Active context**: fixes · plan: {plan-slug} · mode: create · skill: /plan
+
+Use the brainstorm form when `/plan` is active on an existing plan path:
+
+---
+**Active context**: feat: {feat-id}|fixes · plan: {plan-slug} · mode: brainstorm · skill: /plan
+
+Do not put brainstorm hints, review hints, or `See also` lines inside the active context footer itself.

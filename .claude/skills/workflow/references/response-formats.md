@@ -46,17 +46,16 @@ Formats use plain Markdown, not YAML frontmatter. They are response templates on
 {If NEEDS_REVISION}
 Review result: NEEDS_REVISION · source: R{round}
 
-**[r]** Replan - choose this to launch Architect subagent to revise the plan using this review.
-**[q]** QA follow-up - choose this to launch QA Automation subagent for testability, validation coverage, and QA-risk assessment. If accepted, append the QA assessment summary to this review round.
-**[v]** Re-review - choose this to rerun `/review` on the same plan after changes were made elsewhere.
+**Actions**
+**[r]** Replan - choose this to launch Architect subagent to revise the plan using this review
+**[q]** QA follow-up - choose this to launch QA Automation subagent for testability, validation coverage, and QA-risk assessment
+**[v]** Re-review - execute `/review` again on this plan instead of continuing free-form Reviewer chat
 
-Copy to run replan in another chat:
+**Copy to run elsewhere**
 
 ```text
 /replan {feature-dir}/plans/{plan-slug}.plan.md R{round}
 ```
-
-Copy to rerun review in another chat:
 
 ```text
 /review {feature-dir}/plans/{plan-slug}.plan.md
@@ -65,10 +64,11 @@ Copy to rerun review in another chat:
 {If READY}
 Review result: READY · source: R{round}
 
-**[i]** Implement - choose this to launch Developer subagent to execute this reviewed plan.
-**[q]** QA follow-up - choose this to launch QA Automation subagent for pre-implementation test strategy and validation-risk assessment. If accepted, append the QA assessment summary to this review round.
+**Actions**
+**[i]** Implement - choose this to launch Developer subagent to execute this reviewed plan
+**[q]** QA follow-up - choose this to launch QA Automation subagent for pre-implementation test strategy and validation-risk assessment
 
-Copy to run implement in another chat:
+**Copy to run elsewhere**
 
 ```text
 /implement {feature-dir}/plans/{plan-slug}.plan.md v{version}
@@ -124,10 +124,11 @@ Copy to run implement in another chat:
 {If completed}
 Implementation result: completed · source: I{round}
 
-**[a]** Audit - choose this to launch Architect subagent ([architect.md](../../../agents/architect.md)) to audit the active implementation report.
-**[q]** QA validation guidance - choose this to launch QA Automation subagent ([qa-automation.md](../../../agents/qa-automation.md)) to identify validation gaps, weak test evidence, and follow-up implementation work needed before audit.
+**Actions**
+**[a]** Audit - choose this to launch Architect subagent ([architect.md](../../../agents/architect.md)) to audit the active implementation report
+**[q]** QA validation guidance - choose this to launch QA Automation subagent ([qa-automation.md](../../../agents/qa-automation.md)) to identify validation gaps, weak test evidence, and follow-up implementation work needed before audit
 
-Copy to run audit in another chat:
+**Copy to run elsewhere**
 
 ```text
 /audit {feature-dir}/reports/{plan-slug}.implementation.md I{round}
@@ -136,17 +137,16 @@ Copy to run audit in another chat:
 {If partial}
 Implementation result: partial · source: I{round}
 
-**[a]** Audit anyway - choose this to launch Architect subagent ([architect.md](../../../agents/architect.md)) to audit the active partial implementation report.
-**[r]** Replan - choose this to launch Architect subagent ([architect.md](../../../agents/architect.md)) if remaining work requires plan/spec changes.
-**[q]** QA validation guidance - choose this to launch QA Automation subagent ([qa-automation.md](../../../agents/qa-automation.md)) to identify what validation/test work is still needed to complete the implementation report credibly.
+**Actions**
+**[a]** Audit anyway - choose this to launch Architect subagent ([architect.md](../../../agents/architect.md)) to audit the active partial implementation report
+**[r]** Replan - choose this to launch Architect subagent ([architect.md](../../../agents/architect.md)) if remaining work requires plan/spec changes
+**[q]** QA validation guidance - choose this to launch QA Automation subagent ([qa-automation.md](../../../agents/qa-automation.md)) to identify what validation/test work is still needed to complete the implementation report credibly
 
-Copy to run audit in another chat:
+**Copy to run elsewhere**
 
 ```text
 /audit {feature-dir}/reports/{plan-slug}.implementation.md I{round}
 ```
-
-Copy to run replan in another chat:
 
 ```text
 /replan {feature-dir}/plans/{plan-slug}.plan.md I{round}
@@ -155,17 +155,18 @@ Copy to run replan in another chat:
 {If blocked}
 Implementation result: blocked · source: I{round}
 
-**[r]** Replan - choose this to launch Architect subagent ([architect.md](../../../agents/architect.md)) if the blocker is caused by plan/spec problems.
-**[q]** QA validation guidance - choose this to launch QA Automation subagent ([qa-automation.md](../../../agents/qa-automation.md)) when the blocker may be caused by missing, weak, or unclear validation strategy.
+**Actions**
+**[r]** Replan - choose this to launch Architect subagent ([architect.md](../../../agents/architect.md)) if the blocker is caused by plan/spec problems
+**[q]** QA validation guidance - choose this to launch QA Automation subagent ([qa-automation.md](../../../agents/qa-automation.md)) when the blocker may be caused by missing, weak, or unclear validation strategy
 
-Copy to run replan in another chat:
+**Copy to run elsewhere**
 
 ```text
 /replan {feature-dir}/plans/{plan-slug}.plan.md I{round}
 ```
 
 ---
-**Active context**: feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · skill: /implement
+**Active context**: feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · mode: {execute | refine | validate} · skill: /implement
 ````
 
 **Key Information Preserved**:
@@ -202,16 +203,21 @@ Use after `/plan` successfully writes a new plan or direct plan update.
 ## Next Steps
 Plan saved: `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 
+**Actions**
 **[a]** Architect analysis - analyze alternative solutions and trade-offs
-**[q]** Questions - ask deep questions about the plan before review
-**[r]** Review - launch `/review` in a separate context now; next step after review is `/replan`
-**[p]** rePlan - run `/replan` when a review artifact already exists
+**[q]** Clarify plan - ask deep questions about the plan before review
+**[b]** Brainstorm - reopen this saved plan for iterative Architect exploration, reframing, and shaping before or after review
+**[r]** Review now - launch `/review` in a separate context now; next step after review is `/replan`
+**[p]** Replan - start `/replan` as a separate workflow when this plan needs formal revision
 
-Or copy this to run review in another chat:
+**Copy to run elsewhere**
 
 ```text
 /review {feature-dir}/plans/{plan-slug}.plan.md
 ```
+
+---
+**Active context**: feat: {feat-id}|fixes · plan: {plan-slug} · mode: create · skill: /plan
 ````
 
 ### A2. Plan Revision Response
@@ -249,13 +255,27 @@ Use after `/replan` successfully writes a revised plan. `/replan` has a narrower
 ## Next Steps
 Revised plan saved: `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 
-**[r]** Review - launch `/review` in a separate context on the revised plan.
+**Actions**
+**[b]** Brainstorm - enter brainstorm mode for this plan
+**[p]** Re-run replan - execute `/replan` again on this plan instead of continuing free-form chat
+**[r]** Review now - launch `/review` in a separate context on the revised plan
 
-Or copy this to run review in another chat:
+**Copy to run elsewhere**
+
+```text
+/plan {feature-dir}/plans/{plan-slug}.plan.md
+```
+
+```text
+/replan {feature-dir}/plans/{plan-slug}.plan.md
+```
 
 ```text
 /review {feature-dir}/plans/{plan-slug}.plan.md
 ```
+
+---
+**Active context**: feat: {feat-id}|fixes · plan: {plan-slug} · mode: revise · skill: /replan
 ````
 
 **Key Information Preserved**:
@@ -331,10 +351,11 @@ Repository-only message for the code repo. Do not include plan slugs, plan numbe
 {If ready}
 Audit result: ready · source: A{round}
 
-**[t]** Retro - choose this to run `/retro` in the current Architect context and synthesize lessons from plan/review/implementation/audit.
-**[x]** Finish - choose this to stop the workflow here; implementation is accepted.
+**Actions**
+**[t]** Retro - choose this to run `/retro` in the current Architect context and synthesize lessons from plan/review/implementation/audit
+**[x]** Finish - choose this to stop the workflow here; implementation is accepted
 
-Copy to run retro in another chat:
+**Copy to run elsewhere**
 
 ```text
 /retro {feature-dir}
@@ -343,17 +364,16 @@ Copy to run retro in another chat:
 {If needs-fixes}
 Audit result: needs-fixes · source: A{round}
 
-**[i]** Fix implementation - choose this to launch Developer subagent ([developer.md](../../../agents/developer.md)) in refinement mode using the audit findings.
-**[q]** QA validation guidance - choose this to launch QA Automation subagent ([qa-automation.md](../../../agents/qa-automation.md)) if audit concerns are validation/test-evidence related.
-**[v]** Re-audit - choose this to rerun `/audit` on the same implementation after fixes were made elsewhere.
+**Actions**
+**[i]** Fix implementation - choose this to launch Developer subagent ([developer.md](../../../agents/developer.md)) in refinement mode using the audit findings
+**[q]** QA validation guidance - choose this to launch QA Automation subagent ([qa-automation.md](../../../agents/qa-automation.md)) if audit concerns are validation/test-evidence related
+**[v]** Re-audit - execute `/audit` again on this implementation instead of continuing free-form Architect audit chat
 
-Copy to run implementation refinement in another chat:
+**Copy to run elsewhere**
 
 ```text
 /implement {feature-dir}/plans/{plan-slug}.plan.md A{round}
 ```
-
-Copy to rerun audit in another chat:
 
 ```text
 /audit {feature-dir}/reports/{plan-slug}.implementation.md I{implementation_round}
@@ -362,17 +382,16 @@ Copy to rerun audit in another chat:
 {If plan-fix}
 Audit result: plan-fix · source: A{round}
 
-**[r]** Replan - choose this to update the current plan in Architect context using audit findings.
-**[d]** Discuss decision - stay in the current Architect context and decide whether this is a local plan fix or a broader re-plan before editing artifacts.
-**[v]** Re-audit - choose this to rerun `/audit` on the same implementation after plan or implementation changes were made elsewhere.
+**Actions**
+**[r]** Replan - choose this to update the current plan in Architect context using audit findings
+**[d]** Discuss decision - stay in the current Architect context and decide whether this is a local plan fix or a broader re-plan before editing artifacts
+**[v]** Re-audit - execute `/audit` again on this implementation instead of continuing free-form Architect audit chat
 
-Copy to run replan in another chat:
+**Copy to run elsewhere**
 
 ```text
 /replan {feature-dir}/plans/{plan-slug}.plan.md A{round}
 ```
-
-Copy to rerun audit in another chat:
 
 ```text
 /audit {feature-dir}/reports/{plan-slug}.implementation.md I{implementation_round}
@@ -381,17 +400,16 @@ Copy to rerun audit in another chat:
 {If re-plan}
 Audit result: re-plan · source: A{round}
 
-**[r]** Replan - choose this to start Architect replan with user-assisted scope decision.
-**[d]** Discuss scope - stay in the current Architect context and clarify the new direction before replanning.
-**[v]** Re-audit - choose this to rerun `/audit` on the same implementation after scope, plan, or implementation changes were made elsewhere.
+**Actions**
+**[r]** Replan - choose this to start Architect replan with user-assisted scope decision
+**[d]** Discuss scope - stay in the current Architect context and clarify the new direction before replanning
+**[v]** Re-audit - execute `/audit` again on this implementation instead of continuing free-form Architect audit chat
 
-Copy to run replan in another chat:
+**Copy to run elsewhere**
 
 ```text
 /replan {feature-dir}/plans/{plan-slug}.plan.md A{round}
 ```
-
-Copy to rerun audit in another chat:
 
 ```text
 /audit {feature-dir}/reports/{plan-slug}.implementation.md I{implementation_round}
@@ -441,13 +459,14 @@ Copy to rerun audit in another chat:
 
 ## Next Steps
 
-**[a]** Apply learnings - choose this to convert cross-plan lessons into concrete follow-up proposals.
-**[q]** Deep questions - choose this to inspect unresolved patterns, unclear root causes, or weak evidence.
-**[n]** Next plan - choose this to ask Architect ([architect.md](../../../agents/architect.md)) to propose the next plan using retro findings.
-**[p]** Project retro - choose this to run `/retro-all` in the current context.
-**[x]** Finish - choose this to stop.
+**Actions**
+**[a]** Apply learnings - choose this to convert cross-plan lessons into concrete follow-up proposals
+**[q]** Deep questions - choose this to inspect unresolved patterns, unclear root causes, or weak evidence
+**[n]** Next plan - choose this to start an Architect next-plan proposal flow from the retro findings
+**[p]** Project retro - choose this to run `/retro-all` in the current context
+**[x]** Finish - choose this to stop
 
-Copy to run project-level retrospective in another chat:
+**Copy to run elsewhere**
 
 ```text
 /retro-all

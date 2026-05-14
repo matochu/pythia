@@ -220,8 +220,10 @@ After emitting Developer Response, halt and wait for the user's next input. The 
 
 ```markdown
 ---
-**Active context**: feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · skill: /implement
+**Active context**: feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · mode: {execute | refine | validate} · skill: /implement
 ```
+
+Use `mode: execute` for primary plan execution work, `mode: refine` for in-round follow-up or audit-driven refinement on the active implementation round, and `mode: validate` when the current turn is focused primarily on validation evidence, report closure, or validation-only follow-up.
 
 When the next user input is exactly one of the offered chooser keys:
 
@@ -234,7 +236,7 @@ Do not treat arbitrary custom user messages as chooser input. If the user writes
 
 **Mandatory report reflection for custom work**: Every custom continuation under `/implement` must update the implementation report before the turn is complete, even when no files changed. Record the action as Out-of-Plan Work, Validation, Open Issue, or a Developer note as appropriate. If the request is refused or out of scope, record the reason in the report when an active implementation document exists.
 
-**Mandatory footer for every `/implement` response**: If feature, plan, and implementation round are known, every response while `/implement` is active must end with the active context footer, including refinement summaries, blockers, validation-only updates, clarification requests, and error responses. Do not omit the footer just because the response is short or custom.
+**Mandatory footer for every `/implement` response**: If feature, plan, and implementation round are known, every response while `/implement` is active must end with the active context footer, including refinement summaries, blockers, validation-only updates, clarification requests, and error responses. Do not omit the footer just because the response is short or custom. The footer must include the operational mode (`execute`, `refine`, or `validate`) that best matches the current turn.
 
 ### QA validation guidance flow
 

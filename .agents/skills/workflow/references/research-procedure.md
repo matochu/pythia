@@ -8,6 +8,19 @@
 - When a feature or project needs a dedicated context document that summarizes research (options, trade-offs, sources) without making the final decision.
 - **When user passes an existing context**: verify it (sources, claims), report in chat for user to decide on update or improvement (no automatic overwrite).
 
+## Session Flow
+
+`/research` supports four chat-session modes:
+
+- `discover`: initial topic handling with pythia/project pre-search, existing artifact summary, known gaps, and possible research directions.
+- `brainstorm`: Research Brainstorm Mode; interactive work around a topic or context file after a context is opened, created, or explicitly used for alternatives, deeper investigation, or path brainstorming.
+- `verify`: existing-context verification via `--context`; report findings in chat and do not edit automatically.
+- `update`: write agreed findings back to a known context file after the user explicitly asks to write, revise, persist, or update them.
+
+New research may stop at a research map when more direction is needed, or create a context document and then continue in `brainstorm` mode. Existing `.context.md` paths enter `brainstorm` unless `--context` is supplied, which always means `verify`.
+
+Research chooser actions are inline continuation intents for the same Researcher session. They can explore alternatives, clarify scope, dig deeper into a selected direction, brainstorm solution paths, assess plan-readiness, or update the active context after confirmation. They are not default handoffs to `/plan`, `/ctx`, or a subagent.
+
 ## When existing context is passed (verification mode)
 
 If the user provides an **existing context document** (path or content) to `/research`:
@@ -77,4 +90,4 @@ Project and feature knowledge is **scattered** across many locations. Before any
 
 - Research can run **before** `/plan` (to feed options into the plan) or **in parallel** with context creation.
 - Output of research is a **context document**; plans can reference it in `## Contexts` and use it during planning and review.
-- Researcher does not run `/plan` or `/ctx` as separate commands — it produces the context file and links directly, following the same conventions as `/ctx`.
+- Researcher does not run `/plan` or `/ctx` as separate commands — it produces or updates the context file and links directly, following the same conventions as `/ctx`. Plan-readiness output remains a chat assessment until the user explicitly invokes planning.
