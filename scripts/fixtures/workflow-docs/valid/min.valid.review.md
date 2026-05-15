@@ -1,11 +1,11 @@
 ## Navigation
 
-- [Reviewer Observations](#reviewer-observations)
+- [Retrospective](#retrospective)
 - Rounds: [R1 — 2026-01-01 — NEEDS_REVISION](#fixture-r1--2026-01-01)
 
-## Reviewer Observations
+## Retrospective
 
-- [process] Fixture observation.
+- [process] Fixture retrospective signal.
 
 ## fixture R1 — 2026-01-01
 

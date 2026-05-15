@@ -56,7 +56,7 @@ The standard `## Plans Index update` section below is feature-specific. For the 
 
 You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc context = resolved planning workspace**: either a feature directory (`feat doc + plans/`) or the standalone fixes workspace (`fixes.md + plans/`).
 
-**CRITICAL — Execution context**: Execute the plan work **directly in the current context**. You ARE the Architect — do the work yourself. Do **NOT** launch a subagent (Task tool, runSubagent, or equivalent) to create the plan. See workflow Subagent roles table: `Architect (plan/replan) → Current context`. **Exception**: after the plan file exists on disk, you **must** launch a **Validator subagent** for workflow-doc validation (see **Validation** — that subagent does not author the plan).
+**CRITICAL — Execution context**: Execute the planning work **in the current context**. Do **NOT** launch a subagent to create the plan. Validator delegation is allowed only after the plan is saved; see **Validation**.
 
 **Input**: Feature context + **plan slug** (required). Plan path = `plans/{plan-slug}.plan.md`. Optional: existing plan content, review text or link to round (for revision), or **user's edits to the plan** — if the user asks to "apply automatically" or "agree with these changes", output the plan with those edits incorporated.
 
@@ -103,7 +103,7 @@ Run this sequence once on activation before the first brainstorm response:
    - if the script is missing or not executable, skip silently
 2. **Closed plans review**
    - scan sibling `plans/` for implemented or archived plans
-   - extract `[risk]` and `[plan]` items from their `## Architect Retrospective`
+   - extract `[risk]` and `[plan]` items from their `## Retrospective`
    - if no closed plans exist, skip silently
 3. **Context freshness**
    - for each context in `## Contexts`, run `scripts/inputs.sh check <context-file>` when the context declares `inputs:`
@@ -169,6 +169,20 @@ Check if sufficient data is available to write a concrete, reviewable plan.
 - **## Navigation** — placed after Plan revision log; flat list with links to all top-level sections and all steps (include Code / patterns and Out of scope when present). See [plan-format.md](../workflow/references/plan-format.md).
 - When applicable, include **Code / patterns** and **Out of scope** per plan-format (optional sections after Goal).
 - **## Plan** — steps with full detail per plan-format
+
+**Reusable findings**: While analyzing the codebase for planning, put transferable lessons in `## Retrospective`. A good retrospective entry is reusable outside this artifact, evidence-backed, and useful for future planning, implementation, review, audit, or automation. Put only explicit user choices/corrections in `## Decision Log`.
+
+Record in `## Decision Log` only when user choices or corrections affect the artifact. The section itself means "user"; do not prefix entries with `User:`. Examples:
+```markdown
+## Decision Log
+
+- Current plan scope: keep adjacent cleanup out of scope
+- Implementation report language: always English
+```
+
+Do not use an Observations section. Reusable findings belong in `## Retrospective`; user-only decisions belong in `## Decision Log`. Do not put plan summaries, completed work, issue restatements, or user decisions in Retrospective.
+
+**Automation awareness** (optional, accumulated over iterations): While creating the plan, watch for repetitive manual operations, validation steps, or configuration patterns in the plan steps. If you notice opportunities for automation, record them in `## Retrospective` with label `[automation]` so `/retro` can collect them.
 
 ## Plans Index update
 

@@ -122,7 +122,7 @@ Omit `[u] Update context` when no context file exists yet, or mark it unavailabl
    - **Implementation split guidance**: how this could be broken into future plans depending on complexity/scope
    - **Clear statement of what is still unresolved** vs what is ready for planning
    - **Retrospective**: reusable findings useful outside this research context, not a summary of the research itself
-   - **Decision Log**: user choices, corrections, rejected directions, and accepted direction changes that shaped the research session
+   - **Decision Log**: explicit user choices, corrections, rejected directions, and accepted direction changes that shaped the research session
 5. Prefer one recommended direction. If multiple variants are presented, explicitly say:
    - which one is recommended
    - why it is preferred over the others
@@ -154,18 +154,21 @@ Use `## Retrospective` for findings that are useful outside the current research
 - `[domain]` reusable domain insight
 - `[method]` search/source/evaluation pattern that worked or failed
 - `[workflow]` process lesson for future `/research`, `/plan`, `/feat`, or audit work
-- `[preference]` stable user or workflow preference observed during the session
+- `[research]` reusable lesson about evidence quality, source selection, or unresolved knowledge gaps
 - `[risk]` reusable risk, anti-pattern, or check for future work
+
+Labels are suggestions, not a closed enum; add domain-specific labels when they make future synthesis clearer.
+Explicit user preferences belong in `## Decision Log`; only inferred workflow lessons belong in `## Retrospective`.
 
 ### Decision Log
 
-Use `## Decision Log` to record user choices and corrections that changed the direction or artifact behavior of the research. Keep entries concise and factual.
+Use `## Decision Log` to record explicit user choices and corrections that changed the direction or artifact behavior of the research. Keep entries concise and factual.
 
 ```markdown
-| Decision | User input / signal | Type | Effect on research |
-| -------- | ------------------- | ---- | ------------------ |
-| D1 | {short quote or paraphrase} | {scope-correction|ux-preference|artifact-placement|naming-preference|source-priority|rejected-option|accepted-option|agent-behavior} | {what changed} |
+- {context/condition}: {decision, correction, or preference}
 ```
+
+The section itself means "user"; do not prefix entries with `User:`. Do not require type/status/durability/effect fields.
 
 **Output**: For new research — context file in `feat-XXX/contexts/` or confirmed global category path, related indexes updated when applicable, short chat summary. For existing context path — **verification report in chat** plus Research Brainstorm Mode continuation (no file change until user decides).
 

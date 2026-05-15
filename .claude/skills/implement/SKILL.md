@@ -85,7 +85,7 @@ Parse the user's input using this order:
 ### Mandatory Context Load (before execution)
 
 1. Check if `{feature-dir}/reports/{plan-slug}.implementation.md` exists.
-2. If it exists — read the `## Developer Retrospective` section and extract all `### I{n} — {date}` blocks.
+2. If it exists — read the `## Retrospective` section and extract all `### I{n} — {date}` blocks.
 3. Extract key learnings, known pitfalls, and `[risk]` entries from those sections.
 4. Use this as context for the current implementation round — do NOT repeat mistakes already documented in previous rounds, and use `[risk]` entries to anticipate likely problems.
 
@@ -149,24 +149,26 @@ Pass to Developer:
 >
 > 1. Header + Compatibility table
 > 2. Summary, Steps Executed, Files Changed, Commands Executed, Validation, Results, Deviations, Open Issues
-> 3. `## Developer Retrospective` — append one `### I{n}` block after each validation run
-> 4. `## Developer Observations` — accumulates across all rounds
+> 3. `## Retrospective` — append one `### I{n}` block after each validation run
+> 4. `## Decision Log` — user-only; accumulates explicit user choices, corrections, artifact placement choices, rejected/accepted directions, and durable workflow preferences across all rounds
 > 5. `## Implementation Round I1`, `## Implementation Round I2`, … — appended at the end, chronologically
 >
-> **Developer Retrospective** (section 3 above):
+> **Retrospective** (section 3 above):
 >
 > - One `### I{n} — {YYYY-MM-DD}` block per validation run — appended after each run, never deleted
 > - **Write when**: unexpected codebase facts, environment constraints that changed the approach, risks that materialized
 > - **Do NOT write**: paraphrasing of Issues, summary of what was done — no value
 > - If round produced no discoveries — skip the block entirely
-> - Labels: `[codebase]`, `[tooling]`, `[plan]`, `[process]`, `[risk]`
-> - Mirrors `## Architect Retrospective` in the plan file
+> - Suggested labels: `[codebase]`, `[tooling]`, `[plan]`, `[process]`, `[risk]`; add domain-specific labels when they make future synthesis clearer
+> - Mirrors `## Retrospective` in the plan file
 >
-> **Developer Observations** (section 4 above):
+> **Decision Log** (section 4 above):
 >
-> - Place for observations **outside the current plan scope**: technical debt, future work, architectural concerns in adjacent code
+> - Place for explicit user input that changed implementation behavior, artifact content, language/format, scope, validation/reporting expectations, or continuation handling
 > - Not round-specific — accumulates throughout the implementation
-> - Write only when there is something concrete; omit section entirely if nothing observed
+> - Write only when user-driven decisions exist; omit section entirely if none were captured
+> - Format: `{context/condition}: {decision, correction, or preference}`
+> - The section itself means "user"; do not prefix entries with `User:`
 >
 > **Implementation Round** (section 5 above — append after each validation run):
 >
@@ -282,7 +284,7 @@ When the user chooses `[q]` after an implementation round:
 - Verify report contains `## Implementation Round I{n}` for each validation run (refinement mode: no new round; only last round's Out-of-Plan Work extended)
 - For `A{n}` audit-triggered refinement: verify audit file was read, audit verdict is `needs-fixes`, problems file was read when present, and A{n} follow-up is documented in the implementation report.
 - For any custom continuation under active `/implement`: verify the implementation report reflects the custom work or refusal before completing.
-- Verify Developer Retrospective and Developer Observations are located **before** the round sections
+- Verify Retrospective and Decision Log are located **before** the round sections
 - Verify report follows [implementation-format.md](../workflow/references/implementation-format.md)
 - Verify ordering: the last `## Implementation Round` section is the current `I{n}` and rounds increase monotonically (`I1, I2, … I{n}`) with no out-of-order inserts.
 - Verify structured chat response includes status-aware `## Next Steps` and the active implementation footer from [response-formats.md](../workflow/references/response-formats.md).

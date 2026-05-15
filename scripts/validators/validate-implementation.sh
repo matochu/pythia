@@ -50,19 +50,24 @@ for sec in "${static_sections[@]}"; do
   fi
 done
 
+if grep -qE '^## .*Observations($| )' "$FILE"; then
+  echo "$FILE:$(line_for '^## .*Observations($| )'): [impl.section.observations_forbidden] Use ## Retrospective instead of Observations sections" >&2
+  ((ERRORS++)) || true
+fi
+
 first_round_line=$(grep -nE '^## Implementation Round I[0-9]+' "$FILE" | head -1 | cut -d: -f1 || true)
 if [[ -z "$first_round_line" ]]; then
   echo "$FILE:0: [impl.round.heading] Missing ## Implementation Round I{n}" >&2
   ((ERRORS++)) || true
 else
-  retro_line=$(grep -nE '^## Developer Retrospective$' "$FILE" | head -1 | cut -d: -f1 || true)
+  retro_line=$(grep -nE '^## Retrospective$' "$FILE" | head -1 | cut -d: -f1 || true)
   if [[ -z "$retro_line" ]] || [[ "$retro_line" -ge "$first_round_line" ]]; then
-    echo "$FILE:0: [impl.section.retro_obs] ## Developer Retrospective must appear before first ## Implementation Round" >&2
+    echo "$FILE:0: [impl.section.retro_order] ## Retrospective must appear before first ## Implementation Round" >&2
     ((ERRORS++)) || true
   fi
-  obs_line=$(grep -nE '^## Developer Observations$' "$FILE" | head -1 | cut -d: -f1 || true)
-  if [[ -n "$obs_line" ]] && [[ "$obs_line" -ge "$first_round_line" ]]; then
-    echo "$FILE:0: [impl.section.retro_obs] ## Developer Observations must appear before first ## Implementation Round when present" >&2
+  decision_line=$(grep -nE '^## Decision Log$' "$FILE" | head -1 | cut -d: -f1 || true)
+  if [[ -n "$decision_line" ]] && [[ "$decision_line" -ge "$first_round_line" ]]; then
+    echo "$FILE:0: [impl.section.decision_log_order] ## Decision Log must appear before first ## Implementation Round when present" >&2
     ((ERRORS++)) || true
   fi
 fi

@@ -7,13 +7,13 @@
 ```
 # header (Metadata, Contexts, Plan revision log)   ← static metadata
 ## Navigation                                       ← updated on every plan/replan; links to all steps
-## Architect Retrospective                          ← append-only, one v{N} block per replan
-## Architect Observations                           ← append-only, accumulates across replans
+## Retrospective                                    ← append-only, one v{N} block per replan
+## Decision Log                                     ← append-only, accumulates user choices/corrections/preferences
 ## Context / Goal / Plan / Risks / Acceptance       ← plan body (steps grow downward)
 ## Before / After: System Behavior                  ← observable outputs/contracts before and after (when system behavior changes)
 ```
 
-**Rule**: metadata and accumulating sections (Navigation, Retrospective, Observations) come before the plan body. New steps are appended at the end of `## Plan`. `## Before / After: System Behavior` comes after Risks/Acceptance.
+**Rule**: metadata and accumulating sections (Navigation, Retrospective, Decision Log) come before the plan body. New steps are appended at the end of `## Plan`. `## Before / After: System Behavior` comes after Risks/Acceptance.
 
 ---
 
@@ -46,7 +46,7 @@ _(Omit section if no contexts were consulted)_
 
 ## Navigation
 
-- [Architect Retrospective](#architect-retrospective) · [Architect Observations](#architect-observations)
+- [Retrospective](#retrospective) · [Decision Log](#decision-log)
 - [Context](#context) · [Goal](#goal) · [Code / patterns](#code--patterns) · [Out of scope](#out-of-scope)
 - Plan: [Step 1: {Title}](#step-1-title) · [Step 2: {Title}](#step-2-title) · ...
 - [Risks / Unknowns](#risks--unknowns) · [Acceptance Criteria](#acceptance-criteria)
@@ -54,7 +54,7 @@ _(Omit section if no contexts were consulted)_
 
 _(Updated by `/plan-feature` on creation and by `/replan-feature` when steps are added or amended.)_
 
-## Architect Retrospective
+## Retrospective
 
 ### v{N} — {round-ref} — {date}
 
@@ -62,24 +62,13 @@ _(Updated by `/plan-feature` on creation and by `/replan-feature` when steps are
 - [codebase] {insight about codebase behavior or constraints}
 - [process] {what complicated this replan}
 - [risk] {newly identified risk for next round}
-- [automation] {repeating operations or patterns observed that could be automated; suggest skill name/purpose if applicable}
+_(Top-level append-only section — one `### v{N}` block per replan cycle, added by `/replan-feature`. Omit section until first replan. Never delete previous blocks. Add only findings that are reusable outside this artifact, evidence-backed, and useful for future planning, implementation, review, audit, research, or automation. Do not add plan summaries, completed work, issue restatements, or user decisions.)_
 
-_(Top-level append-only section — one `### v{N}` block per replan cycle, added by `/replan-feature`. Omit section until first replan. Never delete previous blocks. `[automation]` entries are optional but encouraged if repeating manual operations are detected.)_
+## Decision Log
 
-## Architect Observations
+- {context/condition}: {decision, correction, or preference}
 
-- `[high|mid|low|nit]` {observation about adjacent code, technical debt, bugs, architecture issues, future work candidates, cross-plan patterns}
-
-**IMPORTANT: These are not optional.** Record observations about the codebase you touch with **priority label** indicating importance to the project:
-
-**Priority levels** (importance to project):
-
-- `[high]` → Critical for current or future work, blocks productivity, or is a critical bug
-- `[mid]` → Important technical debt, fragile patterns, or moderate issues that should be addressed
-- `[low]` → Code quality improvements, efficiency improvements, or minor issues
-- `[nit]` → Cosmetic, minor cleanups, or nice-to-haves
-
-_(Top-level section — accumulates across all replan cycles. Added by `/replan-feature`. Encouraged: write observations on every replan to build organizational knowledge of codebase state. **Every observation must have a priority label** for retrospective triage and decision-making.)_
+_(Top-level section — user-only. Accumulates explicit user choices, corrections, artifact-placement choices, rejected/accepted directions, and durable user workflow preferences. The section itself means "user"; do not prefix entries with `User:`. Omit section if no user-driven decisions were captured.)_
 
 ## Context
 

@@ -168,7 +168,8 @@ See [references/](./references/) for full documentation.
 - Input: Feature directory path (no gate — works on in-progress or completed features)
 - Scope: **all plans** within the feature
 - Output: `{feature-dir}/notes/retro.md` — unified retro across all plans
-- Collects: all `## Architect Retrospective` blocks from plans, all `### Developer Retrospective` blocks from implementation reports, chat context, skills analysis
+- Collects: all `## Retrospective` blocks from plans, reviews, implementation reports, audits, and feature contexts/research files; collects user-only `## Decision Log` blocks from plans, implementation reports, replans, and research contexts
+- Decision Log pipeline: `/plan`, `/implement`, `/research`, and `/replan` capture raw user-only decisions; `/retro` synthesizes durable user/workflow preferences into the feature retrospective; profile promotion is left to a later audit/profile step
 - Synthesizes: cross-plan patterns, risk register (predicted vs materialized), knowledge base, recommendations
 
 ### Project Retrospective
@@ -209,7 +210,7 @@ flowchart TD
     L --> M([Project Knowledge Base ✓])
 
     subgraph Artifacts per feature
-        P1[plan.md — Architect Retrospective]
+        P1[plan.md — Retrospective / Decision Log]
         P2[review.md — R1…Rn]
         P3[implementation.md — I1…In + Developer Retro]
         P4[audit.md]

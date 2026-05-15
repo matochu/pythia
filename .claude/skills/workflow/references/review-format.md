@@ -9,13 +9,13 @@
 ```
 ## Metadata                       ← file-level current snapshot; updated every round
 ## Navigation                     ← updated after each round; links to all rounds
-## Reviewer Observations          ← top-level, before all rounds; accumulates across all rounds
+## Retrospective                  ← top-level, before all rounds; accumulates across all rounds
 ## {plan-slug} R1 — YYYY-MM-DD   ← first round block
 ## {plan-slug} R2 — YYYY-MM-DD   ← second round block (appended after each review)
 ...                               ← rounds grow downward
 ```
 
-**Rule**: `Metadata`, `Navigation`, and `Reviewer Observations` come first. Round blocks are appended at the end as the review progresses.
+**Rule**: `Metadata`, `Navigation`, and `Retrospective` come first. Round blocks are appended at the end as the review progresses.
 
 ---
 
@@ -48,7 +48,7 @@ Top-level section at the very beginning of the file. Updated after each round by
 ```markdown
 ## Navigation
 
-- [Reviewer Observations](#reviewer-observations)
+- [Retrospective](#retrospective)
 - Rounds: [R1 — YYYY-MM-DD — NEEDS_REVISION](#plan-slug-r1--yyyy-mm-dd) · [R2 — YYYY-MM-DD — READY](#plan-slug-r2--yyyy-mm-dd) · ...
 ```
 
@@ -58,21 +58,23 @@ Top-level section at the very beginning of the file. Updated after each round by
 
 ---
 
-## Reviewer Observations
+## Retrospective
 
 Top-level section — **before all round blocks**. Not tied to any single round. Accumulates across all review rounds — append new entries after each round, never delete previous ones. Omit section entirely if nothing to note.
 
 ```markdown
-## Reviewer Observations
+## Retrospective
 
-- [codebase] {observation about codebase constraints or behavior noticed while reading the plan}
+- [codebase] {retrospective signal about codebase constraints or behavior noticed while reading the plan}
 - [risk] {architectural risk in adjacent area, outside current review scope}
 - [process] {workflow friction or pattern worth tracking across plans}
 - [tooling] {tooling constraint or opportunity}
 ```
 
-- Labels: `[codebase]`, `[risk]`, `[process]`, `[tooling]`
-- NOT recommendations — observations only (no "do X", "use Y", "rewrite Z")
+- Suggested labels: `[codebase]`, `[risk]`, `[process]`, `[tooling]`; add domain-specific labels when they make future synthesis clearer
+- NOT recommendations — retrospective signals only (no "do X", "use Y", "rewrite Z")
+- Add only findings that are reusable outside this review, evidence-backed, and useful for future planning, implementation, review, audit, research, or automation
+- Do not add concern restatements, review recommendations, completed work, or user decisions
 - Forward-looking signals for the retro and future plans
 
 ---

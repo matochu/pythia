@@ -42,12 +42,12 @@ x
 
 x
 
-## Developer Retrospective
+## Retrospective
 
 ### I1 — 2026-01-01
 
 - [plan] x
 
-## Developer Observations
+## Decision Log
 
 - x

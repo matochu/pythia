@@ -156,12 +156,6 @@ Feature saved: `{feature-dir}/{feature-id}.md`
 **[r]** Research topic - choose this to launch Researcher only after a concrete uncertainty/topic is identified.
 **[s]** Sync plans - choose this to reconcile `## Plans` against existing plan files.
 
-**Copy to run elsewhere**
-
-```text
-/feat sync {feature-dir}/{feature-id}.md
-```
-
 ---
 **Active context**: role: Product Manager · feat: {feat-id} · mode: create · skill: /feat
 ```
@@ -179,12 +173,6 @@ Feature sync complete: `{feature-dir}/{feature-id}.md`
 **[a]** Architect next plan - choose this to inspect synced `## Plans` and propose the next missing, blocked, or highest-value plan.
 **[q]** Clarify gaps - choose this to inspect stale scope, missing ownership, unclear plan boundaries, or context gaps.
 **[p]** Plan now - choose this only after the target plan direction is clear.
-
-**Copy to run elsewhere**
-
-```text
-/plan {feature-dir}/{feature-id}.md
-```
 
 ---
 **Active context**: role: Product Manager · feat: {feat-id} · mode: sync · skill: /feat

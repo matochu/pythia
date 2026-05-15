@@ -4,7 +4,7 @@ This file is the single source of Codex instructions for the repository. The rol
 
 ## General Rules
 
-- Respond in English.
+- Respond in the same language as the user's question
 - Be concise and direct.
 - Do not mix roles within one stage (plan/review/implement/audit).
 - Review provided project docs/resources before decisions and cite file paths.

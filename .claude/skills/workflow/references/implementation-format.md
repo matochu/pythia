@@ -16,8 +16,8 @@
 ## Results                        ← static, current overall outcome
 ## Deviations                     ← static, updated when deviations occur
 ## Open Issues                    ← static, updated each round
-## Developer Retrospective        ← append-only, before rounds; one I{n} block per round
-## Developer Observations         ← append-only, before rounds; accumulates across all rounds
+## Retrospective                  ← append-only, before rounds; one I{n} block per round
+## Decision Log                   ← append-only, before rounds; accumulates user choices/corrections/preferences
 ## Implementation Round I1        ← rounds grow downward
 ## Implementation Round I2
 ...
@@ -80,7 +80,7 @@ Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
 
 ---
 
-## Developer Retrospective
+## Retrospective
 
 ### I{n} — {YYYY-MM-DD}
 
@@ -94,11 +94,11 @@ Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
 
 ---
 
-## Developer Observations
+## Decision Log
 
-- {observation about adjacent code, technical debt, future work candidates, architectural concerns outside current plan scope}
+- {context/condition}: {decision, correction, or preference}
 
-*(Top-level section — accumulates across all rounds. Write only when there is something concrete; omit section entirely if nothing observed.)*
+*(Top-level section — user-only. Write only when explicit user input changed implementation behavior, artifact content, language/format, scope, or validation/reporting expectations. The section itself means "user"; do not prefix entries with `User:`. Omit section entirely if no user-driven decisions were captured.)*
 
 ---
 
@@ -150,24 +150,27 @@ Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
 - **Plan Version**: the plan version active when this round was executed (can be e.g. v12, v5 — advances with review/replan)
 - **Result**: short outcome (e.g. `7 passed / 1 failed`, `build ok`)
 
-### Developer Retrospective
+### Retrospective
 
 - Top-level section — **before all `## Implementation Round` sections**
 - One `### I{n} — {date}` block per round, appended after each run
 - **Write when**: unexpected codebase facts, environment constraints, risks that materialized, something you would do differently next time
 - **Do NOT write**: paraphrasing of Issues, summary of what was done
+- Add only findings that are reusable outside this artifact, evidence-backed, and useful for future planning, implementation, review, audit, research, or automation
+- User choices and corrections belong in `## Decision Log`, not Retrospective
 - If round produced no discoveries — skip the block entirely
 - Append-only — never delete previous blocks
-- Labels: `[codebase]`, `[tooling]`, `[plan]`, `[process]`, `[risk]`
-- Mirrors `## Architect Retrospective` in the plan file
+- Suggested labels: `[codebase]`, `[tooling]`, `[plan]`, `[process]`, `[risk]`; add domain-specific labels when they make future synthesis clearer
+- Mirrors `## Retrospective` in the plan file
 
-### Developer Observations
+### Decision Log
 
-- Top-level section — **before all `## Implementation Round` sections**, after Developer Retrospective
-- For observations **outside the current plan scope**: technical debt noticed, future work candidates, architectural concerns in adjacent code
+- Top-level section — **before all `## Implementation Round` sections**, after Retrospective
+- For explicit user choices, corrections, artifact-placement choices, rejected/accepted directions, and durable user workflow preferences
 - Not round-specific — accumulates throughout the implementation
-- Write only when there is something concrete; omit section entirely if nothing observed
-- No required labels — plain bullet list
+- Write only when explicit user input changed implementation behavior or the report; omit section entirely if no user-driven decisions were captured
+- Use concise bullets in the form `{context/condition}: {decision, correction, or preference}`
+- The section itself means "user"; do not prefix entries with `User:`
 
 ### Implementation Round
 

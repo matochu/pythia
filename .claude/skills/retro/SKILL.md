@@ -40,31 +40,40 @@ You are the **[Architect (architect.md)](../../agents/architect.md)**. **Doc con
 2. **List all implementation reports**: glob `reports/*.implementation.md`.
 3. **List all review files**: glob `reports/*.review.md`.
 4. **List all audit files**: glob `reports/*.audit.md`.
-5. **Check existing feature retro**: check if `notes/{feature-slug}.retro.md` exists. If it exists, read it before writing the new report.
-6. **Preserve manual sections**: If existing retro contains `## Manual Notes`, `## Decisions`, or `## Follow-up Decisions`, preserve those sections verbatim in the rewritten report.
+5. **List all feature context files**: glob `contexts/*.md` and `contexts/**/*.md` in feature directory. These include research contexts and other feature-scoped context artifacts.
+6. **Check existing feature retro**: check if `notes/{feature-slug}.retro.md` exists. If it exists, read it before writing the new report.
+7. **Preserve manual sections**: If existing retro contains `## Manual Notes`, `## Decisions`, or `## Follow-up Decisions`, preserve those sections verbatim in the rewritten report.
 
 ### Collection Phase
 
 Extract from each artifact and distill into patterns: `[plan]`, `[codebase]`, `[process]`, `[risk]`, `[tooling]`, `[automation]`
 
-**From plans**: Plan title, Plan-Version, status, date created, Architect Retrospective blocks (including `[automation]` entries), Architect Observations, revision log, risks, acceptance criteria
+**From plans**: Plan title, Plan-Version, status, date created, `## Retrospective` blocks (including `[automation]` entries), `## Decision Log`, revision log, risks, acceptance criteria
 
-**From implementation reports**: Implementation Round blocks, Developer Retrospective sections (including `[automation]` entries), Developer Observations, Out-of-Plan Work, BLOCKER/PROBLEM issues, deviations
+**From implementation reports**: Implementation Round blocks, `## Retrospective` sections (including `[automation]` entries), `## Decision Log`, Out-of-Plan Work, BLOCKER/PROBLEM issues, deviations
 
-**From review files**: Review rounds count, final Verdict per round, key concerns (including automation suggestions if marked `[automation]`), Reviewer Observations
+**From review files**: Review rounds count, final Verdict per round, key concerns (including automation suggestions if marked `[automation]`), `## Retrospective`
 
 **From audit files**: Final decision (ready | needs-fixes | plan-fix | re-plan), risk re-evaluation, automation suggestions noted in retrospective
+
+**From context files / research contexts**: Context title/topic, source type when available, `## Retrospective` sections, and user-only `## Decision Log` sections. Treat research retrospectives as reusable findings; do not treat research conclusions as final architecture decisions unless a later plan/audit adopted them.
+
+**Decision Log pipeline**:
+- **Capture**: `/plan`, `/implement`, `/research`, and `/replan` write user-only `## Decision Log` entries as raw user decisions and corrections.
+- **Synthesis**: `/retro` collects those entries, filters out local one-off corrections, and highlights only explicit or repeated user/workflow preferences in the feature retrospective.
+- **Boundary**: `/retro` does not write user profile files directly. Profile promotion is a later audit/profile step.
 
 ### Analysis Phase
 
 1. **Cross-plan patterns**: identify entries that appear in 2+ plans/rounds
 2. **Risk tracking**: match predicted risks against materialized BLOCKERs/PROBLEMs
-3. **Codebase Observations triage**: Extract all observations from Architect Observations (plans), Developer Observations (implementation), and Reviewer Observations (reviews). Group by priority level: `[high]`, `[mid]`, `[low]`, `[nit]`. Identify which observations were addressed in implementation and which remain open. Use priority grouping to inform retrospective triage and help team decide on next actions (quick fix, separate plan, backlog, or defer).
+3. **Decision Log filtering**: Extract explicit user choices/corrections from `## Decision Log` in plans, implementation reports, and context/research files. Keep them as evidence, not as issues. Filter for signals worth carrying forward: repeated preferences, explicit "always/never" instructions, workflow rules, language/format rules, artifact placement rules, and agent behavior corrections. Do not invent labels or require structured fields.
 4. **Knowledge distillation**: group codebase entries for knowledge base
 5. **Process insights**: group process entries for systemic friction
-6. **Automation opportunities**: Collect all `[automation]` entries from Architect Retrospective (plans), Developer Retrospective (implementation), and Reviewer findings (reviews). Identify repeating patterns or procedural workflows that appear across multiple plans or features — these are candidates for skill creation or process automation.
+6. **Automation opportunities**: Collect all `[automation]` entries from `## Retrospective` in plans and implementation reports, plus Reviewer findings. Identify repeating patterns or procedural workflows that appear across multiple plans or features — these are candidates for skill creation or process automation.
 7. **Delta analysis** (if existing retro exists): Compare previous follow-ups, risks, automation candidates, and unresolved questions against current artifacts. Classify each as new, still-open, resolved, superseded, or unknown.
-8. **Cross-reference findings**: connect review findings → plan → implementation → audit
+8. **Research/context synthesis**: Distill reusable findings from context/research `## Retrospective` sections and connect them to plans, reviews, implementations, or unresolved knowledge gaps.
+9. **Cross-reference findings**: connect context/research findings → review findings → plan → implementation → audit
 
 ### Evidence Requirements
 
@@ -93,8 +102,8 @@ Write report to `{feature-dir}/notes/{feature-slug}.retro.md`:
 - Key Discoveries (evidence-backed findings)
 - Process Insights (recurring friction)
 - Actionable Follow-ups: Table with Follow-up | Priority | Evidence | Applies to | Candidate owner/skill | Status
-- **Unfixed Observations & Recommendations**: Table of observations not addressed during implementation, grouped by priority with suggested next actions for team:
-  - Column headers: Observation | Priority | Next Action (team decides)
+- **Unfixed Issues & Recommendations**: Table of issues not addressed during implementation, grouped by priority with suggested next actions for team:
+  - Column headers: Issue | Priority | Next Action (team decides)
   - `[high]` unfixed → Team evaluates: Quick fix in next round? Separate plan? Risk to next feature?
   - `[mid]` unfixed → Suggested for next sprint or future replan
   - `[low]` unfixed → Suggested for backlog; not urgent
@@ -109,7 +118,7 @@ Write report to `{feature-dir}/notes/{feature-slug}.retro.md`:
   - Frequency
   - Estimated benefit/impact
   - Confidence
-- Forward-Looking: Observations & Improvements
+- Forward-Looking Improvements
 - Recommendations for Future Plans: Each item must use `Recommendation → Evidence → Applies to → Candidate owner/skill`
 - Knowledge Gaps
 - Unresolved Questions

@@ -102,7 +102,7 @@ After input parsing, determine the trigger type for the replan:
 
 **Mandatory context load** (before any analysis):
 
-1. Read `plans/{plan-slug}.plan.md` — section `## Architect Retrospective`
+1. Read `plans/{plan-slug}.plan.md` — section `## Retrospective`
 2. Extract all existing blocks (keyed by `### v{N} — {round-ref} — {date}`)
 3. Use this as context for the current replan — do NOT repeat issues already identified in previous blocks, and use `[risk]` entries to anticipate likely problems in this round
 
@@ -223,7 +223,7 @@ Use this trigger when `/audit` returns `plan-fix` or `re-plan` and points to aud
 When the replan is **Trigger 3: Manual edits**:
 
 - **`## Plan revision log` — Round column**: You **must** write exactly **`Manual`**. Do **not** use `chat`, `user`, `ad-hoc`, `direct`, or other synonyms.
-- **`## Architect Retrospective`** (if you append a block): use `### v{N} — Manual — {date}` so `{round-ref}` matches the revision log.
+- **`## Retrospective`** (if you append a block): use `### v{N} — Manual — {date}` so `{round-ref}` matches the revision log.
 - **Step version markers**: use `(Manual)` as `{round-ref}` on any **Added** or **Amended** steps in this cycle.
 
 ---
@@ -234,10 +234,10 @@ When the replan is **Trigger 3: Manual edits**:
 
 **Revised plan artefact**: Emit the **full revised plan document (Markdown) only**. Do **not** edit review, implementation, or audit report files (Architect stays read-only on those). The result must remain a single coherent document per [plan-format.md](../workflow/references/plan-format.md): bump **Plan-Version**; append one row to **Plan revision log** with **Round** = `R{n}`, `I{n}`, `A{n}`, or **`Manual`** for Trigger 3; then date, changed steps, and summary; refresh **Navigation** for any new or amended steps; set **Last review round** only when a real review round completed (Trigger 1), otherwise preserve the existing Last review round and refer to the implementation/audit trigger in the revision log; keep `## Metadata` complete including document **Status** from **Plan document status**. After review-driven replan with **NEEDS_REVISION**, use **Draft** unless the plan is already closed (**Implemented**, **Archived**, **Cancelled**); keep **In progress** or **Ready for implementation** when the edit does not undo that milestone. When adding or amending steps, follow the full step template in plan-format (Change, Where, Preconditions, Concrete outcome, Edge cases/errors, Validation, Tests to add, API/types, Pattern/approach, Acceptance); do **not** add per-step `**Status**:` — `/audit` adds that. Implementation-driven and audit-driven replans must still follow the step version markers and append-only step rules stated above in this skill. When the plan **changes observable behavior of a system** and `## Before / After: System Behavior` is absent, add it (see plan-format.md § Before / After: System Behavior); when it already exists, update it if the revised steps change what the before/after examples show.
 
-**Architect Retrospective section** (append to plan after `## Plan revision log`):
+**Retrospective section** (append to plan after `## Plan revision log`):
 
 ```markdown
-## Architect Retrospective
+## Retrospective
 
 ### v{N} — {round-ref} — {date}
 
@@ -250,31 +250,23 @@ When the replan is **Trigger 3: Manual edits**:
 
 - `### v{N}` block is **optional** — write only if there are real discoveries
 - **Write when**: codebase behavior that surprised you, plan structure failure mode identified, process insight, new risk identified, or repeating manual operations/validation patterns observed (from Reviewer or Developer findings)
-- **Automation entries**: Extract `[automation]` notes from review and implementation rounds and synthesize them into actionable observations (e.g., "Steps 2, 5, 7 all perform similar config validation — consider parametric skill"; "Reviewer noted that X pattern repeats across 3+ features"). These inform future skill creation and process optimization decisions.
+- **Automation entries**: Extract `[automation]` notes from review and implementation rounds and synthesize them into actionable retrospective findings (e.g., "Steps 2, 5, 7 all perform similar config validation — consider parametric skill"; "Reviewer noted that X pattern repeats across 3+ features"). These inform future skill creation and process optimization decisions.
 - **Do NOT write**: summary of what changed in the plan, restatement of the issues analyzed — those belong in revision log and findings section
 - If this replan cycle produced no discoveries — omit the block entirely
 - One block per replan cycle, keyed by plan version + round reference
 - **Append-only — add new block AFTER all existing blocks** (chronological order: oldest first, newest last)
 - Never delete or reorder previous blocks
-- Labels: `[plan]`, `[codebase]`, `[process]`, `[risk]`, `[automation]` — use whichever are relevant
+- Suggested labels: `[plan]`, `[codebase]`, `[process]`, `[risk]`, `[automation]`; add domain-specific labels when they make future synthesis clearer
 
-**Architect Observations section** (expected to be present, append to plan after `## Architect Retrospective`):
+**Decision Log section** (optional, append to plan after `## Retrospective`):
 
 ```markdown
-## Architect Observations
+## Decision Log
 
-- {observation about adjacent code, technical debt, bugs, architecture issues, future work candidates, cross-plan patterns}
+- {context/condition}: {decision, correction, or preference}
 ```
 
-**IMPORTANT: These are not optional.** Record observations you make during replan:
-- Bugs or fragile patterns in existing code
-- Technical debt or shortcuts you notice
-- Architecture violations or poor layering
-- Code that is hard to work with or needs refactoring
-- Missing error handling or edge cases
-- Performance concerns or maintenance issues
-
-Not round-specific — accumulates throughout replanning cycles. Write observations every cycle to build organizational knowledge of codebase state. Format: bullet list, no required labels. **Do not skip** — observations protect future features from repeating mistakes.
+User-only; accumulates explicit user choices, corrections, artifact-placement choices, rejected/accepted directions, and durable workflow preferences. Not round-specific — accumulates throughout replanning cycles. Write only when user-driven decisions exist; omit entirely if none were captured. Format: `{context/condition}: {decision, correction, or preference}`. The section itself means "user"; do not prefix entries with `User:`.
 
 **Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
 
@@ -301,7 +293,7 @@ Not round-specific — accumulates throughout replanning cycles. Write observati
 - For Trigger 1 or 2: verify no linked context/doc file named by an open concern still contradicts the revised plan text without that contradiction being called out as remaining follow-up work
 - Verify Plan revision log is updated with new entry (version, round, date, changed steps, summary)
 - Verify `## Navigation` is updated with links to all new or amended steps
-- Verify `## Architect Retrospective` block added to plan file for this replan cycle **if discoveries exist** (skip if nothing new was learned)
+- Verify `## Retrospective` block added to plan file for this replan cycle **if discoveries exist** (skip if nothing new was learned)
 - Verify date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`)
 - Verify each context in `## Contexts` has this plan listed in its `## Used by` section
 - For Trigger 2: verify no existing steps were deleted, renumbered, or reordered
@@ -335,12 +327,12 @@ After the revised plan is saved in inline mode:
   - Trigger 3 (Manual edits): **Accepted** | **Rejected** | **Modified** (per user edit or instruction)
 - Provide reasoning for every non-trivial decision
 
-**Architect Retrospective** (optional in structured response AND saved to plan file only if discoveries exist):
+**Retrospective** (optional in structured response AND saved to plan file only if discoveries exist):
 
-The Architect reflects on what was learned or observed during this replan cycle. This content is **both** output in chat summary **and** appended to `## Architect Retrospective` in the plan file — **only if there are real discoveries**. If nothing new was learned, omit entirely from both.
+The Architect reflects on what was learned or observed during this replan cycle. This content is **both** output in chat summary **and** appended to `## Retrospective` in the plan file — **only if there are real discoveries**. If nothing new was learned, omit entirely from both.
 
 ```markdown
-### Architect Retrospective
+### Retrospective
 
 - [plan] {insight about plan structure, scope, or gaps that became apparent}
 - [codebase] {insight about codebase behavior or constraints discovered while analyzing issues}

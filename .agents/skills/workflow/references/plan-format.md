@@ -7,12 +7,12 @@
 ```
 # header (Metadata, Contexts, Plan revision log)   ← static metadata
 ## Navigation                                       ← updated on every plan/replan; links to all steps
-## Architect Retrospective                          ← append-only, one v{N} block per replan
-## Architect Observations                           ← append-only, accumulates across replans
+## Retrospective                                    ← append-only, one v{N} block per replan
+## Decision Log                                     ← append-only, accumulates user choices/corrections/preferences
 ## Context / Goal / Plan / Risks / Acceptance       ← plan body (steps grow downward)
 ```
 
-**Rule**: metadata and accumulating sections (Navigation, Retrospective, Observations) come before the plan body. New steps are appended at the end of `## Plan`.
+**Rule**: metadata and accumulating sections (Navigation, Retrospective, Decision Log) come before the plan body. New steps are appended at the end of `## Plan`.
 
 ---
 
@@ -44,14 +44,14 @@ _(Omit section if no contexts were consulted)_
 
 ## Navigation
 
-- [Architect Retrospective](#architect-retrospective) · [Architect Observations](#architect-observations)
+- [Retrospective](#retrospective) · [Decision Log](#decision-log)
 - [Context](#context) · [Goal](#goal) · [Code / patterns](#code--patterns) · [Out of scope](#out-of-scope)
 - Plan: [Step 1: {Title}](#step-1-title) · [Step 2: {Title}](#step-2-title) · ...
 - [Risks / Unknowns](#risks--unknowns) · [Acceptance Criteria](#acceptance-criteria)
 
 _(Updated by `/plan` on creation and by `/replan` when steps are added or amended.)_
 
-## Architect Retrospective
+## Retrospective
 
 ### v{N} — {round-ref} — {date}
 
@@ -60,13 +60,13 @@ _(Updated by `/plan` on creation and by `/replan` when steps are added or amende
 - [process] {what complicated this replan}
 - [risk] {newly identified risk for next round}
 
-_(Top-level append-only section — one `### v{N}` block per replan cycle, added by `/replan`. Omit section until first replan. Never delete previous blocks.)_
+_(Top-level append-only section — one `### v{N}` block per replan cycle, added by `/replan`. Omit section until first replan. Never delete previous blocks. Add only findings that are reusable outside this artifact, evidence-backed, and useful for future planning, implementation, review, audit, research, or automation. Do not add plan summaries, completed work, issue restatements, or user decisions.)_
 
-## Architect Observations
+## Decision Log
 
-- {observation about adjacent code, technical debt, future work candidates, cross-plan patterns}
+- {context/condition}: {decision, correction, or preference}
 
-_(Top-level section — accumulates across all replan cycles. Added by `/replan`. Omit section if nothing observed. No required labels.)_
+_(Top-level section — user-only. Accumulates explicit user choices, corrections, artifact-placement choices, rejected/accepted directions, and durable user workflow preferences. The section itself means "user"; do not prefix entries with `User:`. Omit section if no user-driven decisions were captured.)_
 
 ## Context
 

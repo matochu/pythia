@@ -60,8 +60,8 @@ You are the **[Architect (architect.md)](../../agents/architect.md)**. Doc conte
 
 **For features without `notes/retro.md`** (raw collection):
 
-- Glob `plans/*.plan.md` → extract all `## Architect Retrospective` blocks
-- Glob `reports/*.implementation.md` → extract all `### Developer Retrospective` blocks
+- Glob `plans/*.plan.md` → extract all `## Retrospective` blocks and user-only `## Decision Log`
+- Glob `reports/*.implementation.md` → extract all `## Retrospective` blocks and user-only `## Decision Log`
 - Note: source = raw artifacts
 
 **From all features, collect**:

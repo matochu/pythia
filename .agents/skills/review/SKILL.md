@@ -135,7 +135,7 @@ When the user chooses `[q]` after a review round:
 6. Do not paste raw QA output verbatim into the review report. Convert accepted QA concerns into Reviewer-owned review language and keep the no-solutioning rule.
 7. Re-run workflow-doc validation for the review report after appending the QA follow-up.
 
-**Review format**: Follow [review-format.md](../workflow/references/review-format.md): top-level `Metadata`, `Navigation`, optional `Reviewer Observations`, then round blocks with Verdict (READY | NEEDS_REVISION), Plan-Path; Executive Summary; Step-by-Step Analysis (Status, Evidence, Impact, optional Revision hint; no solutioning); Summary of Concerns.
+**Review format**: Follow [review-format.md](../workflow/references/review-format.md): top-level `Metadata`, `Navigation`, optional `Retrospective`, then round blocks with Verdict (READY | NEEDS_REVISION), Plan-Path; Executive Summary; Step-by-Step Analysis (Status, Evidence, Impact, optional Revision hint; no solutioning); Summary of Concerns.
 
 **Review depth baseline (mandatory every round)**:
 
@@ -144,6 +144,7 @@ When the user chooses `[q]` after a review round:
 - Keep scope centered on the current plan, but always include **related contexts** and directly relevant code/context needed to validate this plan.
 - For medium/high/blocked concerns, provide concrete evidence from plan + codebase/context (files, symbols, references).
 - For high-impact assumptions and constraints, verify against external sources (official docs/standards) and cite URLs in Evidence.
+- **Automation awareness (optional)**: While reviewing, notice repeated validation steps, boilerplate confirmation patterns, or procedural checklists in the plan steps. If you identify operations that appear repetitive or procedural and could benefit from automation, note them as retrospective signals with label `[automation]` when relevant to future synthesis. Examples: "Steps 3 and 5 both require manual validation of Y; could be automated", "Configuration pattern in Step 2 repeats across multiple similar features — candidate for parametric skill".
 - In **Deep mode**, apply all architecture quality dimensions with full breadth and stricter evidence.
 
 **Architecture quality dimensions** (in addition to clarity/completeness/feasibility/risks/testability):
@@ -179,12 +180,13 @@ When the user chooses `[q]` after a review round:
 - Deep mode is expected to test the plan against the outside ecosystem, not only against the local codebase. When relevant, explicitly check whether there are established toolchains, standards-based approaches, or off-the-shelf solutions that the plan should have considered.
 - If the chosen approach still wins, state why the alternative is weaker for this codebase. If the plan does not engage with a realistic alternative at all, report that as a weakness.
 
-**Reviewer Observations** (top-level section in `.review.md`, before all round blocks — see [review-format.md](../workflow/references/review-format.md)):
+**Retrospective** (top-level section in `.review.md`, before all round blocks — see [review-format.md](../workflow/references/review-format.md)):
 
 - Forward-looking signals outside the verdict scope: tech debt noticed while reading the plan, architectural risks in adjacent areas, patterns worth tracking
 - Not round-specific — accumulates across all review rounds; append new entries after each round; never delete previous
 - Write only when there is something concrete to note; omit section entirely if nothing observed
-- Labels: `[codebase]`, `[risk]`, `[process]`, `[tooling]` — observations only, no recommendations
+- Do not put review recommendations, concern restatements, or user decisions in Retrospective
+- Suggested labels: `[codebase]`, `[risk]`, `[process]`, `[tooling]`; add domain-specific labels when they make future synthesis clearer — retrospective signals only, no recommendations
 
 Review only where there is clear evidence; avoid judgments without plan/code references. Do not implement — output review only. Do not give specific recommendations (no "do X", "use Y", "rewrite Z"). Terminal commands allowed: `date +%Y-%m-%d` (current date), `cat` (read files), `grep` (search in files), `find` (locate files). Web lookup allowed: use `WebSearch` + `WebFetch` for official sources and cite URLs in `Evidence`. Do not run build, test, or any other commands. **Exception (workflow-doc validation, inline fallback only)**: if the host cannot spawn a Validator subagent, open [/validate skill](../validate/SKILL.md) and perform **exactly one** validation run for the absolute path to `reports/{plan-slug}.review.md` **using only the procedure defined in that skill**; report exit code + stderr; label **inline fallback**. No other shell commands beyond the allowlist above.
 

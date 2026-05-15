@@ -49,6 +49,11 @@ for section in "${required_sections[@]}"; do
   fi
 done
 
+if grep -qE '^## .*Observations($| )' "$PLAN_FILE"; then
+  echo "$PLAN_FILE:$(line_for '^## .*Observations($| )'): [plan.section.observations_forbidden] Use ## Retrospective instead of Observations sections" >&2
+  ((ERRORS++)) || true
+fi
+
 # At least one of Risks / Acceptance
 if ! grep -qE '^## Risks' "$PLAN_FILE" && ! grep -qE '^## Acceptance' "$PLAN_FILE"; then
   echo "$PLAN_FILE:0: [plan.section.required] Missing required section: ## Risks / Unknowns or ## Acceptance Criteria" >&2
@@ -76,13 +81,13 @@ if [[ -n "$status_raw" ]]; then
   esac
 fi
 
-# Plan-Version v2+ => ## Architect Retrospective recommended as hard Tier0 rule
+# Plan-Version v2+ => ## Retrospective required as hard Tier0 rule
 plan_ver_line=$(echo "$metadata_section" | grep -E "^\s*-\s+\*\*Plan-Version\*\*:" | head -n1 || true)
 plan_ver_val=$(echo "$plan_ver_line" | sed -E 's/^[^:]*:[[:space:]]*//')
 if [[ "$plan_ver_val" =~ ^v([0-9]+) ]]; then
   ver_num="${BASH_REMATCH[1]}"
-  if [[ "$ver_num" -ge 2 ]] && ! grep -qE '^## Architect Retrospective$' "$PLAN_FILE"; then
-    echo "$PLAN_FILE:0: [plan.retrospective.required] Plan-Version ${plan_ver_val} requires ## Architect Retrospective section" >&2
+  if [[ "$ver_num" -ge 2 ]] && ! grep -qE '^## Retrospective$' "$PLAN_FILE"; then
+    echo "$PLAN_FILE:0: [plan.retrospective.required] Plan-Version ${plan_ver_val} requires ## Retrospective section" >&2
     ((ERRORS++)) || true
   fi
 fi
@@ -112,8 +117,8 @@ if awk -v file="$PLAN_FILE" '
       errs++
       next
     }
-    if (rnd == "—" || rnd == "-" || rnd == "Manual" || rnd ~ /^R[0-9]+$/ || rnd ~ /^I[0-9]+$/) next
-    printf "%s:0: [plan.revision_log.round_tokens] Invalid Round value (use —, Manual, R{n}, I{n}): %s\n", file, rnd | "cat >&2"
+    if (rnd == "—" || rnd == "-" || rnd == "Manual" || rnd ~ /^R[0-9]+$/ || rnd ~ /^I[0-9]+$/ || rnd ~ /^A[0-9]+$/) next
+    printf "%s:0: [plan.revision_log.round_tokens] Invalid Round value (use —, Manual, R{n}, I{n}, A{n}): %s\n", file, rnd | "cat >&2"
     errs++
     next
   }

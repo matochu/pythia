@@ -56,6 +56,8 @@ The standard `## Plans Index update` section below is feature-specific. For the 
 
 You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc context = resolved planning workspace**: either a feature directory (`feat doc + plans/`) or the standalone fixes workspace (`fixes.md + plans/`).
 
+**CRITICAL — Execution context**: Execute the planning work **in the current context**. Do **NOT** launch a subagent to create the plan. Validator delegation is allowed only after the plan is saved; see **Validation**.
+
 **Input**: Feature context + **plan slug** (required). Plan path = `plans/{plan-slug}.plan.md`. Optional: existing plan content, review text or link to round (for revision), or **user's edits to the plan** — if the user asks to "apply automatically" or "agree with these changes", output the plan with those edits incorporated.
 
 **Architecture Ambiguity Checkpoint** (required before writing plan):
@@ -101,7 +103,7 @@ Run this sequence once on activation before the first brainstorm response:
    - if the script is missing or not executable, skip silently
 2. **Closed plans review**
    - scan sibling `plans/` for implemented or archived plans
-   - extract `[risk]` and `[plan]` items from their `## Architect Retrospective`
+   - extract `[risk]` and `[plan]` items from their `## Retrospective`
    - if no closed plans exist, skip silently
 3. **Context freshness**
    - for each context in `## Contexts`, run `scripts/inputs.sh check <context-file>` when the context declares `inputs:`
@@ -158,27 +160,19 @@ Check if sufficient data is available to write a concrete, reviewable plan.
 
 The document is defined end-to-end in [plan-format.md](../workflow/references/plan-format.md): section order, `## Metadata` fields (including document **Status** per **Plan document status** — **Draft** for every new `/plan` output), **Plan revision log**, **Navigation**, Context / Goal / Plan body, Risks or Acceptance, and step field requirements. Treat that file as the single specification; your output must conform to it. Steps must be **concrete and reviewable** (Developer knows scope, Reviewer can verify): each `### Step N` uses the required fields from plan-format (**Change**, **Where**, **Validation**, **Acceptance**, plus optional fields there). Do **not** add per-step `**Status**:` in `/plan` output — `/audit` adds step status after implementation. When the plan **changes observable behavior of a system** (generator output, validator rules, plugin response, contract shape, CLI output), include `## Before / After: System Behavior` after Acceptance Criteria (see plan-format.md § Before / After: System Behavior for guidance and template).
 
-**Codebase observations** (expected, not optional): While analyzing the codebase for planning, note issues you encounter. **Each observation must include a priority label**: `[high|mid|low|nit]`.
+**Reusable findings**: While analyzing the codebase for planning, put transferable lessons in `## Retrospective`. A good retrospective entry is reusable outside this artifact, evidence-backed, and useful for future planning, implementation, review, audit, or automation. Put only explicit user choices/corrections in `## Decision Log`.
 
-**Priority guide** (importance to project):
-- `[high]` → Critical for current or future work, blocks productivity, or is a critical bug
-- `[mid]` → Important technical debt, fragile patterns, or moderate issues
-- `[low]` → Code quality improvements, efficiency improvements, or minor issues
-- `[nit]` → Cosmetic, minor cleanups, or nice-to-haves
-
-Record in `## Architect Observations` with priority label and clear description. Examples:
+Record in `## Decision Log` only when user choices or corrections affect the artifact. The section itself means "user"; do not prefix entries with `User:`. Examples:
 ```markdown
-## Architect Observations
+## Decision Log
 
-- `[high]` Module Y swallows validation errors; critical for debugging Step 3
-- `[mid]` Duplicated fetch logic across 3 services; suggests need for utility layer
-- `[low]` Inefficient loop in helper function; not blocking but impacts large datasets
-- `[nit]` JSDoc comments missing on util.js exports
+- Current plan scope: keep adjacent cleanup out of scope
+- Implementation report language: always English
 ```
 
-**Do not skip this.** Observations build organizational knowledge of codebase state and importance.
+Do not use an Observations section. Reusable findings belong in `## Retrospective`; user-only decisions belong in `## Decision Log`. Do not put plan summaries, completed work, issue restatements, or user decisions in Retrospective.
 
-**Automation awareness** (optional, accumulated over iterations): While creating the plan, watch for repetitive manual operations, validation steps, or configuration patterns in the plan steps. If you notice opportunities for automation — e.g. repeated data validation, boilerplate configuration, manual verification cycles, or integration checklists — record them in `## Architect Observations` with prefix `[automation]:` suggesting skill purpose (e.g. `[automation]: Consider a skill to automate X validation workflow` or `[automation]: Pattern Y appears in steps 2, 5, 7 — candidate for parametric skill`). This accumulates across future iterations for retrospective analysis and skill creation decisions.
+**Automation awareness** (optional, accumulated over iterations): While creating the plan, watch for repetitive manual operations, validation steps, or configuration patterns in the plan steps. If you notice opportunities for automation, record them in `## Retrospective` with label `[automation]` so `/retro` can collect them.
 
 ## Plans Index update
 

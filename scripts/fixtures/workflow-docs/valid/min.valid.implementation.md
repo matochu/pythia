@@ -42,7 +42,7 @@ None.
 
 None.
 
-## Developer Retrospective
+## Retrospective
 
 ### I1 — 2026-01-01
 

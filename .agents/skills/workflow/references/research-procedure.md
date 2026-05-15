@@ -89,8 +89,8 @@ Project and feature knowledge is **scattered** across many locations. Before any
 - Use clear headings: e.g. Problem statement, Solution options, Best practices, 3rd party solutions, Trade-offs summary, **Confidence and gaps**.
 - **Citation discipline**: Every non-obvious claim must have a source (URL or file:line). Aim for 2–3 sources per major claim where possible.
 - **Confidence and gaps**: For important findings, note confidence (high / medium / low) or mark gaps; call out unresolved questions or contradictions and what evidence was checked.
-- **Retrospective**: Reusable lessons outside the current topic only, labeled when useful as `[domain]`, `[method]`, `[workflow]`, `[preference]`, or `[risk]`.
-- **Decision Log**: A concise table of user choices, corrections, rejected directions, accepted directions, and artifact-placement decisions that changed the research session.
+- **Retrospective**: Reusable lessons outside the current topic only, labeled when useful as `[domain]`, `[method]`, `[workflow]`, `[research]`, or `[risk]`. Explicit user preferences belong in `## Decision Log`; only inferred workflow lessons belong here.
+- **Decision Log**: Concise user-only bullets in the form `{context/condition}: {decision, correction, or preference}` for explicit user choices, corrections, rejected directions, accepted directions, and artifact-placement decisions that changed the research session.
 
 ## Integration with workflow
 

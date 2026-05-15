@@ -13,6 +13,16 @@ if ! grep -qE '^## Navigation$' "$FILE"; then
   ((ERRORS++)) || true
 fi
 
+if grep -qE '^## .*Observations($| )' "$FILE"; then
+  echo "$FILE:$(line_for '^## .*Observations($| )'): [review.section.observations_forbidden] Use ## Retrospective instead of Observations sections" >&2
+  ((ERRORS++)) || true
+fi
+
+if grep -qE '^## Decision Log$' "$FILE"; then
+  echo "$FILE:$(line_for '^## Decision Log$'): [review.section.decision_log_forbidden] Review reports must use ## Retrospective only; Decision Log belongs to plans and implementation reports" >&2
+  ((ERRORS++)) || true
+fi
+
 if ! grep -qE '^## .+ R[0-9]+ — [0-9]{4}-[0-9]{2}-[0-9]{2}$' "$FILE"; then
   echo "$FILE:0: [review.round.heading] Missing round heading matching ## {slug} R{n} — YYYY-MM-DD" >&2
   ((ERRORS++)) || true

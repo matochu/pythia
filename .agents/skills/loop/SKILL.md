@@ -169,7 +169,7 @@ Read artifact files to determine lifecycle position:
    - plans/{plan-slug}.plan.md
    - Related contexts under contexts/ as mandatory per [/review skill](../review/SKILL.md)
    Write/update:
-   - reports/{plan-slug}.review.md (Navigation + Observations + new round; follow review-format.md)
+   - reports/{plan-slug}.review.md (Navigation + Retrospective + new round; follow review-format.md)
    Produce Verdict: READY or NEEDS_REVISION in the new round (per review-format.md).
    Follow [/review skill](../review/SKILL.md) and [reviewer.md](../../agents/reviewer.md) in full.
    Do NOT implement code, do NOT patch the plan, do NOT run later loop steps (implement/audit)."
