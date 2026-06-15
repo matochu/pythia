@@ -1,618 +1,114 @@
-# Pythia - Shared Documentation Base
+# Pythia
 
-Welcome to Pythia, a comprehensive **shared documentation base** designed for workspace integration. Pythia provides standardized documentation templates, commands, and methodologies that can be used across multiple projects via modern editors like Cursor and VSCode.
+**A structured workflow for building software with AI agents.**
 
-## What is Pythia?
+Ad-hoc prompting produces ad-hoc results. You ask an agent to "implement X," it improvises architecture, skips validation, and leaves nothing behind that you — or the next agent — can audit. There is no shared plan, no role discipline, no durable memory of *why* a decision was made.
 
-Pythia is a **shared documentation framework** that provides:
+Pythia is the layer that fixes this. It turns a single feature request into a disciplined lifecycle — **plan → review → implement → audit → retrospect** — where each stage is run by a role with strict boundaries, gated on the previous stage, and recorded as a durable document. The agent stops improvising and starts following a process you can inspect at every step.
 
-- **Standardized Commands**: Pre-built commands for common documentation tasks
-- **Documentation Templates**: Consistent templates for various document types
-- **Methodologies**: Proven approaches for documentation management
-- **Workspace Integration**: Seamless integration with Cursor, VSCode, and other editors
+## The idea
 
-## Quick Start
+Pythia treats the conversation between you and an AI agent as something that needs structure, not just a chat box. It provides three things:
 
-Pythia is designed for **workspace integration** - simply reference commands in your chat:
+- **Roles with boundaries.** A Reviewer finds problems but never writes code. A Developer executes an approved plan but never redesigns it. An Architect plans and audits but doesn't implement. Roles can't bleed into each other, so you never get a "planner" that quietly ships its own untested guess.
+- **Artifacts as shared memory.** Every stage writes a file — the plan, the review, the implementation report, the audit. These are the contract between human and agent and between one agent and the next. Reopen a feature months later and the full reasoning is on disk, versioned.
+- **Gates and a verifiable loop.** Implementation can't start until a review verdict is `READY`. After implementation, an audit (run by a *fresh* agent, so it isn't biased by the session that wrote the code) decides what happens next: done, fix, patch the plan, or re-plan. The loop runs until the work genuinely passes — not until the agent claims it's finished.
+
+## The feature lifecycle
+
+```
+/feat       Define the feature — problem, scope, success criteria   (Product Manager → Architect)
+/research   Optional: investigate options, prior art, trade-offs     (Researcher)  → context doc
+/plan       Turn it into concrete, validatable steps                 (Architect)   → plan.md
+/review     Find gaps, risks, wrong assumptions — no fixes           (Reviewer)    → review.md
+/implement  Execute the approved plan, run validation, report honestly (Developer) → implementation.md
+/audit      Verify the result against the plan, fresh-eyed           (Architect)   → audit.md
+/retro      Distill what was learned for next time                   (Architect)   → retro.md
+```
+
+The verdicts drive the loop automatically:
+
+- **Review** `NEEDS_REVISION` → `/replan`, then review again (max 2 rounds, then it asks you).
+- **Audit** `ready` → done · `needs-fixes` → Developer fixes · `plan-fix` → Architect patches the plan · `re-plan` → start the planning leg over.
+
+Run any stage by hand, or hand the whole thing to **`/loop`**, which detects where a feature is from its artifacts and runs the remaining stages — spawning a separate sub-agent per role so isolation holds.
+
+## Artifacts
+
+Every feature is self-contained and hermetic:
+
+```
+.pythia/workflows/features/feat-YYYY-MM-{slug}/
+├── feat-YYYY-MM-{slug}.md      # the feature definition
+├── plans/      {n}-{slug}.plan.md
+├── reports/    {n}-{slug}.review.md · .implementation.md · .audit.md
+├── contexts/   research & context documents
+└── notes/      retrospectives · audit problem logs
+```
+
+Plans are versioned, reviews and implementations are append-only across rounds, and a project-level retrospective (`/retro-all`) aggregates lessons across every feature into a living knowledge base.
+
+## Installation
+
+Pythia ships as a CLI that installs the whole workflow — skills, agent role definitions, and the `.pythia` working directory — into any project.
 
 ```bash
-# Create a new task
-@create-task.md
-
-# Analyze project architecture
-@analyze-project.md
-
-# Create a new proposal
-@create-proposal.md
-
-# With project context
-Execute @create-task.md for my project at /path/to/your-project
-
-# With specific requirements
-Create a task for improving user navigation in my React application
+npx pythia-workspace          # auto: init a new workspace, or update an existing one
+npx pythia-workspace init     # first-time install
+npx pythia-workspace update   # pull the latest skills & instructions
 ```
 
-### Key Features
+Both commands accept `--target <dir>` (default: current directory) and `--dry-run` (preview without writing).
 
-- **@Command Syntax**: Reference commands using `@command-name.md`
-- **mdc: Links**: Use `mdc:` prefix for workspace-aware file references
-- **Project Adaptation**: Commands automatically adapt to your project structure
-- **Cross-Project Compatibility**: Works with any project documentation structure
+### What lands in your project
 
-### Project Context
+```
+AGENTS.md / CLAUDE.md     # workflow instructions for Codex and Claude Code
+.agents/skills/           # skills surface for Codex
+.claude/skills/           # skills surface for Claude Code
+.pythia/
+  version.json            # installed version + content hashes (also the update signal)
+  config.md               # your workspace config — never overwritten
+  README.md
+  workflows/              # where features and their artifacts live
+```
 
-Commands automatically adapt to your project's structure:
+`AGENTS.md` and `CLAUDE.md` come from a single source, so they can't drift apart. On `update`, the skills are refreshed and the instruction files regenerated — and if you've edited a generated file locally, it's saved to `<file>.bak` before being overwritten, so nothing is lost silently. Your `config.md` is seeded once and left alone.
+
+## Skills
+
+| Skill | Role | Purpose |
+|-------|------|---------|
+| `/workflow` | — | Overview and entry point for the full lifecycle |
+| `/feat` | PM + Architect | Define a feature: problem, value, scope, success criteria |
+| `/research` | Researcher | Investigate options & prior art → context document |
+| `/ctx` | Architect | Create a standalone context document for a feature |
+| `/plan` | Architect | Create or revise an implementation plan |
+| `/review` | Reviewer | Surface gaps, risks, and ambiguities — without proposing fixes |
+| `/replan` | Architect | Revise a plan after review findings or implementation blockers |
+| `/implement` | Developer | Execute an approved plan and write the implementation report |
+| `/audit` | Architect | Audit the implementation against the plan; issue the verdict |
+| `/loop` | — | Detect feature state and orchestrate the remaining stages |
+| `/retro` | Architect | Synthesize a retrospective for one feature |
+| `/retro-all` | Architect | Aggregate retrospectives across all features |
+| `/validate` | — | Check workflow Markdown against the format contract |
+| `/skill-search-and-fit` | — | Find and evaluate agent skills from public catalogs |
+| `/skill-sync-cursor-to-claude` | — | Sync skills from Cursor to Claude Code / Desktop |
+
+## Configuration
+
+`.pythia/config.md` is plain Markdown you own. It sets the agent's reply language and document language (which can differ), the paths to skills and workflows, and free-form project context the agent should always keep in mind. The CLI reads it but never rewrites it.
+
+## Development
 
 ```bash
-# Specify your project structure  
-My project is a web application
-My documentation is in ./.pythia directory
-My project uses Redux for state management
+npm run build              # compile the CLI (tsc → dist/)
+npm test                   # CLI tests (src/cli/tests/)
+npm run test:workflow-doc  # workflow-document format validator tests
 ```
 
-### Navigation and Links
+The CLI lives in `src/cli/`. The canonical skills source is `skills/`; the per-agent `.claude/skills` and `.agents/skills` directories are generated from it on install.
 
-Use `mdc:` links for workspace-aware file references:
+## Concept
 
-```markdown
-# Reference project files
-
-[Project Architecture](mdc:navigation/documentation-map.md)
-
-# Reference Pythia commands
-
-[Create Task](mdc:commands/create-task.md)
-```
-
-## Legacy Installation (Deprecated)
-
-> **Note**: These installation methods are deprecated. Use workspace integration instead.
-
-### Method 1: LLM-Assisted Installation
-
-This approach is for legacy installations only:
-
-```
-Execute the setup.md command to install Pythia in my project at [path].
-```
-
-The LLM will:
-
-1. **Analyze your project's state**
-
-   - Check if Pythia core is already installed
-   - If not, add it as a git submodule
-
-2. **Configure the environment**
-
-   - Install required npm dependencies
-   - Create or update the configuration file
-
-3. **Set up project structure**
-   - Configure necessary documentation directories
-   - Generate baseline README files for navigation
-
-### Method 2: Manual Step-by-Step Installation
-
-> **Deprecated**: This method is for legacy installations only. Use workspace integration instead.
-
-#### Step 1: Install Pythia Core
-
-Using Git Submodule:
-
-```bash
-# Navigate to your project root
-cd /path/to/your-project
-
-# Create docs directory if it doesn't exist
-mkdir -p .pythia
-
-# Add Pythia core as a git submodule
-git submodule add https://github.com/your-org/pythia-core.git .pythia/core
-git submodule update --init --recursive
-```
-
-#### Step 2: Install Dependencies and Configure
-
-```bash
-# Install dependencies
-cd .pythia/core
-npm install
-
-# Configure settings
-vi config.json
-```
-
-#### Step 3: Set Up Project Structure
-
-## Available Commands
-
-### Document Creation
-
-- `@create-task.md` - Create task documentation
-- `@create-proposal.md` - Create proposal documents
-- `@create-idea.md` - Create idea documentation
-- `@create-exploration.md` - Create research documents
-
-### Analysis and Review
-
-- `@analyze-project.md` - Comprehensive project analysis
-- `@analyze-architecture.md` - Architecture analysis
-- `@improve-typescript-files.md` - TypeScript file improvements
-- `@review-pull-request.md` - PR review and analysis
-
-### Documentation Management
-
-- `@update-documentation-map.md` - Update navigation
-- `@update-status.md` - Update document status
-- `@validate-documentation.md` - Validate documentation integrity
-- `@archive-tasks.md` - Archive completed tasks
-
-### System Commands
-
-- `@setup.md` - Project setup and configuration
-- `@update-command.md` - Update existing commands
-- `@sync-confluence.md` - Sync with Confluence
-- `@report-workflows.md` - Generate workflow reports
-
-## Examples
-
-### Real Project Usage
-
-#### Web Application Example
-
-```bash
-# Create task for feature improvement
-@create-task.md
-
-# Context: Web application
-# Objective: Improve user navigation system
-# Priority: High
-# Timeline: 2 weeks
-```
-
-#### API Documentation Example
-
-```bash
-# Analyze API integration
-@analyze-architecture.md
-
-# Focus: API communication patterns
-# Context: REST API with authentication
-# Requirements: Offline support, error handling
-```
-
-## Getting Started
-
-### 1. Choose Your Approach
-
-**Recommended**: Use workspace integration
-
-- Reference commands directly: `@command-name.md`
-- Provide project context
-- Use workspace navigation
-
-**Legacy**: Use installation methods
-
-- Follow deprecated installation steps
-- Limited to single project usage
-- Requires manual setup
-
-### 2. Provide Project Context
-
-```bash
-# Essential project information
-My project is a web application
-My docs are in ./.pythia directory
-My project uses Redux for state management
-
-# Optional: Specific requirements
-I need to improve user navigation
-I want to add offline support
-I need to optimize performance
-```
-
-### 3. Execute Commands
-
-```bash
-# Basic command execution
-@create-task.md
-
-# With specific requirements
-Create a task for improving user navigation in my application
-
-# With project context
-Execute this command for my project at /path/to/your-project
-```
-
-## Documentation Structure
-
-Pythia works with any documentation structure:
-
-### Standard Structure
-
-```
-your-project/
-├── .pythia/
-│   ├── architecture/
-│   ├── workflows/
-│   ├── commands/
-│   ├── guides/
-│   └── navigation/
-└── README.md
-```
-
-### Flexible Structure
-
-```
-your-project/
-├── documentation/
-│   ├── design/
-│   ├── processes/
-│   └── decisions/
-├── .pythia/
-│   └── api/
-└── README.md
-```
-
-## Support and Resources
-
-### Documentation
-
-- [Workspace Integration (via Setup)](guides/guide-workspace-integration.md) - Run `@setup.md`, verify, and start working
-- [Command Reference](commands/) - All available commands
-- [Methodology](methodology/) - Documentation methodologies
-- [Templates](templates/) - Document templates
-
-### Getting Help
-
-1. **Check Command List**: Review available commands above
-2. **Provide Context**: Give clear project information
-3. **Use Examples**: Reference similar successful usage
-4. **Adapt Commands**: Modify for your specific needs
-
-### Migration from Legacy Usage
-
-If you previously used Pythia as a git submodule:
-
-1. **Remove Old Installation**:
-
-   ```bash
-   git submodule deinit .pythia/pythia
-   git rm .pythia/pythia
-   ```
-
-2. **Use Workspace Integration**:
-
-   - Reference commands directly: `@command-name.md`
-   - Use workspace navigation: `mdc:` links
-   - Adapt to your project structure
-
-3. **Update References**:
-   - Change `../pythia/commands/` to `@command-name.md`
-   - Update file paths to use `mdc:` syntax
-   - Adapt to your project's documentation structure
-
-```bash
-# Create necessary directories
-cd /path/to/your-project/.pythia
-mkdir -p workflows/tasks workflows/proposals workflows/decisions workflows/ideas
-mkdir -p contexts/project contexts/technical contexts/meetings
-```
-
-### Method 3: Using installCore.js Script
-
-After adding Pythia core (step 1 above), you can use the automated script to complete setup:
-
-```bash
-# Navigate to the core directory
-cd /path/to/your-project/.pythia/core
-
-# Run the installation script
-node tools/installCore.js .. --method=git
-
-# Or with custom configuration:
-node tools/installCore.js .. --method=git --config=./my-config.json
-```
-
-For integration, use the command [Setup](commands/setup.md) and see [Workspace Integration (via Setup)](guides/guide-workspace-integration.md).
-
-## Testing Your Installation
-
-After installation, verify that everything works correctly:
-
-```bash
-# Check the core installation
-ls -la .pythia/core
-
-# Verify project structure
-ls -la .pythia/workflows
-ls -la .pythia/contexts
-
-# Validate documentation structure
-cd .pythia/core/tools
-node validateDocumentation.js ../..
-```
-
-If the validation passes without errors, your installation is working correctly.
-
-## Documentation Overview
-
-Our documentation is organized into several categories to make information easy to find and maintain:
-
-- **Agents**: Specialized role definitions for LLM behavior and task-specific workflows
-- **Commands**: Automated commands for documentation management
-- **Concept**: Core concept and architecture of the Pythia system
-- **Guides**: Practical how-to instructions
-- **Methodology**: Development processes and approaches
-- **Navigation**: Tools to help navigate the documentation
-- **Rules**: Guidelines and standards for LLMs and development
-- **Contexts**: Context documents for specific projects
-- **Workflows**: Workflows for specific projects
-- **Templates**: Templates for creating new documentation
-
-## Key Documents
-
-- [CONCEPT](CONCEPT.md): Detailed description of the Pythia system concept and architecture, principles of document classification and their interaction
-- [Documentation Map](navigation/documentation-map.md): Central navigation hub for all documentation, providing quick access to the necessary information
-- [Documentation Guidelines](methodology/documentation-guidelines.md): Main rules and standards for working with documentation, including formatting and structure requirements
-
-## Agent System
-
-Pythia includes a comprehensive **agent system** that defines specialized roles for LLMs to handle different types of tasks:
-
-- **Development Agents**: [agent-developer](agents/agent-developer.md), [agent-feature-developer](agents/agent-feature-developer.md)
-- **Testing Agents**: [agent-qa-automation-head](agents/agent-qa-automation-head.md), [agent-tdd-writer](agents/agent-tdd-writer.md), [agent-tdd-dev](agents/agent-tdd-dev.md)
-- **Analysis Agents**: [agent-architect](agents/agent-architect.md), [agent-code-analyzer](agents/agent-code-analyzer.md)
-
-Each agent has:
-- Clear role boundaries and operational limits
-- Escalation protocols for inter-agent collaboration
-- Tiered information architecture (Critical → Important → Reference)
-
-**Quick Start**: See [Agent Selection Guide](agents/_agent-selection-guide.md) to choose the right agent for your task.
-
-## Working with Commands
-
-Commands are a central component of the Pythia system, providing structured instructions for LLMs to execute specific tasks. Unlike traditional documentation, commands follow a precise format that both humans and LLMs can understand and reference.
-
-### Key Command Categories
-
-- **Document Creation**: Commands like [create-task](commands/create-task.md), [create-proposal](commands/create-proposal.md), and [create-idea](commands/create-idea.md) for generating new workflow documents
-- **Documentation Management**: Commands like [update-changelog](commands/update-changelog.md) and [update-documentation-map](commands/update-documentation-map.md) for maintaining metadata
-- **Integration**: Commands like [sync-confluence](commands/sync-confluence.md) and [gen-pr-description](commands/gen-pr-description.md) for connecting with external systems
-- **Workflow Management**: Commands like [update-status](commands/update-status.md) and [complete-exploration](commands/complete-exploration.md) for tracking progress
-
-### Using Commands with LLMs
-
-To effectively use commands with LLMs:
-
-1. **Reference the command file**: Direct the LLM to the appropriate command file in the `/commands` directory
-2. **Provide necessary context**: Ensure the LLM has access to relevant information needed for the command
-3. **Request execution**: Ask the LLM to execute the command according to its documentation
-4. **Review and iterate**: Check the output and refine as needed
-
-Example interaction:
-
-```
-User: Please create a new task for implementing feature X
-LLM: I'll help you create a new task. I'll use the create-task command.
-     [References create-task.md and follows its structure]
-     [Creates the task document in the proper location with proper format]
-```
-
-### Command Structure
-
-Most commands follow a consistent structure:
-
-- **Purpose**: What the command accomplishes
-- **Usage**: How to invoke the command
-- **Parameters**: Required and optional inputs
-- **Output**: Expected results and file changes
-- **Examples**: Sample usage patterns
-- **Related Commands**: Other relevant commands
-
-## Directory Structure
-
-```
-/
-├── agents/                    # Specialized LLM role definitions
-│   ├── agent-*.md             # Individual agent definitions
-│   ├── _agent-selection-guide.md
-│   └── _shared-principles.md
-├── architecture/              # Analytical documents about architecture
-├── methodology/               # Development methodologies and processes
-├── rules/                     # Guidelines and standards for LLMs
-├── guides/                    # Practical guides and instructions
-├── workflows/                 # Work items and documentation workflows
-│   ├── tasks/                 # Context from LLM-assisted work
-│   ├── proposals/             # Proposals for changes and improvements
-│   ├── decisions/             # Architecture Decision Records (ADRs)
-│   └── ideas/                 # Ideas and explorations
-│       └── explorations/      # Explorations of ideas
-├── navigation/                # Navigation documents
-├── templates/                 # Templates for creating new documents
-├── commands/                  # Instructions for automation tools
-├── tools/                     # Automation scripts and utilities
-├── src/                       # MCP server implementation
-├── contexts/                  # Context documents
-├── processes/                 # Process definitions
-├── reports/                   # Documentation analysis reports
-├── CHANGELOG.md               # Record of documentation changes
-├── CONCEPT.md                 # Core concept and architecture of the Pythia system
-└── README.md                  # This file
-```
-
-## MCP Server Integration
-
-Pythia includes a **Model Context Protocol (MCP) Server** for integration with Claude Code and Cursor.
-
-### Available Tools
-
-- `archive_tasks` - Archive completed tasks
-- `check_coverage` - Check documentation coverage
-- `check_quality` - Document quality analysis
-- `create_document` - Create new documents using templates
-- `update_map` - Update documentation map
-- `validate_links` - Validate and fix links
-- `validate_quality` - Validate documentation quality
-
-### Quick Start
-
-Start the MCP server:
-```bash
-npm run mcp-server
-```
-
-### Claude Code Integration
-
-Add to your Claude Code MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "pythia": {
-      "command": "npm",
-      "args": ["run", "mcp-server"],
-      "cwd": "/path/to/pythia"
-    }
-  }
-}
-```
-
-### Cursor Integration
-
-Add to `.cursor/mcp.json` in your project:
-
-```json
-{
-  "mcpServers": {
-    "pythia": {
-      "command": "npm", 
-      "args": ["run", "mcp-server"],
-      "cwd": "/path/to/pythia"
-    }
-  }
-}
-```
-
-### Usage
-
-```javascript
-// Validate and fix links
-pythia.validate_links({ fix: true })
-
-// Create task document
-pythia.create_document({ type: "task", title: "New Feature" })
-
-// Update documentation map
-pythia.update_map({ addAll: true })
-```
-
-## Documentation Tools and Enhancements
-
-Pythia uses a collection of documentation commands to facilitate effective interaction between humans and LLMs. For information about automation scripts and utilities that support these commands, see [Documentation Automation Scripts](tools/README.md).
-
-## Working with Documentation
-
-### Finding Information
-
-Start with the [Documentation Map](navigation/documentation-map.md) to find relevant documents. It provides links to all key documents and explains their relationships.
-
-### Contributing to Documentation
-
-When contributing to documentation:
-
-1. Follow the [Documentation Guidelines](methodology/documentation-guidelines.md)
-2. Use the established document structure for the specific document type
-3. Add cross-references to related documents
-4. Update the Documentation Map when adding new documents
-5. Record significant changes in the [Changelog](CHANGELOG.md)
-
-### Validating Documentation
-
-We have automated tools for validating documentation integrity:
-
-```bash
-# Validate documentation links
-npm run docs:validate-links
-
-# Check documentation coverage
-npm run docs:check-coverage
-```
-
-Reports from these tools are saved in the `/reports` directory.
-
-### Integrating Pythia Core in Other Projects
-
-The Pythia system is designed to be integrated into multiple projects while maintaining a single source of truth for core documentation structures and methodologies. As described in [CONCEPT](CONCEPT.md), the core system components are maintained in a separate repository and integrated into projects.
-
-For detailed instructions on integrating Pythia into your project, see [Workspace Integration (via Setup)](guides/guide-workspace-integration.md), which describes:
-
-1. Three ways to install Pythia core:
-
-   - LLM-assisted installation
-   - Manual Git Submodule installation
-   - Symbolic link installation (for core developers)
-
-2. Three ways to set up your project after installing the core:
-   - LLM-assisted setup
-   - Using the installCore.js script
-   - Manual configuration
-
-The guide provides step-by-step instructions for each approach, along with troubleshooting tips and next steps after installation.
-
-### Documentation Principles
-
-Our documentation follows these key principles:
-
-1. **Connected**: Documents reference each other to create a complete picture
-2. **Current**: Documentation is kept up-to-date with system changes
-3. **Contextual**: Documents provide sufficient context for understanding
-4. **Consistent**: Similar documents follow consistent patterns and structure
-5. **Clear**: Information is presented clearly with appropriate detail
-
-## Documentation Validation
-
-We have two scripts for validating and maintaining documentation quality:
-
-1. **Link Validator**: Checks for broken links and missing reciprocal links
-
-   - `npm run docs:validate-links` - Check links only
-   - `npm run docs:fix-links` - Check and fix missing reciprocal links
-
-2. **Coverage Checker**: Ensures all documents are included in the documentation map
-   - `npm run docs:check-coverage` - Check document coverage
-   - `npm run docs:fix-coverage` - Check and update documentation map
-
-More information: [Validate Documentation](commands/validate-documentation.md)
-
-### Testing Documentation Scripts
-
-We have tests for our documentation validation scripts:
-
-```bash
-# Run tests for documentation scripts
-npm run test:docs-scripts
-```
-
-These tests ensure that our documentation validation tools work correctly, particularly focusing on:
-
-- Proper handling of ignored files
-- Correct formatting of reciprocal links
-- Avoiding duplicate references
-- Accurate documentation coverage reporting
-- Extraction of document titles from headings for better link text
-
-## References
-
-- [CONCEPT](CONCEPT.md)
-- [Improvement Roadmap](CONCEPT.md)
-- [Documentation Structure](navigation/documentation-map.md)
-- [Documentation Map](navigation/documentation-map.md)
-- [Documentation Standards](navigation/documentation-standards.md)
-- [Documentation Guidelines](methodology/documentation-guidelines.md)
-- [Validate Documentation](commands/validate-documentation.md)
-- [Summary Documents Registry](navigation/summary-documents-registry.md)
-- [CHANGELOG](CHANGELOG.md)
-
+For the full philosophy — Pythia as a mediator layer between human intent and model execution, the document taxonomy, and the core/working/project knowledge-transformation cycle — see [CONCEPT.md](CONCEPT.md).

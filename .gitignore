@@ -5,9 +5,6 @@ node_modules/
 reports/
 
 
-# Workflows
-workflows/
-
 # Logs
 *.log
 npm-debug.log*
