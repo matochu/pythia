@@ -2,45 +2,69 @@
 
 ## Versioning
 
-Follows semantic versioning. Patch releases (0.x.Y) fix bugs or polish without breaking CLI behavior. Minor releases (0.X.0) introduce new features or change the workspace layout.
+Follows semantic versioning. Patch releases (0.x.Y) fix bugs or polish without breaking CLI behavior. Minor releases (0.X.0) introduce new features or change the workspace layout. Any change to the format of a protected-zone artifact (`.pythia/workflows/**`) requires a migration step.
+
+## Migration Authoring Rule
+
+A change to a protected-zone artifact's format **must** include:
+1. A migration step in `assets/migrations/next.md` (auto op or llm instruction)
+2. A `seedIfMissing` entry in the CLI when a brand-new protected-zone file is introduced
+
+During development, `next.md` accumulates steps. It is git-tracked but **excluded from the published package** (via `assets/migrations/.npmignore`).
 
 ## Release Checklist
 
 1. **Bump the version** in `package.json`.
 
-2. **Update `CHANGELOG.md`**: rename the `## Unreleased` section to `## <version> - <date>`, or add a new dated section.
-
-   To generate from conventional commits:
+2. **Update `CHANGELOG.md`**:
 
    ```bash
    npm run changelog
    ```
 
-3. **Run build and tests**:
+3. **Rename the migration staging file** (if any steps were added):
 
    ```bash
-   npm run build
+   # Rename next.md to the new version
+   mv assets/migrations/next.md assets/migrations/<version>.md
+   # Update the in-file version condition in the new file:
+   # "Applied by ... when migratedVersion < <version>"
+   ```
+
+   If no protected-zone format changes were made in this release, skip this step.
+
+4. **Verify migration release gate**:
+
+   ```bash
+   npm run release:check-migrations
+   ```
+
+   This fails if `next.md` still exists. Fix: rename it as in step 3.
+
+5. **Run tests**:
+
+   ```bash
    npm test
    ```
 
-4. **Verify pack output**:
+6. **Verify pack output** (must include versioned migrations, must exclude `next.md`):
 
    ```bash
    npm pack --dry-run
    ```
 
-   Confirm only `dist/src/cli/`, `assets/`, `skills/`, `README.md`, `CHANGELOG.md` are listed.
+   Confirm `src/cli/`, `assets/migrations/<semver>.md`, `skills/`, `README.md`, `CHANGELOG.md` are listed. Confirm `assets/migrations/next.md` is **not** listed.
 
-5. **Commit and tag**:
+7. **Commit and tag**:
 
    ```bash
-   git add package.json CHANGELOG.md
+   git add package.json CHANGELOG.md assets/migrations/
    git commit -m "chore: release <version>"
    git tag v<version>
    git push origin main --tags
    ```
 
-6. **CI publishes automatically**: pushing a `v*` tag triggers `.github/workflows/publish.yml`, which builds, tests, and publishes to npm with provenance.
+8. **CI publishes automatically**: pushing a `v*` tag triggers `.github/workflows/publish.yml`, which tests and publishes to npm with provenance.
 
    To publish manually (fallback):
 
@@ -50,7 +74,7 @@ Follows semantic versioning. Patch releases (0.x.Y) fix bugs or polish without b
 
 ## CI Publish Requirements
 
-- npm trusted publishing must be configured on npmjs.com for this package (Granular Access Tokens → OIDC → GitHub Actions). No secret token needed in the repo.
+- npm trusted publishing must be configured on npmjs.com for this package (OIDC → GitHub Actions). No secret token needed.
 - The `package.json` version must match the pushed tag exactly (CI gate verifies this).
 - The package must be public (`--access public`).
 
@@ -58,9 +82,15 @@ Follows semantic versioning. Patch releases (0.x.Y) fix bugs or polish without b
 
 | Included | Source |
 |---|---|
-| `dist/src/cli/` | compiled CLI from `npm run build` |
-| `assets/` | instruction source + seed files |
-| `skills/` | canonical skills shipped to workspaces |
-| `README.md`, `CHANGELOG.md` | docs |
+| `src/cli/` | JS CLI source (no build step) |
+| `scripts/migrate/` | JS migration engine scripts |
+| `assets/migrations/<semver>.md` | Versioned migration files (next.md excluded) |
+| `assets/base/`, `assets/instructions.md` | Seed files and instruction source |
+| `skills/` | Canonical skills shipped to workspaces |
+| `README.md`, `CHANGELOG.md` | Docs |
 
-Everything else (source `src/`, tests, scripts, `.pythia/`, `.claude/`) is excluded via the `files` field in `package.json`.
+Everything else (`docs/`, tests, `.pythia/`, `.claude/`, `tsconfig`, `dist/`) is excluded via the `files` field in `package.json` or the root `.npmignore`.
+
+## All-JS Package (No Build)
+
+There is no `npm run build` step. The package ships `src/cli/` directly. The `bin` entry points to `./src/cli/index.js`. No `tsc`, `dist/`, `typescript`, or `ts-node`.

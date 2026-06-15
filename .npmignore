@@ -1,17 +1,14 @@
-# Source files
-src/
+# Source files excluded from package (src/cli/ is included via files field)
 tools/
 .pythia/
 
 # Config files
-tsconfig.json
-tsconfig.mcp.json
+vitest.config.js
 .vscode/
 .cursor/
 
 # Development files
-*.test.ts
-vitest.config.ts
+*.test.js
 .env*
 
 # Git
@@ -25,7 +22,7 @@ node_modules/
 *.log
 npm-debug.log*
 
-# Build artifacts (except dist)
+# Temp
 .tmp/
 .cache/
 

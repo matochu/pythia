@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -8,14 +7,11 @@ export default defineConfig({
     mockReset: true,
     clearMocks: true,
     restoreMocks: true,
-    deps: {
-      inline: ['**/*/node_modules/**']
-    },
-    includeSource: ['tools/**/*.ts'],
+    include: ['src/cli/tests/**/*.test.js', 'scripts/migrate/__tests__/**/*.test.js'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: ['**/node_modules/**', '**/tests/**', '**/__mocks__/**']
-    }
-  }
+      exclude: ['**/node_modules/**', '**/tests/**', '**/__tests__/**'],
+    },
+  },
 });

@@ -4,12 +4,13 @@
   "type": "module",
   "description": "AI workspace manager",
   "author": "Serhii Frolov <matochu@gmail.com>",
-  "main": "./dist/src/cli/index.js",
+  "main": "./src/cli/index.js",
   "bin": {
-    "pythia": "./dist/src/cli/index.js"
+    "pythia": "./src/cli/index.js"
   },
   "files": [
-    "dist/src/cli/",
+    "src/cli/",
+    "scripts/migrate/",
     "assets/",
     "skills/",
     "README.md",
@@ -27,9 +28,9 @@
     "url": "git+https://github.com/matochu/pythia.git"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "vitest run src/cli/tests/*.test.ts",
+    "test": "vitest run",
     "test:workflow-doc": "bash scripts/test-validate-workflow-doc.sh",
+    "release:check-migrations": "node scripts/release-check-migrations.js",
     "version": "npm run changelog && git add CHANGELOG.md",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
@@ -37,10 +38,7 @@
     "commander": "^11.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10",
     "conventional-changelog-cli": "^5.0.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.2",
     "vitest": "^3.0.8"
   }
 }
