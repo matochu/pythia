@@ -1,6 +1,6 @@
 {
   "name": "pythia-workspace",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "AI workspace manager",
   "author": "Serhii Frolov <matochu@gmail.com>",
@@ -30,15 +30,12 @@
   "scripts": {
     "test": "vitest run",
     "test:workflow-doc": "bash scripts/test-validate-workflow-doc.sh",
-    "release:check-migrations": "node scripts/release-check-migrations.js",
-    "version": "npm run changelog && git add CHANGELOG.md",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
+    "release:check-migrations": "node scripts/release-check-migrations.js"
   },
   "dependencies": {
     "commander": "^11.0.0"
   },
   "devDependencies": {
-    "conventional-changelog-cli": "^5.0.0",
     "vitest": "^3.0.8"
   }
 }

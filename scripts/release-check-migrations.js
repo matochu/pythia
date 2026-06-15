@@ -14,8 +14,12 @@ let ok = true;
 
 const nextMd = join(migrationsDir, 'next.md');
 if (existsSync(nextMd)) {
-  console.error(`[release-check] FAIL: assets/migrations/next.md still exists. Rename it to ${version}.md before publishing.`);
-  ok = false;
+  const content = readFileSync(nextMd, 'utf8');
+  const hasSteps = content.split('\n').some((l) => /^## Step /i.test(l.trim()));
+  if (hasSteps) {
+    console.error(`[release-check] FAIL: assets/migrations/next.md has unreleased steps. Rename it to ${version}.md before publishing.`);
+    ok = false;
+  }
 }
 
 const versionedMd = join(migrationsDir, `${version}.md`);

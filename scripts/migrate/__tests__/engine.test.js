@@ -469,13 +469,29 @@ describe('release staging: npm pack excludes next.md', () => {
     }
   });
 
-  it('release:check-migrations fails when next.md exists', () => {
+  it('release:check-migrations fails when next.md has unreleased steps', () => {
+    const nextMd = join(packageRoot, 'assets', 'migrations', 'next.md');
+    const original = readFileSync(nextMd, 'utf8');
+    writeFileSync(nextMd, original + '\n## Step 1\n\nSome unreleased step.\n');
+    try {
+      const result = spawnSync('node', ['scripts/release-check-migrations.js'], {
+        cwd: packageRoot,
+        encoding: 'utf8',
+      });
+      expect(result.status).toBe(1);
+      expect(result.stdout + result.stderr).toContain('unreleased steps');
+    } finally {
+      writeFileSync(nextMd, original);
+    }
+  });
+
+  it('release:check-migrations passes when next.md is empty template', () => {
     const result = spawnSync('node', ['scripts/release-check-migrations.js'], {
       cwd: packageRoot,
       encoding: 'utf8',
     });
-    expect(result.status).toBe(1);
-    expect(result.stdout + result.stderr).toContain('next.md still exists');
+    expect(result.status).toBe(0);
+    expect(result.stdout + result.stderr).toContain('OK');
   });
 });
 
