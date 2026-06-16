@@ -1,20 +1,21 @@
 #!/usr/bin/env node
 // migrate:apply <version> — run auto steps for one migration version, write state.json.
-import { join, resolve } from 'path';
+import { join, resolve, dirname } from 'path';
 import { existsSync, readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { readManifest } from './manifest.js';
 import { runOp } from './ops.js';
 import { parseMigration, migrationHasLlm } from './parse.js';
 import { writeState } from './state.js';
 
+// Target derived from this script's materialized location: .pythia/runtime/migrate/apply.js
+const targetRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const args = process.argv.slice(2);
-const targetIdx = args.indexOf('--target');
-const targetRoot = resolve(targetIdx !== -1 ? args[targetIdx + 1] : process.cwd());
 const dryRun = args.includes('--dry-run');
 const version = args.find((a) => !a.startsWith('-') && /^\d+\.\d+\.\d+$/.test(a));
 
 if (!version) {
-  console.error('Usage: migrate:apply [--target <dir>] [--dry-run] <version>');
+  console.error('Usage: migrate:apply [--dry-run] <version>');
   process.exit(1);
 }
 

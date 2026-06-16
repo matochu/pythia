@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 // migrate:status — list pending migrations and any unresolved mixed state.
-import { join, resolve } from 'path';
+import { join, resolve, dirname } from 'path';
 import { existsSync, readdirSync, readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { readManifest } from './manifest.js';
 import { inPendingRange, sortVersions } from './semver.js';
 import { findUnresolvedMixedStates } from './state.js';
 import { parseMigration, migrationHasLlm } from './parse.js';
 
+// Target derived from this script's materialized location: .pythia/runtime/migrate/status.js
+const targetRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const args = process.argv.slice(2);
-const targetIdx = args.indexOf('--target');
-const targetRoot = resolve(targetIdx !== -1 ? args[targetIdx + 1] : process.cwd());
 const jsonMode = args.includes('--json');
 
 const manifest = readManifest(targetRoot);

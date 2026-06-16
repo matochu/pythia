@@ -74,7 +74,7 @@ For each llm step in order:
 ```bash
 npm --prefix .pythia run migrate:verify -- <version>
 # or directly:
-node .pythia/runtime/migrate/verify.js --target . <version>
+node .pythia/runtime/migrate/verify.js <version>
 ```
 
 If verify passes → proceed to commit.
@@ -86,7 +86,7 @@ If any llm step cannot meet its success condition, or if `migrate:verify` fails:
 ```bash
 npm --prefix .pythia run migrate:restore -- <version>
 # or:
-node .pythia/runtime/migrate/restore.js --target . <version>
+node .pythia/runtime/migrate/restore.js <version>
 ```
 
 This rolls back the auto-applied changes from backup. **No version bump is written.**
@@ -97,7 +97,7 @@ Stop and report the failure to the user.
 ```bash
 npm --prefix .pythia run migrate:commit -- <version>
 # or:
-node .pythia/runtime/migrate/commit.js --target . <version>
+node .pythia/runtime/migrate/commit.js <version>
 ```
 
 This bumps `migratedVersion` in `.pythia/manifest.json` and prunes old backups.
@@ -112,7 +112,8 @@ Repeat for any remaining pending migrations.
 
 ## Engine invocation reference
 
-All engine commands accept `--target <dir>` (default: current directory) and most accept `--dry-run`.
+No `--target` flag — engine commands always run from their materialized location at
+`.pythia/runtime/migrate/<script>.js` and derive the workspace root from that path. Most accept `--dry-run`.
 
 ```bash
 npm --prefix .pythia run migrate:status

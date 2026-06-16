@@ -24,15 +24,33 @@ export function isWorkspace(target) {
   }
 }
 
+// A directory is an existing workspace if `.pythia/` exists with any real content
+// (managed manifest/version JSON, or any file/dir other than `.DS_Store`).
+// Used for auto-detect routing: existing → update, empty/absent → init.
+export function isExistingWorkspace(target) {
+  const pythiaDir = join(target, '.pythia');
+  if (!existsSync(pythiaDir)) return false;
+  if (isWorkspace(target)) return true;
+  try {
+    return readdirSync(pythiaDir).some((e) => e !== '.DS_Store');
+  } catch {
+    return false;
+  }
+}
+
 export function sha256(content) {
   return createHash('sha256').update(content, 'utf8').digest('hex');
 }
 
+// "Adopted" means .pythia/ already had content before init/update touched it —
+// migration zone covers all of .pythia/, so any pre-existing entry counts, not just workflows/.
+// Excludes `.git` and `.DS_Store`: the CLI's own git-strategy side effect (`git init .pythia/.git`)
+// runs before this check on the init path, so `.git` must not itself count as "pre-existing".
 function hasProtectedArtifacts(target) {
-  const workflowsDir = join(target, '.pythia', 'workflows');
-  if (!existsSync(workflowsDir)) return false;
-  const entries = readdirSync(workflowsDir);
-  return entries.some((e) => e !== '.gitkeep');
+  const pythiaDir = join(target, '.pythia');
+  if (!existsSync(pythiaDir)) return false;
+  const entries = readdirSync(pythiaDir);
+  return entries.some((e) => e !== '.DS_Store' && e !== '.git');
 }
 
 
@@ -115,15 +133,20 @@ function installSkills(packageRoot, target, surfaces, dryRun) {
   }
 }
 
-function pruneSkills(packageRoot, target, surfaces, dryRun) {
+// Prune ONLY skills pythia previously installed and that are now gone from the package.
+// `previousInstalled` is the manifest's installedSkills list. Skills pythia never installed
+// (user's own custom skills in a surface) are never touched.
+function pruneSkills(packageRoot, target, surfaces, dryRun, previousInstalled = []) {
   const skillsSource = join(packageRoot, 'skills');
   if (!existsSync(skillsSource)) return;
   const sourceSkills = new Set(readdirSync(skillsSource));
+  const prev = new Set(previousInstalled);
   for (const surface of surfaces) {
     const dest = join(target, surface);
     if (!existsSync(dest)) continue;
     for (const entry of readdirSync(dest)) {
-      if (!sourceSkills.has(entry)) {
+      // Only prune if we installed it before AND it no longer ships in the package.
+      if (prev.has(entry) && !sourceSkills.has(entry)) {
         const entryPath = join(dest, entry);
         if (dryRun) {
           console.log(`  [prune] ${surface}/${entry}`);
@@ -136,6 +159,13 @@ function pruneSkills(packageRoot, target, surfaces, dryRun) {
   }
 }
 
+// Names of skills shipped in the package (the set pythia owns/installs).
+function packageSkillNames(packageRoot) {
+  const skillsSource = join(packageRoot, 'skills');
+  if (!existsSync(skillsSource)) return [];
+  return readdirSync(skillsSource);
+}
+
 const DEFAULT_SURFACES = ['.claude/skills', '.agents/skills'];
 
 const SUBSTITUTIONS = [
@@ -143,13 +173,16 @@ const SUBSTITUTIONS = [
   { file: 'CLAUDE.md', tool: 'Claude Code', skillsPath: '.claude/skills' },
 ];
 
-export function doInit(opts) {
+export async function doInit(opts) {
   const { target, dryRun, packageRoot, reconfigure = false, yes = false } = opts;
 
-  // On re-run without --reconfigure, preserve existing surfaces/gitStrategy
+  // On re-run without --reconfigure, preserve existing surfaces/gitStrategy; --reconfigure
+  // forces a fresh resolution (explicit flag → interactive prompt → non-interactive default).
   const existingManifestData = readManifest(target);
-  const surfaces = opts.surfaces ?? ((!reconfigure && existingManifestData?.surfaces) || DEFAULT_SURFACES);
-  const gitStrategy = opts.gitStrategy ?? ((!reconfigure && existingManifestData?.gitStrategy) || 'ignore');
+  const { surfaces, gitStrategy } = await resolveSurfacesAndGit(
+    reconfigure ? null : existingManifestData,
+    { ...opts, yes }
+  );
   const assetsDir = join(packageRoot, 'assets');
   if (!existsSync(assetsDir)) throw new Error(`assets/ not found at ${assetsDir}`);
   if (!existsSync(join(packageRoot, 'skills'))) throw new Error(`skills/ not found at ${join(packageRoot, 'skills')}`);
@@ -157,11 +190,16 @@ export function doInit(opts) {
   const instructionSource = readFileSync(join(assetsDir, 'instructions.md'), 'utf8');
   const frameworkVersion = readPackageVersion(packageRoot);
 
-  // Determine if this is a fresh empty init or an adopted workspace
+  // Determine if this is a fresh empty init or an adopted workspace — must run
+  // before any writes (ensureGitStrategy, seeding) touch .pythia/.
   const adopted = hasProtectedArtifacts(target);
   const migratedVersion = adopted ? '0.0.0' : frameworkVersion;
 
   console.log(`[init] target: ${target}${adopted ? ' (adopted)' : ''}`);
+
+  // git-strategy side effect — centralized here so every caller (explicit `init`
+  // command and the CLI's auto-detect path, which calls doInit directly) gets it.
+  ensureGitStrategy(target, gitStrategy, dryRun);
 
   // Seed base .pythia files
   const baseDir = join(assetsDir, 'base');
@@ -197,6 +235,7 @@ export function doInit(opts) {
     installedAt: existingManifestData?.installedAt ?? new Date().toISOString(),
     surfaces: activeSurfaces,
     gitStrategy,
+    installedSkills: packageSkillNames(packageRoot),
     generated: manifest,
   };
   writeManifest(target, manifestData, dryRun);
@@ -250,11 +289,11 @@ function writePythiaPackageJson(target, projectName, frameworkVersion, dryRun) {
     version: frameworkVersion,
     type: 'module',
     scripts: {
-      'migrate:status': 'node runtime/migrate/status.js --target ..',
-      'migrate:apply': 'node runtime/migrate/apply.js --target ..',
-      'migrate:verify': 'node runtime/migrate/verify.js --target ..',
-      'migrate:commit': 'node runtime/migrate/commit.js --target ..',
-      'migrate:restore': 'node runtime/migrate/restore.js --target ..',
+      'migrate:status': 'node runtime/migrate/status.js',
+      'migrate:apply': 'node runtime/migrate/apply.js',
+      'migrate:verify': 'node runtime/migrate/verify.js',
+      'migrate:commit': 'node runtime/migrate/commit.js',
+      'migrate:restore': 'node runtime/migrate/restore.js',
     },
   };
   if (!dryRun) {
@@ -350,7 +389,7 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate)
       if (!dryRun) {
         const verifyScript = join(target, '.pythia', 'runtime', 'migrate', 'verify.js');
         if (existsSync(verifyScript)) {
-          const verifyResult = spawnSync('node', [verifyScript, '--target', target, v], { encoding: 'utf8' });
+          const verifyResult = spawnSync('node', [verifyScript, v], { encoding: 'utf8' });
           if (verifyResult.stdout) process.stdout.write(verifyResult.stdout);
           if (verifyResult.stderr) process.stderr.write(verifyResult.stderr);
           if (verifyResult.status !== 0) {
@@ -384,6 +423,75 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate)
   }
 }
 
+// Resolve which surfaces (LLM hosts) and git strategy to use, for both init and update,
+// regardless of caller (explicit subcommand or the CLI's auto-detect path):
+//   1. explicit CLI flag (opts.surfaces / opts.gitStrategy) → use it
+//   2. else existing manifest value → use it
+//   3. else interactive TTY (no --yes/--dry-run) → prompt, showing the default as the suggested answer
+//   4. else (non-interactive: --yes, --dry-run, or no TTY) → apply the documented default
+// There is no path where a default applies without one of (1)-(4) — defaulting always
+// requires either an explicit flag, a preserved manifest value, an interactive answer,
+// or an explicit non-interactive acceptance (--yes / piped invocation).
+async function resolveSurfacesAndGit(existing, opts) {
+  let surfaces = opts.surfaces ?? existing?.surfaces;
+  let gitStrategy = opts.gitStrategy ?? existing?.gitStrategy;
+  if (surfaces && gitStrategy) return { surfaces, gitStrategy };
+
+  const interactive = process.stdin.isTTY && !opts.yes && !opts.dryRun;
+  if (interactive) {
+    const { createInterface } = await import('readline/promises');
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    try {
+      if (!surfaces) {
+        const ans = await rl.question('Surfaces to install [claude,codex] (default: both): ');
+        surfaces = ans.trim() ? parseSurfacesList(ans.trim()) : [...DEFAULT_SURFACES];
+      }
+      if (!gitStrategy) {
+        const ans = await rl.question('Git strategy [shared|pythia|ignore] (default: pythia): ');
+        const valid = ['shared', 'pythia', 'ignore'];
+        gitStrategy = ans.trim() && valid.includes(ans.trim()) ? ans.trim() : 'pythia';
+      }
+    } finally {
+      rl.close();
+    }
+  }
+  // Non-interactive (or unanswered) defaults
+  if (!surfaces) surfaces = [...DEFAULT_SURFACES];
+  if (!gitStrategy) gitStrategy = 'pythia';
+  return validateGitStrategy(opts.target, surfaces, gitStrategy);
+}
+
+// `shared` requires a git repo already at target; fall back to `ignore` if absent.
+function validateGitStrategy(target, surfaces, gitStrategy) {
+  if (gitStrategy === 'shared') {
+    const r = spawnSync('git', ['-C', target, 'rev-parse', '--git-dir'], { encoding: 'utf8' });
+    if (r.status !== 0) {
+      console.warn(`  [git] shared strategy requires a git repo in target; falling back to ignore`);
+      gitStrategy = 'ignore';
+    }
+  }
+  return { surfaces, gitStrategy };
+}
+
+function parseSurfacesList(str) {
+  const valid = { claude: '.claude/skills', codex: '.agents/skills' };
+  const out = [];
+  for (const p of str.split(',').map((s) => s.trim().toLowerCase())) {
+    if (valid[p]) out.push(valid[p]);
+  }
+  return out.length ? out : [...DEFAULT_SURFACES];
+}
+
+// Apply git-strategy side effect: pythia → ensure local .pythia/.git exists.
+function ensureGitStrategy(target, gitStrategy, dryRun) {
+  if (dryRun || gitStrategy !== 'pythia') return;
+  const pythiaGitDir = join(target, '.pythia', '.git');
+  if (existsSync(pythiaGitDir)) return;
+  mkdirSync(join(target, '.pythia'), { recursive: true });
+  const r = spawnSync('git', ['init', join(target, '.pythia')], { encoding: 'utf8' });
+  if (r.status === 0) console.log(`  [git] initialized .pythia/.git`);
+}
+
 export async function doUpdate(opts) {
   const { target, dryRun, packageRoot, noMigrate = false } = opts;
   const assetsDir = join(packageRoot, 'assets');
@@ -411,23 +519,39 @@ export async function doUpdate(opts) {
 
   const existing = readManifest(target);
   const existingGenerated = existing?.generated ?? {};
-  const existingSurfaces = existing?.surfaces ?? DEFAULT_SURFACES;
+
+  // Capture adoption state BEFORE any writes below (ensureGitStrategy, seeding) touch .pythia/.
+  const adopted = hasProtectedArtifacts(target);
+
+  // Resolve surfaces (which LLM hosts) + git strategy: manifest → use; missing → ask/default.
+  const { surfaces: activeSurfaces, gitStrategy } = await resolveSurfacesAndGit(existing, opts);
+  const previousInstalled = existing?.installedSkills ?? [];
 
   console.log(`[update] target: ${target}`);
+
+  // git-strategy side effect (e.g. ensure local .pythia/.git for pythia strategy)
+  ensureGitStrategy(target, gitStrategy, dryRun);
+
+  // Seed base .pythia files for workspaces that never went through init
+  // (e.g. an adopted/old .pythia/ updated one-step without a prior `init` run).
+  const baseDir = join(assetsDir, 'base');
+  seedIfMissing(target, '.pythia/config.md', readFileSync(join(baseDir, 'config.md'), 'utf8'), dryRun);
+  seedIfMissing(target, '.pythia/README.md', readFileSync(join(baseDir, 'README.md'), 'utf8'), dryRun);
+  seedIfMissing(target, '.pythia/workflows/.gitkeep', '', dryRun);
 
   // Managed refresh
   const manifest = {};
   for (const sub of SUBSTITUTIONS) {
     const surfaceKey = sub.file === 'CLAUDE.md' ? 'claude' : 'codex';
     const surfaceDir = surfaceKey === 'claude' ? '.claude/skills' : '.agents/skills';
-    if (!existingSurfaces.includes(surfaceDir)) continue;
+    if (!activeSurfaces.includes(surfaceDir)) continue;
     const content = renderInstructions(instructionSource, sub.tool, sub.skillsPath);
     const hash = writeManaged(target, sub.file, content, existingGenerated, dryRun);
     manifest[sub.file] = hash;
   }
 
-  pruneSkills(packageRoot, target, existingSurfaces, dryRun);
-  installSkills(packageRoot, target, existingSurfaces, dryRun);
+  pruneSkills(packageRoot, target, activeSurfaces, dryRun, previousInstalled);
+  installSkills(packageRoot, target, activeSurfaces, dryRun);
 
   // Materialize .pythia/runtime/ pinned to frameworkVersion
   materializeRuntime(packageRoot, target, dryRun);
@@ -437,10 +561,19 @@ export async function doUpdate(opts) {
   const projectName = pkgJson.name ?? 'project';
   writePythiaPackageJson(target, projectName, frameworkVersion, dryRun);
 
-  // Write manifest.json preserving long-lived fields
+  // Write manifest.json preserving long-lived fields.
+  // migratedVersion baseline: preserve if already set; otherwise establish one now —
+  // an old .pythia without a manifest (adopted, with pre-existing content) starts
+  // at 0.0.0 so future migrations apply to it; a workspace with no pre-existing
+  // content at all is already current (mirrors doInit's adoption logic).
+  const migratedVersion = existing?.migratedVersion ?? (adopted ? '0.0.0' : frameworkVersion);
   const manifestData = {
     frameworkVersion,
+    migratedVersion,
     installedAt: new Date().toISOString(),
+    surfaces: activeSurfaces,
+    gitStrategy,
+    installedSkills: packageSkillNames(packageRoot),
     generated: manifest,
   };
   writeManifest(target, manifestData, dryRun);

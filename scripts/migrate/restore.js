@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 // migrate:restore <version> — roll back from backup manifest, no bump.
-import { join, resolve } from 'path';
-import { existsSync, copyFileSync, mkdirSync, dirname, realpathSync } from 'fs';
+import { join, resolve, dirname } from 'path';
+import { existsSync, copyFileSync, mkdirSync, realpathSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { readState } from './state.js';
 import { readManifest } from './manifest.js';
 
+// Target derived from this script's materialized location: .pythia/runtime/migrate/restore.js
+const targetRoot = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../../..'));
 const args = process.argv.slice(2);
-const targetIdx = args.indexOf('--target');
-const targetRoot = realpathSync(resolve(targetIdx !== -1 ? args[targetIdx + 1] : process.cwd()));
 const dryRun = args.includes('--dry-run');
 const version = args.find((a) => !a.startsWith('-') && /^\d+\.\d+\.\d+$/.test(a));
 
 if (!version) {
-  console.error('Usage: migrate:restore [--target <dir>] [--dry-run] <version>');
+  console.error('Usage: migrate:restore [--dry-run] <version>');
   process.exit(1);
 }
 

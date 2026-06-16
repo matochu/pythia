@@ -2,13 +2,13 @@
 
 ## Versioning
 
-Follows semantic versioning. Patch releases (0.x.Y) fix bugs or polish without breaking CLI behavior. Minor releases (0.X.0) introduce new features or change the workspace layout. Any change to the format of a protected-zone artifact (`.pythia/workflows/**`) requires a migration step.
+Follows semantic versioning. Patch releases (0.x.Y) fix bugs or polish without breaking CLI behavior. Minor releases (0.X.0) introduce new features or change the workspace layout. Any change to the format of an existing artifact anywhere under `.pythia/` requires a migration step.
 
 ## Migration Authoring Rule
 
-A change to a protected-zone artifact's format **must** include:
+A change to an existing `.pythia/` artifact's format **must** include:
 1. A migration step in `assets/migrations/next.md` (auto op or llm instruction)
-2. A `seedIfMissing` entry in the CLI when a brand-new protected-zone file is introduced
+2. A `seedIfMissing` entry in the CLI when a brand-new base file is introduced (seeded directly in code, not via a migration — see [docs/migrations.md](docs/migrations.md))
 
 During development, `next.md` accumulates steps. It is git-tracked but **excluded from the published package** (via `assets/migrations/.npmignore`).
 
@@ -16,11 +16,7 @@ During development, `next.md` accumulates steps. It is git-tracked but **exclude
 
 1. **Bump the version** in `package.json`.
 
-2. **Update `CHANGELOG.md`**:
-
-   ```bash
-   npm run changelog
-   ```
+2. **Update `CHANGELOG.md`**: add a `## [<version>] - <date>` section by hand, summarizing user-facing changes since the last release (there is no `npm run changelog` script — this is a manual step).
 
 3. **Rename the migration staging file** (if any steps were added):
 
@@ -39,7 +35,7 @@ During development, `next.md` accumulates steps. It is git-tracked but **exclude
    npm run release:check-migrations
    ```
 
-   This fails if `next.md` still exists. Fix: rename it as in step 3.
+   This fails only if `next.md` has unreleased steps for the current version without a matching `<version>.md`. If `next.md` is empty and no migration was needed this release, it passes with a WARN.
 
 5. **Run tests**:
 

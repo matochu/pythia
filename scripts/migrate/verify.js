@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 // migrate:verify <version> — validate changedPaths from state.json using workflow-doc rules.
-import { join, resolve } from 'path';
+import { join, resolve, dirname } from 'path';
 import { existsSync, readFileSync, realpathSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { readState } from './state.js';
 import { readManifest } from './manifest.js';
 
+// Target derived from this script's materialized location: .pythia/runtime/migrate/verify.js
+const targetRoot = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../../..'));
 const args = process.argv.slice(2);
-const targetIdx = args.indexOf('--target');
-const targetRoot = realpathSync(resolve(targetIdx !== -1 ? args[targetIdx + 1] : process.cwd()));
 const version = args.find((a) => !a.startsWith('-') && /^\d+\.\d+\.\d+$/.test(a));
 
 if (!version) {
-  console.error('Usage: migrate:verify [--target <dir>] <version>');
+  console.error('Usage: migrate:verify <version>');
   process.exit(1);
 }
 

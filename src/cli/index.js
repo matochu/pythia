@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { readFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { Command } from 'commander';
 import { spawnSync } from 'child_process';
-import { doInit, doUpdate, isWorkspace } from './workspace.js';
+import { doInit, doUpdate, isWorkspace, isExistingWorkspace } from './workspace.js';
 
 function findPackageRoot() {
   const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -27,14 +27,14 @@ program
 program
   .command('init')
   .description('First-time provision of a workspace')
-  .option('--target <dir>', 'target directory', process.cwd())
+  .argument('[target-dir]', 'target directory', process.cwd())
   .option('--dry-run', 'print planned actions without writing anything')
   .option('--yes', 'non-interactive: use defaults')
   .option('--reconfigure', 'rerun interactive prompts even if already configured')
   .option('--surfaces <list>', 'comma-separated surfaces: claude,codex (default: both)')
-  .option('--git-strategy <strategy>', 'git strategy: shared|pythia|ignore (default: ignore)')
-  .action(async (opts) => {
-    const target = resolve(opts.target);
+  .option('--git-strategy <strategy>', 'git strategy: shared|pythia|ignore (default: pythia)')
+  .action(async (targetDir, opts) => {
+    const target = resolve(targetDir);
     let surfaces, gitStrategy;
 
     if (opts.surfaces) {
@@ -55,36 +55,28 @@ program
           surfaces = ans.trim() ? parseSurfaces(ans.trim()) : ['.claude/skills', '.agents/skills'];
         }
         if (!gitStrategy) {
-          const ans = await rl.question('Git strategy [shared|pythia|ignore] (default: ignore): ');
+          const ans = await rl.question('Git strategy [shared|pythia|ignore] (default: pythia): ');
           const valid = ['shared', 'pythia', 'ignore'];
-          gitStrategy = ans.trim() && valid.includes(ans.trim()) ? ans.trim() : 'ignore';
+          gitStrategy = ans.trim() && valid.includes(ans.trim()) ? ans.trim() : 'pythia';
         }
       } finally {
         rl.close();
       }
     }
 
-    // git-strategy side effects (before init so they're in place when manifest writes)
-    let effectiveGitStrategy = gitStrategy ?? 'ignore';
-    if (!opts.dryRun) {
-      if (effectiveGitStrategy === 'pythia') {
-        const pythiaGitDir = join(target, '.pythia', '.git');
-        if (!existsSync(pythiaGitDir)) {
-          mkdirSync(join(target, '.pythia'), { recursive: true });
-          const r = spawnSync('git', ['init', join(target, '.pythia')], { encoding: 'utf8' });
-          if (r.status === 0) console.log(`  [git] initialized .pythia/.git`);
-        }
-      } else if (effectiveGitStrategy === 'shared') {
-        const r = spawnSync('git', ['-C', target, 'rev-parse', '--git-dir'], { encoding: 'utf8' });
-        if (r.status !== 0) {
-          console.warn(`  [git] shared strategy requires a git repo in target; falling back to ignore`);
-          effectiveGitStrategy = 'ignore';
-          gitStrategy = 'ignore';
-        }
+    // `shared` requires a git repo already at target; fall back to `ignore` if absent.
+    // The `pythia` side effect (git init .pythia/.git) is performed inside doInit itself,
+    // so every caller (this command and the CLI's auto-detect path) gets it consistently.
+    let effectiveGitStrategy = gitStrategy ?? 'pythia';
+    if (!opts.dryRun && effectiveGitStrategy === 'shared') {
+      const r = spawnSync('git', ['-C', target, 'rev-parse', '--git-dir'], { encoding: 'utf8' });
+      if (r.status !== 0) {
+        console.warn(`  [git] shared strategy requires a git repo in target; falling back to ignore`);
+        effectiveGitStrategy = 'ignore';
       }
     }
 
-    doInit({
+    await doInit({
       target,
       dryRun: !!opts.dryRun,
       packageRoot,
@@ -98,15 +90,17 @@ program
 program
   .command('update')
   .description('Refresh an existing workspace')
-  .option('--target <dir>', 'target directory', process.cwd())
+  .argument('[target-dir]', 'target directory', process.cwd())
   .option('--dry-run', 'print planned actions without writing anything')
+  .option('--yes', 'non-interactive: use defaults')
   .option('--no-migrate', 'skip migration application')
-  .action((opts) => {
+  .action((targetDir, opts) => {
     doUpdate({
-      target: resolve(opts.target),
+      target: resolve(targetDir),
       dryRun: !!opts.dryRun,
       packageRoot,
       noMigrate: opts.migrate === false,
+      yes: !!opts.yes,
     });
   });
 
@@ -131,10 +125,6 @@ const knownCommands = ['init', 'update'];
 const firstArg = rawArgs.find((a) => !a.startsWith('-'));
 
 if (!firstArg || !knownCommands.includes(firstArg)) {
-  const targetIdx = rawArgs.indexOf('--target');
-  const targetDir = targetIdx !== -1 ? rawArgs[targetIdx + 1] : process.cwd();
-  const dryRun = rawArgs.includes('--dry-run');
-
   if (rawArgs.includes('--help') || rawArgs.includes('-h')) {
     program.outputHelp();
     process.exit(0);
@@ -144,11 +134,16 @@ if (!firstArg || !knownCommands.includes(firstArg)) {
     process.exit(0);
   }
 
+  // First positional non-flag arg is the target dir; default to cwd.
+  const targetDir = firstArg ?? process.cwd();
+  const dryRun = rawArgs.includes('--dry-run');
+  const yes = rawArgs.includes('--yes');
+
   const target = resolve(targetDir);
-  if (isWorkspace(target)) {
-    doUpdate({ target, dryRun, packageRoot });
+  if (isExistingWorkspace(target)) {
+    await doUpdate({ target, dryRun, packageRoot, yes });
   } else {
-    doInit({ target, dryRun, packageRoot });
+    await doInit({ target, dryRun, packageRoot, yes });
   }
 } else {
   try {

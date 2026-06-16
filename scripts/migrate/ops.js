@@ -1,17 +1,20 @@
 // The 7 auto ops for the migration engine.
-// All ops: apply only to .pythia/workflows/**, are idempotent, back up before mutating.
+// All ops: apply only within .pythia/, are idempotent, back up before mutating existing files.
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'fs';
-import { join, dirname, relative } from 'path';
+import { join, dirname, relative, resolve, isAbsolute } from 'path';
 import { createHash } from 'crypto';
 
 function sha256(content) {
   return createHash('sha256').update(content, 'utf8').digest('hex');
 }
 
+// Containment guard: op targets must resolve inside .pythia/ (lexical; catches `.pythia/../foo`).
 function assertInProtectedZone(targetRoot, relpath) {
-  const norm = relpath.replace(/\\/g, '/');
-  if (!norm.startsWith('.pythia/workflows/')) {
-    throw new Error(`Op target must be inside .pythia/workflows/: ${relpath}`);
+  const pythiaDir = resolve(targetRoot, '.pythia');
+  const abs = resolve(targetRoot, relpath);
+  const rel = relative(pythiaDir, abs);
+  if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) {
+    throw new Error(`Op target must be inside .pythia/: ${relpath}`);
   }
 }
 

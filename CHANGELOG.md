@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-06-16
+
+### Fixed
+
+- **One-step `update` for old workspaces** — `update` now adopts a pre-existing `.pythia/` that was never provisioned by `init` (no `manifest.json` required) in a single run: it seeds any missing base files (`config.md`, `README.md`, `workflows/.gitkeep`) the same way `init` does, and stamps `migratedVersion: 0.0.0` so any actual pending migrations (when one exists for the artifact in question) still get applied on a later `update`. Base-file seeding is independent of the migration engine — it does not require or imply a versioned migration file for the current release
+- **Migration zone relaxed to all of `.pythia/`** — the migration engine's auto ops were artificially restricted to `.pythia/workflows/`; they now operate anywhere inside `.pythia/`, with proper path-containment checks (rejects traversal escapes and absolute paths)
+- **Skill pruning no longer deletes user-authored skills** — `update` tracks which skills it installed (`installedSkills` in manifest) and only prunes those that pythia previously installed and that have since been removed from the package; custom skills are never touched
+- **`surfaces`/`gitStrategy` resolution** — `update` now reads these from the manifest when present, otherwise prompts (interactive) or applies non-interactive defaults, instead of silently guessing from disk state
+- **Consistent `gitStrategy`/`surfaces` resolution across all CLI entry points** — the explicit `init` command, the explicit `update` command, and the bare auto-detect invocation (`pythia-workspace [target-dir]`) now resolve defaults through the same code path (explicit flag → manifest → interactive prompt → non-interactive default). Previously the auto-detect path bypassed both the prompt and the documented `pythia` default, silently writing `gitStrategy: "ignore"` and skipping the `git init .pythia/.git` side effect
+- **Adoption-baseline detection now matches the relaxed migration zone** — a workspace is considered "adopted" (`migratedVersion: 0.0.0`, must run migrations) if it has *any* pre-existing content under `.pythia/`, not just `.pythia/workflows/`; this was inconsistent with the migration zone already covering all of `.pythia/`
+
+### Breaking
+
+- **`--target <dir>` removed everywhere** — CLI (`init`/`update`), all materialized runtime scripts (`apply`/`status`/`verify`/`commit`/`restore`), and the generated `.pythia/package.json` scripts. Target is now a positional argument on the CLI (default: current directory) and auto-derived from the script's own materialized path for runtime scripts
+- **Default `gitStrategy` changed from `ignore` to `pythia`** — fresh `init`/`update` now initializes a local `.pythia/.git` by default unless overridden. This is repository ownership only (a one-time `git init`, no auto-commit) — not a pre-update checkpoint or rollback mechanism; see [docs/workspace-manager.md](docs/workspace-manager.md#gitstrategy)
+
 ## [0.3.0] - 2026-06-16
 
 ### Features

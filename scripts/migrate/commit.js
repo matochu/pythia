@@ -1,21 +1,22 @@
 #!/usr/bin/env node
 // migrate:commit <version> — bump migratedVersion, prune backups.
-import { join, resolve } from 'path';
+import { join, resolve, dirname } from 'path';
 import { existsSync, readdirSync, rmSync, realpathSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { readState, writeState } from './state.js';
 import { readManifest, writeManifest } from './manifest.js';
 import { compareSemver } from './semver.js';
 
+// Target derived from this script's materialized location: .pythia/runtime/migrate/commit.js
+const targetRoot = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../../..'));
 const args = process.argv.slice(2);
-const targetIdx = args.indexOf('--target');
-const targetRoot = realpathSync(resolve(targetIdx !== -1 ? args[targetIdx + 1] : process.cwd()));
 const dryRun = args.includes('--dry-run');
 const version = args.find((a) => !a.startsWith('-') && /^\d+\.\d+\.\d+$/.test(a));
 const retentionIdx = args.indexOf('--retention');
 const retention = retentionIdx !== -1 ? parseInt(args[retentionIdx + 1], 10) : 3;
 
 if (!version) {
-  console.error('Usage: migrate:commit [--target <dir>] [--dry-run] [--retention <n>] <version>');
+  console.error('Usage: migrate:commit [--dry-run] [--retention <n>] <version>');
   process.exit(1);
 }
 

@@ -1,10 +1,10 @@
 # Pythia Migration System
 
-This document describes the protected-zone migration runtime contract for `pythia-workspace`.
+This document describes the migration runtime contract for `pythia-workspace`.
 
 ## Overview
 
-When artifact formats in `.pythia/workflows/**` change, existing workspaces must migrate those artifacts to match the new format. The migration system handles this without `update` touching protected-zone files directly.
+When artifact formats anywhere under `.pythia/` change, existing workspaces must migrate those artifacts to match the new format. The migration system handles this through versioned migration files and idempotent ops, rather than `update` mutating `.pythia/` content directly.
 
 Two stages own different parts of the work:
 
@@ -53,12 +53,15 @@ npm --prefix .pythia run migrate:restore  -- <version>
 Or directly, if the npm prefix form is inconvenient:
 
 ```bash
-node .pythia/runtime/migrate/status.js   [--target <dir>]
-node .pythia/runtime/migrate/apply.js    [--target <dir>] <version>
-node .pythia/runtime/migrate/verify.js   [--target <dir>] <version>
-node .pythia/runtime/migrate/commit.js   [--target <dir>] <version>
-node .pythia/runtime/migrate/restore.js  [--target <dir>] <version>
+node .pythia/runtime/migrate/status.js
+node .pythia/runtime/migrate/apply.js    <version>
+node .pythia/runtime/migrate/verify.js   <version>
+node .pythia/runtime/migrate/commit.js   <version>
+node .pythia/runtime/migrate/restore.js  <version>
 ```
+
+No `--target` flag — these scripts always run from their materialized location at
+`.pythia/runtime/migrate/<script>.js` and derive the target workspace root from that path.
 
 **Never use `npx pythia-workspace <engine-sub>`** for deep migration work. `npx` is only the installer/updater that materializes `.pythia/runtime/`; nothing else uses it.
 
@@ -129,14 +132,16 @@ Fields:
 }
 ```
 
-**`update` preserves** `migratedVersion`, `gitStrategy`, and `surfaces` — it only overwrites `frameworkVersion`, `installedAt`, and `generated`. Unknown fields are also preserved (field-preservation invariant).
+**`update` preserves** `migratedVersion` if already set, `gitStrategy`, and `surfaces` (manifest-or-ask: read from manifest if present, otherwise resolved via prompt/non-interactive default and saved) — it overwrites `frameworkVersion`, `installedAt`, and `generated`. Unknown fields are also preserved (field-preservation invariant).
 
 ### Baseline rule
 
+`migratedVersion` is established (by `init` or, for a workspace adopted via one-step `update`, by `update` itself) and then preserved on every subsequent run:
+
 | Target state | `migratedVersion` written |
 |---|---|
-| Empty/newly seeded (fresh `init`) | `frameworkVersion` (already current) |
-| Non-empty protected zone, no stamp (adopted) | `0.0.0` (must run migrations) |
+| Empty/absent `.pythia/` before this run (fresh `init` or `update`) | `frameworkVersion` (already current) |
+| Any pre-existing content under `.pythia/` (anywhere, not just `workflows/`), no stamp (adopted) | `0.0.0` (must run migrations) |
 | Legacy `version.json` without `migratedVersion` | `0.0.0` (treated as adopted) |
 
 ## Repeated Update While Migration Is Pending
@@ -154,7 +159,7 @@ This prevents a new `frameworkVersion` from stranding half-applied protected edi
 ## The 7 `auto` Ops
 
 All auto ops:
-- Apply only to `.pythia/workflows/**` (refuse other targets)
+- Apply anywhere inside `.pythia/` (refuse targets outside it, including traversal escapes like `.pythia/../foo`)
 - Are idempotent (each has a `Check` condition that short-circuits if already applied)
 - Back up the target file before mutating
 - Record the changed path in `state.json`

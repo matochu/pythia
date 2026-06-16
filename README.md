@@ -53,12 +53,12 @@ Plans are versioned, reviews and implementations are append-only across rounds, 
 Pythia ships as a CLI that installs the whole workflow — skills, agent role definitions, and the `.pythia` working directory — into any project.
 
 ```bash
-npx pythia-workspace          # auto: init a new workspace, or update an existing one
-npx pythia-workspace init     # first-time install
-npx pythia-workspace update   # pull the latest skills & instructions
+npx pythia-workspace [target-dir]          # auto: init a new workspace, or update an existing one
+npx pythia-workspace init [target-dir]     # first-time install
+npx pythia-workspace update [target-dir]   # pull the latest skills & instructions (one-step, even for old workspaces)
 ```
 
-Both commands accept `--target <dir>` (default: current directory) and `--dry-run` (preview without writing).
+`target-dir` is a positional argument (default: current directory). Both commands accept `--dry-run` (preview without writing).
 
 ### What lands in your project
 
