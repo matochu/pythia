@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync, existsSync, cpSync } from 'fs';
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync, existsSync, cpSync, readdirSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
@@ -281,11 +281,42 @@ describe('update', () => {
     expect(existsSync(join(tmpDir, '.pythia', 'README.md'))).toBe(true);
     expect(existsSync(join(tmpDir, '.pythia', 'workflows', '.gitkeep'))).toBe(true);
     expect(existsSync(join(tmpDir, '.pythia', 'workflows', 'old.md'))).toBe(true); // preserved
+    const manifest = readManifest(tmpDir);
+    expect(manifest.migratedVersion).toBe(manifest.frameworkVersion);
 
     // idempotent: re-running doesn't touch the seeded config
     const before = readFileSync(join(tmpDir, '.pythia', 'config.md'), 'utf8');
     await doUpdate(makeOpts(tmpDir));
     expect(readFileSync(join(tmpDir, '.pythia', 'config.md'), 'utf8')).toBe(before);
+  });
+
+  it('creates a pre-update backup before mutating adopted .pythia without committed local git history', async () => {
+    mkdirSync(join(tmpDir, '.pythia', 'workflows'), { recursive: true });
+    writeFileSync(join(tmpDir, '.pythia', 'workflows', 'old.md'), 'pre-existing', 'utf8');
+
+    await doUpdate(makeOpts(tmpDir));
+
+    const backupRoot = join(tmpDir, '.pythia', 'backups');
+    const backupDir = readdirSync(backupRoot).find((entry) => entry.startsWith('pre-update-'));
+    expect(backupDir).toBeDefined();
+    expect(readFileSync(join(backupRoot, backupDir, '.pythia', 'workflows', 'old.md'), 'utf8')).toBe('pre-existing');
+    expect(existsSync(join(backupRoot, backupDir, '.pythia', 'config.md'))).toBe(false);
+  });
+
+  it('does not create fallback pre-update backup when .pythia git already has committed history', async () => {
+    mkdirSync(join(tmpDir, '.pythia', 'workflows'), { recursive: true });
+    writeFileSync(join(tmpDir, '.pythia', 'workflows', 'old.md'), 'pre-existing', 'utf8');
+    spawnSync('git', ['init', join(tmpDir, '.pythia')], { encoding: 'utf8' });
+    spawnSync('git', ['-C', join(tmpDir, '.pythia'), 'add', '.'], { encoding: 'utf8' });
+    spawnSync('git', ['-C', join(tmpDir, '.pythia'), '-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '-m', 'baseline'], { encoding: 'utf8' });
+
+    await doUpdate(makeOpts(tmpDir));
+
+    const backupRoot = join(tmpDir, '.pythia', 'backups');
+    const preUpdateBackups = existsSync(backupRoot)
+      ? readdirSync(backupRoot).filter((entry) => entry.startsWith('pre-update-'))
+      : [];
+    expect(preUpdateBackups).toHaveLength(0);
   });
 
   it('update renames version.json to manifest.json (one-time legacy migration)', async () => {
@@ -327,8 +358,8 @@ describe('update', () => {
     writeFileSync(join(tmpDir, '.pythia', 'version.json'), JSON.stringify(existing));
     await doUpdate(makeOpts(tmpDir));
     const after = JSON.parse(readFileSync(join(tmpDir, '.pythia', 'manifest.json'), 'utf8'));
-    // migratedVersion should be preserved from legacy (0.0.0 default) not overwritten
-    expect(after.migratedVersion).toBe('0.0.0');
+    // No pending migration files means successful update advances the workspace to the package version.
+    expect(after.migratedVersion).toBe(after.frameworkVersion);
   });
 });
 

@@ -132,17 +132,17 @@ Fields:
 }
 ```
 
-**`update` preserves** `migratedVersion` if already set, `gitStrategy`, and `surfaces` (manifest-or-ask: read from manifest if present, otherwise resolved via prompt/non-interactive default and saved) — it overwrites `frameworkVersion`, `installedAt`, and `generated`. Unknown fields are also preserved (field-preservation invariant).
+**`update` preserves** `gitStrategy`, `surfaces` (manifest-or-ask: read from manifest if present, otherwise resolved via prompt/non-interactive default and saved), and unknown fields. It reads the pre-update `migratedVersion` as the migration baseline, overwrites `frameworkVersion`, `installedAt`, and `generated`, then advances `migratedVersion` to `frameworkVersion` once no migration remains pending.
 
 ### Baseline rule
 
-`migratedVersion` is established (by `init` or, for a workspace adopted via one-step `update`, by `update` itself) and then preserved on every subsequent run:
+`migratedVersion` is established as the pre-update baseline (by `init` or, for a workspace adopted via one-step `update`, by `update` itself), then successful `update` advances it to the package `frameworkVersion` when no migration is pending:
 
 | Target state | `migratedVersion` written |
 |---|---|
 | Empty/absent `.pythia/` before this run (fresh `init` or `update`) | `frameworkVersion` (already current) |
-| Any pre-existing content under `.pythia/` (anywhere, not just `workflows/`), no stamp (adopted) | `0.0.0` (must run migrations) |
-| Legacy `version.json` without `migratedVersion` | `0.0.0` (treated as adopted) |
+| Any pre-existing content under `.pythia/` (anywhere, not just `workflows/`), no stamp (adopted) | baseline `0.0.0`, then `frameworkVersion` after successful update if no migration remains pending |
+| Legacy `version.json` without `migratedVersion` | baseline `0.0.0`, then `frameworkVersion` after successful update if no migration remains pending |
 
 ## Repeated Update While Migration Is Pending
 
@@ -153,6 +153,7 @@ This prevents a new `frameworkVersion` from stranding half-applied protected edi
 ## Backups and Restore
 
 - Backups: `.pythia/backups/<targetVersion>/<relpath>` (self-gitignored via `.pythia/backups/.gitignore`)
+- Pre-update adopted-workspace fallback: when `update` sees existing `.pythia/` content but no committed `.pythia/.git` history, it snapshots the pre-update protected zone to `.pythia/backups/pre-update-<timestamp>/.pythia/` before seed/refresh/install/migration work.
 - Pruning: `commit` retains the N newest versions (config `backup-retention`, default 3)
 - `restore` uses the `backups` manifest in `state.json` to roll back exactly the files that were changed; no bump is written on restore
 

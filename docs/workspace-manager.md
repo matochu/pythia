@@ -39,8 +39,8 @@ npx pythia-workspace update [target-dir]    # refresh an existing workspace (one
 5. Refreshes AGENTS.md, CLAUDE.md (backed up if locally modified)
 6. Prunes only skills `pythia` previously installed (tracked via manifest `installedSkills`) that are gone from the package, then reinstalls current skills — never touches user-authored skills
 7. Materializes `.pythia/runtime/` (engine + migrations pinned to `frameworkVersion`)
-8. Manifest read-merge-write (`migratedVersion` baseline preserved if set; otherwise `0.0.0` if any pre-existing `.pythia/` content was adopted, else `frameworkVersion`)
-9. Applies pending migrations; commits fully-auto, hands mixed off to the migrate skill
+8. Plans migrations from the pre-update `migratedVersion` baseline (`0.0.0` for adopted/legacy workspaces without a stamp; `frameworkVersion` for fresh workspaces)
+9. Applies pending migrations; commits fully-auto, hands mixed off to the migrate skill; when no migration remains pending, writes `migratedVersion = frameworkVersion`
 
 ## `gitStrategy`
 
@@ -50,7 +50,7 @@ npx pythia-workspace update [target-dir]    # refresh an existing workspace (one
 | `pythia` (default) | `update`/`init` run `git init .pythia/.git` once if absent, giving `.pythia/` its own local, untracked-by-parent repo |
 | `ignore` | No git action taken; `.pythia/` is left exactly as found |
 
-**`pythia` is repository ownership only — it is not a checkpoint, snapshot, or rollback mechanism.** `init`/`update` never run `git add`/`git commit` inside `.pythia/.git`; nothing is staged or committed automatically before writes. If you need to recover pre-update state, rely on the migration engine's own backup/restore (`.pythia/backups/<version>/`, scoped to migration-changed paths only) — `gitStrategy: pythia` does not provide a safety net for `update`'s seed/refresh/prune steps.
+`pythia` creates repository ownership only; `init`/`update` still never run `git add` or `git commit` inside `.pythia/.git`. For an adopted workspace that has no committed `.pythia` history yet, `update` first writes a gitignored pre-update snapshot at `.pythia/backups/pre-update-<timestamp>/.pythia/` before seed/refresh/install/migration work. Once `.pythia/.git` has committed history, that history is the expected recovery point and the fallback snapshot is skipped.
 
 ## Auto-detect rule
 
@@ -63,7 +63,7 @@ npx pythia-workspace update [target-dir]    # refresh an existing workspace (one
 | Managed | `manifest.json`, skills surfaces, `AGENTS.md`, `CLAUDE.md` | Regenerated every `init`/`update`; instruction files backed up on modification |
 | Seed-if-missing | `.pythia/config.md`, `.pythia/README.md`, `.pythia/workflows/.gitkeep` | Written once, by `init` **and** `update`; never overwritten after |
 | Migratable | all of `.pythia/` | Mutable by the migration engine's auto ops (backed up before each mutation); not touched outside of `update`'s explicit steps above |
-| Local runtime | `.pythia/runtime/`, `.pythia/backups/` | Gitignored; regenerable by `update` |
+| Local runtime / backups | `.pythia/runtime/`, `.pythia/backups/` | Gitignored; runtime is regenerable by `update`; backups contain migration backups and pre-update adopted-workspace snapshots |
 
 ## Instruction files
 
@@ -92,9 +92,9 @@ AGENTS.md and CLAUDE.md are generated from `assets/instructions.md` with `{tool,
 }
 ```
 
-Legacy `.pythia/version.json` is detected and renamed to `manifest.json` on the next write. `update` preserves `migratedVersion`, `gitStrategy`, `surfaces`, and any unknown fields.
+Legacy `.pythia/version.json` is detected and renamed to `manifest.json` on the next write. `update` preserves `gitStrategy`, `surfaces`, and any unknown fields. It uses the pre-update `migratedVersion` as the migration baseline, then advances `migratedVersion` to `frameworkVersion` after a successful update with no pending migration state.
 
-**`migratedVersion` baseline rule**: fresh `init`/`update` (no pre-existing `.pythia/` content) sets it to `frameworkVersion`; adopted (any pre-existing content anywhere under `.pythia/`, unversioned) and legacy targets missing the field default to `0.0.0`.
+**`migratedVersion` baseline rule**: fresh `init`/`update` (no pre-existing `.pythia/` content) starts at `frameworkVersion`; adopted (any pre-existing content anywhere under `.pythia/`, unversioned) and legacy targets missing the field start from `0.0.0`. After update finishes with no pending migration, `migratedVersion` is advanced to `frameworkVersion`.
 
 ## Skills source of truth
 

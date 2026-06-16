@@ -234,7 +234,7 @@ describe('manifest baseline semantics', () => {
     expect(m.migratedVersion).toBe('0.0.0');
   });
 
-  it('legacy: version.json without migratedVersion → 0.0.0 after update (no pending migrations)', async () => {
+  it('legacy: version.json without migratedVersion advances to frameworkVersion when no migrations are pending', async () => {
     await doInit(makeWorkspaceOpts(tmpDir));
     const existing = readManifest(tmpDir);
     delete existing.migratedVersion;
@@ -243,8 +243,8 @@ describe('manifest baseline semantics', () => {
     // Before update: missing migratedVersion reads as the 0.0.0 default
     expect(readManifest(tmpDir).migratedVersion).toBe('0.0.0');
     await doUpdate(makeWorkspaceOpts(tmpDir));
-    // migratedVersion should be preserved from legacy (0.0.0 default) — no real migrations to apply.
-    expect(readManifest(tmpDir).migratedVersion).toBe('0.0.0');
+    const after = readManifest(tmpDir);
+    expect(after.migratedVersion).toBe(after.frameworkVersion);
   });
 
   it('update preserves migratedVersion when already current (no pending migrations)', async () => {
@@ -270,9 +270,9 @@ describe('update: auto-only migration', () => {
 
     await doUpdate(makeWorkspaceOpts(tmpDir));
 
-    // Fixture migration 0.0.1 applied and committed → migratedVersion bumped to it.
+    // Fixture migration 0.0.1 applied and then the successful update marks the workspace current.
     const m = readManifest(tmpDir);
-    expect(m.migratedVersion).toBe('0.0.1');
+    expect(m.migratedVersion).toBe(m.frameworkVersion);
   });
 });
 
@@ -345,8 +345,8 @@ describe('one-step update: old .pythia without manifest', () => {
     // doUpdate seeds base files directly (config.md/README.md/workflows/.gitkeep), code-level — not a migration.
     expect(existsSync(join(tmpDir, '.pythia', 'config.md'))).toBe(true);
     expect(existsSync(join(tmpDir, '.pythia', 'README.md'))).toBe(true);
-    // adopted (had pre-existing protected artifacts) → migratedVersion baseline is 0.0.0
-    expect(m.migratedVersion).toBe('0.0.0');
+    // adopted starts from 0.0.0, then advances to frameworkVersion because no migrations remain pending.
+    expect(m.migratedVersion).toBe(m.frameworkVersion);
     // runtime materialized, user artifact preserved
     expect(existsSync(join(tmpDir, '.pythia', 'runtime', 'migrate', 'status.js'))).toBe(true);
     expect(existsSync(join(tmpDir, '.pythia', 'workflows', 'old.md'))).toBe(true);
@@ -361,8 +361,8 @@ describe('one-step update: old .pythia without manifest', () => {
     await doUpdate(makeWorkspaceOpts(tmpDir));
 
     const m = readManifest(tmpDir);
-    // pre-existing config.md (outside workflows/) must still count as "adopted" → baseline 0.0.0
-    expect(m.migratedVersion).toBe('0.0.0');
+    // pre-existing config.md (outside workflows/) still counts as adopted, then advances after successful update.
+    expect(m.migratedVersion).toBe(m.frameworkVersion);
     // seedIfMissing must not clobber the pre-existing file
     expect(readFileSync(join(tmpDir, '.pythia', 'config.md'), 'utf8')).toBe('stale pre-existing config');
   });
@@ -375,8 +375,8 @@ describe('one-step update: old .pythia without manifest', () => {
     const after2 = readFileSync(join(tmpDir, '.pythia', 'config.md'), 'utf8');
     expect(after2).toBe(after1); // seed not overwritten
     const m = readManifest(tmpDir);
-    // pre-existing workflows/ dir (even empty) counts as pre-existing .pythia/ content → "adopted" → baseline 0.0.0
-    expect(m.migratedVersion).toBe('0.0.0');
+    // pre-existing workflows/ dir (even empty) counts as adopted; successful update marks it current.
+    expect(m.migratedVersion).toBe(m.frameworkVersion);
   });
 
   it('generated .pythia/package.json has no --target and migrate:status works', async () => {

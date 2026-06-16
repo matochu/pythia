@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2026-06-16
+
+### Fixed
+
+- **Safe adopted-workspace update** — `update` now creates a gitignored pre-update snapshot at `.pythia/backups/pre-update-<timestamp>/.pythia/` before mutating an adopted `.pythia/` that has no committed local `.pythia/.git` history yet. This gives old workspaces a recovery point before seed/refresh/install/runtime work
+- **Correct migration state advancement** — successful `update` now advances `migratedVersion` to the package `frameworkVersion` even when there are no versioned migration files. Adopted workspaces still plan from `0.0.0`, but they no longer remain permanently stale after a successful no-op migration pass
+- **Pre-update state separation** — migration planning now uses the pre-update `migratedVersion` baseline instead of decisions based on a manifest that `update` just wrote during the same run
+
 ## [0.3.1] - 2026-06-16
 
 ### Fixed

@@ -304,6 +304,40 @@ function writePythiaPackageJson(target, projectName, frameworkVersion, dryRun) {
   }
 }
 
+function pythiaGitHasCommits(target) {
+  const pythiaDir = join(target, '.pythia');
+  if (!existsSync(join(pythiaDir, '.git'))) return false;
+  const r = spawnSync('git', ['-C', pythiaDir, 'rev-parse', '--verify', 'HEAD'], { encoding: 'utf8' });
+  return r.status === 0;
+}
+
+function createPreUpdateBackup(target, dryRun, reason) {
+  const pythiaDir = join(target, '.pythia');
+  if (!existsSync(pythiaDir)) return null;
+
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const relBackupDir = join('.pythia', 'backups', `pre-update-${stamp}`);
+  const backupDir = join(target, relBackupDir);
+
+  if (dryRun) {
+    console.log(`  [backup] ${relBackupDir} (${reason})`);
+    return relBackupDir;
+  }
+
+  const snapshotDir = join(backupDir, '.pythia');
+  mkdirSync(snapshotDir, { recursive: true });
+  for (const entry of readdirSync(pythiaDir)) {
+    if (entry === '.git' || entry === 'runtime' || entry === 'backups') continue;
+    cpSync(join(pythiaDir, entry), join(snapshotDir, entry), { recursive: true });
+  }
+
+  const gitignorePath = join(target, '.pythia', 'backups', '.gitignore');
+  if (!existsSync(gitignorePath)) writeFileSync(gitignorePath, '*\n', 'utf8');
+
+  console.log(`  backed up pre-update .pythia → ${relBackupDir}`);
+  return relBackupDir;
+}
+
 async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate) {
   const { inPendingRange, sortVersions } = await import('../../scripts/migrate/semver.js').catch(() => ({}));
   const { findUnresolvedMixedStates, writeState, readState } = await import('../../scripts/migrate/state.js').catch(() => ({}));
@@ -322,12 +356,19 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate)
   const versions = sortVersions(files.map((f) => f.replace('.md', '')));
   const pending = versions.filter((v) => inPendingRange(v, migratedVersion, frameworkVersion));
 
-  if (pending.length === 0) return;
+  if (pending.length === 0) {
+    if (!dryRun && migratedVersion !== frameworkVersion) {
+      writeManifest(target, { migratedVersion: frameworkVersion }, dryRun);
+    }
+    return;
+  }
 
   if (noMigrate) {
     for (const v of pending) console.log(`[update] pending migration: ${v} (skipped by --no-migrate)`);
     return;
   }
+
+  let completedAllPending = true;
 
   for (const v of pending) {
     const migPath = join(migrationsDir, `${v}.md`);
@@ -419,7 +460,13 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate)
     } else {
       // Mixed: announce, do NOT verify or restore
       console.log(`[update] migration ${v}: auto steps applied; deep migration pending — run the migrate skill to complete`);
+      completedAllPending = false;
+      break;
     }
+  }
+
+  if (completedAllPending && !dryRun) {
+    writeManifest(target, { migratedVersion: frameworkVersion }, dryRun);
   }
 }
 
@@ -522,12 +569,22 @@ export async function doUpdate(opts) {
 
   // Capture adoption state BEFORE any writes below (ensureGitStrategy, seeding) touch .pythia/.
   const adopted = hasProtectedArtifacts(target);
+  const migrationBaseline = existing?.migratedVersion ?? (adopted ? '0.0.0' : frameworkVersion);
+  const migrationPlanManifest = {
+    ...(existing ?? {}),
+    frameworkVersion,
+    migratedVersion: migrationBaseline,
+  };
 
   // Resolve surfaces (which LLM hosts) + git strategy: manifest → use; missing → ask/default.
   const { surfaces: activeSurfaces, gitStrategy } = await resolveSurfacesAndGit(existing, opts);
   const previousInstalled = existing?.installedSkills ?? [];
 
   console.log(`[update] target: ${target}`);
+
+  if (adopted && !pythiaGitHasCommits(target)) {
+    createPreUpdateBackup(target, dryRun, 'adopted workspace without committed .pythia git history');
+  }
 
   // git-strategy side effect (e.g. ensure local .pythia/.git for pythia strategy)
   ensureGitStrategy(target, gitStrategy, dryRun);
@@ -566,10 +623,9 @@ export async function doUpdate(opts) {
   // an old .pythia without a manifest (adopted, with pre-existing content) starts
   // at 0.0.0 so future migrations apply to it; a workspace with no pre-existing
   // content at all is already current (mirrors doInit's adoption logic).
-  const migratedVersion = existing?.migratedVersion ?? (adopted ? '0.0.0' : frameworkVersion);
   const manifestData = {
     frameworkVersion,
-    migratedVersion,
+    migratedVersion: migrationBaseline,
     installedAt: new Date().toISOString(),
     surfaces: activeSurfaces,
     gitStrategy,
@@ -578,11 +634,8 @@ export async function doUpdate(opts) {
   };
   writeManifest(target, manifestData, dryRun);
 
-  // Apply migrations
-  const updatedManifest = readManifest(target);
-  if (updatedManifest) {
-    await applyMigrations(packageRoot, target, updatedManifest, dryRun, noMigrate);
-  }
+  // Apply migrations from the pre-update committed baseline toward this package version.
+  await applyMigrations(packageRoot, target, migrationPlanManifest, dryRun, noMigrate);
 
   console.log(`[update] done${dryRun ? ' (dry-run)' : ''}`);
 }
