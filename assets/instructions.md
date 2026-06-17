@@ -4,7 +4,7 @@ Single source of {tool} instructions for this repository. Roles map to the agent
 
 ## General Rules
 
-- Respond in the language configured in `.pythia/config.md` (chat vs document language may differ).
+- Respond in the language configured in `.pythia/config/settings.md` (chat vs document language may differ).
 - Be concise and direct. Do not mix roles within one stage (plan/review/implement/audit).
 - Review provided project docs/resources before decisions and cite file paths.
 - Use formats and templates from `{skillsPath}/workflow/references/`.

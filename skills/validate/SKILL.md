@@ -11,7 +11,7 @@ description: Validate workflow markdown documents such as plans, reviews, implem
 
 **Normative formats**: `.claude/skills/workflow/references/plan-format.md`, `review-format.md`, `implementation-format.md`, `audit-format.md`.
 
-**Operator reference**: [scripts/README-validate-workflow-doc.md](../../../scripts/README-validate-workflow-doc.md)
+**Operator reference**: [tools/README-validate-workflow-doc.md](../../../tools/README-validate-workflow-doc.md)
 
 ## Supported files
 
@@ -31,10 +31,9 @@ If the basename does not end with one of these suffixes, pass `--type plan|revie
 Do **not** redirect command output into the repo (no `> file.txt` / `tee`).
 
 ```bash
-bash scripts/validate-workflow-doc.sh /absolute/path/to/file.md
-bash scripts/validate-workflow-doc.sh file1.md file2.md
-bash scripts/validate-workflow-doc.sh --type plan /path/to/unusual.md
-bash scripts/validate-workflow-doc.sh --mdlint /path/to/file.plan.md   # optional; requires markdownlint on PATH
+node .pythia/runtime/checks/doc-structure.js /absolute/path/to/file.md
+node .pythia/runtime/checks/doc-structure.js file1.md file2.md
+node .pythia/runtime/checks/doc-structure.js --type plan /path/to/unusual.md
 ```
 
 ### Paths

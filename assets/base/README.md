@@ -4,8 +4,9 @@ This directory (`.pythia/`) holds local workspace state managed by the `pythia-w
 
 ## Contents
 
-- `version.json` — installed framework version + generated-file hash manifest (managed by CLI)
-- `config.md` — workspace configuration: language settings and paths (seed-once; edit freely)
+- `manifest.json` — installed framework version + generated-file hash manifest (managed by CLI)
+- `config/settings.md` — workspace configuration: language settings (seed-once; edit freely)
+- `config/paths.md` — workspace path zones (seed-once; edit freely)
 - `README.md` — this file (seed-once)
 - `workflows/` — feature workflow artifacts (plans, reviews, reports, audits)
 

@@ -1,16 +1,15 @@
 {
   "name": "pythia-workspace",
-  "version": "0.3.2",
+  "version": "0.3.2-dev",
   "type": "module",
   "description": "AI workspace manager",
   "author": "Serhii Frolov <matochu@gmail.com>",
-  "main": "./src/cli/index.js",
+  "main": "./tools/cli/index.js",
   "bin": {
-    "pythia": "./src/cli/index.js"
+    "pythia": "./tools/cli/index.js"
   },
   "files": [
-    "src/cli/",
-    "scripts/migrate/",
+    "tools/",
     "assets/",
     "skills/",
     "README.md",
@@ -29,8 +28,8 @@
   },
   "scripts": {
     "test": "vitest run",
-    "test:workflow-doc": "bash scripts/test-validate-workflow-doc.sh",
-    "release:check-migrations": "node scripts/release-check-migrations.js"
+    "test:workflow-doc": "node tools/checks/doc-structure.js tools/fixtures/workflow-docs/valid/*.md",
+    "release:check-migrations": "node tools/release/check-migrations.js"
   },
   "dependencies": {
     "commander": "^11.0.0"

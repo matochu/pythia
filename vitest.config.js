@@ -7,7 +7,7 @@ export default defineConfig({
     mockReset: true,
     clearMocks: true,
     restoreMocks: true,
-    include: ['src/cli/tests/**/*.test.js', 'scripts/migrate/__tests__/**/*.test.js'],
+    include: ['tools/**/*.test.js'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

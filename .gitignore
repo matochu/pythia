@@ -30,6 +30,13 @@ dist/
 # MCP Server
 mcp-server.log
 
+# Pythia workspace
 .pythia/
 *.code-workspace
-.claude/settings.local.json
+
+# LLM-generated docs
+AGENTS.md
+CLAUDE.md
+.agents/
+.claude/
+.codex/

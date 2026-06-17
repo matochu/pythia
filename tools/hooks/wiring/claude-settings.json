@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["{{HOOKS_DIR}}/pre.js"],
+            "timeout": 30,
+            "statusMessage": "Checking pre-tool guardrails"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["{{HOOKS_DIR}}/post.js"],
+            "timeout": 30,
+            "statusMessage": "Checking workflow guardrails"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["{{HOOKS_DIR}}/stop.js"],
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -4,6 +4,26 @@
 
 Formats use plain Markdown, not YAML frontmatter. They are response templates only; execution semantics live in the relevant skill files.
 
+## Shared Footer Policy
+
+Every response from a workflow skill (Reviewer, Developer, Architect, etc.) **must** end with both:
+
+1. **`## Next Steps`** — what to do next, derived from the current artifact state. Rules:
+   - Surface only actions derivable from the current artifact state; do not invent hypotheticals.
+   - Separate agent-runnable actions (labelled `[key]`) from manual user tasks (no key).
+   - Resumable states expose exactly one continuation action.
+   - Child-skill work that the orchestrating skill can handle internally must **not** appear as a user-facing action.
+
+2. **`**Active context**:`** — single-line parseable status footer in the exact form:
+   ```
+   **Active context**: role: {Role} · feat: {feat-id} · plan: {plan-slug} · {artifact}: {id} · skill: /{skill-name}
+   ```
+   - `{artifact}` is the current active artifact type (e.g. `review`, `implementation`, `audit`).
+   - Emit this footer on **every** response while the skill is active, including error responses, clarification requests, and short one-line replies.
+   - Do not omit or abbreviate the footer even when the response is short.
+
+The `footer-presence` guardrail checker (`.pythia/runtime/checks/footer-presence.js`) verifies these two elements are present in workflow skill replies and warns if either is missing.
+
 ## Reviewer Response Format
 
 **Chat Response** (in addition to writing `{feature-dir}/reports/{plan-slug}.review.md`):

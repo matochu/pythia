@@ -97,7 +97,7 @@ Brainstorm mode suppresses Scenario B's overwrite question for existing plan pat
 Run this sequence once on activation before the first brainstorm response:
 
 1. **Inputs check**
-   - run `scripts/inputs.sh check <plan-file>`
+   - run `.pythia/runtime/inputs.js check <plan-file>`
    - surface raw `STALE` or `MISSING` results
    - if no `inputs:` block exists, skip silently
    - if the script is missing or not executable, skip silently
@@ -106,7 +106,7 @@ Run this sequence once on activation before the first brainstorm response:
    - extract `[risk]` and `[plan]` items from their `## Retrospective`
    - if no closed plans exist, skip silently
 3. **Context freshness**
-   - for each context in `## Contexts`, run `scripts/inputs.sh check <context-file>` when the context declares `inputs:`
+   - for each context in `## Contexts`, run `.pythia/runtime/inputs.js check <context-file>` when the context declares `inputs:`
    - surface stale findings and which plan sections may be affected
    - do not update contexts automatically
 4. **Proactive suggestions**
@@ -197,11 +197,11 @@ For standalone fixes, do not use the feature-doc lookup above. Update `.pythia/w
 
 **Inputs integration**:
 
-- Before trusting any context artifact listed in `## Contexts`, if that context file declares `inputs:`, run `scripts/inputs.sh check <context-file>`.
+- Before trusting any context artifact listed in `## Contexts`, if that context file declares `inputs:`, run `.pythia/runtime/inputs.js check <context-file>`.
 - If the check reports `STALE`, `MISSING`, or `INVALID`, surface that raw result to the user before proceeding. This skill does not assign a global warn/block policy and must not hide the check output.
 - If a context file has no `inputs:` block, proceed normally and do not invent one just because the plan consumes it.
-- Create plan: run `scripts/inputs.sh add <plan-file> <dep> [<dep>...]` to record the feature doc and each consulted context as direct plan inputs. Do not run `update` on first creation.
-- Revise stale plan: rewrite the plan content first. Run `scripts/inputs.sh update <plan-file>` only after the document already reflects the current source files.
+- Create plan: run `.pythia/runtime/inputs.js add <plan-file> <dep> [<dep>...]` to record the feature doc and each consulted context as direct plan inputs. Do not run `update` on first creation.
+- Revise stale plan: rewrite the plan content first. Run `.pythia/runtime/inputs.js update <plan-file>` only after the document already reflects the current source files.
 
 **Validation** (before completing):
 

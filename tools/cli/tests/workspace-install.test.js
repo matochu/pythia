@@ -1,0 +1,226 @@
+/**
+ * Integration tests: fresh workspace install → runtime scripts work.
+ *
+ * Strategy: call doInit + doUpdate on a real tmpdir, then verify that
+ * .pythia/runtime/{inputs.js,checks/doc-structure.js} exist and behave
+ * correctly when invoked via `node`.
+ */
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync, readFileSync } from 'fs';
+import { join, resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { tmpdir } from 'os';
+import { spawnSync } from 'child_process';
+import { doInit, doUpdate } from '../workspace.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const packageRoot = resolve(__dirname, '../../../');
+
+let workspaceDir;
+
+// Shared workspace: init once, then update once — mirrors real install flow.
+beforeAll(async () => {
+  workspaceDir = mkdtempSync(join(tmpdir(), 'pythia-ws-install-'));
+  // inputs.js uses `git rev-parse --show-toplevel`; workspace must be a git repo
+  spawnSync('git', ['init', workspaceDir], { encoding: 'utf8' });
+  spawnSync('git', ['-C', workspaceDir, 'config', 'user.email', 'test@test.com'], { encoding: 'utf8' });
+  spawnSync('git', ['-C', workspaceDir, 'config', 'user.name', 'Test'], { encoding: 'utf8' });
+  // init installs hooks + seeds runtime
+  await doInit({ target: workspaceDir, packageRoot, yes: true });
+  // update materializes migrate engine into runtime
+  await doUpdate({ target: workspaceDir, packageRoot, yes: true });
+});
+
+afterAll(() => {
+  if (workspaceDir) rmSync(workspaceDir, { recursive: true, force: true });
+});
+
+// ── runtime presence ──────────────────────────────────────────────────────────
+
+describe('runtime materialized after install', () => {
+  it('has .pythia/runtime/inputs.js', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/inputs.js'))).toBe(true);
+  });
+
+  it('has .pythia/runtime/checks/doc-structure.js', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/checks/doc-structure.js'))).toBe(true);
+  });
+
+  it('has .pythia/runtime/lib/paths.js', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/lib/paths.js'))).toBe(true);
+  });
+
+  it('has .pythia/runtime/hooks/pre.js', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/hooks/pre.js'))).toBe(true);
+  });
+
+  it('has .pythia/runtime/migrate/apply.js', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/migrate/apply.js'))).toBe(true);
+  });
+
+  it('has .pythia/.gitignore excluding runtime/', () => {
+    const gi = join(workspaceDir, '.pythia/.gitignore');
+    expect(existsSync(gi)).toBe(true);
+    expect(readFileSync(gi, 'utf8')).toMatch(/runtime\//);
+  });
+});
+
+// ── inputs.js via runtime path ────────────────────────────────────────────────
+
+describe('.pythia/runtime/inputs.js', () => {
+  const inputsScript = (ws) => join(ws, '.pythia/runtime/inputs.js');
+
+  it('exits 2 with usage when no args', () => {
+    const r = spawnSync('node', [inputsScript(workspaceDir)], { encoding: 'utf8' });
+    expect(r.status).toBe(2);
+    expect(r.stderr).toMatch(/Usage/);
+  });
+
+  it('check: reports no inputs for file without frontmatter', () => {
+    const f = join(workspaceDir, 'no-fm.md');
+    writeFileSync(f, '# Hello\n', 'utf8');
+    const r = spawnSync('node', [inputsScript(workspaceDir), 'check', f], {
+      encoding: 'utf8',
+      cwd: workspaceDir,
+    });
+    expect(r.status).toBe(0);
+    expect(r.stdout).toMatch(/no inputs declared/);
+  });
+
+  it('add: records a dependency and stamps its hash', () => {
+    // create target doc with frontmatter
+    const doc = join(workspaceDir, 'test-doc.md');
+    writeFileSync(doc, '---\nname: test\n---\n# Doc\n', 'utf8');
+    // create a dependency file
+    const dep = join(workspaceDir, 'dep.md');
+    writeFileSync(dep, '# Dep\n', 'utf8');
+
+    const r = spawnSync('node', [inputsScript(workspaceDir), 'add', 'test-doc.md', 'dep.md'], {
+      encoding: 'utf8',
+      cwd: workspaceDir,
+    });
+    expect(r.status).toBe(0);
+
+    const updated = readFileSync(doc, 'utf8');
+    expect(updated).toMatch(/inputs:/);
+    expect(updated).toMatch(/dep\.md:[0-9a-f]{8}/);
+  });
+
+  it('add: exits non-zero and prints raw error when dep not found', () => {
+    const doc = join(workspaceDir, 'test-doc2.md');
+    writeFileSync(doc, '---\nname: test2\n---\n# Doc\n', 'utf8');
+
+    const r = spawnSync('node', [inputsScript(workspaceDir), 'add', 'test-doc2.md', 'nonexistent.md'], {
+      encoding: 'utf8',
+      cwd: workspaceDir,
+    });
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toMatch(/nonexistent\.md/);
+  });
+
+  it('update: refreshes stale hash after dep changes', () => {
+    const doc = join(workspaceDir, 'stamped.md');
+    const dep = join(workspaceDir, 'changing-dep.md');
+    writeFileSync(dep, '# v1\n', 'utf8');
+    writeFileSync(doc, '---\nname: stamped\n---\n# Doc\n', 'utf8');
+
+    // add dep first
+    spawnSync('node', [inputsScript(workspaceDir), 'add', 'stamped.md', 'changing-dep.md'], {
+      encoding: 'utf8', cwd: workspaceDir,
+    });
+
+    // change dep content
+    writeFileSync(dep, '# v2\n', 'utf8');
+
+    // check should show STALE
+    const checkStale = spawnSync('node', [inputsScript(workspaceDir), 'check', 'stamped.md'], {
+      encoding: 'utf8', cwd: workspaceDir,
+    });
+    expect(checkStale.status).toBe(1);
+    expect(checkStale.stdout).toMatch(/STALE/);
+
+    // update should re-stamp
+    const r = spawnSync('node', [inputsScript(workspaceDir), 'update', 'stamped.md'], {
+      encoding: 'utf8', cwd: workspaceDir,
+    });
+    expect(r.status).toBe(0);
+
+    // check should now pass
+    const checkFresh = spawnSync('node', [inputsScript(workspaceDir), 'check', 'stamped.md'], {
+      encoding: 'utf8', cwd: workspaceDir,
+    });
+    expect(checkFresh.status).toBe(0);
+    expect(checkFresh.stdout).not.toMatch(/STALE/);
+  });
+
+  it('update: exits non-zero and prints raw error when dep file is missing', () => {
+    const doc = join(workspaceDir, 'broken-inputs.md');
+    // Manually write frontmatter with a missing dep
+    writeFileSync(doc, '---\nname: broken\ninputs:\n  - ghost.md:abcd1234\n---\n# Doc\n', 'utf8');
+
+    const r = spawnSync('node', [inputsScript(workspaceDir), 'update', 'broken-inputs.md'], {
+      encoding: 'utf8', cwd: workspaceDir,
+    });
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toMatch(/ghost\.md/);
+  });
+});
+
+// ── doc-structure checker via runtime path ────────────────────────────────────
+
+describe('.pythia/runtime/checks/doc-structure.js', () => {
+  const checker = (ws) => join(ws, '.pythia/runtime/checks/doc-structure.js');
+
+  it('exits 0 for a valid plan file', () => {
+    // Minimal valid plan copied from fixtures
+    const src = resolve(packageRoot, 'tools/fixtures/workflow-docs/valid/min.valid.plan.md');
+    const dest = join(workspaceDir, 'test.plan.md');
+    writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8');
+
+    const r = spawnSync('node', [checker(workspaceDir), dest], { encoding: 'utf8' });
+    expect(r.status).toBe(0);
+  });
+
+  it('exits 1 for an invalid plan file', () => {
+    const src = resolve(packageRoot, 'tools/fixtures/workflow-docs/invalid/bad-round.plan.md');
+    const dest = join(workspaceDir, 'bad.plan.md');
+    writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8');
+
+    const r = spawnSync('node', [checker(workspaceDir), dest], { encoding: 'utf8' });
+    expect(r.status).toBe(1);
+  });
+
+  it('exits 2 for a missing file', () => {
+    const r = spawnSync('node', [checker(workspaceDir), '/tmp/no-such-file.plan.md'], { encoding: 'utf8' });
+    expect(r.status).toBe(2);
+  });
+});
+
+// ── hook wiring ───────────────────────────────────────────────────────────────
+
+describe('hook wiring after install', () => {
+  it('writes .claude/settings.json with pythia-managed hooks', () => {
+    const settingsPath = join(workspaceDir, '.claude/settings.json');
+    expect(existsSync(settingsPath)).toBe(true);
+    const s = JSON.parse(readFileSync(settingsPath, 'utf8'));
+    const preHooks = s.hooks?.PreToolUse ?? [];
+    const pythiaHook = preHooks.find((h) => h._managed === 'pythia');
+    expect(pythiaHook).toBeDefined();
+    // Claude hooks use separate command + args; the path is in args[0]
+    const hookCmd = pythiaHook.hooks[0];
+    const fullCmd = [hookCmd.command, ...(hookCmd.args ?? [])].join(' ');
+    expect(fullCmd).toContain('.pythia/runtime/hooks/pre.js');
+  });
+
+  it('writes hooks.json with pythia-managed codex hooks', () => {
+    const hooksPath = join(workspaceDir, 'hooks.json');
+    expect(existsSync(hooksPath)).toBe(true);
+    const h = JSON.parse(readFileSync(hooksPath, 'utf8'));
+    const preHooks = h.hooks?.PreToolUse ?? [];
+    const pythiaHook = preHooks.find((e) => e._managed === 'pythia');
+    expect(pythiaHook).toBeDefined();
+    const hookCmd = pythiaHook.hooks[0];
+    const fullCmd = [hookCmd.command, ...(hookCmd.args ?? [])].join(' ');
+    expect(fullCmd).toContain('.pythia/runtime/hooks/pre.js');
+  });
+});

@@ -152,7 +152,7 @@ Done when:
 
 **Where**: `## Metadata` → line `- **Status**: …` (exactly one; spelling and casing as below).
 
-**Allowed values** (canonical strings for `scripts/validate-plan.sh`):
+**Allowed values** (canonical strings for `.pythia/runtime/checks/doc-structure.js --type plan`):
 
 | Status | When to use |
 | ------ | ----------- |
@@ -241,7 +241,7 @@ _{What does NOT change — e.g. "Wire format unchanged. Plugin call site unchang
 
 From the Pythia repository root, run:
 
-`scripts/validate-plan.sh <path-to-plan.md>`
+`node .pythia/runtime/checks/doc-structure.js --type plan <path-to-plan.md>`
 
 The script checks required sections, metadata keys (including **Status** against **Plan document status**), Navigation step links, and required fields inside each `### Step N` block.
 
