@@ -41,3 +41,4 @@ CLAUDE.md
 .claude/
 .codex/
 .cursor/
+hooks.json

@@ -44,7 +44,15 @@ afterEach(() => {
 
 describe('semver', () => {
   it('parseSemver works', () => {
-    expect(parseSemver('1.2.3')).toEqual({ major: 1, minor: 2, patch: 3 });
+    expect(parseSemver('1.2.3')).toEqual({ major: 1, minor: 2, patch: 3, prerelease: null });
+    expect(parseSemver('0.3.2-dev')).toEqual({ major: 0, minor: 3, patch: 2, prerelease: 'dev' });
+  });
+  it('compareSemver: prerelease before release at same patch', () => {
+    expect(compareSemver('0.3.2-dev', '0.3.2')).toBeLessThan(0);
+    expect(compareSemver('0.3.2', '0.3.2-dev')).toBeGreaterThan(0);
+  });
+  it('inPendingRange: 0.3.3 pending from 0.3.2-dev baseline', () => {
+    expect(inPendingRange('0.3.3', '0.3.2-dev', '0.3.3')).toBe(true);
   });
   it('compareSemver: equal', () => expect(compareSemver('1.0.0', '1.0.0')).toBe(0));
   it('compareSemver: less', () => expect(compareSemver('0.1.0', '0.2.0')).toBeLessThan(0));

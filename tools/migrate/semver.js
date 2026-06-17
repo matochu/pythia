@@ -1,12 +1,16 @@
-// Numeric semver comparison for migration ordering.
-// Supports only numeric major.minor.patch (no pre-release).
+// Semver comparison for migration ordering.
+// Accepts major.minor.patch with optional -prerelease suffix (e.g. 0.3.2-dev).
 
 export function parseSemver(v) {
-  const parts = String(v).split('.');
+  const raw = String(v).trim();
+  const dash = raw.indexOf('-');
+  const base = dash === -1 ? raw : raw.slice(0, dash);
+  const prerelease = dash === -1 ? null : raw.slice(dash + 1);
+  const parts = base.split('.');
   if (parts.length !== 3) throw new Error(`Invalid semver: ${v}`);
   const [major, minor, patch] = parts.map(Number);
   if ([major, minor, patch].some(isNaN)) throw new Error(`Invalid semver: ${v}`);
-  return { major, minor, patch };
+  return { major, minor, patch, prerelease };
 }
 
 export function compareSemver(a, b) {
@@ -14,7 +18,12 @@ export function compareSemver(a, b) {
   const pb = parseSemver(b);
   if (pa.major !== pb.major) return pa.major - pb.major;
   if (pa.minor !== pb.minor) return pa.minor - pb.minor;
-  return pa.patch - pb.patch;
+  if (pa.patch !== pb.patch) return pa.patch - pb.patch;
+  // Same numeric triple: release beats prerelease; two prereleases lexicographic.
+  if (pa.prerelease === pb.prerelease) return 0;
+  if (pa.prerelease === null) return 1;
+  if (pb.prerelease === null) return -1;
+  return pa.prerelease.localeCompare(pb.prerelease);
 }
 
 // Returns true if version `v` is in the range (low, high] (exclusive low, inclusive high).

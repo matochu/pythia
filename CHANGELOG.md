@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3] - 2026-06-18
+
+### Features
+
+- **Path registry** — `.pythia/config/paths.md` defines artifact zones, workflow doc types, and which checkers run on each; hooks and validation read from this file instead of hardcoded lists
+- **JS guardrail hooks** — `pre`, `post`, and `stop` hooks materialize into `.pythia/runtime/hooks/` on `update`; `post` routes checkers from the path registry (data-driven, no per-artifact hardcoding)
+- **Workflow checkers in JavaScript** — bash validators replaced with `tools/checks/` modules: `doc-structure`, `links`, `inputs-fresh`, `role-boundary`, `plan-version-log`, `plan-numbering`, `cross-refs`, `plans-index`, and skill guards
+- **`version` command** — `pythia-workspace version [target-dir]` shows installed framework version, surfaces, and migration status
+- **`uninstall` command** — `pythia-workspace uninstall [target-dir]` removes managed agent surfaces and runtime while preserving `.pythia/workflows/`
+- **Registry update check** — `update` warns when a newer `pythia-workspace` is available on npm
+
+### Changed
+
+- **Config layout** — workspace config moves to `.pythia/config/settings.md`; path registry lives at `.pythia/config/paths.md` (migration renames existing files on `update`)
+- **Expanded workflow doc coverage** — path registry now includes `*.context.md`, `feat-*.md`, and `*.retro.md` with appropriate checkers; plan/review/implementation/audit docs get role-specific checker sets
+
+### Migration
+
+- **0.3.3 migration** — ensures `config/` layout, renames legacy `config.md` and `paths.md`, and upgrades Workflow docs section to hardened checker lists (skipped when already current)
+
 ## [0.3.2] - 2026-06-16
 
 ### Fixed
