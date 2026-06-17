@@ -308,10 +308,9 @@ describe('update: mixed migration (auto+llm)', () => {
     expect(findUnresolvedMixedStates(tmpDir).map((s) => s.migrationVersion)).toContain('0.0.2');
   });
 
-  it('update is blocked if unresolved mixed state exists', async () => {
+  it('update CLI exits 1 when unresolved mixed state exists', async () => {
     await doInit(makeWorkspaceOpts(tmpDir));
 
-    // Plant an unresolved state
     writeState(tmpDir, {
       migrationVersion: '0.2.0',
       frameworkVersion: '0.1.0',
@@ -322,11 +321,14 @@ describe('update: mixed migration (auto+llm)', () => {
     }, false);
     writeManifest(tmpDir, { migratedVersion: '0.0.0', frameworkVersion: '0.1.0' }, false);
 
-    // doUpdate should detect unresolved state and exit — but since we can't catch process.exit easily,
-    // we test that findUnresolvedMixedStates returns the state
-    const unresolved = findUnresolvedMixedStates(tmpDir);
-    expect(unresolved).toHaveLength(1);
-    expect(unresolved[0].migrationVersion).toBe('0.2.0');
+    const indexJs = resolve(packageRoot, 'tools/cli/index.js');
+    const r = spawnSync('node', [indexJs, 'update', tmpDir, '--yes'], {
+      encoding: 'utf8',
+      cwd: packageRoot,
+    });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toMatch(/BLOCKED/);
+    expect(findUnresolvedMixedStates(tmpDir)).toHaveLength(1);
   });
 });
 
@@ -368,6 +370,9 @@ describe('one-step update: old .pythia without manifest', () => {
   });
 
   it('re-running update is a no-op (idempotent)', async () => {
+    spawnSync('git', ['init', tmpDir], { encoding: 'utf8' });
+    spawnSync('git', ['-C', tmpDir, 'config', 'user.email', 'test@test.com'], { encoding: 'utf8' });
+    spawnSync('git', ['-C', tmpDir, 'config', 'user.name', 'Test'], { encoding: 'utf8' });
     mkdirSync(join(tmpDir, '.pythia', 'workflows'), { recursive: true });
     await doUpdate(makeWorkspaceOpts(tmpDir));
     const after1 = readFileSync(join(tmpDir, '.pythia', 'config', 'settings.md'), 'utf8');
@@ -377,7 +382,7 @@ describe('one-step update: old .pythia without manifest', () => {
     const m = readManifest(tmpDir);
     // pre-existing workflows/ dir (even empty) counts as adopted; successful update marks it current.
     expect(m.migratedVersion).toBe(m.frameworkVersion);
-  });
+  }, 30_000);
 
   it('generated .pythia/package.json has no --target and migrate:status works', async () => {
     mkdirSync(join(tmpDir, '.pythia', 'workflows'), { recursive: true });

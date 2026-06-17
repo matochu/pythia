@@ -12,22 +12,17 @@ import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
 import { spawnSync } from 'child_process';
 import { doInit, doUpdate } from '../workspace.js';
+import { initGit, makeOpts, runCli, packageRoot } from './helpers/workspace.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const packageRoot = resolve(__dirname, '../../../');
 
 let workspaceDir;
 
 // Shared workspace: init once, then update once — mirrors real install flow.
 beforeAll(async () => {
   workspaceDir = mkdtempSync(join(tmpdir(), 'pythia-ws-install-'));
-  // inputs.js uses `git rev-parse --show-toplevel`; workspace must be a git repo
-  spawnSync('git', ['init', workspaceDir], { encoding: 'utf8' });
-  spawnSync('git', ['-C', workspaceDir, 'config', 'user.email', 'test@test.com'], { encoding: 'utf8' });
-  spawnSync('git', ['-C', workspaceDir, 'config', 'user.name', 'Test'], { encoding: 'utf8' });
-  // init installs hooks + seeds runtime
+  initGit(workspaceDir);
   await doInit({ target: workspaceDir, packageRoot, yes: true });
-  // update materializes migrate engine into runtime
   await doUpdate({ target: workspaceDir, packageRoot, yes: true });
 });
 
@@ -52,6 +47,11 @@ describe('runtime materialized after install', () => {
 
   it('has .pythia/runtime/hooks/pre.js', () => {
     expect(existsSync(join(workspaceDir, '.pythia/runtime/hooks/pre.js'))).toBe(true);
+  });
+
+  it('does not ship session-start or update-check-worker hooks', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/hooks/session-start.js'))).toBe(false);
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/hooks/update-check-worker.js'))).toBe(false);
   });
 
   it('has .pythia/runtime/migrate/apply.js', () => {
@@ -222,5 +222,31 @@ describe('hook wiring after install', () => {
     const hookCmd = pythiaHook.hooks[0];
     const fullCmd = [hookCmd.command, ...(hookCmd.args ?? [])].join(' ');
     expect(fullCmd).toContain('.pythia/runtime/hooks/pre.js');
+  });
+
+  it('does not install SessionStart hook', () => {
+    const settingsPath = join(workspaceDir, '.claude/settings.json');
+    const s = JSON.parse(readFileSync(settingsPath, 'utf8'));
+    expect(s.hooks?.SessionStart ?? []).toHaveLength(0);
+  });
+
+  it('update strips legacy SessionStart hook entries', async () => {
+    const settingsPath = join(workspaceDir, '.claude/settings.json');
+    const s = JSON.parse(readFileSync(settingsPath, 'utf8'));
+    s.hooks = s.hooks ?? {};
+    s.hooks.SessionStart = [
+      { _managed: 'pythia', hooks: [{ type: 'command', command: 'node', args: ['legacy-session-start.js'] }] },
+    ];
+    writeFileSync(settingsPath, JSON.stringify(s, null, 2), 'utf8');
+    await doUpdate({ target: workspaceDir, packageRoot, yes: true });
+    const after = JSON.parse(readFileSync(settingsPath, 'utf8'));
+    expect(after.hooks?.SessionStart ?? []).toHaveLength(0);
+  });
+
+  it('pythia version reports installed state after init+update', () => {
+    const manifest = JSON.parse(readFileSync(join(workspaceDir, '.pythia/manifest.json'), 'utf8'));
+    const r = runCli(['version', workspaceDir]);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain(`framework:  ${manifest.frameworkVersion}`);
   });
 });

@@ -4,6 +4,10 @@ import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
 import { loadZones, deriveSurfacesAndSubstitutions } from '../lib/paths.js';
+import {
+  refreshRegistryCheck,
+  printRegistryUpdateNotice,
+} from './registry-check.js';
 export { readManifest, writeManifest } from '../migrate/manifest.js';
 import { readManifest, writeManifest } from '../migrate/manifest.js';
 
@@ -318,6 +322,7 @@ function installHooks(packageRoot, target, surfaces, dryRun) {
   // Install Claude hooks into .claude/settings.json (idempotent, marker-based merge)
   if (surfaces.some((s) => s.includes('claude'))) {
     mergeClaudeHooks(packageRoot, target, hooksAbsDir, dryRun);
+    stripRetiredPythiaHookEvents(join(target, '.claude', 'settings.json'), dryRun);
   }
 
   // Install Codex hooks.json (idempotent, marker-based merge)
@@ -357,10 +362,7 @@ function _mergeClaudeHooks(settingsPath, newHooks, dryRun) {
   for (const [event, entries] of Object.entries(newHooks)) {
     if (!settings.hooks[event]) settings.hooks[event] = [];
     // Remove previously managed entries (marker check)
-    settings.hooks[event] = settings.hooks[event].filter((h) => {
-      const json = JSON.stringify(h);
-      return !json.includes('pythia-managed') && !(h._managed === 'pythia');
-    });
+    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHook(h));
     // Add new managed entries with marker
     for (const entry of entries) {
       settings.hooks[event].push({ ...entry, _managed: 'pythia' });
@@ -371,6 +373,33 @@ function _mergeClaudeHooks(settingsPath, newHooks, dryRun) {
     mkdirSync(dirname(settingsPath), { recursive: true });
     writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
     console.log('  merged hooks → .claude/settings.json');
+  }
+}
+
+/** Remove pythia-managed hook events retired from the wiring template (e.g. SessionStart). */
+function stripRetiredPythiaHookEvents(settingsPath, dryRun) {
+  if (!existsSync(settingsPath)) return;
+  let settings;
+  try {
+    settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+  } catch {
+    return;
+  }
+  if (!settings.hooks) return;
+
+  const retiredEvents = ['SessionStart'];
+  let changed = false;
+  for (const event of retiredEvents) {
+    if (!settings.hooks[event]) continue;
+    const before = settings.hooks[event].length;
+    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHook(h));
+    if (settings.hooks[event].length !== before) changed = true;
+    if (settings.hooks[event].length === 0) delete settings.hooks[event];
+  }
+
+  if (changed && !dryRun) {
+    writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+    console.log('  removed retired pythia hooks from .claude/settings.json');
   }
 }
 
@@ -390,8 +419,8 @@ function installCodexHooks(packageRoot, target, hooksAbsDir, dryRun) {
 
   for (const [event, entries] of Object.entries(incoming.hooks)) {
     if (!existing.hooks[event]) existing.hooks[event] = [];
-    // Remove previously managed entries
-    existing.hooks[event] = existing.hooks[event].filter((h) => h._managed !== 'pythia');
+    // Remove previously managed entries (marker or .pythia/runtime/hooks path — same as Claude)
+    existing.hooks[event] = existing.hooks[event].filter((h) => !isPythiaManagedHook(h));
     for (const entry of entries) {
       existing.hooks[event].push({ ...entry, _managed: 'pythia' });
     }
@@ -766,5 +795,179 @@ export async function doUpdate(opts) {
   // Apply migrations from the pre-update committed baseline toward this package version.
   await applyMigrations(packageRoot, target, migrationPlanManifest, dryRun, noMigrate);
 
+  if (!dryRun) {
+    const registryCheck = refreshRegistryCheck(target, {
+      dryRun: false,
+      force: true,
+      fetchLatest: opts.registryFetch,
+    });
+    printRegistryUpdateNotice(target, frameworkVersion, registryCheck);
+  }
+
   console.log(`[update] done${dryRun ? ' (dry-run)' : ''}`);
+}
+
+function isPythiaManagedHook(h) {
+  if (h._managed === 'pythia' || h._managed === 'pythia-managed') return true;
+  const json = JSON.stringify(h);
+  return json.includes('.pythia/runtime/hooks');
+}
+
+function removePythiaHooksFromSettings(settingsPath, dryRun, label) {
+  if (!existsSync(settingsPath)) return 0;
+  let settings;
+  try {
+    settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+  } catch {
+    return 0;
+  }
+  if (!settings.hooks) return 0;
+
+  let removed = 0;
+  for (const event of Object.keys(settings.hooks)) {
+    const before = settings.hooks[event].length;
+    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHook(h));
+    removed += before - settings.hooks[event].length;
+  }
+
+  if (removed > 0) {
+    if (dryRun) {
+      console.log(`  [uninstall] would remove pythia hooks from ${label} (${removed} entries)`);
+    } else {
+      writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+      console.log(`  removed pythia hooks from ${label}`);
+    }
+  }
+  return removed;
+}
+
+/**
+ * Remove pythia-managed surfaces, runtime, hooks, and manifest from a workspace.
+ * Preserves .pythia/workflows/ and user-added skills not in installedSkills.
+ * @returns {number} exit code (0 success, 1 partial failure)
+ */
+export async function doUninstall({ target, dryRun = false, yes = false }) {
+  if (!isWorkspace(target)) {
+    console.log('not a pythia workspace');
+    return 0;
+  }
+
+  if (!yes && !dryRun) {
+    if (!process.stdin.isTTY) {
+      console.error('[uninstall] error: non-interactive uninstall requires --yes (or use --dry-run to preview)');
+      return 1;
+    }
+    const { createInterface } = await import('readline/promises');
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    let answer;
+    try {
+      answer = await rl.question(
+        'This will remove managed surfaces and runtime. .pythia/workflows/ will be preserved. Continue? [y/N] '
+      );
+    } finally {
+      rl.close();
+    }
+    const normalized = (answer ?? '').trim().toLowerCase();
+    if (normalized !== 'y' && normalized !== 'yes') return 0;
+  }
+
+  const manifest = readManifest(target);
+  if (!manifest) {
+    console.error('[uninstall] error: manifest missing or unparseable — nothing removed');
+    return 1;
+  }
+
+  console.log(`[uninstall] target: ${target}${dryRun ? ' (dry-run)' : ''}`);
+
+  const generated = manifest.generated ?? {};
+  const surfaces = manifest.surfaces ?? [];
+  const installedSkills = manifest.installedSkills ?? [];
+  let hadErrors = false;
+
+  for (const relpath of Object.keys(generated)) {
+    const dest = join(target, relpath);
+    if (dryRun) {
+      console.log(`  [uninstall] would remove: ${relpath}`);
+    } else {
+      try {
+        if (existsSync(dest)) {
+          rmSync(dest, { force: true });
+          console.log(`  removed: ${relpath}`);
+        }
+      } catch (err) {
+        console.warn(`  [uninstall] warning: could not remove ${relpath}: ${err.message}`);
+        hadErrors = true;
+      }
+    }
+  }
+
+  for (const surface of surfaces) {
+    for (const skill of installedSkills) {
+      const skillPath = join(target, surface, skill);
+      if (!existsSync(skillPath)) continue;
+      if (dryRun) {
+        console.log(`  [uninstall] would remove: ${surface}/${skill}`);
+      } else {
+        try {
+          rmSync(skillPath, { recursive: true, force: true });
+          console.log(`  removed: ${surface}/${skill}`);
+        } catch (err) {
+          console.warn(`  [uninstall] warning: could not remove ${surface}/${skill}: ${err.message}`);
+          hadErrors = true;
+        }
+      }
+    }
+  }
+
+  const runtimeDir = join(target, '.pythia', 'runtime');
+  if (dryRun) {
+    console.log('  [uninstall] would remove: .pythia/runtime/');
+  } else if (existsSync(runtimeDir)) {
+    try {
+      rmSync(runtimeDir, { recursive: true, force: true });
+      console.log('  removed: .pythia/runtime/');
+    } catch (err) {
+      console.warn(`  [uninstall] warning: could not remove .pythia/runtime/: ${err.message}`);
+      hadErrors = true;
+    }
+  }
+
+  removePythiaHooksFromSettings(join(target, '.claude', 'settings.json'), dryRun, '.claude/settings.json');
+  removePythiaHooksFromSettings(join(target, 'hooks.json'), dryRun, 'hooks.json');
+
+  const codexRulesPath = join(target, '.codex', 'rules', 'default.rules');
+  if (existsSync(codexRulesPath)) {
+    try {
+      const content = readFileSync(codexRulesPath, 'utf8');
+      if (content.startsWith('# Pythia workspace guardrails\n')) {
+        if (dryRun) {
+          console.log('  [uninstall] would remove: .codex/rules/default.rules');
+        } else {
+          rmSync(codexRulesPath, { force: true });
+          console.log('  removed: .codex/rules/default.rules');
+        }
+      }
+    } catch (err) {
+      console.warn(`  [uninstall] warning: could not remove .codex/rules/default.rules: ${err.message}`);
+      hadErrors = true;
+    }
+  }
+
+  for (const rel of ['.pythia/manifest.json', '.pythia/version.json']) {
+    const dest = join(target, rel);
+    if (dryRun) {
+      console.log(`  [uninstall] would remove: ${rel}`);
+    } else if (existsSync(dest)) {
+      try {
+        rmSync(dest, { force: true });
+        console.log(`  removed: ${rel}`);
+      } catch (err) {
+        console.warn(`  [uninstall] warning: could not remove ${rel}: ${err.message}`);
+        hadErrors = true;
+      }
+    }
+  }
+
+  console.log('[uninstall] done. .pythia/workflows/ preserved.');
+  return hadErrors ? 1 : 0;
 }

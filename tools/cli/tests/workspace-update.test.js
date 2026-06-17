@@ -10,7 +10,7 @@
  * - paths.md seed: not overwritten if user modified it
  * - migration: pending migration applied on update
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync,
   existsSync, cpSync, readdirSync,
@@ -20,21 +20,10 @@ import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
 import { spawnSync } from 'child_process';
 import { doInit, doUpdate, readManifest } from '../workspace.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const packageRoot = resolve(__dirname, '../../../');
+import { writeManifest } from '../../migrate/manifest.js';
+import { initGit, makeOpts, runCli, packageRoot } from './helpers/workspace.js';
 
 let tmpDir;
-
-function makeOpts(target, extra = {}) {
-  return { target, packageRoot, yes: true, ...extra };
-}
-
-function initGit(dir) {
-  spawnSync('git', ['init', dir], { encoding: 'utf8' });
-  spawnSync('git', ['-C', dir, 'config', 'user.email', 'test@test.com'], { encoding: 'utf8' });
-  spawnSync('git', ['-C', dir, 'config', 'user.name', 'Test'], { encoding: 'utf8' });
-}
 
 beforeEach(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'pythia-update-test-'));
@@ -223,28 +212,80 @@ describe('update: hook wiring idempotency', () => {
     const customEntry = (updated.hooks?.PreToolUse ?? []).find((h) => !h._managed);
     expect(customEntry).toBeDefined();
   });
+
+  it('removes legacy codex hooks without _managed but with runtime path on update', async () => {
+    await doInit(makeOpts(tmpDir));
+    await doUpdate(makeOpts(tmpDir));
+
+    const hooksPath = join(tmpDir, 'hooks.json');
+    const hooks = JSON.parse(readFileSync(hooksPath, 'utf8'));
+    hooks.hooks.PreToolUse.push({
+      hooks: [{
+        type: 'command',
+        command: 'node',
+        args: ['.pythia/runtime/hooks/legacy-pre.js'],
+      }],
+    });
+    writeFileSync(hooksPath, JSON.stringify(hooks, null, 2), 'utf8');
+
+    await doUpdate(makeOpts(tmpDir));
+
+    const after = JSON.parse(readFileSync(hooksPath, 'utf8'));
+    const runtimeHooks = (after.hooks?.PreToolUse ?? []).filter((h) =>
+      JSON.stringify(h).includes('.pythia/runtime/hooks'),
+    );
+    expect(runtimeHooks).toHaveLength(1);
+    expect(runtimeHooks[0]._managed).toBe('pythia');
+  });
+});
+
+// ── registry check on update ──────────────────────────────────────────────────
+
+describe('update: registry check', () => {
+  it('forces registry refresh and prints notice when npm reports newer version', async () => {
+    await doInit(makeOpts(tmpDir));
+    await doUpdate(makeOpts(tmpDir));
+
+    const frameworkVersion = readManifest(tmpDir).frameworkVersion;
+    writeManifest(tmpDir, {
+      registryCheck: {
+        checkedAt: new Date().toISOString(),
+        latestVersion: frameworkVersion,
+      },
+    }, false);
+
+    const logs = [];
+    const logSpy = vi.spyOn(console, 'log').mockImplementation((...args) => {
+      logs.push(args.join(' '));
+    });
+
+    try {
+      await doUpdate({
+        ...makeOpts(tmpDir),
+        registryFetch: () => '99.99.99',
+      });
+    } finally {
+      logSpy.mockRestore();
+    }
+
+    const manifest = readManifest(tmpDir);
+    expect(manifest.registryCheck.latestVersion).toBe('99.99.99');
+    expect(logs.some((l) => l.includes('newer pythia-workspace'))).toBe(true);
+  });
 });
 
 // ── runtime refresh ───────────────────────────────────────────────────────────
 
 describe('update: runtime refresh', () => {
-  it('runtime inputs.js is callable after update', () => {
-    // Using a shared already-init'd workspace is expensive; run init+update inline here
-    // (same as workspace-install.test.js but focuses on update path)
+  it('runtime inputs.js is callable after update', async () => {
     const ws = mkdtempSync(join(tmpdir(), 'pythia-rt-'));
     initGit(ws);
     try {
-      // Sync init+update (async but we need to await — use a simpler spawn approach)
-      const r = spawnSync('node', [
-        join(packageRoot, 'tools/cli/index.js'), 'update', ws, '--yes',
-      ], { encoding: 'utf8', cwd: packageRoot });
+      await doInit(makeOpts(ws));
+      await doUpdate(makeOpts(ws));
 
-      // init first since update requires existing workspace
-      // Actually: run init via direct import in a helper, or just verify files post-init
-      // This test verifies that inputs.js exists and is runnable after the full update cycle
       const inputsPath = join(ws, '.pythia/runtime/inputs.js');
-      // init may not have been called — skip if runtime not yet materialized
-      if (!existsSync(inputsPath)) return;
+      expect(existsSync(inputsPath)).toBe(true);
 
       const result = spawnSync('node', [inputsPath], { encoding: 'utf8', cwd: ws });
       expect(result.status).toBe(2); // usage error = script is callable
@@ -322,5 +363,15 @@ describe('update: manifest', () => {
     for (const s of pkgSkills) {
       expect(manifest.installedSkills).toContain(s);
     }
+  });
+
+  it('pythia version reflects manifest after update', async () => {
+    await doInit(makeOpts(tmpDir));
+    await doUpdate(makeOpts(tmpDir));
+    const manifest = readManifest(tmpDir);
+    const r = runCli(['version', tmpDir]);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain(`framework:  ${manifest.frameworkVersion}`);
+    expect(r.stdout).toMatch(/migrations: 0 pending/);
   });
 });

@@ -24,6 +24,8 @@ Every response from a workflow skill (Reviewer, Developer, Architect, etc.) **mu
 
 The `footer-presence` guardrail checker (`.pythia/runtime/checks/footer-presence.js`) verifies these two elements are present in workflow skill replies and warns if either is missing.
 
+**Hooks**: PostToolUse warnings and `pythia-nudge:` stderr lines are **not** Validator PASS. See [hook-integration.md](hook-integration.md).
+
 ## Reviewer Response Format
 
 **Chat Response** (in addition to writing `{feature-dir}/reports/{plan-slug}.review.md`):

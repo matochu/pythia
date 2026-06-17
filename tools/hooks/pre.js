@@ -61,7 +61,9 @@ function main() {
     const paths = editedPaths(event);
     for (const p of paths) {
       // Generated-cache warn
-      const genEntry = zone(zones, 'Generated cache').find((e) => p === e.path || p.endsWith(`/${e.path}`));
+      const genEntry = zone(zones, 'Generated cache').find(
+        (e) => p === e.path || p.startsWith(`${e.path}/`) || p.endsWith(`/${e.path}`) || p.includes(`/${e.path}/`),
+      );
       if (genEntry) {
         warn(`pythia-hook: ${p} is a generated cache file — edit source ${genEntry.source ?? 'skills/'} instead`);
       }

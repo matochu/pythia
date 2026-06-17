@@ -52,6 +52,15 @@ Run from **this repository root**. File arguments may be absolute or relative pa
 2. Include **stderr** in the chat when reporting failures.
 3. **No auxiliary files (mandatory)**: do **not** create `.txt`/`.log` or any capture files in the workspace; no `>`/`tee` into the repo. The script **only reads** the target `.md`; stream results to the terminal and chat only.
 
+## PostToolUse hooks vs this skill
+
+**PostToolUse** hooks (`post.js`) may run partial checkers and print **warnings** when you save workflow `*.md` files. Hook warnings are **not** PASS and **not** a substitute for this skill.
+
+- **PASS** = Validator procedure in **this** skill completed with **exit `0`** in this session (subagent or inline fallback).
+- **Do not** claim format compliance because hooks were silent or only warned.
+
+See [hook-integration.md](../workflow/references/hook-integration.md) for nudge messages (`pythia-nudge:`) and hook boundaries.
+
 ## Validator subagent (delegation)
 
 Parent skills should run validation in a **separate context** when possible. Parents **must not** paste `bash` lines — only paths and this template.

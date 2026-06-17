@@ -102,6 +102,8 @@ Read artifact files to determine lifecycle position:
 
 **Concrete tooling (orchestrator — if “Validator subagent” is unclear)**: Use a **separate delegated task** (e.g. Cursor **Task**) so validation does not run inside the orchestrator thread — commonly `subagent_type="generalPurpose"` or another **short, shell-capable** one-shot type your host documents. Put **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent in that task (two absolute paths); **do not** paste ENTRY routing notes, parsed verdicts, or the workflow artifact body — only validation instructions.
 
+**PostToolUse hook nudges**: After subagents save workflow artifacts, `post.js` may emit `pythia-nudge:` lines on stderr (plan → review, review → replan/implement, implementation → audit, audit verdict routing). Treat these as **hints**; **State Detection** above and artifact files remain authoritative. Reconcile nudges before routing. Hooks do **not** replace Validator **exit `0`** — see [hook-integration.md](../workflow/references/hook-integration.md).
+
 **ENTRY: review** → Spawn Reviewer subagent (full procedure: `### ENTRY: review` below)
 
 - Subagent reads plan + contexts, appends review round to `review.md`

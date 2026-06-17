@@ -43,6 +43,56 @@ describe('pre.js — apply_patch event (Codex)', () => {
   });
 });
 
+describe('pre.js — generated cache separator guard', () => {
+  // Zone entry: ".claude/skills" must NOT match "skills/plan" or "other/skills"
+  // but MUST match ".claude/skills/plan/SKILL.md" and "path/to/.claude/skills"
+
+  it('Edit to .claude/skills/plan/SKILL.md → warns (generated cache exact prefix)', () => {
+    const event = {
+      tool_name: 'Edit',
+      tool_input: { file_path: '.claude/skills/plan/SKILL.md' },
+    };
+    const r = run(event);
+    expect(r.stderr).toMatch(/generated cache/i);
+  });
+
+  it('Edit to skills/plan/SKILL.md → no generated-cache warn (source dir, not cache)', () => {
+    const event = {
+      tool_name: 'Edit',
+      tool_input: { file_path: 'skills/plan/SKILL.md' },
+    };
+    const r = run(event);
+    expect(r.stderr).not.toMatch(/generated cache/i);
+  });
+
+  it('Edit to some/nested/.claude/skills/foo → warns (suffix match)', () => {
+    const event = {
+      tool_name: 'Edit',
+      tool_input: { file_path: 'some/nested/.claude/skills/foo.md' },
+    };
+    const r = run(event);
+    expect(r.stderr).toMatch(/generated cache/i);
+  });
+
+  it('Edit to .agents/skills/plan/SKILL.md → warns (generated cache)', () => {
+    const event = {
+      tool_name: 'Edit',
+      tool_input: { file_path: '.agents/skills/plan/SKILL.md' },
+    };
+    const r = run(event);
+    expect(r.stderr).toMatch(/generated cache/i);
+  });
+
+  it('Edit to my-agents/skills/plan → no warn (not a generated cache zone path)', () => {
+    const event = {
+      tool_name: 'Edit',
+      tool_input: { file_path: 'my-agents/skills/plan/SKILL.md' },
+    };
+    const r = run(event);
+    expect(r.stderr).not.toMatch(/generated cache/i);
+  });
+});
+
 describe('pre.js — role-boundary warn (not DENY)', () => {
   it('Edit to *.review.md → exit 0 (warn only, not DENY)', () => {
     const event = {

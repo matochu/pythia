@@ -8,6 +8,8 @@
 npx pythia-workspace [target-dir]           # auto: update if workspace detected, else init
 npx pythia-workspace init [target-dir]      # first-time provision of a fresh workspace
 npx pythia-workspace update [target-dir]    # refresh an existing workspace (one-step, even if old)
+npx pythia-workspace version [target-dir]   # show installed framework version, surfaces, migration status
+npx pythia-workspace uninstall [target-dir] # remove managed surfaces and runtime (preserves workflows/)
 ```
 
 `target-dir` is a positional argument (default: current working directory).
@@ -21,6 +23,15 @@ npx pythia-workspace update [target-dir]    # refresh an existing workspace (one
 - `--git-strategy <strategy>` — `shared|pythia|ignore` (default: `pythia`)
 
 `update` accepts `--dry-run`, `--yes`, `--no-migrate`.
+
+`version` reads `.pythia/manifest.json` and prints framework version, migrated version, surfaces, installed skill count, pending migration status, and npm registry status (`registry:` line). When `registryCheck.checkedAt` is older than 24 hours (or missing), it runs `npm view pythia-workspace version` and stores the result in `manifest.registryCheck`. Exits `1` when no workspace manifest is found. Writes only `registryCheck` when refreshing stale cache.
+
+`uninstall` accepts:
+
+- `--dry-run` — print planned removals; write nothing
+- `--yes` — skip the confirmation prompt (`[y/N]`); **required** in non-interactive environments (no TTY)
+
+Without `--yes` on a TTY, uninstall prompts before removing anything. Without `--yes` and without a TTY, uninstall prints an error and exits `1` without removing anything. On a non-workspace target it prints `not a pythia workspace` and exits `0`.
 
 ## What `init` does
 
@@ -41,6 +52,38 @@ npx pythia-workspace update [target-dir]    # refresh an existing workspace (one
 7. Materializes `.pythia/runtime/` (engine + migrations pinned to `frameworkVersion`)
 8. Plans migrations from the pre-update `migratedVersion` baseline (`0.0.0` for adopted/legacy workspaces without a stamp; `frameworkVersion` for fresh workspaces)
 9. Applies pending migrations; commits fully-auto, hands mixed off to the migrate skill; when no migration remains pending, writes `migratedVersion = frameworkVersion`
+10. Refreshes `manifest.registryCheck` via npm (unless `--dry-run`) and prints a notice when a newer package version is available
+
+## What `uninstall` does
+
+1. Checks `isWorkspace(target)` — if false, prints `not a pythia workspace` and exits `0`
+2. Prompts for confirmation unless `--yes` (or `--dry-run`)
+3. Reads `manifest.json` and removes exactly what pythia installed:
+   - Instruction files listed in `manifest.generated` (`CLAUDE.md`, `AGENTS.md`, …)
+   - Skills from each `manifest.surfaces` entry that appear in `manifest.installedSkills`
+   - `.pythia/runtime/` entirely
+   - Pythia-managed hook entries from `.claude/settings.json` and `hooks.json` (`_managed: "pythia"` or hooks targeting `.pythia/runtime/hooks`)
+   - `.codex/rules/default.rules` when it still matches the pythia-shipped template (header `# Pythia workspace guardrails`)
+   - `.pythia/manifest.json` and legacy `.pythia/version.json`
+4. **Preserves**: `.pythia/workflows/**`, user-added skills not in `installedSkills`, non-pythia hook entries, user-modified `.codex/rules/default.rules`, seed files under `.pythia/config/`
+
+After uninstall, `isWorkspace(target)` returns `false`. Running uninstall again is a no-op.
+
+## Registry update check
+
+`update` and `version` compare **this workspace's** `manifest.frameworkVersion` against the latest `pythia-workspace` version on npm. Results are stored per-workspace in `manifest.registryCheck`:
+
+```json
+"registryCheck": {
+  "checkedAt": "2026-06-17T12:00:00.000Z",
+  "latestVersion": "0.3.3"
+}
+```
+
+- **`update`**: always refreshes the registry check at the end (unless `--dry-run`), bypassing the 24h rate limit. Prints a one-line notice when `latestVersion !== frameworkVersion`.
+- **`version`**: refreshes only when `checkedAt` is older than 24 hours; prints a `registry:` summary line either way.
+- Network failures and missing npm are silent — they never block `update` or `version`.
+- Legacy `SessionStart` hooks from earlier pythia versions are removed on the next `update`.
 
 ## `gitStrategy`
 
@@ -88,6 +131,10 @@ AGENTS.md and CLAUDE.md are generated from `assets/instructions.md` with `{tool,
   "generated": {
     "AGENTS.md": "<sha256>",
     "CLAUDE.md": "<sha256>"
+  },
+  "registryCheck": {
+    "checkedAt": "<ISO-8601>",
+    "latestVersion": "0.3.3"
   }
 }
 ```

@@ -4,7 +4,8 @@ import { resolve, dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { Command } from 'commander';
 import { spawnSync } from 'child_process';
-import { doInit, doUpdate, isWorkspace, isExistingWorkspace } from './workspace.js';
+import { doInit, doUpdate, doUninstall, isWorkspace, isExistingWorkspace, readManifest } from './workspace.js';
+import { refreshRegistryCheck, formatRegistryLine } from './registry-check.js';
 import { loadZones, deriveSurfacesAndSubstitutions } from '../lib/paths.js';
 
 function findPackageRoot() {
@@ -115,6 +116,55 @@ program
     });
   });
 
+program
+  .command('uninstall')
+  .description('Remove pythia-managed surfaces and runtime from a workspace')
+  .argument('[target-dir]', 'target directory', process.cwd())
+  .option('--dry-run', 'print planned actions without writing anything')
+  .option('--yes', 'non-interactive: skip confirmation')
+  .action(async (targetDir, opts) => {
+    const code = await doUninstall({
+      target: resolve(targetDir),
+      dryRun: !!opts.dryRun,
+      yes: !!opts.yes,
+    });
+    if (code !== 0) process.exit(code);
+  });
+
+program
+  .command('version')
+  .description('Show workspace state; may refresh manifest.registryCheck when npm cache is stale (24h)')
+  .argument('[target-dir]', 'target directory', process.cwd())
+  .action(async (targetDir) => {
+    const target = resolve(targetDir);
+    const manifest = readManifest(target);
+    if (!manifest) {
+      console.error(`not a pythia workspace at ${target}`);
+      process.exit(1);
+    }
+
+    const { findUnresolvedMixedStates } = await import('../migrate/state.js').catch(() => ({}));
+    const unresolved = findUnresolvedMixedStates ? findUnresolvedMixedStates(target) : [];
+    const pendingCount =
+      unresolved.length + (manifest.frameworkVersion !== manifest.migratedVersion ? 1 : 0);
+    const migrationsLine =
+      pendingCount === 0 ? '0 pending' : `${pendingCount} pending (run update)`;
+
+    const skillCount =
+      manifest.installedSkills == null
+        ? 'unknown'
+        : `${manifest.installedSkills.length} installed`;
+
+    const registryCheck = refreshRegistryCheck(target, { dryRun: false });
+
+    console.log(`framework:  ${manifest.frameworkVersion ?? 'unknown'}`);
+    console.log(`migrated:   ${manifest.migratedVersion ?? 'unknown'}`);
+    console.log(`surfaces:   ${(manifest.surfaces ?? []).join(', ')}`);
+    console.log(`skills:     ${skillCount}`);
+    console.log(`migrations: ${migrationsLine}`);
+    console.log(`registry:   ${formatRegistryLine(manifest.frameworkVersion, registryCheck)}`);
+  });
+
 function parseSurfaces(str) {
   const parts = str.split(',').map((s) => s.trim().toLowerCase());
   const result = [];
@@ -131,7 +181,7 @@ program.addHelpCommand(false);
 program.exitOverride();
 
 const rawArgs = process.argv.slice(2);
-const knownCommands = ['init', 'update'];
+const knownCommands = ['init', 'update', 'uninstall', 'version'];
 const firstArg = rawArgs.find((a) => !a.startsWith('-'));
 
 if (!firstArg || !knownCommands.includes(firstArg)) {
