@@ -31,6 +31,10 @@ export function parseMigration(content) {
       if (!opMatch) continue;
       const opLines = opMatch[1].split('\n');
       const op = {};
+      const MULTILINE_KEYS = new Set(['content', 'find', 'replace']);
+      const OP_FIELD_KEYS = new Set([
+        'op', 'path', 'find', 'replace', 'from', 'to', 'key', 'value', 'section', 'content',
+      ]);
       let i = 0;
       while (i < opLines.length) {
         const line = opLines[i];
@@ -38,21 +42,24 @@ export function parseMigration(content) {
         if (idx === -1) { i++; continue; }
         const k = line.slice(0, idx).trim();
         const v = line.slice(idx + 1).trimStart();
-        // Multi-line value: if key is 'content', collect remaining lines until empty line or end
-        if (k === 'content') {
-          const contentLines = [v];
+        if (MULTILINE_KEYS.has(k)) {
+          const valueLines = [v];
           i++;
           while (i < opLines.length) {
-            contentLines.push(opLines[i]);
+            const next = opLines[i];
+            const nextColon = next.indexOf(':');
+            if (nextColon > 0) {
+              const nextKey = next.slice(0, nextColon).trim();
+              if (OP_FIELD_KEYS.has(nextKey)) break;
+            }
+            valueLines.push(next);
             i++;
           }
-          // Remove trailing empty lines
-          while (contentLines.length > 0 && contentLines[contentLines.length - 1].trim() === '') {
-            contentLines.pop();
+          while (valueLines.length > 0 && valueLines[valueLines.length - 1].trim() === '') {
+            valueLines.pop();
           }
-          // If content: had no inline value, drop the leading empty string
-          if (contentLines.length > 0 && contentLines[0] === '') contentLines.shift();
-          op[k] = contentLines.join('\n');
+          if (valueLines.length > 0 && valueLines[0] === '') valueLines.shift();
+          op[k] = valueLines.join('\n');
         } else {
           op[k] = v.trim();
           i++;

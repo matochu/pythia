@@ -314,6 +314,11 @@ function installHooks(packageRoot, target, surfaces, dryRun) {
     mkdirSync(runtimeDir, { recursive: true });
     cpSync(inputsSrc, join(runtimeDir, 'inputs.js'), { force: true });
   }
+  const packagePathsSrc = join(packageRoot, 'assets', 'base', 'config', 'paths.md');
+  if (existsSync(packagePathsSrc)) {
+    mkdirSync(runtimeDir, { recursive: true });
+    cpSync(packagePathsSrc, join(runtimeDir, 'package-paths.md'), { force: true });
+  }
   const hooksDir = join(runtimeDir, 'hooks');
   ensurePythiaGitignore(target, dryRun);
 

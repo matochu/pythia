@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync, realpathSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { existsSync } from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export function readEvent() {
   const raw = readFileSync(0, 'utf8').trim();
@@ -93,4 +93,15 @@ export function printClaudeDeny(reason, eventName = 'PreToolUse') {
 
 export function warn(message) {
   console.error(message);
+}
+
+/** True when moduleUrl is the Node CLI entry (argv[1]). Uses realpath for macOS /var symlinks. */
+export function isHookEntrypoint(moduleUrl = import.meta.url) {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(entry);
+  } catch {
+    return moduleUrl === pathToFileURL(entry).href;
+  }
 }

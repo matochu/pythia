@@ -307,6 +307,20 @@ describe('update: runtime refresh', () => {
     // args[0] should point to the runtime pre.js
     expect(preEntry.hooks[0].args[0]).toBe(runtimePre);
   });
+
+  it('materializes package-paths.md for runtime loadZones fallback', async () => {
+    const ws = mkdtempSync(join(tmpdir(), 'pythia-rt-paths-'));
+    initGit(ws);
+    try {
+      await doInit(makeOpts(ws));
+      await doUpdate(makeOpts(ws));
+      const packagePaths = join(ws, '.pythia/runtime/package-paths.md');
+      expect(existsSync(packagePaths)).toBe(true);
+      expect(readFileSync(packagePaths, 'utf8')).toContain('role-boundary.js');
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
 });
 
 // ── .pythia/paths.md seed ─────────────────────────────────────────────────────

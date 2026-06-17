@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { parseZones, zone, generatedCachePaths, protectedPaths, deriveSurfacesAndSubstitutions } from '../paths.js';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { parseZones, zone, generatedCachePaths, protectedPaths, deriveSurfacesAndSubstitutions, loadZones } from '../paths.js';
+
+const PKG_PATHS_MD = resolve('assets/base/config/paths.md');
 
 const SAMPLE = `
 # Pythia Workspace Path Registry
@@ -27,8 +34,13 @@ const SAMPLE = `
 
 ## Workflow docs
 
-- *.plan.md  checker: tools/checks/doc-structure.js
-- *.review.md  checker: tools/checks/doc-structure.js
+- *.plan.md  checker: links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, doc-structure.js
+- *.review.md  checker: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
+- *.implementation.md  checker: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
+- *.audit.md  checker: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
+- *.context.md  checker: links.js, inputs-fresh.js
+- feat-*.md  checker: links.js
+- *.retro.md  checker: links.js
 
 ## Scripts
 
@@ -67,7 +79,43 @@ describe('parseZones', () => {
   it('parses entries with checker annotation', () => {
     const zones = parseZones(SAMPLE);
     const docs = zone(zones, 'Workflow docs');
-    expect(docs[0]).toEqual({ path: '*.plan.md', checker: 'tools/checks/doc-structure.js' });
+    expect(docs[0]).toEqual({
+      path: '*.plan.md',
+      checker: 'links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, doc-structure.js',
+    });
+    expect(docs[1]).toEqual({
+      path: '*.review.md',
+      checker: 'role-boundary.js, links.js, inputs-fresh.js, doc-structure.js',
+    });
+    expect(docs[2]).toEqual({
+      path: '*.implementation.md',
+      checker: 'role-boundary.js, links.js, inputs-fresh.js, doc-structure.js',
+    });
+    expect(docs[3]).toEqual({
+      path: '*.audit.md',
+      checker: 'role-boundary.js, links.js, inputs-fresh.js, doc-structure.js',
+    });
+    expect(docs[4]).toEqual({
+      path: '*.context.md',
+      checker: 'links.js, inputs-fresh.js',
+    });
+    expect(docs[5]).toEqual({ path: 'feat-*.md', checker: 'links.js' });
+    expect(docs[6]).toEqual({ path: '*.retro.md', checker: 'links.js' });
+  });
+
+  it('package asset paths.md has workflow doc checker entries', () => {
+    const zones = parseZones(readFileSync(PKG_PATHS_MD, 'utf8'));
+    const docs = zone(zones, 'Workflow docs');
+    expect(docs.map((d) => d.path)).toEqual([
+      '*.plan.md',
+      '*.review.md',
+      '*.implementation.md',
+      '*.audit.md',
+      '*.context.md',
+      'feat-*.md',
+      '*.retro.md',
+    ]);
+    expect(docs[1].checker).toContain('role-boundary.js');
   });
 
   it('every generated-cache entry has source', () => {
@@ -123,5 +171,20 @@ describe('deriveSurfacesAndSubstitutions', () => {
     expect(substitutions).toHaveLength(2);
     expect(substitutions[0]).toMatchObject({ file: 'CLAUDE.md', tool: 'Claude Code', skillsPath: '.claude/skills' });
     expect(substitutions[1]).toMatchObject({ file: 'AGENTS.md', tool: 'Codex', skillsPath: '.agents/skills' });
+  });
+});
+
+describe('loadZones', () => {
+  it('falls back to materialized package-paths.md when workspace copy is absent', () => {
+    const root = mkdtempSync(join(tmpdir(), 'pythia-loadzones-'));
+    try {
+      mkdirSync(join(root, '.pythia', 'runtime'), { recursive: true });
+      cpSync(PKG_PATHS_MD, join(root, '.pythia', 'runtime', 'package-paths.md'));
+      const docs = zone(loadZones(root), 'Workflow docs');
+      expect(docs.map((d) => d.path)).toContain('*.context.md');
+      expect(docs[0].checker).toContain('doc-structure.js');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

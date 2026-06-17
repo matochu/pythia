@@ -2,7 +2,14 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const PKG_PATHS_MD = resolve(dirname(fileURLToPath(import.meta.url)), '../../assets/base/config/paths.md');
+/** Package-default paths.md: dev layout (tools/lib) or materialized runtime copy. */
+export function resolvePackagePathsMd() {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const devAsset = resolve(here, '../../assets/base/config/paths.md');
+  if (existsSync(devAsset)) return devAsset;
+  const materialized = resolve(here, '../package-paths.md');
+  return existsSync(materialized) ? materialized : devAsset;
+}
 
 /**
  * Parse paths.md content into a Map<zoneName, Entry[]>.
@@ -62,7 +69,8 @@ export function loadZones(root) {
   const candidates = [
     join(root, '.pythia', 'config', 'paths.md'),
     join(root, '.pythia', 'paths.md'), // legacy path (pre-config/ restructure)
-    PKG_PATHS_MD,
+    join(root, '.pythia', 'runtime', 'package-paths.md'), // materialized on init/update
+    resolvePackagePathsMd(),
   ];
 
   for (const candidate of candidates) {

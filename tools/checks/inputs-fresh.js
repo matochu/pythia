@@ -32,7 +32,7 @@ if (!output || output === 'no inputs declared') process.exit(0);
 
 const hasStale = output.split('\n').some((l) => l.includes('STALE') || l.startsWith('!'));
 if (hasStale) {
-  console.error(`${file}:0: [inputs-fresh.stale] Grounding artifact has STALE or missing inputs — run: node scripts/inputs.js update ${file}`);
+  console.error(`${file}:0: [inputs-fresh.stale] Grounding artifact has STALE or missing inputs — run: node .pythia/runtime/inputs.js update ${file}`);
   for (const line of output.split('\n').filter((l) => l.includes('STALE') || l.startsWith('!'))) {
     console.error(`  ${line}`);
   }

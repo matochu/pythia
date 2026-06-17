@@ -34,13 +34,10 @@ A zone section ends at the next `## ` header or EOF.
 
 ## Workflow docs
 
-- *.plan.md  checker: links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, doc-structure.js
-- *.review.md  checker: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
-- *.implementation.md  checker: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
-- *.audit.md  checker: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
-- *.context.md  checker: links.js, inputs-fresh.js
-- feat-*.md  checker: links.js
-- *.retro.md  checker: links.js
+- *.plan.md  checker: tools/checks/doc-structure.js
+- *.review.md  checker: tools/checks/doc-structure.js
+- *.implementation.md  checker: tools/checks/doc-structure.js
+- *.audit.md  checker: tools/checks/doc-structure.js
 
 ## Scripts
 
