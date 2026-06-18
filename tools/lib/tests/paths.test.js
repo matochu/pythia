@@ -4,9 +4,10 @@ import { resolve } from 'node:path';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { parseZones, zone, generatedCachePaths, protectedPaths, deriveSurfacesAndSubstitutions, loadZones } from '../paths.js';
+import { parseZones, parseEntryBody, unescapeMdPath, zone, generatedCachePaths, protectedPaths, deriveSurfacesAndSubstitutions, loadZones } from '../paths.js';
 
 const PKG_PATHS_MD = resolve('assets/base/config/paths.md');
+const VSCODE_FORMATTED_MD = resolve('tools/cli/tests/fixtures/paths-md-vscode-formatted.md');
 
 const SAMPLE = `
 # Pythia Workspace Path Registry
@@ -136,6 +137,44 @@ describe('parseZones', () => {
 
   it('returns empty map for empty content', () => {
     expect(parseZones('').size).toBe(0);
+  });
+
+  it('parses VS Code–formatted paths.md (escaped globs, shorthand colon, optional checker)', () => {
+    const zones = parseZones(readFileSync(VSCODE_FORMATTED_MD, 'utf8'));
+    const docs = zone(zones, 'Workflow docs');
+    expect(docs[0]).toEqual({
+      path: '*.plan.md',
+      checker: 'links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, doc-structure.js',
+    });
+    expect(docs[1].checker).toContain('role-boundary.js');
+    expect(docs[6]).toEqual({ path: '*.retro.md', checker: 'links.js' });
+    expect(zone(zones, 'Generated cache')[0]).toEqual({ path: '.claude/skills', source: 'skills/' });
+    expect(protectedPaths(zones)[0]).toBe('.pythia/workflows/**');
+    expect(zone(zones, 'Runtime')[0].path).toBe('.pythia/runtime/**');
+  });
+
+  it('parses single-space source: and double-space checker: (legacy)', () => {
+    const zones = parseZones(`
+## Generated cache
+- .claude/skills source: skills/
+## Workflow docs
+- *.plan.md  checker: doc-structure.js
+- *.review.md: role-boundary.js, links.js
+`);
+    expect(zone(zones, 'Generated cache')[0].source).toBe('skills/');
+    expect(zone(zones, 'Workflow docs')[0].checker).toBe('doc-structure.js');
+    expect(zone(zones, 'Workflow docs')[1].checker).toContain('role-boundary.js');
+  });
+
+  it('plain path entries have no checker or source', () => {
+    expect(parseEntryBody('skills/')).toEqual({ path: 'skills/' });
+    expect(parseEntryBody('tools/checks/')).toEqual({ path: 'tools/checks/' });
+  });
+
+  it('unescapeMdPath normalizes markdown \\* escapes', () => {
+    expect(unescapeMdPath('\\*.plan.md')).toBe('*.plan.md');
+    expect(unescapeMdPath('.pythia/workflows/\\*\\*')).toBe('.pythia/workflows/**');
+    expect(unescapeMdPath('feat-\\*.md')).toBe('feat-*.md');
   });
 });
 

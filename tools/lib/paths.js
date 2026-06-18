@@ -15,8 +15,11 @@ export function resolvePackagePathsMd() {
  * Parse paths.md content into a Map<zoneName, Entry[]>.
  * Grammar:
  *   ## Zone-Name   → zone key
- *   - path [key: value ...]  → entry with optional annotations
- * Any non-`- ` line inside a zone section is ignored.
+ *   - path                              → plain entry
+ *   - path source: dir/                 → source annotation (one or more spaces before `source:`)
+ *   - path checker: a.js, b.js          → checker annotation (optional `checker` keyword)
+ *   - path: a.js, b.js                  → shorthand checker list (no `checker` word)
+ * Glob tokens may use `*` or markdown-escaped `\*` (normalized to `*`).
  * @param {string} content
  * @returns {Map<string, Array<{path: string, source?: string, checker?: string}>>}
  */
@@ -38,19 +41,7 @@ export function parseZones(content) {
     if (!line.startsWith('- ')) continue;
 
     const body = line.slice(2).trim();
-    const entry = { path: '' };
-
-    // Extract key: value annotations (greedy split: first token = path, rest = annotations)
-    const parts = body.split(/\s{2,}/);
-    entry.path = parts[0].trim();
-
-    for (const part of parts.slice(1)) {
-      const colon = part.indexOf(':');
-      if (colon === -1) continue;
-      const key = part.slice(0, colon).trim();
-      const value = part.slice(colon + 1).trim();
-      if (key && value) entry[key] = value;
-    }
+    const entry = parseEntryBody(body);
 
     if (entry.path) {
       zones.get(current).push(entry);
@@ -58,6 +49,36 @@ export function parseZones(content) {
   }
 
   return zones;
+}
+
+/** Normalize markdown formatter escapes in path/glob tokens. */
+export function unescapeMdPath(token) {
+  return token.replace(/\\\*/g, '*');
+}
+
+/**
+ * Parse a list-item body after `- `.
+ * Supports explicit `source:` / `checker:`, shorthand `path: checker-list`, or plain path.
+ */
+export function parseEntryBody(body) {
+  const explicit = body.match(/^(.+?)\s+(source|checker):\s+(.*)$/);
+  if (explicit) {
+    const key = explicit[2];
+    const value = explicit[3].trim();
+    const entry = { path: unescapeMdPath(explicit[1].trim()) };
+    if (value) entry[key] = value;
+    return entry;
+  }
+
+  const shorthand = body.match(/^(.+?):\s+(.+)$/);
+  if (shorthand) {
+    return {
+      path: unescapeMdPath(shorthand[1].trim()),
+      checker: shorthand[2].trim(),
+    };
+  }
+
+  return { path: unescapeMdPath(body.trim()) };
 }
 
 /**
