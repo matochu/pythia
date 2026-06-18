@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
 import { spawnSync } from 'child_process';
 import { doInit, doUpdate, isWorkspace, sha256, readManifest } from '../workspace.js';
+import { compareSemver } from '../../migrate/semver.js';
 
 // Package root: src/cli/tests/ → 3 levels up
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -12,6 +13,14 @@ const packageRoot = resolve(__dirname, '../../../');
 
 function makeOpts(target, dryRun = false) {
   return { target, dryRun, packageRoot };
+}
+
+function latestShippedMigrationVersion(root = packageRoot) {
+  const versions = readdirSync(join(root, 'assets/migrations'))
+    .map((f) => f.match(/^(\d+\.\d+\.\d+)\.md$/)?.[1])
+    .filter(Boolean);
+  versions.sort(compareSemver);
+  return versions.at(-1);
 }
 
 let tmpDir;
@@ -111,8 +120,9 @@ describe('init', () => {
     } finally {
       console.log = origLog;
     }
-    const fw = readManifest(tmpDir).frameworkVersion;
-    expect(logs.some((l) => new RegExp(`applying migration ${fw.replace(/\./g, '\\.')}`).test(l))).toBe(true);
+    const latestMigr = latestShippedMigrationVersion();
+    expect(latestMigr).toBeTruthy();
+    expect(logs.some((l) => new RegExp(`applying migration ${latestMigr.replace(/\./g, '\\.')}`).test(l))).toBe(true);
   });
 
   it('--surfaces cursor installs .cursor/skills and merges hooks.json', async () => {

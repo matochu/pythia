@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.4] - 2026-06-19
+
+### Features
+
+- **`health` command** — `pythia health [target-dir]` checks workspace layout: manifest, protected seeds, runtime, installed surfaces, hook wiring, and paths registry invariants (default target: current directory)
+- **Cursor surface (opt-in)** — `pythia init --surfaces cursor` (or add `cursor` to `--surfaces`) installs `.cursor/skills` and merges Cursor hook wiring alongside Claude/Codex defaults
+- **`replace-section` migration op** — versioned migrations can replace or insert whole `##` sections (used by 0.3.3 paths upgrade for legacy VS Code–formatted and basename-only Workflow docs blocks)
+
+### Changed
+
+- **One-shot `init` bootstrap** — `pythia init` materializes runtime, applies pending migrations, and wires hooks in a single run; no mandatory follow-up `update` for first-time setup
+- **Universal `AGENTS.md`** — generated from `assets/instructions.md` for all agent hosts (not Codex-branded); Codex hook wiring adds `MultiEdit` to the post-edit matcher set
+- **Migration commit gate** — shared `commitMigrationVersion` runs only after verify passes; failed `replace-once` / `replace-section` steps no longer advance `migratedVersion`
+- **Fresh workspace migration baseline** — new and adopted workspaces start at `migratedVersion: 0.0.0` so shipped migrations run on first bootstrap
+
+### Fixed
+
+- **`replace-once` false success** — migration fails when neither source nor replacement content exists, leaving manifest version unchanged
+- **Cursor skills install** — `.cursor/skills` is included in active surfaces when requested (not skipped by the substitutions-only loop)
+- **`uninstall` Cursor hooks** — removes pythia-managed entries from `.cursor/hooks.json`
+- **Legacy hook detection** — install/uninstall/health recognize nested `{ hooks: [...] }` managed entries, not only top-level hook arrays
+- **Checker sync on init** — warns when workflow doc types in `paths.md` reference checkers missing from materialized runtime
+
 ## [0.3.3] - 2026-06-18
 
 ### Features
