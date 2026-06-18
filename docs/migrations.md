@@ -140,7 +140,8 @@ Fields:
 
 | Target state | `migratedVersion` written |
 |---|---|
-| Empty/absent `.pythia/` before this run (fresh `init` or `update`) | `frameworkVersion` (already current) |
+| Empty/absent `.pythia/` before first `init`/`update` (no stamp) | baseline `0.0.0`, pending migrations run in the same pass, then `frameworkVersion` when none remain |
+| Repeat `init` with existing stamp | preserve existing `migratedVersion` |
 | Any pre-existing content under `.pythia/` (anywhere, not just `workflows/`), no stamp (adopted) | baseline `0.0.0`, then `frameworkVersion` after successful update if no migration remains pending |
 | Legacy `version.json` without `migratedVersion` | baseline `0.0.0`, then `frameworkVersion` after successful update if no migration remains pending |
 
@@ -157,7 +158,7 @@ This prevents a new `frameworkVersion` from stranding half-applied protected edi
 - Pruning: `commit` retains the N newest versions (config `backup-retention`, default 3)
 - `restore` uses the `backups` manifest in `state.json` to roll back exactly the files that were changed; no bump is written on restore
 
-## The 7 `auto` Ops
+## The auto ops
 
 All auto ops:
 - Apply anywhere inside `.pythia/` (refuse targets outside it, including traversal escapes like `.pythia/../foo`)
@@ -173,7 +174,10 @@ All auto ops:
 | `rename-frontmatter-key` | Rename a YAML frontmatter key |
 | `rename-file` | Rename/move a file |
 | `append-to-section` | Append text to a named `##` section |
-| `replace-once` | Replace the first occurrence of a string |
+| `replace-once` | Replace the first occurrence of a string; fails when pattern absent unless replacement already present |
+| `replace-section` | Replace entire `## {section}` block (or insert if missing); supports optional `after_section` |
+
+Fully-auto migration commits use shared `commitMigrationVersion` (verify → bump → prune backups).
 
 ## Migration File Format
 

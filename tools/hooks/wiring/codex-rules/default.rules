@@ -1,10 +1,10 @@
 # Pythia workspace guardrails
 # These rules are installed to .codex/rules/default.rules by pythia init/update.
 
-- Do not use shell redirection (> or >>) to write into .pythia/workflows/, .pythia/config.md, .pythia/README.md, .pythia/paths.md, or generated cache dirs (.claude/skills, .agents/skills).
+- Do not use shell redirection (> or >>) to write into .pythia/workflows/, .pythia/config/settings.md, .pythia/config/paths.md, .pythia/README.md, or generated cache dirs (.claude/skills, .agents/skills, .cursor/skills).
   Use structured edit tools (Edit/Write/apply_patch) instead.
 
-- Generated cache dirs (.claude/skills, .agents/skills) are regenerated on every `pythia update`.
+- Generated cache dirs (.claude/skills, .agents/skills, .cursor/skills) are regenerated on every `pythia update`.
   Edit the source in skills/ — your changes to the generated copies will be overwritten.
 
 - Workflow documents (*.plan.md, *.review.md, *.implementation.md, *.audit.md) are role-owned.

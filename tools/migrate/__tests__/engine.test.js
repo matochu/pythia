@@ -12,7 +12,7 @@ const fixturesDir = join(__dirname, 'fixtures');
 const pkgVersion = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')).version;
 
 // Import ops and utilities directly
-import { runOp, ensureDir, writeIfMissing, setFrontmatter, renameFrontmatterKey, renameFile, appendToSection, replaceOnce } from '../ops.js';
+import { runOp, ensureDir, writeIfMissing, setFrontmatter, renameFrontmatterKey, renameFile, appendToSection, replaceOnce, replaceSection } from '../ops.js';
 import { compareSemver, inPendingRange, sortVersions, parseSemver } from '../semver.js';
 import { readState, writeState, findUnresolvedMixedStates } from '../state.js';
 import { parseMigration, migrationHasLlm } from '../parse.js';
@@ -163,11 +163,76 @@ describe('ops: replace-once', () => {
     expect(readFileSync(join(tmpDir, '.pythia/workflows/file.md'), 'utf8')).toBe('baz bar foo');
     expect(backups).toHaveLength(1);
   });
-  it('skips when pattern not found (idempotent)', async () => {
+  it('throws when pattern not found and replacement absent', async () => {
     await seedWorkspace(tmpDir);
     mkdirSync(join(tmpDir, '.pythia/workflows'), { recursive: true });
     writeFileSync(join(tmpDir, '.pythia/workflows/file.md'), 'no match here', 'utf8');
-    const result = replaceOnce(tmpDir, { op: 'replace-once', path: '.pythia/workflows/file.md', find: 'ORIGINAL', replace: 'NEW' }, [], false);
+    expect(() =>
+      replaceOnce(tmpDir, { op: 'replace-once', path: '.pythia/workflows/file.md', find: 'ORIGINAL', replace: 'NEW' }, [], false)
+    ).toThrow(/pattern not found/);
+  });
+  it('skips when replacement already present', async () => {
+    await seedWorkspace(tmpDir);
+    mkdirSync(join(tmpDir, '.pythia/workflows'), { recursive: true });
+    writeFileSync(join(tmpDir, '.pythia/workflows/file.md'), 'already NEW content', 'utf8');
+    const result = replaceOnce(
+      tmpDir,
+      { op: 'replace-once', path: '.pythia/workflows/file.md', find: 'ORIGINAL', replace: 'NEW' },
+      [],
+      false
+    );
+    expect(result.status).toBe('skipped');
+  });
+});
+
+describe('ops: replace-section', () => {
+  const canonicalBlock = `## Workflow docs
+
+- *.plan.md  checker: role-boundary.js, links.js`;
+
+  it('replaces existing section', async () => {
+    await seedWorkspace(tmpDir);
+    const pathsFile = join(tmpDir, '.pythia/config/paths.md');
+    writeFileSync(
+      pathsFile,
+      '# Registry\n\n## Workflow docs\n\n- legacy line\n\n## Protected\n\n- .pythia/workflows/**\n',
+      'utf8'
+    );
+    const result = replaceSection(
+      tmpDir,
+      { op: 'replace-section', path: '.pythia/config/paths.md', section: 'Workflow docs', content: canonicalBlock },
+      [],
+      false
+    );
+    expect(result.status).toBe('applied');
+    const content = readFileSync(pathsFile, 'utf8');
+    expect(content).toContain('role-boundary.js');
+    expect(content).not.toContain('legacy line');
+    expect(content).toContain('## Protected');
+  });
+
+  it('inserts missing section at EOF', async () => {
+    await seedWorkspace(tmpDir);
+    const pathsFile = join(tmpDir, '.pythia/config/paths.md');
+    writeFileSync(pathsFile, '# Registry\n\n## Protected\n\n- .pythia/workflows/**\n', 'utf8');
+    replaceSection(
+      tmpDir,
+      { op: 'replace-section', path: '.pythia/config/paths.md', section: 'Workflow docs', content: canonicalBlock },
+      [],
+      false
+    );
+    expect(readFileSync(pathsFile, 'utf8')).toContain('## Workflow docs');
+  });
+
+  it('skips when section already canonical', async () => {
+    await seedWorkspace(tmpDir);
+    writeFileSync(join(tmpDir, '.pythia/config/paths.md'), `# Registry\n\n${canonicalBlock}\n`, 'utf8');
+    const result = replaceSection(
+      tmpDir,
+      { op: 'replace-section', path: '.pythia/config/paths.md', section: 'Workflow docs', content: canonicalBlock },
+      [],
+      false
+    );
     expect(result.status).toBe('skipped');
   });
 });
@@ -234,12 +299,12 @@ describe('manifest baseline semantics', () => {
     expect(m.migratedVersion).toBe(m.frameworkVersion);
   });
 
-  it('adopted: non-empty protected target gets migratedVersion 0.0.0', async () => {
+  it('adopted: init migrates in-run to frameworkVersion', async () => {
     mkdirSync(join(tmpDir, '.pythia', 'workflows'), { recursive: true });
     writeFileSync(join(tmpDir, '.pythia', 'workflows', 'existing.md'), '# existing');
     await doInit(makeWorkspaceOpts(tmpDir));
     const m = readManifest(tmpDir);
-    expect(m.migratedVersion).toBe('0.0.0');
+    expect(m.migratedVersion).toBe(m.frameworkVersion);
   });
 
   it('legacy: version.json without migratedVersion advances to frameworkVersion when no migrations are pending', async () => {
@@ -420,10 +485,11 @@ describe('skill handoff: complete llm step via materialized .pythia/runtime', ()
       filter: (src) => !src.includes('node_modules') && !src.includes('__tests__') && !/(^|\/)\.git(\/|$)/.test(src),
     });
     const fixtPath = join(fakeRoot, 'assets', 'migrations', '0.0.2.md');
-    writeFileSync(fixtPath, readFileSync(join(fixturesDir, 'mixed-migration.md'), 'utf8'));
     const fakeOpts = (target) => ({ target, dryRun: false, packageRoot: fakeRoot });
     try {
       await doInit(fakeOpts(tmpDir));
+      // Plant fixture migration after init so init's 0.0.0 baseline does not consume it early.
+      writeFileSync(fixtPath, readFileSync(join(fixturesDir, 'mixed-migration.md'), 'utf8'));
       writeManifest(tmpDir, { migratedVersion: '0.0.0' }, false);
 
       // doUpdate materializes .pythia/runtime/ and applies auto steps of 0.0.2

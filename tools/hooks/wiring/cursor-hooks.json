@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/cursor-hooks@latest/schema/hooks.schema.json",
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": "node \"{{HOOKS_DIR}}/cursor-post.js\""
+      }
+    ]
+  }
+}

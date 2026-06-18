@@ -33,7 +33,7 @@ export function parseMigration(content) {
       const op = {};
       const MULTILINE_KEYS = new Set(['content', 'find', 'replace']);
       const OP_FIELD_KEYS = new Set([
-        'op', 'path', 'find', 'replace', 'from', 'to', 'key', 'value', 'section', 'content',
+        'op', 'path', 'find', 'replace', 'from', 'to', 'key', 'value', 'section', 'content', 'after_section',
       ]);
       let i = 0;
       while (i < opLines.length) {
@@ -43,7 +43,7 @@ export function parseMigration(content) {
         const k = line.slice(0, idx).trim();
         const v = line.slice(idx + 1).trimStart();
         if (MULTILINE_KEYS.has(k)) {
-          const valueLines = [v];
+          const valueLines = v && v !== '|' ? [v] : [];
           i++;
           while (i < opLines.length) {
             const next = opLines[i];

@@ -108,15 +108,35 @@ describe('paths.md workflow docs migration (fixture)', () => {
     expect(readManifest(dir).migratedVersion).toBe(TEST_FW_VERSION);
   });
 
-  it('skips replace when Workflow docs use basename checker format (not matched by migration find)', async () => {
+  it('upgrades basename-only Workflow docs via replace-section', async () => {
     const ws = await workspaceWithOldPathsMd();
     writeFileSync(join(ws, '.pythia/config/paths.md'), pathsMdContent('old-basename'), 'utf8');
 
     await doUpdate(makeOptsForFake(ws));
 
     const after = readFileSync(join(ws, '.pythia/config/paths.md'), 'utf8');
-    expect(hasHooksHardeningPaths(after)).toBe(false);
-    expect(after).toContain('checker: doc-structure.js');
+    expect(hasHooksHardeningPaths(after)).toBe(true);
+    expect(after).toContain('role-boundary.js');
+    expect(after).not.toContain('tools/checks/doc-structure.js');
+  });
+
+  it('upgrades VS Code-formatted legacy Workflow docs via replace-section', async () => {
+    const ws = await workspaceWithOldPathsMd();
+    const vscodeLegacy = readFileSync(
+      join(__dirname, 'fixtures/paths-md-vscode-formatted.md'),
+      'utf8',
+    );
+    writeFileSync(join(ws, '.pythia/config/paths.md'), vscodeLegacy, 'utf8');
+
+    await doUpdate(makeOptsForFake(ws));
+
+    const after = readFileSync(join(ws, '.pythia/config/paths.md'), 'utf8');
+    expect(hasHooksHardeningPaths(after)).toBe(true);
+    expect(after).toContain('role-boundary.js');
+    expect(after).toContain('checker:');
+    expect(after).toMatch(/- \*\.plan\.md  checker:/);
+    expect(after).toMatch(/- feat-\*\.md  checker:/);
+    expect(after).not.toContain('\\*.plan.md');
     expect(after).not.toContain('tools/checks/doc-structure.js');
   });
 });

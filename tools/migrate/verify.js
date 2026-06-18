@@ -5,6 +5,7 @@ import { existsSync, readFileSync, realpathSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { readState } from './state.js';
 import { readManifest } from './manifest.js';
+import { verifyPathsMdWorkflowDocs } from '../lib/paths-md-invariants.js';
 
 // Target derived from this script's materialized location: .pythia/runtime/migrate/verify.js
 const targetRoot = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../../..'));
@@ -150,8 +151,18 @@ for (const relpath of changedPaths) {
     continue;
   }
 
+  const content = readFileSync(abspath, 'utf8');
+
+  if (relpath === '.pythia/config/paths.md' || relpath.endsWith('/config/paths.md')) {
+    const pathsResult = verifyPathsMdWorkflowDocs(content);
+    if (!pathsResult.ok) {
+      console.error(`  [FAIL] ${relpath}: ${pathsResult.reason}`);
+      allOk = false;
+      continue;
+    }
+  }
+
   if (isWorkflowDoc(relpath)) {
-    const content = readFileSync(abspath, 'utf8');
     const result = validateWorkflowDoc(content, relpath);
     if (result.ok) {
       console.log(`  [OK] ${relpath}`);

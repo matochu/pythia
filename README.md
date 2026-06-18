@@ -102,17 +102,17 @@ To remove everything pythia installed while keeping your workflow artifacts, run
 
 ## Configuration
 
-`.pythia/config.md` is plain Markdown you own. It sets the agent's reply language and document language (which can differ), the paths to skills and workflows, and free-form project context the agent should always keep in mind. The CLI reads it but never rewrites it.
+Workspace settings live in `.pythia/config/settings.md` (plain Markdown you own): reply language, document language, and project context. The path registry is `.pythia/config/paths.md`. The CLI seeds these once; migrations may rename legacy paths (e.g. `.pythia/config.md` → `.pythia/config/settings.md`) on `update`.
 
 ## Development
 
 ```bash
-npm run build              # compile the CLI (tsc → dist/)
-npm test                   # CLI tests (src/cli/tests/)
+npm test                   # vitest (tools/cli/tests/, tools/migrate/, tools/hooks/, tools/lib/)
 npm run test:workflow-doc  # workflow-document format validator tests
+npm run release:check-migrations
 ```
 
-The CLI lives in `src/cli/`. The canonical skills source is `skills/`; the per-agent `.claude/skills` and `.agents/skills` directories are generated from it on install.
+The CLI lives in `tools/cli/`. The migration engine lives in `tools/migrate/` (materialized into `.pythia/runtime/migrate/` in each workspace on `init`/`update`). Canonical skills source is `skills/`; `.claude/skills`, `.agents/skills`, and opt-in `.cursor/skills` are installed surfaces generated on `pythia init`.
 
 ## Concept
 

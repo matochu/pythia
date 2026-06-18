@@ -5,8 +5,9 @@ import { fileURLToPath } from 'url';
 import { Command } from 'commander';
 import { spawnSync } from 'child_process';
 import { doInit, doUpdate, doUninstall, isWorkspace, isExistingWorkspace, readManifest } from './workspace.js';
+import { doHealth } from './health.js';
 import { refreshRegistryCheck, formatRegistryLine } from './registry-check.js';
-import { loadZones, deriveSurfacesAndSubstitutions } from '../lib/paths.js';
+import { loadZonesForBootstrap, deriveSurfacesAndSubstitutions, SURFACE_KEY_MAP, DEFAULT_SURFACE_PATHS } from '../lib/paths.js';
 
 function findPackageRoot() {
   const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -19,15 +20,9 @@ function findPackageRoot() {
 const packageRoot = findPackageRoot();
 const pkgVersion = JSON.parse(readFileSync(resolve(packageRoot, 'package.json'), 'utf8')).version;
 
-const _zones = loadZones(packageRoot);
-const { surfaces: _defaultSurfaces } = deriveSurfacesAndSubstitutions(_zones);
-// Build valid surface key → path map from registry (e.g. { claude: '.claude/skills', codex: '.agents/skills' })
-const _validSurfaces = Object.fromEntries(
-  _defaultSurfaces.map((p) => {
-    const key = p.includes('claude') ? 'claude' : p.includes('agents') ? 'codex' : p.split('/').pop();
-    return [key, p];
-  })
-);
+const _zones = loadZonesForBootstrap(packageRoot);
+const { defaultSurfaces: _defaultSurfaces } = deriveSurfacesAndSubstitutions(_zones);
+const _validSurfaces = { ...SURFACE_KEY_MAP };
 
 const program = new Command();
 
@@ -43,7 +38,7 @@ program
   .option('--dry-run', 'print planned actions without writing anything')
   .option('--yes', 'non-interactive: use defaults')
   .option('--reconfigure', 'rerun interactive prompts even if already configured')
-  .option('--surfaces <list>', 'comma-separated surfaces: claude,codex (default: both)')
+  .option('--surfaces <list>', 'comma-separated surfaces: claude,codex,cursor (default: claude,codex)')
   .option('--git-strategy <strategy>', 'git strategy: shared|pythia|ignore (default: pythia)')
   .action(async (targetDir, opts) => {
     const target = resolve(targetDir);
@@ -63,7 +58,7 @@ program
       const rl = createInterface({ input: process.stdin, output: process.stdout });
       try {
         if (!surfaces) {
-          const ans = await rl.question('Surfaces to install [claude,codex] (default: both): ');
+          const ans = await rl.question('Surfaces to install [claude,codex,cursor] (default: claude,codex): ');
           surfaces = ans.trim() ? parseSurfaces(ans.trim()) : [..._defaultSurfaces];
         }
         if (!gitStrategy) {
@@ -132,6 +127,16 @@ program
   });
 
 program
+  .command('health')
+  .description('Check minimal workspace files, runtime, surfaces, and hook wiring')
+  .argument('[target-dir]', 'target directory', process.cwd())
+  .option('--json', 'machine-readable output')
+  .action((targetDir, opts) => {
+    const code = doHealth({ target: resolve(targetDir), json: !!opts.json });
+    if (code !== 0) process.exit(code);
+  });
+
+program
   .command('version')
   .description('Show workspace state; may refresh manifest.registryCheck when npm cache is stale (24h)')
   .argument('[target-dir]', 'target directory', process.cwd())
@@ -181,7 +186,7 @@ program.addHelpCommand(false);
 program.exitOverride();
 
 const rawArgs = process.argv.slice(2);
-const knownCommands = ['init', 'update', 'uninstall', 'version'];
+const knownCommands = ['init', 'update', 'uninstall', 'version', 'health'];
 const firstArg = rawArgs.find((a) => !a.startsWith('-'));
 
 if (!firstArg || !knownCommands.includes(firstArg)) {

@@ -49,7 +49,7 @@ During development, `next.md` accumulates steps. It is git-tracked but **exclude
    npm pack --dry-run
    ```
 
-   Confirm `src/cli/`, `assets/migrations/<semver>.md`, `skills/`, `README.md`, `CHANGELOG.md` are listed. Confirm `assets/migrations/next.md` is **not** listed.
+   Confirm `tools/cli/`, `assets/migrations/<semver>.md`, `skills/`, `README.md`, `CHANGELOG.md` are listed. Confirm `assets/migrations/next.md` is **not** listed.
 
 7. **Commit and tag**:
 
@@ -78,9 +78,10 @@ During development, `next.md` accumulates steps. It is git-tracked but **exclude
 
 | Included | Source |
 |---|---|
-| `src/cli/` | JS CLI source (no build step) |
-| `scripts/migrate/` | JS migration engine scripts |
-| `assets/migrations/<semver>.md` | Versioned migration files (next.md excluded) |
+| `tools/cli/` | Workspace manager CLI (`pythia` bin) |
+| `tools/migrate/` | Migration engine (materialized to `.pythia/runtime/migrate/` in workspaces) |
+| `tools/checks/`, `tools/hooks/`, `tools/lib/` | Hook/check runtime sources (materialized to `.pythia/runtime/` on init/update) |
+| `assets/migrations/<semver>.md` | Versioned migration files (`next.md` excluded) |
 | `assets/base/`, `assets/instructions.md` | Seed files and instruction source |
 | `skills/` | Canonical skills shipped to workspaces |
 | `README.md`, `CHANGELOG.md` | Docs |
@@ -89,4 +90,4 @@ Everything else (`docs/`, tests, `.pythia/`, `.claude/`, `tsconfig`, `dist/`) is
 
 ## All-JS Package (No Build)
 
-There is no `npm run build` step. The package ships `src/cli/` directly. The `bin` entry points to `./src/cli/index.js`. No `tsc`, `dist/`, `typescript`, or `ts-node`.
+There is no compile step. The package ships `tools/` directly. The `bin` entry points to `./tools/cli/index.js`. No `tsc`, `dist/`, or `typescript` required to publish or run.

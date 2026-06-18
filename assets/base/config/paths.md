@@ -17,6 +17,7 @@ A zone section ends at the next `## ` header or EOF.
 
 - .claude/skills  source: skills/
 - .agents/skills  source: skills/
+- .cursor/skills  source: skills/
 - CLAUDE.md  source: assets/instructions.md
 - AGENTS.md  source: assets/instructions.md
 

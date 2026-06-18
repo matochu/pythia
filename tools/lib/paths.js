@@ -132,35 +132,63 @@ export function protectedPaths(zones) {
   return zone(zones, 'Protected').map((e) => e.path);
 }
 
+/** Default install surfaces — Cursor is opt-in, not included here. */
+export const DEFAULT_SURFACE_PATHS = ['.claude/skills', '.agents/skills'];
+
+/** CLI/manifest surface key → skills directory path. */
+export const SURFACE_KEY_MAP = {
+  claude: '.claude/skills',
+  codex: '.agents/skills',
+  cursor: '.cursor/skills',
+};
+
+/**
+ * Load zones for CLI package bootstrap — shipped asset only, not dogfood workspace copy.
+ * Set PYTHIA_USE_DOGFOOD_PATHS=1 to include packageRoot/.pythia/config/paths.md (tests).
+ */
+export function loadZonesForBootstrap(packageRoot) {
+  const candidates = [];
+  if (process.env.PYTHIA_USE_DOGFOOD_PATHS === '1') {
+    candidates.push(join(packageRoot, '.pythia', 'config', 'paths.md'));
+  }
+  candidates.push(resolvePackagePathsMd());
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      try {
+        return parseZones(readFileSync(candidate, 'utf8'));
+      } catch {
+        // fall through
+      }
+    }
+  }
+  return new Map();
+}
+
 /**
  * Derive surface dirs + instruction targets from the Generated cache zone.
- * Returns { surfaces: string[], substitutions: Array<{file, tool, skillsPath}> }
- * for use in workspace.js init/update.
+ * Returns { surfaces, defaultSurfaces, substitutions } for workspace.js init/update.
  */
 export function deriveSurfacesAndSubstitutions(zones) {
   const cached = zone(zones, 'Generated cache');
 
-  // Skills surfaces: entries whose source is 'skills/'
   const surfaces = cached
     .filter((e) => e.source === 'skills/')
     .map((e) => e.path);
 
-  // Instruction substitution targets: entries whose source is 'assets/instructions.md'
   const substitutions = cached
     .filter((e) => e.source === 'assets/instructions.md')
     .map((e) => {
-      const file = e.path; // e.g. CLAUDE.md, AGENTS.md
-      const isClaude = file === 'CLAUDE.md';
-      const tool = isClaude ? 'Claude Code' : 'Codex';
-      // skillsPath: find the surface dir associated with this tool
-      // Claude surface: path contains 'claude'. Non-Claude (Codex/any other): first surface that isn't Claude.
-      const surfaceEntry = cached.find((s) =>
-        s.source === 'skills/' &&
-        (isClaude ? s.path.includes('claude') : !s.path.includes('claude'))
-      );
-      const skillsPath = surfaceEntry?.path ?? (isClaude ? '.claude/skills' : '.agents/skills');
-      return { file, tool, skillsPath };
-    });
+      const file = e.path;
+      if (file === 'CLAUDE.md') {
+        return { file, tool: 'Claude Code', skillsPath: '.claude/skills' };
+      }
+      if (file === 'AGENTS.md') {
+        return { file, tool: 'agent', skillsPath: '.agents/skills' };
+      }
+      return null;
+    })
+    .filter(Boolean);
 
-  return { surfaces, substitutions };
+  return { surfaces, defaultSurfaces: DEFAULT_SURFACE_PATHS, substitutions };
 }

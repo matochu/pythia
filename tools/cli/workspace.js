@@ -3,11 +3,12 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, readdirSync
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
-import { loadZones, deriveSurfacesAndSubstitutions } from '../lib/paths.js';
+import { loadZonesForBootstrap, deriveSurfacesAndSubstitutions, loadZones, zone, SURFACE_KEY_MAP, DEFAULT_SURFACE_PATHS } from '../lib/paths.js';
 import {
   refreshRegistryCheck,
   printRegistryUpdateNotice,
 } from './registry-check.js';
+import { isPythiaManagedHook, isPythiaManagedHookEntry } from '../lib/hook-detect.js';
 export { readManifest, writeManifest } from '../migrate/manifest.js';
 import { readManifest, writeManifest } from '../migrate/manifest.js';
 
@@ -66,7 +67,13 @@ function readPackageVersion(packageRoot) {
   return pkg.version;
 }
 
-function renderInstructions(source, tool, skillsPath) {
+function renderInstructions(source, tool, skillsPath, file = '') {
+  if (file === 'AGENTS.md') {
+    return source
+      .replace(/^# Project Instructions \(\{tool\}\)/m, '# Project Instructions')
+      .replace(/Single source of \{tool\} instructions/g, 'Single source of agent instructions')
+      .replace(/\{skillsPath\}/g, skillsPath);
+  }
   return source.replace(/\{tool\}/g, tool).replace(/\{skillsPath\}/g, skillsPath);
 }
 
@@ -172,132 +179,59 @@ function packageSkillNames(packageRoot) {
 }
 
 const _packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
-const _registryZones = loadZones(_packageRoot);
-const { surfaces: DEFAULT_SURFACES, substitutions: SUBSTITUTIONS } = deriveSurfacesAndSubstitutions(_registryZones);
+const _registryZones = loadZonesForBootstrap(_packageRoot);
+const { defaultSurfaces: DEFAULT_SURFACES, substitutions: SUBSTITUTIONS } = deriveSurfacesAndSubstitutions(_registryZones);
 
 export async function doInit(opts) {
   const { target, dryRun, packageRoot, reconfigure = false, yes = false } = opts;
 
-  // On re-run without --reconfigure, preserve existing surfaces/gitStrategy; --reconfigure
-  // forces a fresh resolution (explicit flag → interactive prompt → non-interactive default).
   const existingManifestData = readManifest(target);
   const { surfaces, gitStrategy } = await resolveSurfacesAndGit(
     reconfigure ? null : existingManifestData,
     { ...opts, yes }
   );
-  const assetsDir = join(packageRoot, 'assets');
-  if (!existsSync(assetsDir)) throw new Error(`assets/ not found at ${assetsDir}`);
-  if (!existsSync(join(packageRoot, 'skills'))) throw new Error(`skills/ not found at ${join(packageRoot, 'skills')}`);
 
-  const instructionSource = readFileSync(join(assetsDir, 'instructions.md'), 'utf8');
-  const frameworkVersion = readPackageVersion(packageRoot);
-
-  // Determine if this is a fresh empty init or an adopted workspace — must run
-  // before any writes (ensureGitStrategy, seeding) touch .pythia/.
   const adopted = hasProtectedArtifacts(target);
-  const migratedVersion = adopted ? '0.0.0' : frameworkVersion;
+  const frameworkVersion = readPackageVersion(packageRoot);
+  let migrationBaseline;
+  if (existingManifestData?.migratedVersion) {
+    migrationBaseline = existingManifestData.migratedVersion;
+  } else {
+    // Fresh and adopted first init both start at 0.0.0 so versioned migrations run;
+    // applyMigrations commits to frameworkVersion when all pending steps complete.
+    migrationBaseline = '0.0.0';
+  }
 
   console.log(`[init] target: ${target}${adopted ? ' (adopted)' : ''}`);
 
-  // git-strategy side effect — centralized here so every caller (explicit `init`
-  // command and the CLI's auto-detect path, which calls doInit directly) gets it.
-  ensureGitStrategy(target, gitStrategy, dryRun);
-
-  // Seed base .pythia files
-  const baseDir = join(assetsDir, 'base');
-  seedIfMissing(target, '.pythia/config/settings.md', readFileSync(join(baseDir, 'config/settings.md'), 'utf8'), dryRun);
-  seedIfMissing(target, '.pythia/README.md', readFileSync(join(baseDir, 'README.md'), 'utf8'), dryRun);
-  seedIfMissing(target, '.pythia/config/paths.md', readFileSync(join(baseDir, 'config/paths.md'), 'utf8'), dryRun);
-  seedIfMissing(target, '.pythia/workflows/.gitkeep', '', dryRun);
-
-  // Render and write instruction files based on surfaces
-  const manifest = {};
-  const activeSurfaces = [];
-  for (const sub of SUBSTITUTIONS) {
-    if (!surfaces.includes(sub.skillsPath)) continue;
-    const content = renderInstructions(instructionSource, sub.tool, sub.skillsPath);
-    const hash = writeManaged(target, sub.file, content, {}, dryRun);
-    manifest[sub.file] = dryRun ? sha256(content) : hash;
-    activeSurfaces.push(sub.skillsPath);
-  }
-
-  // Install skills to selected surfaces
-  installSkills(packageRoot, target, activeSurfaces, dryRun);
-
-  // Install hooks (tools/{lib,checks,hooks} into .pythia/runtime; wiring into settings.json/hooks.json)
-  installHooks(packageRoot, target, activeSurfaces, dryRun);
-
-  // Write manifest.json
-  const manifestData = {
-    frameworkVersion,
-    migratedVersion,
-    installedAt: existingManifestData?.installedAt ?? new Date().toISOString(),
-    surfaces: activeSurfaces,
+  await finalizeWorkspaceLifecycle({
+    target,
+    packageRoot,
+    dryRun,
+    surfaces,
     gitStrategy,
-    installedSkills: packageSkillNames(packageRoot),
-    generated: manifest,
-  };
-  writeManifest(target, manifestData, dryRun);
+    existingManifest: existingManifestData,
+    migrationBaseline,
+    adopted,
+    noMigrate: false,
+    registryFetch: opts.registryFetch,
+    label: 'init',
+  });
 
-  if (adopted) {
-    console.log(`[init] adopted workspace — migratedVersion set to 0.0.0; run update to apply migrations`);
-  }
-  console.log(`[init] done${dryRun ? ' (dry-run)' : ''}`);
+  console.log(`[init] done — workspace ready${dryRun ? ' (dry-run)' : ''}`);
 }
 
-function materializeRuntime(packageRoot, target, dryRun) {
-  const engineSrc = join(packageRoot, 'tools', 'migrate');
-  const migrationsSrc = join(packageRoot, 'assets', 'migrations');
-  const runtimeDir = join(target, '.pythia', 'runtime');
-  const engineDst = join(runtimeDir, 'migrate');
-  const migrationsDst = join(runtimeDir, 'migrations');
-
-  if (!existsSync(engineSrc)) return; // no engine yet (early dev)
-
-  if (!dryRun) {
-    // Copy engine scripts
-    {
-      mkdirSync(engineDst, { recursive: true });
-      cpSync(engineSrc, engineDst, { recursive: true, force: true, filter: (src) => !src.includes('__tests__') });
-    }
-    // Copy versioned migration files (exclude next.md)
-    if (existsSync(migrationsSrc)) {
-      mkdirSync(migrationsDst, { recursive: true });
-      for (const f of readdirSync(migrationsSrc)) {
-        if (/^\d+\.\d+\.\d+\.md$/.test(f)) {
-          cpSync(join(migrationsSrc, f), join(migrationsDst, f), { force: true });
-        }
-      }
-    }
-    // .pythia/.gitignore is written by installHooks (which runs before materializeRuntime)
-  } else {
-    console.log(`  [materialize] .pythia/runtime/ (engine + migrations)`);
-  }
-}
-
-function ensurePythiaGitignore(target, dryRun) {
-  if (dryRun) return;
-  const gitignorePath = join(target, '.pythia', '.gitignore');
-  const required = 'runtime/\nbackups/\n';
-  if (!existsSync(gitignorePath) || !readFileSync(gitignorePath, 'utf8').includes('runtime/')) {
-    mkdirSync(dirname(gitignorePath), { recursive: true });
-    writeFileSync(gitignorePath, required, 'utf8');
-  }
-}
-
-function installHooks(packageRoot, target, surfaces, dryRun) {
-  const hooksRuntimeDir = join(target, '.pythia', 'runtime', 'hooks');
-  const hooksSourceDir = join(packageRoot, 'tools', 'hooks');
+function materializeHookRuntime(packageRoot, target, dryRun) {
   const libSourceDir = join(packageRoot, 'tools', 'lib');
   const checksSourceDir = join(packageRoot, 'tools', 'checks');
-  if (!existsSync(hooksSourceDir)) return;
+  const hooksSourceDir = join(packageRoot, 'tools', 'hooks');
+  if (!existsSync(hooksSourceDir)) return null;
 
   if (dryRun) {
-    console.log('  [hooks] install tools/{lib,checks,hooks} → .pythia/runtime/');
-    return;
+    console.log('  [materialize] hook runtime → .pythia/runtime/{lib,checks,hooks,package-paths.md}');
+    return null;
   }
 
-  // Always materialize runtime: copy lib/checks/hooks/inputs.js into .pythia/runtime/
   const runtimeDir = join(target, '.pythia', 'runtime');
   for (const [src, dst] of [
     [libSourceDir, join(runtimeDir, 'lib')],
@@ -306,7 +240,11 @@ function installHooks(packageRoot, target, surfaces, dryRun) {
   ]) {
     if (existsSync(src)) {
       mkdirSync(dst, { recursive: true });
-      cpSync(src, dst, { recursive: true, force: true, filter: (s) => !s.includes('/tests/') && !s.includes('/__tests__/') });
+      cpSync(src, dst, {
+        recursive: true,
+        force: true,
+        filter: (s) => !s.includes('/tests/') && !s.includes('/__tests__/'),
+      });
     }
   }
   const inputsSrc = join(packageRoot, 'tools', 'bin', 'inputs.js');
@@ -319,31 +257,182 @@ function installHooks(packageRoot, target, surfaces, dryRun) {
     mkdirSync(runtimeDir, { recursive: true });
     cpSync(packagePathsSrc, join(runtimeDir, 'package-paths.md'), { force: true });
   }
-  const hooksDir = join(runtimeDir, 'hooks');
   ensurePythiaGitignore(target, dryRun);
+  return resolve(join(runtimeDir, 'hooks'));
+}
 
-  const hooksAbsDir = resolve(hooksDir);
+function materializeMigrateRuntime(packageRoot, target, dryRun) {
+  const engineSrc = join(packageRoot, 'tools', 'migrate');
+  const migrationsSrc = join(packageRoot, 'assets', 'migrations');
+  const runtimeDir = join(target, '.pythia', 'runtime');
+  const engineDst = join(runtimeDir, 'migrate');
+  const migrationsDst = join(runtimeDir, 'migrations');
 
-  // Install Claude hooks into .claude/settings.json (idempotent, marker-based merge)
+  if (!existsSync(engineSrc)) return;
+
+  if (!dryRun) {
+    mkdirSync(engineDst, { recursive: true });
+    cpSync(engineSrc, engineDst, { recursive: true, force: true, filter: (src) => !src.includes('__tests__') });
+    if (existsSync(migrationsSrc)) {
+      mkdirSync(migrationsDst, { recursive: true });
+      for (const f of readdirSync(migrationsSrc)) {
+        if (/^\d+\.\d+\.\d+\.md$/.test(f)) {
+          cpSync(join(migrationsSrc, f), join(migrationsDst, f), { force: true });
+        }
+      }
+    }
+  } else {
+    console.log('  [materialize] migrate runtime → .pythia/runtime/{migrate,migrations}');
+  }
+}
+
+/** @deprecated use materializeMigrateRuntime */
+function materializeRuntime(packageRoot, target, dryRun) {
+  materializeMigrateRuntime(packageRoot, target, dryRun);
+}
+
+function ensurePythiaGitignore(target, dryRun) {
+  if (dryRun) return;
+  const gitignorePath = join(target, '.pythia', '.gitignore');
+  const required = 'runtime/\nbackups/\n';
+  if (!existsSync(gitignorePath) || !readFileSync(gitignorePath, 'utf8').includes('runtime/')) {
+    mkdirSync(dirname(gitignorePath), { recursive: true });
+    writeFileSync(gitignorePath, required, 'utf8');
+  }
+}
+
+function installHooks(packageRoot, target, surfaces, dryRun, hooksAbsDir) {
+  const hooksSourceDir = join(packageRoot, 'tools', 'hooks');
+  if (!existsSync(hooksSourceDir)) return;
+
+  const hooksDir = hooksAbsDir ?? join(target, '.pythia', 'runtime', 'hooks');
+  if (!hooksAbsDir && !dryRun && !existsSync(hooksDir)) {
+    throw new Error('installHooks: hook runtime not materialized — call materializeHookRuntime first');
+  }
+
+  if (dryRun) {
+    console.log('  [hooks] wire Claude/Codex/Cursor host configs');
+    return;
+  }
+
+  const hooksAbsPath = resolve(hooksDir);
+
   if (surfaces.some((s) => s.includes('claude'))) {
-    mergeClaudeHooks(packageRoot, target, hooksAbsDir, dryRun);
+    mergeClaudeHooks(packageRoot, target, hooksAbsPath, dryRun);
     stripRetiredPythiaHookEvents(join(target, '.claude', 'settings.json'), dryRun);
+    stripLegacyClaudePostToolUse(join(target, '.claude', 'settings.json'), hooksAbsPath, dryRun);
   }
 
-  // Install Codex hooks.json (idempotent, marker-based merge)
   if (surfaces.some((s) => s.includes('agents'))) {
-    installCodexHooks(packageRoot, target, hooksAbsDir, dryRun);
+    installCodexHooks(packageRoot, target, hooksAbsPath, dryRun);
   }
 
-  // Install .codex/rules/default.rules
+  if (surfaces.some((s) => s.includes('cursor'))) {
+    installCursorHooks(packageRoot, target, hooksAbsPath, dryRun);
+  }
+
+  refreshManagedCodexRules(packageRoot, target, dryRun);
+}
+
+function refreshManagedCodexRules(packageRoot, target, dryRun) {
   const rulesTemplate = join(packageRoot, 'tools', 'hooks', 'wiring', 'codex-rules', 'default.rules');
-  if (existsSync(rulesTemplate)) {
-    const codexRulesDir = join(target, '.codex', 'rules');
-    mkdirSync(codexRulesDir, { recursive: true });
-    const rulesTarget = join(codexRulesDir, 'default.rules');
-    if (!existsSync(rulesTarget)) {
-      cpSync(rulesTemplate, rulesTarget);
-      console.log('  installed: .codex/rules/default.rules');
+  if (!existsSync(rulesTemplate)) return;
+  const rulesTarget = join(target, '.codex', 'rules', 'default.rules');
+  const managedHeader = '# Pythia workspace guardrails\n';
+  if (existsSync(rulesTarget)) {
+    const current = readFileSync(rulesTarget, 'utf8');
+    if (!current.startsWith(managedHeader)) return;
+  }
+  if (dryRun) {
+    console.log('  [refresh] .codex/rules/default.rules');
+    return;
+  }
+  mkdirSync(dirname(rulesTarget), { recursive: true });
+  cpSync(rulesTemplate, rulesTarget, { force: true });
+  console.log('  refreshed: .codex/rules/default.rules');
+}
+
+function stripLegacyClaudePostToolUse(settingsPath, hooksAbsDir, dryRun) {
+  if (!existsSync(settingsPath)) return;
+  let settings;
+  try {
+    settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+  } catch {
+    return;
+  }
+  if (!settings.hooks?.PostToolUse) return;
+
+  const managedCommands = new Set(
+    ['pre.js', 'post.js', 'stop.js', 'cursor-post.js'].map((f) => resolve(join(hooksAbsDir, f)))
+  );
+
+  let removed = 0;
+  for (const group of settings.hooks.PostToolUse) {
+    if (!group.hooks) continue;
+    const before = group.hooks.length;
+    group.hooks = group.hooks.filter((h) => {
+      if (isPythiaManagedHook(h)) return true;
+      const cmdParts = [];
+      if (h.command) cmdParts.push(String(h.command));
+      if (Array.isArray(h.args)) cmdParts.push(...h.args.map(String));
+      const exactMatch = cmdParts.some((part) => managedCommands.has(resolve(part)));
+      if (exactMatch) return false;
+      return true;
+    });
+    removed += before - group.hooks.length;
+  }
+
+  if (removed > 0 && !dryRun) {
+    writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+    console.log(`  removed ${removed} legacy Claude PostToolUse duplicate(s)`);
+  }
+}
+
+function installCursorHooks(packageRoot, target, hooksAbsDir, dryRun) {
+  const templatePath = join(packageRoot, 'tools', 'hooks', 'wiring', 'cursor-hooks.json');
+  if (!existsSync(templatePath)) return;
+  const template = readFileSync(templatePath, 'utf8').replace(/{{HOOKS_DIR}}/g, hooksAbsDir);
+  const incoming = JSON.parse(template);
+
+  const hooksJsonPath = join(target, '.cursor', 'hooks.json');
+  let existing = { version: 1, hooks: {} };
+  if (existsSync(hooksJsonPath)) {
+    try {
+      existing = JSON.parse(readFileSync(hooksJsonPath, 'utf8'));
+    } catch {
+      /* malformed */
+    }
+  }
+  if (!existing.hooks) existing.hooks = {};
+
+  for (const [event, entries] of Object.entries(incoming.hooks ?? {})) {
+    if (!existing.hooks[event]) existing.hooks[event] = [];
+    existing.hooks[event] = existing.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
+    for (const entry of entries) {
+      existing.hooks[event].push({ ...entry, _managed: 'pythia' });
+    }
+  }
+
+  if (!dryRun) {
+    mkdirSync(dirname(hooksJsonPath), { recursive: true });
+    writeFileSync(hooksJsonPath, JSON.stringify(existing, null, 2), 'utf8');
+    console.log('  merged hooks → .cursor/hooks.json');
+  }
+}
+
+function warnMissingCheckers(target, label = 'update') {
+  const checksDir = join(target, '.pythia', 'runtime', 'checks');
+  if (!existsSync(checksDir)) return;
+  const zones = loadZones(target);
+  const workflowDocs = zone(zones, 'Workflow docs');
+  for (const entry of workflowDocs) {
+    if (!entry.checker) continue;
+    for (const checkerName of entry.checker.split(',').map((s) => s.trim()).filter(Boolean)) {
+      const base = checkerName.includes('/') ? checkerName.split('/').pop() : checkerName;
+      const checkPath = join(checksDir, base);
+      if (!existsSync(checkPath)) {
+        console.warn(`[${label}] paths.md references checker ${base} but it is missing from .pythia/runtime/checks/`);
+      }
     }
   }
 }
@@ -367,7 +456,7 @@ function _mergeClaudeHooks(settingsPath, newHooks, dryRun) {
   for (const [event, entries] of Object.entries(newHooks)) {
     if (!settings.hooks[event]) settings.hooks[event] = [];
     // Remove previously managed entries (marker check)
-    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHook(h));
+    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
     // Add new managed entries with marker
     for (const entry of entries) {
       settings.hooks[event].push({ ...entry, _managed: 'pythia' });
@@ -397,7 +486,7 @@ function stripRetiredPythiaHookEvents(settingsPath, dryRun) {
   for (const event of retiredEvents) {
     if (!settings.hooks[event]) continue;
     const before = settings.hooks[event].length;
-    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHook(h));
+    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
     if (settings.hooks[event].length !== before) changed = true;
     if (settings.hooks[event].length === 0) delete settings.hooks[event];
   }
@@ -425,7 +514,7 @@ function installCodexHooks(packageRoot, target, hooksAbsDir, dryRun) {
   for (const [event, entries] of Object.entries(incoming.hooks)) {
     if (!existing.hooks[event]) existing.hooks[event] = [];
     // Remove previously managed entries (marker or .pythia/runtime/hooks path — same as Claude)
-    existing.hooks[event] = existing.hooks[event].filter((h) => !isPythiaManagedHook(h));
+    existing.hooks[event] = existing.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
     for (const entry of entries) {
       existing.hooks[event].push({ ...entry, _managed: 'pythia' });
     }
@@ -493,13 +582,110 @@ function createPreUpdateBackup(target, dryRun, reason) {
   return relBackupDir;
 }
 
-async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate) {
+async function finalizeWorkspaceLifecycle(opts) {
+  const {
+    target,
+    packageRoot,
+    dryRun,
+    surfaces,
+    gitStrategy,
+    existingManifest = null,
+    migrationBaseline,
+    noMigrate = false,
+    registryFetch,
+    label = 'update',
+    previousInstalled = [],
+    existingGenerated = {},
+  } = opts;
+
+  const assetsDir = join(packageRoot, 'assets');
+  if (!existsSync(assetsDir)) throw new Error(`assets/ not found at ${assetsDir}`);
+  if (!existsSync(join(packageRoot, 'skills'))) {
+    throw new Error(`skills/ not found at ${join(packageRoot, 'skills')}`);
+  }
+
+  const instructionSource = readFileSync(join(assetsDir, 'instructions.md'), 'utf8');
+  const frameworkVersion = readPackageVersion(packageRoot);
+
+  ensureGitStrategy(target, gitStrategy, dryRun);
+
+  const baseDir = join(assetsDir, 'base');
+  seedIfMissing(target, '.pythia/config/settings.md', readFileSync(join(baseDir, 'config/settings.md'), 'utf8'), dryRun);
+  seedIfMissing(target, '.pythia/README.md', readFileSync(join(baseDir, 'README.md'), 'utf8'), dryRun);
+  seedIfMissing(target, '.pythia/config/paths.md', readFileSync(join(baseDir, 'config/paths.md'), 'utf8'), dryRun);
+  seedIfMissing(target, '.pythia/workflows/.gitkeep', '', dryRun);
+
+  const manifest = {};
+  const activeSurfaces = [];
+  for (const sub of SUBSTITUTIONS) {
+    if (!surfaces.includes(sub.skillsPath)) continue;
+    const content = renderInstructions(instructionSource, sub.tool, sub.skillsPath, sub.file);
+    const hash = writeManaged(target, sub.file, content, existingGenerated, dryRun);
+    manifest[sub.file] = dryRun ? sha256(content) : hash;
+    activeSurfaces.push(sub.skillsPath);
+  }
+  // Skill-only surfaces (e.g. Cursor) have no instruction substitution but still need install/hooks.
+  for (const s of surfaces) {
+    if (!activeSurfaces.includes(s)) activeSurfaces.push(s);
+  }
+
+  if (label === 'update') {
+    pruneSkills(packageRoot, target, activeSurfaces, dryRun, previousInstalled);
+  }
+  installSkills(packageRoot, target, activeSurfaces, dryRun);
+
+  if (label === 'init' && !dryRun) console.log('[init] materializing runtime…');
+
+  const hooksAbsDir = materializeHookRuntime(packageRoot, target, dryRun);
+  installHooks(packageRoot, target, activeSurfaces, dryRun, hooksAbsDir);
+  materializeMigrateRuntime(packageRoot, target, dryRun);
+
+  const pkgJson = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'));
+  writePythiaPackageJson(target, pkgJson.name ?? 'project', frameworkVersion, dryRun);
+
+  const manifestData = {
+    frameworkVersion,
+    migratedVersion: migrationBaseline,
+    installedAt: existingManifest?.installedAt ?? new Date().toISOString(),
+    surfaces: activeSurfaces,
+    gitStrategy,
+    installedSkills: packageSkillNames(packageRoot),
+    generated: manifest,
+  };
+  if (existingManifest?.registryCheck) manifestData.registryCheck = existingManifest.registryCheck;
+  writeManifest(target, manifestData, dryRun);
+
+  await applyMigrations(
+    packageRoot,
+    target,
+    { ...manifestData, migratedVersion: migrationBaseline },
+    dryRun,
+    noMigrate,
+    label
+  );
+
+  if (!dryRun && (label === 'update' || label === 'init')) {
+    warnMissingCheckers(target, label);
+  }
+  if (!dryRun && label === 'update') {
+    const registryCheck = refreshRegistryCheck(target, {
+      dryRun: false,
+      force: true,
+      fetchLatest: registryFetch,
+    });
+    printRegistryUpdateNotice(target, frameworkVersion, registryCheck);
+  }
+}
+
+async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate, label = 'update') {
   const { inPendingRange, sortVersions } = await import('../migrate/semver.js').catch(() => ({}));
   const { findUnresolvedMixedStates, writeState, readState } = await import('../migrate/state.js').catch(() => ({}));
   const { parseMigration, migrationHasLlm } = await import('../migrate/parse.js').catch(() => ({}));
   const { runOp } = await import('../migrate/ops.js').catch(() => ({}));
 
-  if (!inPendingRange || !findUnresolvedMixedStates) return; // engine not available
+  const { commitMigrationVersion } = await import('../migrate/commit.js').catch(() => ({}));
+
+  if (!inPendingRange || !findUnresolvedMixedStates) return;
 
   const migratedVersion = manifest.migratedVersion ?? '0.0.0';
   const frameworkVersion = manifest.frameworkVersion;
@@ -532,7 +718,7 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate)
     const autoSteps = steps.filter((s) => s.kind === 'auto');
     const llmRemaining = migrationHasLlm(steps);
 
-    console.log(`[update] applying migration ${v}${llmRemaining ? ' (mixed: auto part only)' : ''}...`);
+    console.log(`[${label}] applying migration ${v}${llmRemaining ? ' (mixed: auto part only)' : ''}...`);
 
     const backups = [];
     const changedPaths = [];
@@ -565,7 +751,7 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate)
 
     if (failed) {
       // Restore from backups
-      console.error(`[update] migration ${v} failed — restoring...`);
+      console.error(`[${label}] migration ${v} failed — restoring...`);
       if (!dryRun) {
         for (const entry of backups) {
           const backupAbs = join(target, entry.backupPath);
@@ -581,15 +767,14 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate)
     }
 
     if (!llmRemaining) {
-      // Fully auto: verify via materialized engine, then commit
+      const verifyScript = join(target, '.pythia', 'runtime', 'migrate', 'verify.js');
       if (!dryRun) {
-        const verifyScript = join(target, '.pythia', 'runtime', 'migrate', 'verify.js');
         if (existsSync(verifyScript)) {
           const verifyResult = spawnSync('node', [verifyScript, v], { encoding: 'utf8' });
           if (verifyResult.stdout) process.stdout.write(verifyResult.stdout);
           if (verifyResult.stderr) process.stderr.write(verifyResult.stderr);
           if (verifyResult.status !== 0) {
-            console.error(`[update] migration ${v} verify failed — restoring...`);
+            console.error(`[${label}] migration ${v} verify failed — restoring...`);
             for (const entry of backups) {
               const backupAbs = join(target, entry.backupPath);
               const targetAbs = join(target, entry.path);
@@ -601,20 +786,26 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate)
             throw new Error(`Migration ${v} verify failed. Restored. No version bump.`);
           }
         } else {
-          // Runtime not yet materialized (early dev): fallback existence check
           for (const p of changedPaths) {
             if (!existsSync(join(target, p))) {
               throw new Error(`Migration ${v} verify: ${p} does not exist`);
             }
           }
         }
-        writeManifest(target, { migratedVersion: v }, dryRun);
-        writeState(target, { ...state, llmRemaining: false }, dryRun);
+        if (commitMigrationVersion) {
+          commitMigrationVersion(target, v, { dryRun: false });
+        } else {
+          writeManifest(target, { migratedVersion: v }, dryRun);
+          writeState(target, { ...state, llmRemaining: false }, dryRun);
+        }
       }
-      console.log(`[update] migration ${v}: committed (migratedVersion → ${v})`);
+      console.log(
+        `[${label}] migration ${v}: ${dryRun ? 'would commit' : 'committed'} (migratedVersion → ${v})`
+      );
     } else {
-      // Mixed: announce, do NOT verify or restore
-      console.log(`[update] migration ${v}: auto steps applied; deep migration pending — run the migrate skill to complete`);
+      console.log(
+        `[${label}] migration ${v}: auto steps applied; deep migration pending — run the migrate skill to complete`
+      );
       completedAllPending = false;
       break;
     }
@@ -645,7 +836,7 @@ async function resolveSurfacesAndGit(existing, opts) {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
     try {
       if (!surfaces) {
-        const ans = await rl.question('Surfaces to install [claude,codex] (default: both): ');
+        const ans = await rl.question('Surfaces to install [claude,codex,cursor] (default: claude,codex): ');
         surfaces = ans.trim() ? parseSurfacesList(ans.trim()) : [...DEFAULT_SURFACES];
       }
       if (!gitStrategy) {
@@ -676,16 +867,9 @@ function validateGitStrategy(target, surfaces, gitStrategy) {
 }
 
 function parseSurfacesList(str) {
-  // Build key→path map from registry (e.g. { claude: '.claude/skills', codex: '.agents/skills' })
-  const valid = Object.fromEntries(
-    DEFAULT_SURFACES.map((p) => {
-      const key = p.includes('claude') ? 'claude' : p.includes('agents') ? 'codex' : p.split('/').pop();
-      return [key, p];
-    })
-  );
   const out = [];
   for (const p of str.split(',').map((s) => s.trim().toLowerCase())) {
-    if (valid[p]) out.push(valid[p]);
+    if (SURFACE_KEY_MAP[p]) out.push(SURFACE_KEY_MAP[p]);
   }
   return out.length ? out : [...DEFAULT_SURFACES];
 }
@@ -702,14 +886,7 @@ function ensureGitStrategy(target, gitStrategy, dryRun) {
 
 export async function doUpdate(opts) {
   const { target, dryRun, packageRoot, noMigrate = false } = opts;
-  const assetsDir = join(packageRoot, 'assets');
-  if (!existsSync(assetsDir)) throw new Error(`assets/ not found at ${assetsDir}`);
-  if (!existsSync(join(packageRoot, 'skills'))) throw new Error(`skills/ not found at ${join(packageRoot, 'skills')}`);
 
-  const instructionSource = readFileSync(join(assetsDir, 'instructions.md'), 'utf8');
-  const frameworkVersion = readPackageVersion(packageRoot);
-
-  // Check for unresolved mixed state BEFORE managed refresh
   try {
     const { findUnresolvedMixedStates } = await import('../migrate/state.js');
     const unresolved = findUnresolvedMixedStates(target);
@@ -723,21 +900,15 @@ export async function doUpdate(opts) {
       if (!dryRun) process.exit(1);
       return;
     }
-  } catch { /* state module not available yet */ }
+  } catch {
+    /* state module not available yet */
+  }
 
   const existing = readManifest(target);
   const existingGenerated = existing?.generated ?? {};
-
-  // Capture adoption state BEFORE any writes below (ensureGitStrategy, seeding) touch .pythia/.
   const adopted = hasProtectedArtifacts(target);
-  const migrationBaseline = existing?.migratedVersion ?? (adopted ? '0.0.0' : frameworkVersion);
-  const migrationPlanManifest = {
-    ...(existing ?? {}),
-    frameworkVersion,
-    migratedVersion: migrationBaseline,
-  };
-
-  // Resolve surfaces (which LLM hosts) + git strategy: manifest → use; missing → ask/default.
+  const frameworkVersion = readPackageVersion(packageRoot);
+  const migrationBaseline = existing?.migratedVersion ?? '0.0.0';
   const { surfaces: activeSurfaces, gitStrategy } = await resolveSurfacesAndGit(existing, opts);
   const previousInstalled = existing?.installedSkills ?? [];
 
@@ -747,75 +918,22 @@ export async function doUpdate(opts) {
     createPreUpdateBackup(target, dryRun, 'adopted workspace without committed .pythia git history');
   }
 
-  // git-strategy side effect (e.g. ensure local .pythia/.git for pythia strategy)
-  ensureGitStrategy(target, gitStrategy, dryRun);
-
-  // Seed base .pythia files for workspaces that never went through init
-  // (e.g. an adopted/old .pythia/ updated one-step without a prior `init` run).
-  const baseDir = join(assetsDir, 'base');
-  seedIfMissing(target, '.pythia/config/settings.md', readFileSync(join(baseDir, 'config/settings.md'), 'utf8'), dryRun);
-  seedIfMissing(target, '.pythia/README.md', readFileSync(join(baseDir, 'README.md'), 'utf8'), dryRun);
-  seedIfMissing(target, '.pythia/config/paths.md', readFileSync(join(baseDir, 'config/paths.md'), 'utf8'), dryRun);
-  seedIfMissing(target, '.pythia/workflows/.gitkeep', '', dryRun);
-
-  // Managed refresh
-  const manifest = {};
-  for (const sub of SUBSTITUTIONS) {
-    if (!activeSurfaces.includes(sub.skillsPath)) continue;
-    const content = renderInstructions(instructionSource, sub.tool, sub.skillsPath);
-    const hash = writeManaged(target, sub.file, content, existingGenerated, dryRun);
-    manifest[sub.file] = hash;
-  }
-
-  pruneSkills(packageRoot, target, activeSurfaces, dryRun, previousInstalled);
-  installSkills(packageRoot, target, activeSurfaces, dryRun);
-
-  // Install hooks (tools/{lib,checks,hooks} into .pythia/runtime; wiring into settings.json/hooks.json)
-  installHooks(packageRoot, target, activeSurfaces, dryRun);
-
-  // Materialize .pythia/runtime/ pinned to frameworkVersion
-  materializeRuntime(packageRoot, target, dryRun);
-
-  // Derive project name for .pythia/package.json
-  const pkgJson = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'));
-  const projectName = pkgJson.name ?? 'project';
-  writePythiaPackageJson(target, projectName, frameworkVersion, dryRun);
-
-  // Write manifest.json preserving long-lived fields.
-  // migratedVersion baseline: preserve if already set; otherwise establish one now —
-  // an old .pythia without a manifest (adopted, with pre-existing content) starts
-  // at 0.0.0 so future migrations apply to it; a workspace with no pre-existing
-  // content at all is already current (mirrors doInit's adoption logic).
-  const manifestData = {
-    frameworkVersion,
-    migratedVersion: migrationBaseline,
-    installedAt: new Date().toISOString(),
+  await finalizeWorkspaceLifecycle({
+    target,
+    packageRoot,
+    dryRun,
     surfaces: activeSurfaces,
     gitStrategy,
-    installedSkills: packageSkillNames(packageRoot),
-    generated: manifest,
-  };
-  writeManifest(target, manifestData, dryRun);
-
-  // Apply migrations from the pre-update committed baseline toward this package version.
-  await applyMigrations(packageRoot, target, migrationPlanManifest, dryRun, noMigrate);
-
-  if (!dryRun) {
-    const registryCheck = refreshRegistryCheck(target, {
-      dryRun: false,
-      force: true,
-      fetchLatest: opts.registryFetch,
-    });
-    printRegistryUpdateNotice(target, frameworkVersion, registryCheck);
-  }
+    existingManifest: existing,
+    migrationBaseline,
+    noMigrate,
+    registryFetch: opts.registryFetch,
+    label: 'update',
+    previousInstalled,
+    existingGenerated,
+  });
 
   console.log(`[update] done${dryRun ? ' (dry-run)' : ''}`);
-}
-
-function isPythiaManagedHook(h) {
-  if (h._managed === 'pythia' || h._managed === 'pythia-managed') return true;
-  const json = JSON.stringify(h);
-  return json.includes('.pythia/runtime/hooks');
 }
 
 function removePythiaHooksFromSettings(settingsPath, dryRun, label) {
@@ -831,7 +949,7 @@ function removePythiaHooksFromSettings(settingsPath, dryRun, label) {
   let removed = 0;
   for (const event of Object.keys(settings.hooks)) {
     const before = settings.hooks[event].length;
-    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHook(h));
+    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
     removed += before - settings.hooks[event].length;
   }
 
@@ -939,6 +1057,7 @@ export async function doUninstall({ target, dryRun = false, yes = false }) {
 
   removePythiaHooksFromSettings(join(target, '.claude', 'settings.json'), dryRun, '.claude/settings.json');
   removePythiaHooksFromSettings(join(target, 'hooks.json'), dryRun, 'hooks.json');
+  removePythiaHooksFromSettings(join(target, '.cursor', 'hooks.json'), dryRun, '.cursor/hooks.json');
 
   const codexRulesPath = join(target, '.codex', 'rules', 'default.rules');
   if (existsSync(codexRulesPath)) {

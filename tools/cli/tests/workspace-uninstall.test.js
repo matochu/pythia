@@ -11,11 +11,12 @@ import {
 } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
-import { doUninstall, isWorkspace } from '../workspace.js';
+import { doInit, doUninstall, isWorkspace } from '../workspace.js';
 import {
   freshInstalledWorkspace,
   runCli,
   indexJs,
+  makeOpts,
 } from './helpers/workspace.js';
 
 let sharedWs;
@@ -75,6 +76,40 @@ describe('doUninstall comprehensive (shared workspace)', () => {
         expect(entry._managed).not.toBe('pythia');
       }
     }
+  });
+});
+
+describe('doUninstall cursor surface', () => {
+  let cursorWs;
+
+  beforeEach(async () => {
+    cursorWs = await freshInstalledWorkspace('pythia-ws-uninstall-cursor-');
+    await doInit(makeOpts(cursorWs, {
+      surfaces: ['.claude/skills', '.agents/skills', '.cursor/skills'],
+    }));
+  });
+
+  afterEach(() => {
+    if (cursorWs) rmSync(cursorWs, { recursive: true, force: true });
+  });
+
+  it('removes pythia-managed entries from .cursor/hooks.json', async () => {
+    expect(existsSync(join(cursorWs, '.cursor', 'hooks.json'))).toBe(true);
+    await doUninstall({ target: cursorWs, yes: true });
+    const h = JSON.parse(readFileSync(join(cursorWs, '.cursor', 'hooks.json'), 'utf8'));
+    for (const entries of Object.values(h.hooks ?? {})) {
+      for (const entry of entries) {
+        expect(entry._managed).not.toBe('pythia');
+        expect(String(entry.command ?? '')).not.toContain('.pythia/runtime/hooks');
+      }
+    }
+  });
+
+  it('removes pythia-installed skills from .cursor/skills', async () => {
+    const manifest = JSON.parse(readFileSync(join(cursorWs, '.pythia/manifest.json'), 'utf8'));
+    const skill = manifest.installedSkills[0];
+    await doUninstall({ target: cursorWs, yes: true });
+    expect(existsSync(join(cursorWs, '.cursor/skills', skill))).toBe(false);
   });
 });
 

@@ -95,12 +95,12 @@ describeRelease(`release migration ${PRIOR_VERSION} → ${RELEASE_VERSION} (stag
     );
   });
 
-  it('skips paths replace when Workflow docs use basename checker format', async () => {
+  it('upgrades basename-only Workflow docs via replace-section', async () => {
     const ws = await workspacePreRelease('old-basename');
     await doUpdate(opts(ws));
     const after = readFileSync(join(ws, '.pythia/config/paths.md'), 'utf8');
-    expect(hasHooksHardeningPaths(after)).toBe(false);
-    expect(after).toContain('checker: doc-structure.js');
+    expect(hasHooksHardeningPaths(after)).toBe(true);
+    expect(after).toContain('role-boundary.js');
     expect(after).not.toContain('tools/checks/doc-structure.js');
   });
 });

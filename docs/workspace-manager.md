@@ -9,6 +9,7 @@ npx pythia-workspace [target-dir]           # auto: update if workspace detected
 npx pythia-workspace init [target-dir]      # first-time provision of a fresh workspace
 npx pythia-workspace update [target-dir]    # refresh an existing workspace (one-step, even if old)
 npx pythia-workspace version [target-dir]   # show installed framework version, surfaces, migration status
+npx pythia-workspace health [target-dir]    # verify minimal files, runtime, surfaces, and hook wiring
 npx pythia-workspace uninstall [target-dir] # remove managed surfaces and runtime (preserves workflows/)
 ```
 
@@ -19,12 +20,14 @@ npx pythia-workspace uninstall [target-dir] # remove managed surfaces and runtim
 - `--dry-run` — print planned actions; write nothing
 - `--yes` — non-interactive; use defaults
 - `--reconfigure` — re-run interactive prompts even if already configured
-- `--surfaces <list>` — comma-separated: `claude`, `codex` (default: both)
+- `--surfaces <list>` — comma-separated: `claude`, `codex`, `cursor` (default: `claude`, `codex`; Cursor is opt-in)
 - `--git-strategy <strategy>` — `shared|pythia|ignore` (default: `pythia`)
 
 `update` accepts `--dry-run`, `--yes`, `--no-migrate`.
 
 `version` reads `.pythia/manifest.json` and prints framework version, migrated version, surfaces, installed skill count, pending migration status, and npm registry status (`registry:` line). When `registryCheck.checkedAt` is older than 24 hours (or missing), it runs `npm view pythia-workspace version` and stores the result in `manifest.registryCheck`. Exits `1` when no workspace manifest is found. Writes only `registryCheck` when refreshing stale cache.
+
+`health` verifies a workspace has the minimum expected layout: valid manifest fields, protected `.pythia/config/*` seeds, materialized runtime essentials, installed skill surfaces, host hook wiring for enabled surfaces, and managed instruction files. Also checks `findUnresolvedMixedStates` (fail), `paths.md` Workflow docs invariants (warn, same rules as `migrate:verify`), and missing runtime checkers (warn). Pending `migratedVersion` behind `frameworkVersion` is **warn**. Exits `0` when no fail-level checks remain, `1` otherwise. Use `--json` for machine-readable output. Default target is cwd (omit `[target-dir]`).
 
 `uninstall` accepts:
 
@@ -35,24 +38,32 @@ Without `--yes` on a TTY, uninstall prompts before removing anything. Without `-
 
 ## What `init` does
 
-1. Classifies target: **fresh** (no pre-existing content under `.pythia/`) or **adopted** (any pre-existing content anywhere under `.pythia/` — not just `workflows/` — but no stamp)
-2. Seeds `.pythia/` (`manifest.json`, `config.md`, `README.md`, `workflows/.gitkeep`)
-3. Renders AGENTS.md and/or CLAUDE.md from `assets/instructions.md` based on selected surfaces
-4. Installs skills to selected surface directories
-5. Writes `.pythia/manifest.json` with `frameworkVersion`, `migratedVersion`, `surfaces`, `gitStrategy`, `generated`
+`init` completes **full workspace bootstrap** in one command — no follow-up `update` required for first-time setup.
+
+Fixed lifecycle order (same sequence previewed by `--dry-run init`):
+
+1. Classifies target: **fresh** or **adopted** (any pre-existing content under `.pythia/`)
+2. Applies `gitStrategy` side effect (e.g. `git init .pythia/.git` for `pythia`)
+3. Seeds base `.pythia/config/*` (settings, paths, README, workflows `.gitkeep`) — seed-if-missing only
+4. Renders managed instruction files from `assets/instructions.md`
+5. Installs skills to each selected surface (`.claude/skills`, `.agents/skills`, `.cursor/skills` when opted in)
+6. **Hook runtime**: materializes `tools/{lib,checks,hooks}`, `inputs.js`, and shipped `package-paths.md` → `.pythia/runtime/`
+7. Wires host hooks (Claude/Codex/Cursor) from materialized runtime scripts
+8. **Migrate runtime**: materializes migration engine + versioned migration files (no duplicate lib/checks copy)
+9. Writes `.pythia/package.json` and `manifest.json`
+10. Applies pending migrations; fully-auto migrations verify + commit via shared `commitMigrationVersion`
+
+Repeat `init` preserves existing `migratedVersion`. Adopted first init starts from `0.0.0` baseline and migrates in the same run.
 
 ## What `update` does
 
+Same lifecycle refresh as `init` (steps 2–10), plus:
+
 1. Checks for unresolved mixed-migration state — stops if any `state.json` has `llmRemaining: true`
-2. Resolves `surfaces`/`gitStrategy`: read from manifest if present; otherwise prompt (interactive) or default to both surfaces + `pythia` (non-interactive)
-3. Applies git-strategy side effect (e.g. `git init .pythia/.git` for `pythia` strategy — see note below)
-4. Seeds any missing base files (`.pythia/config.md`, `.pythia/README.md`, `.pythia/workflows/.gitkeep`) — same seed-if-missing behavior as `init`, so an old `.pythia` that never ran `init` catches up in one step
-5. Refreshes AGENTS.md, CLAUDE.md (backed up if locally modified)
-6. Prunes only skills `pythia` previously installed (tracked via manifest `installedSkills`) that are gone from the package, then reinstalls current skills — never touches user-authored skills
-7. Materializes `.pythia/runtime/` (engine + migrations pinned to `frameworkVersion`)
-8. Plans migrations from the pre-update `migratedVersion` baseline (`0.0.0` for adopted/legacy workspaces without a stamp; `frameworkVersion` for fresh workspaces)
-9. Applies pending migrations; commits fully-auto, hands mixed off to the migrate skill; when no migration remains pending, writes `migratedVersion = frameworkVersion`
-10. Refreshes `manifest.registryCheck` via npm (unless `--dry-run`) and prints a notice when a newer package version is available
+2. Pre-update backup for adopted workspaces without committed `.pythia` git history
+3. Prunes removed package skills (only entries in `installedSkills`)
+4. Warns when workspace `paths.md` references checkers missing from `.pythia/runtime/checks/`
+5. Refreshes `manifest.registryCheck` via npm (unless `--dry-run`)
 
 ## What `uninstall` does
 
@@ -104,18 +115,30 @@ After uninstall, `isWorkspace(target)` returns `false`. Running uninstall again 
 | Class | Files | Behavior |
 |---|---|---|
 | Managed | `manifest.json`, skills surfaces, `AGENTS.md`, `CLAUDE.md` | Regenerated every `init`/`update`; instruction files backed up on modification |
-| Seed-if-missing | `.pythia/config.md`, `.pythia/README.md`, `.pythia/workflows/.gitkeep` | Written once, by `init` **and** `update`; never overwritten after |
+| Seed-if-missing | `.pythia/config/settings.md`, `.pythia/config/paths.md`, `.pythia/README.md`, `.pythia/workflows/.gitkeep` | Written once, by `init` **and** `update`; never overwritten after |
 | Migratable | all of `.pythia/` | Mutable by the migration engine's auto ops (backed up before each mutation); not touched outside of `update`'s explicit steps above |
 | Local runtime / backups | `.pythia/runtime/`, `.pythia/backups/` | Gitignored; runtime is regenerable by `update`; backups contain migration backups and pre-update adopted-workspace snapshots |
 
 ## Instruction files
 
-AGENTS.md and CLAUDE.md are generated from `assets/instructions.md` with `{tool, skillsPath}` substitution:
+`AGENTS.md` is **universal agent instructions** (no host branding — Cursor and other agents read it natively). `CLAUDE.md` remains Claude-branded.
 
-| Output | `tool` | `skillsPath` |
+Both are generated from `assets/instructions.md`:
+
+| Output | Header / intro | `skillsPath` |
 |---|---|---|
-| `AGENTS.md` | `Codex` | `.agents/skills` |
-| `CLAUDE.md` | `Claude Code` | `.claude/skills` |
+| `AGENTS.md` | `# Project Instructions` / agent instructions | `.agents/skills` |
+| `CLAUDE.md` | `# Project Instructions (Claude Code)` | `.claude/skills` |
+
+No managed `.cursor/rules/pythia.mdc` — Cursor uses root `AGENTS.md` plus opt-in `.cursor/skills` and hooks.
+
+## Surfaces
+
+| Key | Path | Default install |
+|---|---|---|
+| `claude` | `.claude/skills` | yes |
+| `codex` | `.agents/skills` | yes |
+| `cursor` | `.cursor/skills` | opt-in (`--surfaces cursor`) |
 
 ## Manifest (`manifest.json`)
 
@@ -141,7 +164,7 @@ AGENTS.md and CLAUDE.md are generated from `assets/instructions.md` with `{tool,
 
 Legacy `.pythia/version.json` is detected and renamed to `manifest.json` on the next write. `update` preserves `gitStrategy`, `surfaces`, and any unknown fields. It uses the pre-update `migratedVersion` as the migration baseline, then advances `migratedVersion` to `frameworkVersion` after a successful update with no pending migration state.
 
-**`migratedVersion` baseline rule**: fresh `init`/`update` (no pre-existing `.pythia/` content) starts at `frameworkVersion`; adopted (any pre-existing content anywhere under `.pythia/`, unversioned) and legacy targets missing the field start from `0.0.0`. After update finishes with no pending migration, `migratedVersion` is advanced to `frameworkVersion`.
+**`migratedVersion` baseline rule**: first `init`/`update` without an existing stamp starts from `0.0.0` so pending versioned migrations run in the same pass; repeat `init` preserves existing `migratedVersion`. After migrations finish with none pending, `migratedVersion` is advanced to `frameworkVersion`.
 
 ## Skills source of truth
 

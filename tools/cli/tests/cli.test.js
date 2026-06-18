@@ -63,11 +63,12 @@ describe('init', () => {
     expect(existsSync(join(tmpDir, '.pythia', 'workflows', '.gitkeep'))).toBe(true);
   });
 
-  it('renders AGENTS.md and CLAUDE.md from assets/instructions.md', async () => {
+  it('renders universal AGENTS.md and Claude-branded CLAUDE.md', async () => {
     await doInit(makeOpts(tmpDir));
     const agents = readFileSync(join(tmpDir, 'AGENTS.md'), 'utf8');
     const claude = readFileSync(join(tmpDir, 'CLAUDE.md'), 'utf8');
-    expect(agents).toContain('Codex');
+    expect(agents).not.toMatch(/Codex|\(Codex\)/);
+    expect(agents).toContain('agent instructions');
     expect(agents).toContain('.agents/skills');
     expect(claude).toContain('Claude Code');
     expect(claude).toContain('.claude/skills');
@@ -101,13 +102,38 @@ describe('init', () => {
     expect(manifest.migratedVersion).toBe(manifest.frameworkVersion);
   });
 
-  it('adopted target (existing protected artifacts) sets migratedVersion to 0.0.0', async () => {
+  it('fresh init applies pending versioned migrations from 0.0.0 baseline', async () => {
+    const logs = [];
+    const origLog = console.log;
+    console.log = (...args) => logs.push(args.join(' '));
+    try {
+      await doInit(makeOpts(tmpDir));
+    } finally {
+      console.log = origLog;
+    }
+    const fw = readManifest(tmpDir).frameworkVersion;
+    expect(logs.some((l) => new RegExp(`applying migration ${fw.replace(/\./g, '\\.')}`).test(l))).toBe(true);
+  });
+
+  it('--surfaces cursor installs .cursor/skills and merges hooks.json', async () => {
+    await doInit({
+      ...makeOpts(tmpDir),
+      surfaces: ['.claude/skills', '.agents/skills', '.cursor/skills'],
+    });
+    expect(existsSync(join(tmpDir, '.cursor', 'skills'))).toBe(true);
+    const hooks = JSON.parse(readFileSync(join(tmpDir, '.cursor', 'hooks.json'), 'utf8'));
+    expect(hooks.hooks.afterFileEdit.some((h) => h._managed === 'pythia')).toBe(true);
+    const manifest = JSON.parse(readFileSync(join(tmpDir, '.pythia', 'manifest.json'), 'utf8'));
+    expect(manifest.surfaces).toContain('.cursor/skills');
+  });
+
+  it('adopted target init migrates in-run to frameworkVersion', async () => {
     // Seed a protected artifact to simulate an adopted workspace
     mkdirSync(join(tmpDir, '.pythia', 'workflows'), { recursive: true });
     writeFileSync(join(tmpDir, '.pythia', 'workflows', 'some-feature.md'), '# feature', 'utf8');
     await doInit(makeOpts(tmpDir));
     const manifest = JSON.parse(readFileSync(join(tmpDir, '.pythia', 'manifest.json'), 'utf8'));
-    expect(manifest.migratedVersion).toBe('0.0.0');
+    expect(manifest.migratedVersion).toBe(manifest.frameworkVersion);
   });
 
   it('auto-detect resolves to update after init', async () => {

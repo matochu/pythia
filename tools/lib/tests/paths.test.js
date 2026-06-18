@@ -198,10 +198,17 @@ describe('protectedPaths', () => {
 });
 
 describe('deriveSurfacesAndSubstitutions', () => {
-  it('derives correct surfaces', () => {
+  it('derives all registry skill surfaces including cursor', () => {
     const zones = parseZones(SAMPLE);
     const { surfaces } = deriveSurfacesAndSubstitutions(zones);
     expect(surfaces).toEqual(['.claude/skills', '.agents/skills']);
+  });
+
+  it('defaultSurfaces excludes cursor (opt-in)', () => {
+    const zones = parseZones(SAMPLE);
+    const { defaultSurfaces } = deriveSurfacesAndSubstitutions(zones);
+    expect(defaultSurfaces).toEqual(['.claude/skills', '.agents/skills']);
+    expect(defaultSurfaces).not.toContain('.cursor/skills');
   });
 
   it('derives correct substitutions', () => {
@@ -209,7 +216,7 @@ describe('deriveSurfacesAndSubstitutions', () => {
     const { substitutions } = deriveSurfacesAndSubstitutions(zones);
     expect(substitutions).toHaveLength(2);
     expect(substitutions[0]).toMatchObject({ file: 'CLAUDE.md', tool: 'Claude Code', skillsPath: '.claude/skills' });
-    expect(substitutions[1]).toMatchObject({ file: 'AGENTS.md', tool: 'Codex', skillsPath: '.agents/skills' });
+    expect(substitutions[1]).toMatchObject({ file: 'AGENTS.md', tool: 'agent', skillsPath: '.agents/skills' });
   });
 });
 

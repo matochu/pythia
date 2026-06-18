@@ -1,6 +1,8 @@
 # Universal Sync Setup — Cross-Platform Skills and Agents Synchronization
 
-This document explains the universal synchronization setup for making skills and agents accessible across all platforms (Cursor, VS Code Copilot, Claude Desktop, OpenCode, Codex).
+> **Current pythia-workspace lifecycle:** For projects using `pythia init` / `pythia update`, see [workspace-manager.md](workspace-manager.md). Skills install to `.claude/skills` and `.agents/skills` by default; Cursor is opt-in via `--surfaces cursor` (`.cursor/skills` + hooks). `AGENTS.md` is universal agent instructions (rendered from `assets/instructions.md`), not a Codex-only artifact. The manual sync scripts below are legacy guidance for repos that predate or bypass the workspace CLI.
+
+This document explains manual synchronization for making skills and agents accessible across platforms (Cursor, VS Code Copilot, Claude Desktop, OpenCode, Codex) when not using `pythia-workspace` surfaces alone.
 
 ## Overview
 
@@ -12,7 +14,7 @@ The `.claude/` directory provides the **best cross-platform compatibility**:
 
 | Platform            | Skills Support                | Agents Support                | Notes                                                                  |
 | ------------------- | ----------------------------- | ----------------------------- | ---------------------------------------------------------------------- |
-| **Cursor**          | ✅ `.claude/skills/`          | ✅ `.claude/agents/`          | Supported for Claude compatibility (project and user-level)            |
+| **Cursor**          | ✅ `.claude/skills/` (default) · `.cursor/skills/` (pythia opt-in) | ✅ `.claude/agents/`          | With `pythia-workspace`, prefer `--surfaces cursor` for dedicated `.cursor/skills` + hooks |
 | **VS Code Copilot** | ✅ `.claude/skills/` (legacy) | ✅ `.claude/agents/` (legacy) | Backward compatibility                                                 |
 | **Claude Desktop**  | ✅ `.claude/skills/`          | ✅ `.claude/agents/`          | Native support                                                         |
 | **OpenCode**        | ✅ `.claude/skills/`          | ✅ `.agents/skills/`          | Project-level support; also supports `.opencode/skills/` (optional)    |
@@ -41,7 +43,7 @@ The `.claude/` directory provides the **best cross-platform compatibility**:
 ├── skills/         # Optional: Only if platform-specific directory preferred
 └── agents/         # Optional: Only if OpenCode supports agents in .opencode/agents/
 
-AGENTS.md           # Generated for Codex (aggregated from .claude/agents/)
+AGENTS.md           # Universal agent instructions (pythia init); legacy manual sync used Codex-specific generation
 ```
 
 ## Usage

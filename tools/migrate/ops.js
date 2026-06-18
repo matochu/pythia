@@ -166,6 +166,41 @@ export function appendToSection(targetRoot, op, backups, dryRun, migrationVersio
   return { status: 'applied', changedPath: path };
 }
 
+function escapeRegex(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function normalizeSectionBlock(text) {
+  return dedentBlock(text).trimEnd();
+}
+
+function dedentBlock(text) {
+  return String(text)
+    .split('\n')
+    .map((l) => l.trimStart())
+    .join('\n');
+}
+
+function findSectionRange(lines, section) {
+  const sectionRe = new RegExp(`^## ${escapeRegex(section)}\\s*$`);
+  let sectionIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (sectionRe.test(lines[i])) {
+      sectionIdx = i;
+      break;
+    }
+  }
+  if (sectionIdx === -1) return null;
+  let nextSectionIdx = lines.length;
+  for (let i = sectionIdx + 1; i < lines.length; i++) {
+    if (/^## /.test(lines[i])) {
+      nextSectionIdx = i;
+      break;
+    }
+  }
+  return { sectionIdx, nextSectionIdx };
+}
+
 // Op: replace-once
 export function replaceOnce(targetRoot, op, backups, dryRun, migrationVersion) {
   const { path, find, replace } = op;
@@ -173,11 +208,67 @@ export function replaceOnce(targetRoot, op, backups, dryRun, migrationVersion) {
   const abs = join(targetRoot, path);
   if (!existsSync(abs)) throw new Error(`replace-once: file not found: ${path}`);
   const content = readFileSync(abs, 'utf8');
-  if (!content.includes(find)) return { status: 'skipped', reason: 'pattern not found (already replaced or absent)' };
+  if (!content.includes(find)) {
+    if (replace && content.includes(replace)) {
+      return { status: 'skipped', reason: 'replacement already present' };
+    }
+    throw new Error(`replace-once: pattern not found and replacement content absent: ${path}`);
+  }
   backup(targetRoot, path, backups, dryRun, migrationVersion);
-  // find is a literal string — escape regex metacharacters before replace
-  const escaped = find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escaped = escapeRegex(find);
   const newContent = content.replace(new RegExp(escaped), replace);
+  if (!dryRun) writeFileSync(abs, newContent, 'utf8');
+  return { status: 'applied', changedPath: path };
+}
+
+// Op: replace-section — replace entire ## block or insert if missing
+export function replaceSection(targetRoot, op, backups, dryRun, migrationVersion) {
+  const { path, section, content, after_section: afterSection } = op;
+  assertInProtectedZone(targetRoot, path);
+  if (!content || !String(content).trim()) {
+    throw new Error('replace-section: empty content');
+  }
+  const abs = join(targetRoot, path);
+  if (!existsSync(abs)) throw new Error(`replace-section: file not found: ${path}`);
+
+  const rawContent = String(content).trimStart();
+  const blockSource = rawContent.startsWith('##') ? rawContent : `## ${section}\n${rawContent}`;
+  const desiredBlock = normalizeSectionBlock(blockSource);
+  const fileContent = readFileSync(abs, 'utf8');
+  const lines = fileContent.split('\n');
+  const range = findSectionRange(lines, section);
+
+  if (range) {
+    const currentBlock = normalizeSectionBlock(lines.slice(range.sectionIdx, range.nextSectionIdx).join('\n'));
+    if (currentBlock === desiredBlock) {
+      return { status: 'skipped', reason: 'section already canonical' };
+    }
+    backup(targetRoot, path, backups, dryRun, migrationVersion);
+    const desiredLines = desiredBlock.split('\n');
+    const newLines = [
+      ...lines.slice(0, range.sectionIdx),
+      ...desiredLines,
+      ...lines.slice(range.nextSectionIdx),
+    ];
+    if (!dryRun) writeFileSync(abs, newLines.join('\n'), 'utf8');
+    return { status: 'applied', changedPath: path };
+  }
+
+  backup(targetRoot, path, backups, dryRun, migrationVersion);
+  let prefix = fileContent.trimEnd();
+  if (afterSection) {
+    const afterRange = findSectionRange(lines, afterSection);
+    if (!afterRange) {
+      throw new Error(`replace-section: after_section not found: ## ${afterSection}`);
+    }
+    prefix = lines.slice(0, afterRange.nextSectionIdx).join('\n').trimEnd();
+    const suffix = lines.slice(afterRange.nextSectionIdx).join('\n');
+    const newContent = `${prefix}\n\n${desiredBlock}${suffix ? `\n${suffix}` : '\n'}`;
+    if (!dryRun) writeFileSync(abs, newContent, 'utf8');
+    return { status: 'applied', changedPath: path };
+  }
+
+  const newContent = `${prefix}\n\n${desiredBlock}\n`;
   if (!dryRun) writeFileSync(abs, newContent, 'utf8');
   return { status: 'applied', changedPath: path };
 }
@@ -190,6 +281,7 @@ const OP_MAP = {
   'rename-file': renameFile,
   'append-to-section': appendToSection,
   'replace-once': replaceOnce,
+  'replace-section': replaceSection,
 };
 
 export function runOp(targetRoot, op, backups, dryRun, migrationVersion) {

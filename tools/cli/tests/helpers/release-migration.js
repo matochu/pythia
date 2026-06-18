@@ -24,7 +24,10 @@ export function resolveReleaseMigrationVersions(root = packageRoot) {
 }
 
 export function hasStagingNextMigration(root = packageRoot) {
-  return existsSync(join(root, 'assets/migrations/next.md'));
+  const path = join(root, 'assets/migrations/next.md');
+  if (!existsSync(path)) return false;
+  const content = readFileSync(path, 'utf8');
+  return /^## Step \d/m.test(content);
 }
 
 /**

@@ -51,6 +51,12 @@ export function editedPaths(event) {
   const data = toolInput(event);
   const paths = [];
 
+  // Cursor afterFileEdit: top-level file_path + workspace_roots
+  if (event.hook_event_name === 'afterFileEdit' && event.file_path) {
+    paths.push(String(event.file_path));
+    return [...new Set(paths)];
+  }
+
   if (name === 'apply_patch') {
     // Parse standard unified-diff headers from the patch string
     const patch = String(data.patch || data.content || '');
