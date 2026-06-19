@@ -132,6 +132,26 @@ export function protectedPaths(zones) {
   return zone(zones, 'Protected').map((e) => e.path);
 }
 
+/** Basenames from a paths.md checker field (`a.js, dir/b.js`). */
+export function checkerBasenames(checkerField) {
+  if (!checkerField) return [];
+  return checkerField
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((name) => (name.includes('/') ? name.split('/').pop() : name));
+}
+
+/** Invoke fn(checkerBasename, workflowDocEntry) for each Workflow docs checker. */
+export function forEachWorkflowChecker(zones, fn) {
+  for (const entry of zone(zones, 'Workflow docs')) {
+    if (!entry.checker) continue;
+    for (const base of checkerBasenames(entry.checker)) {
+      fn(base, entry);
+    }
+  }
+}
+
 /** Default install surfaces — Cursor is opt-in, not included here. */
 export const DEFAULT_SURFACE_PATHS = ['.claude/skills', '.agents/skills'];
 

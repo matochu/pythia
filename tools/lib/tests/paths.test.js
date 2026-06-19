@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { parseZones, parseEntryBody, unescapeMdPath, zone, generatedCachePaths, protectedPaths, deriveSurfacesAndSubstitutions, loadZones } from '../paths.js';
+import { parseZones, parseEntryBody, unescapeMdPath, zone, generatedCachePaths, protectedPaths, deriveSurfacesAndSubstitutions, loadZones, checkerBasenames, forEachWorkflowChecker } from '../paths.js';
 
 const PKG_PATHS_MD = resolve('assets/base/config/paths.md');
 const VSCODE_FORMATTED_MD = resolve('tools/cli/tests/fixtures/paths-md-vscode-formatted.md');
@@ -217,6 +217,30 @@ describe('deriveSurfacesAndSubstitutions', () => {
     expect(substitutions).toHaveLength(2);
     expect(substitutions[0]).toMatchObject({ file: 'CLAUDE.md', tool: 'Claude Code', skillsPath: '.claude/skills' });
     expect(substitutions[1]).toMatchObject({ file: 'AGENTS.md', tool: 'agent', skillsPath: '.agents/skills' });
+  });
+});
+
+describe('checkerBasenames', () => {
+  it('splits comma list and strips directory prefixes', () => {
+    expect(checkerBasenames('links.js, checks/role-boundary.js')).toEqual([
+      'links.js',
+      'role-boundary.js',
+    ]);
+  });
+
+  it('returns empty for missing field', () => {
+    expect(checkerBasenames(undefined)).toEqual([]);
+  });
+});
+
+describe('forEachWorkflowChecker', () => {
+  it('invokes callback for each workflow doc checker basename', () => {
+    const zones = parseZones(SAMPLE);
+    const seen = [];
+    forEachWorkflowChecker(zones, (base) => seen.push(base));
+    expect(seen).toContain('doc-structure.js');
+    expect(seen).toContain('role-boundary.js');
+    expect(seen.filter((b) => b === 'links.js').length).toBeGreaterThan(1);
   });
 });
 

@@ -3,12 +3,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, readdirSync
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
-import { loadZonesForBootstrap, deriveSurfacesAndSubstitutions, loadZones, zone, SURFACE_KEY_MAP, DEFAULT_SURFACE_PATHS } from '../lib/paths.js';
+import { loadZonesForBootstrap, deriveSurfacesAndSubstitutions, loadZones, forEachWorkflowChecker, SURFACE_KEY_MAP, DEFAULT_SURFACE_PATHS } from '../lib/paths.js';
 import {
   refreshRegistryCheck,
   printRegistryUpdateNotice,
 } from './registry-check.js';
 import { isPythiaManagedHook, isPythiaManagedHookEntry } from '../lib/hook-detect.js';
+import { mergeHooksJson } from '../lib/merge-hooks-json.js';
+import { restoreFromBackups } from '../migrate/backups.js';
 export { readManifest, writeManifest } from '../migrate/manifest.js';
 import { readManifest, writeManifest } from '../migrate/manifest.js';
 
@@ -286,11 +288,6 @@ function materializeMigrateRuntime(packageRoot, target, dryRun) {
   }
 }
 
-/** @deprecated use materializeMigrateRuntime */
-function materializeRuntime(packageRoot, target, dryRun) {
-  materializeMigrateRuntime(packageRoot, target, dryRun);
-}
-
 function ensurePythiaGitignore(target, dryRun) {
   if (dryRun) return;
   const gitignorePath = join(target, '.pythia', '.gitignore');
@@ -395,52 +392,26 @@ function stripLegacyClaudePostToolUse(settingsPath, hooksAbsDir, dryRun) {
 }
 
 function installCursorHooks(packageRoot, target, hooksAbsDir, dryRun) {
-  const templatePath = join(packageRoot, 'tools', 'hooks', 'wiring', 'cursor-hooks.json');
-  if (!existsSync(templatePath)) return;
-  const template = readFileSync(templatePath, 'utf8').replace(/{{HOOKS_DIR}}/g, hooksAbsDir);
-  const incoming = JSON.parse(template);
-
-  const hooksJsonPath = join(target, '.cursor', 'hooks.json');
-  let existing = { version: 1, hooks: {} };
-  if (existsSync(hooksJsonPath)) {
-    try {
-      existing = JSON.parse(readFileSync(hooksJsonPath, 'utf8'));
-    } catch {
-      /* malformed */
-    }
-  }
-  if (!existing.hooks) existing.hooks = {};
-
-  for (const [event, entries] of Object.entries(incoming.hooks ?? {})) {
-    if (!existing.hooks[event]) existing.hooks[event] = [];
-    existing.hooks[event] = existing.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
-    for (const entry of entries) {
-      existing.hooks[event].push({ ...entry, _managed: 'pythia' });
-    }
-  }
-
-  if (!dryRun) {
-    mkdirSync(dirname(hooksJsonPath), { recursive: true });
-    writeFileSync(hooksJsonPath, JSON.stringify(existing, null, 2), 'utf8');
-    console.log('  merged hooks → .cursor/hooks.json');
-  }
+  mergeHooksJson({
+    targetPath: join(target, '.cursor', 'hooks.json'),
+    templatePath: join(packageRoot, 'tools', 'hooks', 'wiring', 'cursor-hooks.json'),
+    hooksAbsDir,
+    dryRun,
+    logLabel: '.cursor/hooks.json',
+    defaultDoc: { version: 1, hooks: {} },
+  });
 }
 
 function warnMissingCheckers(target, label = 'update') {
   const checksDir = join(target, '.pythia', 'runtime', 'checks');
   if (!existsSync(checksDir)) return;
   const zones = loadZones(target);
-  const workflowDocs = zone(zones, 'Workflow docs');
-  for (const entry of workflowDocs) {
-    if (!entry.checker) continue;
-    for (const checkerName of entry.checker.split(',').map((s) => s.trim()).filter(Boolean)) {
-      const base = checkerName.includes('/') ? checkerName.split('/').pop() : checkerName;
-      const checkPath = join(checksDir, base);
-      if (!existsSync(checkPath)) {
-        console.warn(`[${label}] paths.md references checker ${base} but it is missing from .pythia/runtime/checks/`);
-      }
+  forEachWorkflowChecker(zones, (base) => {
+    const checkPath = join(checksDir, base);
+    if (!existsSync(checkPath)) {
+      console.warn(`[${label}] paths.md references checker ${base} but it is missing from .pythia/runtime/checks/`);
     }
-  }
+  });
 }
 
 function mergeClaudeHooks(packageRoot, target, hooksAbsDir, dryRun) {
@@ -504,32 +475,13 @@ function stripRetiredPythiaHookEvents(settingsPath, dryRun) {
 }
 
 function installCodexHooks(packageRoot, target, hooksAbsDir, dryRun) {
-  const templatePath = join(packageRoot, 'tools', 'hooks', 'wiring', 'codex-hooks.json');
-  if (!existsSync(templatePath)) return;
-  const template = readFileSync(templatePath, 'utf8').replace(/{{HOOKS_DIR}}/g, hooksAbsDir);
-  const incoming = JSON.parse(template);
-
-  const hooksJsonPath = join(target, 'hooks.json');
-  let existing = {};
-  if (existsSync(hooksJsonPath)) {
-    try { existing = JSON.parse(readFileSync(hooksJsonPath, 'utf8')); } catch { /* malformed */ }
-  }
-
-  if (!existing.hooks) existing.hooks = {};
-
-  for (const [event, entries] of Object.entries(incoming.hooks)) {
-    if (!existing.hooks[event]) existing.hooks[event] = [];
-    // Remove previously managed entries (marker or .pythia/runtime/hooks path — same as Claude)
-    existing.hooks[event] = existing.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
-    for (const entry of entries) {
-      existing.hooks[event].push({ ...entry, _managed: 'pythia' });
-    }
-  }
-
-  if (!dryRun) {
-    writeFileSync(hooksJsonPath, JSON.stringify(existing, null, 2), 'utf8');
-    console.log('  merged hooks → hooks.json');
-  }
+  mergeHooksJson({
+    targetPath: join(target, 'hooks.json'),
+    templatePath: join(packageRoot, 'tools', 'hooks', 'wiring', 'codex-hooks.json'),
+    hooksAbsDir,
+    dryRun,
+    logLabel: 'hooks.json',
+  });
 }
 
 function writePythiaPackageJson(target, projectName, frameworkVersion, dryRun) {
@@ -756,18 +708,9 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
     if (!dryRun) writeState(target, state, dryRun);
 
     if (failed) {
-      // Restore from backups
       console.error(`[${label}] migration ${v} failed — restoring...`);
       if (!dryRun) {
-        for (const entry of backups) {
-          const backupAbs = join(target, entry.backupPath);
-          const targetAbs = join(target, entry.path);
-          if (existsSync(backupAbs)) {
-            mkdirSync(dirname(targetAbs), { recursive: true });
-            cpSync(backupAbs, targetAbs, { force: true });
-            console.log(`  restored: ${entry.path}`);
-          }
-        }
+        restoreFromBackups(target, backups);
       }
       throw new Error(`Migration ${v} failed — restored from backup. No version bump.`);
     }
@@ -781,14 +724,7 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
           if (verifyResult.stderr) process.stderr.write(verifyResult.stderr);
           if (verifyResult.status !== 0) {
             console.error(`[${label}] migration ${v} verify failed — restoring...`);
-            for (const entry of backups) {
-              const backupAbs = join(target, entry.backupPath);
-              const targetAbs = join(target, entry.path);
-              if (existsSync(backupAbs)) {
-                mkdirSync(dirname(targetAbs), { recursive: true });
-                cpSync(backupAbs, targetAbs, { force: true });
-              }
-            }
+            if (!dryRun) restoreFromBackups(target, backups);
             throw new Error(`Migration ${v} verify failed. Restored. No version bump.`);
           }
         } else {

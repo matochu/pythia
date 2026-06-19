@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { isWorkspace, readManifest } from './workspace.js';
-import { loadZones, zone } from '../lib/paths.js';
+import { loadZones, forEachWorkflowChecker } from '../lib/paths.js';
 import { hooksFileHasPythiaManaged } from '../lib/hook-detect.js';
 import { verifyPathsMdWorkflowDocs } from '../lib/paths-md-invariants.js';
 import { findUnresolvedMixedStates } from '../migrate/state.js';
@@ -162,16 +162,12 @@ export function checkWorkspaceHealth(target) {
   if (existsSync(checksDir)) {
     try {
       const zones = loadZones(target);
-      for (const entry of zone(zones, 'Workflow docs')) {
-        if (!entry.checker) continue;
-        for (const checkerName of entry.checker.split(',').map((s) => s.trim()).filter(Boolean)) {
-          const base = checkerName.includes('/') ? checkerName.split('/').pop() : checkerName;
-          const checkPath = join(checksDir, base);
-          if (!existsSync(checkPath)) {
-            push(checks, `checker.${base}`, 'warn', `paths.md references ${base} but runtime checker missing`);
-          }
+      forEachWorkflowChecker(zones, (base) => {
+        const checkPath = join(checksDir, base);
+        if (!existsSync(checkPath)) {
+          push(checks, `checker.${base}`, 'warn', `paths.md references ${base} but runtime checker missing`);
         }
-      }
+      });
     } catch {
       push(checks, 'paths.md', 'warn', 'could not parse Workflow docs checkers from paths.md');
     }

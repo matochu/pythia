@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // migrate:restore <version> — roll back from backup manifest, no bump.
 import { join, resolve, dirname } from 'path';
-import { existsSync, copyFileSync, mkdirSync, realpathSync } from 'fs';
+import { existsSync, realpathSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { readState } from './state.js';
 import { readManifest } from './manifest.js';
+import { restoreFromBackups } from './backups.js';
 
 // Target derived from this script's materialized location: .pythia/runtime/migrate/restore.js
 const targetRoot = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../../..'));
@@ -40,20 +41,6 @@ if (backups.length === 0) {
   process.exit(0);
 }
 
-for (const entry of backups) {
-  const backupAbs = join(targetRoot, entry.backupPath);
-  const targetAbs = join(targetRoot, entry.path);
-  if (!existsSync(backupAbs)) {
-    console.warn(`  [SKIP] no backup found for ${entry.path}`);
-    continue;
-  }
-  if (dryRun) {
-    console.log(`  [restore] ${entry.path} ← ${entry.backupPath}`);
-  } else {
-    mkdirSync(dirname(targetAbs), { recursive: true });
-    copyFileSync(backupAbs, targetAbs);
-    console.log(`  restored: ${entry.path}`);
-  }
-}
+restoreFromBackups(targetRoot, backups, { dryRun, warnOnMissing: true });
 
 console.log(`restore ${version}: done (no migratedVersion bump)`);
