@@ -195,6 +195,31 @@ describe('update: hook wiring idempotency', () => {
     expect(pythiaEntries.length).toBe(1);
   });
 
+  it('removes legacy non-managed Claude PostToolUse duplicates targeting runtime post.js', async () => {
+    await doInit(makeOpts(tmpDir));
+    const settingsPath = join(tmpDir, '.claude', 'settings.json');
+    const settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+    settings.hooks.PostToolUse.push({
+      matcher: 'Edit|Write|MultiEdit',
+      hooks: [{
+        type: 'command',
+        command: 'node',
+        args: ['.pythia/runtime/hooks/post.js'],
+      }],
+    });
+    writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+
+    await doUpdate(makeOpts(tmpDir));
+
+    const after = JSON.parse(readFileSync(settingsPath, 'utf8'));
+    const legacyGroups = (after.hooks?.PostToolUse ?? []).filter((g) => !g._managed);
+    expect(legacyGroups).toHaveLength(0);
+    const managedGroups = (after.hooks?.PostToolUse ?? []).filter((g) => g._managed === 'pythia');
+    expect(managedGroups).toHaveLength(1);
+    const postInner = managedGroups[0].hooks ?? [];
+    expect(postInner.some((h) => (h.args ?? []).join(' ').includes('post.js'))).toBe(true);
+  });
+
   it('preserves non-pythia hook entries alongside pythia-managed ones', async () => {
     await doInit(makeOpts(tmpDir));
 

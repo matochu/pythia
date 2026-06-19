@@ -11,7 +11,7 @@
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { editedPaths, normalizedToolName, toolName, commandText, printClaudeDeny, readEvent, repoRoot, warn } from '../lib/event.js';
+import { editedPaths, normalizedToolName, toolName, commandText, printClaudeDeny, readEvent, repoRoot, warn, resolveEditedPath, editedPathForZoneMatch } from '../lib/event.js';
 import { loadZones, generatedCachePaths, protectedPaths, zone } from '../lib/paths.js';
 
 const CHECKS = resolve(dirname(fileURLToPath(import.meta.url)), '../checks');
@@ -58,8 +58,9 @@ function main() {
 
   // File edit events (Edit/Write/MultiEdit/apply_patch) — warn only, never deny
   if (normalized === 'Edit') {
-    const paths = editedPaths(event);
-    for (const p of paths) {
+    for (const raw of editedPaths(event)) {
+      const abs = resolveEditedPath(root, raw);
+      const p = editedPathForZoneMatch(root, raw);
       // Generated-cache warn
       const genEntry = zone(zones, 'Generated cache').find(
         (e) => p === e.path || p.startsWith(`${e.path}/`) || p.endsWith(`/${e.path}`) || p.includes(`/${e.path}/`),
@@ -69,7 +70,7 @@ function main() {
       }
 
       // Role-boundary warn
-      runChecker('role-boundary.js', p);
+      runChecker('role-boundary.js', abs);
     }
   }
 

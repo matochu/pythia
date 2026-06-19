@@ -369,18 +369,24 @@ function stripLegacyClaudePostToolUse(settingsPath, hooksAbsDir, dryRun) {
   let removed = 0;
   for (const group of settings.hooks.PostToolUse) {
     if (!group.hooks) continue;
+    const groupManaged = group._managed === 'pythia' || group._managed === 'pythia-managed';
     const before = group.hooks.length;
     group.hooks = group.hooks.filter((h) => {
-      if (isPythiaManagedHook(h)) return true;
+      if (h._managed === 'pythia' || h._managed === 'pythia-managed') return true;
       const cmdParts = [];
       if (h.command) cmdParts.push(String(h.command));
       if (Array.isArray(h.args)) cmdParts.push(...h.args.map(String));
-      const exactMatch = cmdParts.some((part) => managedCommands.has(resolve(part)));
-      if (exactMatch) return false;
-      return true;
+      const targetsManagedScript =
+        cmdParts.some((part) => managedCommands.has(resolve(part)))
+        || cmdParts.some((p) => p.includes('.pythia/runtime/hooks'));
+      if (!targetsManagedScript) return true;
+      // Keep inner hooks in the group mergeClaudeHooks just wrote; strip legacy duplicates elsewhere.
+      if (groupManaged) return true;
+      return false;
     });
     removed += before - group.hooks.length;
   }
+  settings.hooks.PostToolUse = settings.hooks.PostToolUse.filter((g) => g.hooks?.length > 0);
 
   if (removed > 0 && !dryRun) {
     writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');

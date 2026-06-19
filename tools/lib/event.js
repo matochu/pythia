@@ -1,5 +1,5 @@
 import { readFileSync, existsSync, realpathSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, isAbsolute, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export function readEvent() {
@@ -77,6 +77,21 @@ export function editedPaths(event) {
   }
 
   return [...new Set(paths)];
+}
+
+/** Resolve hook event file paths against workspace root when relative. */
+export function resolveEditedPath(root, filePath) {
+  const p = String(filePath);
+  if (isAbsolute(p)) return p;
+  if (root) return resolve(root, p);
+  return resolve(p);
+}
+
+/** Workspace-relative path for registry zone matching. */
+export function editedPathForZoneMatch(root, filePath) {
+  const abs = resolveEditedPath(root, filePath);
+  if (root && abs.startsWith(`${root}/`)) return relative(root, abs);
+  return String(filePath);
 }
 
 /**

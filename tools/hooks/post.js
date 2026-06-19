@@ -18,7 +18,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { editedPaths, readEvent, repoRoot, warn, isHookEntrypoint } from '../lib/event.js';
+import { editedPaths, readEvent, repoRoot, warn, isHookEntrypoint, resolveEditedPath } from '../lib/event.js';
 import { loadZones, zone } from '../lib/paths.js';
 import { nudge } from './workflow-nudge.js';
 
@@ -51,7 +51,8 @@ function main() {
   const zones = root ? loadZones(root) : new Map();
   const wfDocs = zone(zones, 'Workflow docs');
 
-  for (const p of paths) {
+  for (const raw of paths) {
+    const p = resolveEditedPath(root, raw);
     if (!existsSync(p)) continue;
     const base = basename(p);
 

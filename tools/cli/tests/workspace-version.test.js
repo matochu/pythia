@@ -75,6 +75,28 @@ describe('pythia version edge cases', () => {
     }
   });
 
+  it('does not double-count pending when unresolved mixed state also exists', async () => {
+    const ws = await freshInstalledWorkspace('pythia-ws-version-dedup-');
+    try {
+      const manifest = readManifest(ws);
+      writeManifest(ws, { migratedVersion: '0.0.0' }, false);
+      const { writeState } = await import('../../migrate/state.js');
+      writeState(ws, {
+        migrationVersion: '9.9.9',
+        frameworkVersion: manifest.frameworkVersion,
+        llmRemaining: true,
+        changedPaths: ['.pythia/config/paths.md'],
+      }, false);
+      const r = runCli(['version', ws]);
+      expect(r.status).toBe(0);
+      expect(r.stdout).toMatch(/migrations: 1 pending \(run update\)/);
+      expect(r.stdout).not.toMatch(/migrations: 2 pending/);
+    } finally {
+      rmSync(join(ws, '.pythia/backups/9.9.9'), { recursive: true, force: true });
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
   it('prints unknown skill count when installedSkills absent', async () => {
     const ws = await freshInstalledWorkspace('pythia-ws-version-skills-');
     try {

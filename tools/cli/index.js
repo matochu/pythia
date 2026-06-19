@@ -150,8 +150,8 @@ program
 
     const { findUnresolvedMixedStates } = await import('../migrate/state.js').catch(() => ({}));
     const unresolved = findUnresolvedMixedStates ? findUnresolvedMixedStates(target) : [];
-    const pendingCount =
-      unresolved.length + (manifest.frameworkVersion !== manifest.migratedVersion ? 1 : 0);
+    const semverGap = manifest.frameworkVersion !== manifest.migratedVersion;
+    const pendingCount = Math.max(unresolved.length, semverGap ? 1 : 0);
     const migrationsLine =
       pendingCount === 0 ? '0 pending' : `${pendingCount} pending (run update)`;
 

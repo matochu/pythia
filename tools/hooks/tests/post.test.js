@@ -84,6 +84,32 @@ describe('post.js', () => {
     }
   });
 
+  it('resolves relative file_path against event cwd when hook process cwd differs', () => {
+    const root = makeHookRoot('pythia-post-rel-');
+    try {
+      const plans = join(root, 'plans');
+      mkdirSync(plans, { recursive: true });
+      const planPath = join(plans, 'min-valid.plan.md');
+      cpSync(validPlan, planPath);
+      writeFileSync(planPath, readFileSync(planPath) + '\n', 'utf8');
+
+      const event = {
+        tool_name: 'Edit',
+        tool_input: { file_path: 'plans/min-valid.plan.md' },
+        cwd: root,
+      };
+      const r = spawnSync(process.execPath, [postJs], {
+        input: JSON.stringify(event),
+        encoding: 'utf8',
+        cwd: packageRoot,
+      });
+      expect(r.status).toBe(0);
+      expect(r.stderr).toMatch(/pythia-nudge/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('warns via doc-structure on invalid plan edit but still exits 0', () => {
     const root = makeHookRoot('pythia-post-invalid-plan-');
     try {

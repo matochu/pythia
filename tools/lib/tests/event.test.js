@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { editedPaths, normalizedToolName, toolName, commandText } from '../event.js';
+import { editedPaths, normalizedToolName, toolName, commandText, resolveEditedPath, editedPathForZoneMatch } from '../event.js';
 
 describe('editedPaths', () => {
   it('Edit event → input.file_path', () => {
@@ -48,6 +48,20 @@ describe('editedPaths', () => {
   it('returns [] for event with no paths', () => {
     expect(editedPaths({})).toEqual([]);
     expect(editedPaths({ tool_name: 'Bash', tool_input: { command: 'echo hi' } })).toEqual([]);
+  });
+});
+
+describe('resolveEditedPath', () => {
+  it('returns absolute paths unchanged', () => {
+    expect(resolveEditedPath('/ws', '/ws/plans/a.plan.md')).toBe('/ws/plans/a.plan.md');
+  });
+
+  it('resolves relative paths against workspace root', () => {
+    expect(resolveEditedPath('/ws', 'plans/a.plan.md')).toBe('/ws/plans/a.plan.md');
+  });
+
+  it('editedPathForZoneMatch returns workspace-relative path', () => {
+    expect(editedPathForZoneMatch('/ws', 'plans/a.plan.md')).toBe('plans/a.plan.md');
   });
 });
 
