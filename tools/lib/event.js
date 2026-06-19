@@ -87,11 +87,14 @@ export function resolveEditedPath(root, filePath) {
   return resolve(p);
 }
 
-/** Workspace-relative path for registry zone matching. */
+/** Workspace-relative path for registry zone matching (paths.md uses forward slashes). */
 export function editedPathForZoneMatch(root, filePath) {
   const abs = resolveEditedPath(root, filePath);
-  if (root && abs.startsWith(`${root}/`)) return relative(root, abs);
-  return String(filePath);
+  if (!root) return String(filePath);
+  const rootAbs = resolve(String(root));
+  const rel = relative(rootAbs, resolve(abs));
+  if (!rel || rel.startsWith('..') || isAbsolute(rel)) return String(filePath);
+  return rel.replace(/\\/g, '/');
 }
 
 /**

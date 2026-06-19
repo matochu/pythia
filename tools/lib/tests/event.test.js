@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { resolve as wResolve, relative as wRelative } from 'node:path/win32';
 import { editedPaths, normalizedToolName, toolName, commandText, resolveEditedPath, editedPathForZoneMatch } from '../event.js';
 
 describe('editedPaths', () => {
@@ -62,6 +63,15 @@ describe('resolveEditedPath', () => {
 
   it('editedPathForZoneMatch returns workspace-relative path', () => {
     expect(editedPathForZoneMatch('/ws', 'plans/a.plan.md')).toBe('plans/a.plan.md');
+  });
+
+  it('editedPathForZoneMatch returns forward-slash path for win32-style roots', () => {
+    const root = 'C:\\ws';
+    const abs = wResolve(root, 'plans', 'a.plan.md');
+    expect(abs.startsWith(`${root}/`)).toBe(false);
+    expect(editedPathForZoneMatch(root, 'plans\\a.plan.md')).toBe(
+      wRelative(wResolve(root), abs).replace(/\\/g, '/'),
+    );
   });
 });
 

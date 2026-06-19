@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.5] - 2026-06-19
+
+### Fixed
+
+- **Hook path resolution** — `post.js` and `pre.js` resolve relative `file_path` values against the workspace root from the hook event, so guardrails still run when the hook process cwd differs from the agent session (common with Claude Code and Codex)
+- **Windows zone matching in `pre.js`** — `editedPathForZoneMatch` uses `path.relative()` instead of a forward-slash `startsWith` check, so generated-cache and protected-path warnings match correctly on Windows
+- **`pythia version` pending count** — semver gap and unresolved mixed migration state no longer double-count as two pending migrations; output shows a single pending item when either condition applies
+- **Claude PostToolUse dedup** — `update` removes legacy non-managed hook groups that duplicate pythia runtime scripts without stripping the managed group's inner hooks
+
+### Changed
+
+- **Shared hook/restore helpers** — Codex/Cursor `hooks.json` merge, migration backup restore, and workflow checker iteration now use shared modules (`mergeHooksJson`, `restoreFromBackups`, `forEachWorkflowChecker`) used by CLI, health, and materialized runtime
+
 ## [0.3.4] - 2026-06-19
 
 ### Features
