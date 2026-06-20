@@ -349,6 +349,24 @@ inputs:
     expect(runInputs(['sync', file]).status).toBe(2);
   });
 
+  it('does not sync README.md index files under .pythia/workflows', () => {
+    writeDoc('.pythia/workflows/ideas/ideas-backlog.md', '# Backlog\n');
+    const readme = writeDoc('.pythia/workflows/ideas/README.md', `# Ideas
+
+See [backlog](./ideas-backlog.md).
+`);
+    expect(runInputs(['sync', readme]).status).toBe(2);
+    expect(readFileSync(readme, 'utf8')).not.toMatch(/\[note\]/);
+    expect(readFileSync(readme, 'utf8')).not.toContain('## Used by');
+  });
+
+  it('does not append Used by to project-root README when a plan links to it', () => {
+    writeFileSync(join(root, 'README.md'), '# Project README\n', 'utf8');
+    const plan = writeDoc(wf('plans/p.plan.md'), '# Plan\n\nSee [readme](../../../../README.md).\n');
+    expect(runInputs(['sync', plan]).status).toBe(0);
+    expect(readFileSync(join(root, 'README.md'), 'utf8')).not.toContain('## Used by');
+  });
+
   it('preserves stored References entry when sync target is temporarily missing but still cited in body', () => {
     const plan = writeDoc(wf('plans/plan.plan.md'), `# Plan
 
@@ -612,6 +630,37 @@ No body links.
     expect(out).toMatch(/\[url\] \[BMAD-METHOD repo\]\(https:\/\/github\.com\/bmad-code-org\/BMAD-METHOD\)/);
     expect(out).toMatch(/\[url\] \[BMad Method in Action\.\]\(https:\/\/buildmode\.dev\//);
     expect(out).toMatch(/\[url\] \[llmwiki\]\(https:\/\/github\.com\/lucasastorian\/llmwiki\)/);
+  });
+
+  it('dedupes external URL when cited in body and bibliography trail', () => {
+    const url = 'https://github.com/lucasastorian/llmwiki';
+    const ctx = writeDoc(wf('contexts/ext-dedup.context.md'), `# Context
+
+See [llmwiki](${url}).
+
+## References
+
+- llmwiki. ${url}
+`);
+    runInputs(['sync', ctx]);
+    const parsed = parseTrailingRefs(readFileSync(ctx, 'utf8'));
+    const urlRefs = (parsed?.references ?? []).filter((r) => r.path.includes('lucasastorian/llmwiki'));
+    expect(urlRefs).toHaveLength(1);
+  });
+
+  it('dedupes external URL when typed ref hash differs from bibliography trail', () => {
+    const url = 'https://github.com/lucasastorian/llmwiki';
+    const ctx = writeDoc(wf('contexts/ext-hash-dedup.context.md'), `# Context
+
+## References
+
+- [url] [llmwiki](${url}#abc12)
+- llmwiki. ${url}
+`);
+    runInputs(['sync', ctx]);
+    const parsed = parseTrailingRefs(readFileSync(ctx, 'utf8'));
+    const urlRefs = (parsed?.references ?? []).filter((r) => r.path.includes('lucasastorian/llmwiki'));
+    expect(urlRefs).toHaveLength(1);
   });
 
   it('References use target title when body link label is filename placeholder', () => {

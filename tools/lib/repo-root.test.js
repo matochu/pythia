@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { projectRoot, pythiaWorkspaceDir, repoRoot, normalizePath } from './repo-root.js';
-import { cmdSync, hashFile } from './inputs-core.js';
+import { cmdSync, hashFile, repoRoot as inputsRepoRoot } from './inputs-core.js';
 import { parseTrailingRefs } from './refs.js';
 import { seedPythiaProjectRegistration } from '../cli/tests/helpers/workflow-paths.js';
 
@@ -35,6 +35,17 @@ describe('projectRoot / pythiaWorkspaceDir', () => {
     const orphan = join(project, 'orphan.md');
     writeFileSync(orphan, '# Orphan\n');
     expect(() => projectRoot(orphan)).toThrow(/manifest\.json/);
+  });
+
+  it('inputs-core repoRoot throws when process.exit is mocked', () => {
+    const orphan = join(project, 'orphan.md');
+    writeFileSync(orphan, '# Orphan\n');
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {});
+    try {
+      expect(() => inputsRepoRoot(orphan)).toThrow(/manifest\.json/);
+    } finally {
+      exitSpy.mockRestore();
+    }
   });
 });
 

@@ -61,6 +61,7 @@ export function repoRoot(startPath = process.cwd()) {
     return findProjectRoot(startPath);
   } catch (err) {
     die(err?.message || 'not inside a pythia project', 2);
+    throw err;
   }
 }
 
@@ -703,9 +704,10 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
     emittedKeys.add(key);
   }
   for (const ext of trailBibliography.external) {
-    if (emittedKeys.has(ext.path)) continue;
+    const key = canonicalDepKey(file, ext.path, root);
+    if (emittedKeys.has(key)) continue;
     references.push({ kind: EXTERNAL_REF_KIND, text: ext.text, path: ext.path, hash: null });
-    emittedKeys.add(ext.path);
+    emittedKeys.add(key);
   }
 
   const refreshedUsedBy = refreshUsedByEntries(file, preservedUsedBy, root);

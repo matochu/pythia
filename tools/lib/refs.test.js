@@ -148,6 +148,7 @@ describe('isPythiaSyncMarkdownRelPath', () => {
     expect(isPythiaSyncMarkdownRelPath('.pythia/config/settings.md')).toBe(false);
     expect(isPythiaSyncMarkdownRelPath('.pythia/config/paths.md')).toBe(false);
     expect(isPythiaSyncMarkdownRelPath('.pythia/README.md')).toBe(false);
+    expect(isPythiaSyncMarkdownRelPath('.pythia/workflows/ideas/README.md')).toBe(false);
     expect(isPythiaSyncMarkdownRelPath('.pythia/backups/0.3.3/x.md')).toBe(false);
     expect(isPythiaSyncMarkdownRelPath('.pythia/runtime/x.md')).toBe(false);
     expect(isPythiaSyncMarkdownRelPath('docs/x.md')).toBe(false);

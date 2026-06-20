@@ -149,12 +149,20 @@ function kindForContextArtifact(absPath) {
   return 'research';
 }
 
-/** Paths under `.pythia/` excluded from sync/backlinks (runtime, config, backups, README). */
+/** Index/instruction basenames — never get typed ## References / ## Used by from inputs sync. */
+export const SYNC_FOOTER_EXCLUDED_BASENAMES = new Set([
+  'README.md',
+  'AGENTS.md',
+  'CLAUDE.md',
+]);
+
+/** Paths under `.pythia/` excluded from sync/backlinks (runtime, config, backups, index readmes). */
 function isPythiaSyncExcludedRelPath(norm) {
+  const base = norm.split('/').pop() ?? '';
+  if (SYNC_FOOTER_EXCLUDED_BASENAMES.has(base)) return true;
   return norm.startsWith('.pythia/runtime/')
     || norm.startsWith('.pythia/config/')
-    || norm.startsWith('.pythia/backups/')
-    || norm === '.pythia/README.md';
+    || norm.startsWith('.pythia/backups/');
 }
 
 function isSkillRelPath(norm) {
