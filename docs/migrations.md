@@ -176,7 +176,7 @@ All auto ops:
 | `append-to-section` | Append text to a named `##` section |
 | `replace-once` | Replace the first occurrence of a string; fails when pattern absent unless replacement already present |
 | `replace-section` | Replace entire `## {section}` block (or insert if missing); supports optional `after_section` |
-| `sync-legacy-inputs` | Walk `.pythia/workflows/**/*.md`; run `inputs.js sync` on legacy frontmatter `inputs:` or body-linked docs missing `## References` (sync merges body links, stored refs, and legacy deps) |
+| `sync-legacy-inputs` | Walk `.pythia/**/*.md` (excluding runtime/config/backups); run `inputs.js sync` on legacy frontmatter `inputs:` or body-linked docs missing `## References` (sync merges body links, stored refs, and legacy deps) |
 
 Fully-auto migration commits use shared `commitMigrationVersion` (verify → bump → prune backups).
 

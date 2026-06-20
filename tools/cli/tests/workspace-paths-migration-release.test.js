@@ -14,8 +14,28 @@ import {
   resolveReleaseMigrationVersions,
   hasStagingNextMigration,
   materializeReleasePackage,
+  materializePackageAtVersion,
   preparePythiaPreRelease,
 } from './helpers/release-migration.js';
+import {
+  seedInputsFreshnessMigrationCorpus,
+  legacyInputsFiles,
+} from './helpers/inputs-migration-corpus.js';
+import {
+  featureWorkflowDir,
+  TEST_FEATURE_ID_MIG,
+  TEST_FEATURE_ID_SYNC,
+} from './helpers/workflow-paths.js';
+import {
+  copyRealPythiaTree,
+  copyLinkedRepoRoot,
+  snapshotSyncCitedPaths,
+  snapshotEmptyReferenceShells,
+  auditSyncWorkspace,
+  formatAuditReport,
+  writeAuditReport,
+  writeMigrationSamples,
+} from './helpers/sync-migration-audit.js';
 import { parseZones, zone } from '../../lib/paths.js';
 
 const { priorVersion: PRIOR_VERSION, releaseVersion: RELEASE_VERSION } =
@@ -80,7 +100,7 @@ describeRelease(`release migration ${PRIOR_VERSION} → ${RELEASE_VERSION} (stag
 
   it('update migrates legacy workflow inputs: via sync-legacy-inputs (tmp workspace)', async () => {
     const ws = await workspacePreRelease();
-    const featDir = join(ws, '.pythia/workflows/features/feat-mig-test');
+    const featDir = featureWorkflowDir(ws, TEST_FEATURE_ID_MIG);
     const ctxDir = join(featDir, 'contexts');
     mkdirSync(ctxDir, { recursive: true });
     writeFileSync(join(featDir, 'contexts/dep.md'), 'dep body\n', 'utf8');
@@ -88,7 +108,7 @@ describeRelease(`release migration ${PRIOR_VERSION} → ${RELEASE_VERSION} (stag
       join(featDir, 'contexts/legacy.context.md'),
       `---
 inputs:
-  - .pythia/workflows/features/feat-mig-test/contexts/dep.md:00000000
+  - .pythia/workflows/features/${TEST_FEATURE_ID_MIG}/contexts/dep.md:00000000
 ---
 # Legacy context
 
@@ -120,7 +140,7 @@ See [dep](./dep.md).
     const ws = await workspacePreRelease();
     await doUpdate(opts(ws));
 
-    const planDir = join(ws, '.pythia/workflows/features/feat-sync/plans');
+    const planDir = join(featureWorkflowDir(ws, TEST_FEATURE_ID_SYNC), 'plans');
     mkdirSync(planDir, { recursive: true });
     writeFileSync(join(planDir, 'dep.md'), 'dep\n', 'utf8');
     const planPath = join(planDir, '1-test.plan.md');
@@ -166,6 +186,59 @@ See [dep](./dep.md).
     expect(after).toContain('role-boundary.js');
     expect(after).not.toContain('tools/checks/doc-structure.js');
   });
+});
+
+describe('shipped migration 0.3.6 — copied real .pythia, full audit', () => {
+  const SHIPPED = '0.3.6';
+  const PRIOR = '0.3.5';
+
+  async function runCopiedPythiaUpdate() {
+    fakePackageRoot = materializePackageAtVersion(SHIPPED);
+    const dir = mkdtempSync(join(tmpdir(), 'pythia-ws-real-pythia-'));
+    workspaces.push(dir);
+    initGit(dir);
+    copyLinkedRepoRoot(packageRoot, dir);
+    copyRealPythiaTree(packageRoot, dir);
+    preparePythiaPreRelease(dir, { priorVersion: PRIOR, pathsVariant: 'old' });
+    seedInputsFreshnessMigrationCorpus(dir);
+
+    const beforeLinks = snapshotSyncCitedPaths(dir);
+    const beforeEmpty = snapshotEmptyReferenceShells(dir);
+
+    await doUpdate({ target: dir, packageRoot: fakePackageRoot, yes: true });
+
+    const report = auditSyncWorkspace(dir, beforeLinks, beforeEmpty);
+    const { outDir, samples } = writeMigrationSamples(dir, report);
+    report.migrationSamplesDir = outDir;
+    report.migrationSamples = samples;
+    const reportPath = writeAuditReport(report);
+    return { dir, report, reportPath };
+  }
+
+  it('update on tmp workspace with copied .pythia — audit every file, write report', async () => {
+    const { report, reportPath } = await runCopiedPythiaUpdate();
+
+    // Printed for manual inspection (vitest - stdout).
+    console.log(formatAuditReport(report));
+    console.log(`audit written: ${reportPath}`);
+    console.log(`migration samples: ${report.migrationSamplesDir}`);
+
+    expect(report.corruptionOutsidePythia, formatAuditReport(report)).toEqual([]);
+    expect(report.corruptionInRuntime, formatAuditReport(report)).toEqual([]);
+    expect(report.bodyLinksLost, formatAuditReport(report)).toEqual([]);
+    expect(report.invalidReferenceKinds, formatAuditReport(report)).toEqual([]);
+    expect(report.legacyInputsRemaining, formatAuditReport(report)).toEqual([]);
+    expect(report.emptyReferencesShells, formatAuditReport(report)).toEqual([]);
+    expect(readManifest(report.wsRoot).migratedVersion).toBe(SHIPPED);
+
+    const inputsJs = join(report.wsRoot, '.pythia/runtime/inputs.js');
+    expect(readFileSync(inputsJs, 'utf8')).not.toMatch(/## References/);
+    const smoke = spawnSync(process.execPath, [inputsJs, 'check', '--all'], {
+      encoding: 'utf8',
+      cwd: report.wsRoot,
+    });
+    expect(smoke.status, `${smoke.stdout}\n${smoke.stderr}`).toBe(0);
+  }, 120_000);
 });
 
 describe('release migration version resolver', () => {

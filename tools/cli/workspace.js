@@ -8,6 +8,7 @@ import {
   refreshRegistryCheck,
   printRegistryUpdateNotice,
 } from './registry-check.js';
+import { printUpdateHealthReport } from './health.js';
 import { isPythiaManagedHook, isPythiaManagedHookEntry } from '../lib/hook-detect.js';
 import { mergeHooksJson } from '../lib/merge-hooks-json.js';
 import { restoreFromBackups } from '../migrate/backups.js';
@@ -516,6 +517,15 @@ function pythiaGitHasCommits(target) {
   return r.status === 0;
 }
 
+const MANAGED_PRE_UPDATE_BACKUP = [
+  'AGENTS.md',
+  'CLAUDE.md',
+  'hooks.json',
+  '.claude',
+  '.agents',
+  '.codex',
+];
+
 function createPreUpdateBackup(target, dryRun, reason) {
   const pythiaDir = join(target, '.pythia');
   if (!existsSync(pythiaDir)) return null;
@@ -536,10 +546,18 @@ function createPreUpdateBackup(target, dryRun, reason) {
     cpSync(join(pythiaDir, entry), join(snapshotDir, entry), { recursive: true });
   }
 
+  for (const rel of MANAGED_PRE_UPDATE_BACKUP) {
+    const src = join(target, rel);
+    if (!existsSync(src)) continue;
+    const dst = join(backupDir, rel);
+    mkdirSync(dirname(dst), { recursive: true });
+    cpSync(src, dst, { recursive: true, force: true });
+  }
+
   const gitignorePath = join(target, '.pythia', 'backups', '.gitignore');
   if (!existsSync(gitignorePath)) writeFileSync(gitignorePath, '*\n', 'utf8');
 
-  console.log(`  backed up pre-update .pythia → ${relBackupDir}`);
+  console.log(`  backed up pre-update .pythia + managed surfaces → ${relBackupDir}`);
   return relBackupDir;
 }
 
@@ -635,6 +653,7 @@ async function finalizeWorkspaceLifecycle(opts) {
       fetchLatest: registryFetch,
     });
     printRegistryUpdateNotice(target, frameworkVersion, registryCheck);
+    printUpdateHealthReport(target);
   }
 }
 

@@ -6,6 +6,8 @@ import { tmpdir } from 'node:os';
 
 const inputsFreshSrc = resolve('tools/checks/inputs-fresh.js');
 
+import { seedPythiaProjectRegistration } from '../../cli/tests/helpers/workflow-paths.js';
+
 let root;
 
 afterEach(() => {
@@ -17,7 +19,7 @@ function materializeRuntime({ withInputs = true } = {}) {
   const runtimeDir = join(root, '.pythia/runtime');
   mkdirSync(join(runtimeDir, 'checks'), { recursive: true });
   mkdirSync(join(runtimeDir, 'lib'), { recursive: true });
-  for (const f of ['refs.js', 'md.js', 'inputs-core.js']) {
+  for (const f of ['refs.js', 'md.js', 'inputs-core.js', 'repo-root.js']) {
     cpSync(resolve(`tools/lib/${f}`), join(runtimeDir, 'lib', f));
   }
   if (withInputs) {
@@ -38,16 +40,18 @@ function runInputsFresh(docPath) {
   });
 }
 
+function seedPythiaProject(target) {
+  seedPythiaProjectRegistration(target);
+}
+
 describe('inputs-fresh.js', () => {
   it('error message references .pythia/runtime/inputs.js on stale references', () => {
     root = mkdtempSync(join(tmpdir(), 'pythia-inputs-fresh-'));
-    spawnSync('git', ['init', root], { encoding: 'utf8' });
-    spawnSync('git', ['-C', root, 'config', 'user.email', 'test@test.com'], { encoding: 'utf8' });
-    spawnSync('git', ['-C', root, 'config', 'user.name', 'Test'], { encoding: 'utf8' });
+    seedPythiaProject(root);
 
-    const dep = join(root, 'dep.md');
+    const dep = join(root, '.pythia/dep.md');
     writeFileSync(dep, 'grounding\n', 'utf8');
-    const doc = join(root, 'x.context.md');
+    const doc = join(root, '.pythia/x.context.md');
     writeFileSync(
       doc,
       `# Context

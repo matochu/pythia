@@ -23,7 +23,7 @@ skill: /implement
 [a] Audit
 
 ---
-**Active context**: role: Developer · feat: feat-2026-01-x · plan: 1-foo · implementation: I1 · skill: /implement
+**Active context**: role: Developer · feat: feat-test · plan: 1-foo · implementation: I1 · skill: /implement
 `;
 
 const MISSING_FOOTER = `

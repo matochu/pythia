@@ -13,6 +13,11 @@ export function readEvent() {
   }
 }
 
+/**
+ * Hook routing root: first `.git` ancestor of event.cwd (historical).
+ * Freshness/link resolution uses manifest-based projectRoot() in repo-root.js instead.
+ * See docs/workspace-manager.md § "Two root finders in runtime".
+ */
 export function repoRoot(event = {}) {
   const cwd = event.cwd || process.env.CLAUDE_PROJECT_DIR || process.cwd();
   let path = resolve(String(cwd));

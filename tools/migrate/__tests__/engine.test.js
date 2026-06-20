@@ -105,9 +105,10 @@ describe('ops: relaxed zone (whole .pythia/) + containment', () => {
     await seedWorkspace(tmpDir);
     expect(() => writeIfMissing(tmpDir, { op: 'write-if-missing', path: '/etc/evil.md', content: 'x' }, [], false)).toThrow(/inside \.pythia/);
   });
-  it('rejects bare .pythia (no subpath)', async () => {
+  it('allows sync-legacy-inputs glob at .pythia root', async () => {
     await seedWorkspace(tmpDir);
-    expect(() => ensureDir(tmpDir, { op: 'ensure-dir', path: '.pythia' }, [], false)).toThrow(/inside \.pythia/);
+    const result = runOp(tmpDir, { op: 'sync-legacy-inputs', glob: '.pythia' }, [], false, '9.9.9');
+    expect(['skipped', 'applied']).toContain(result.status);
   });
 });
 
@@ -270,7 +271,7 @@ See [dep](./dep.md).
 `, 'utf8');
     const result = runOp(
       tmpDir,
-      { op: 'sync-legacy-inputs', glob: '.pythia/workflows' },
+      { op: 'sync-legacy-inputs', glob: '.pythia' },
       [],
       false,
       '9.9.9',
@@ -279,6 +280,28 @@ See [dep](./dep.md).
     const out = readFileSync(join(tmpDir, '.pythia/workflows/feat-test/ctx.md'), 'utf8');
     expect(out).not.toMatch(/^inputs:/m);
     expect(out).toContain('## References');
+  });
+
+  it('re-syncs empty ## References shells under .pythia', async () => {
+    await seedWorkspace(tmpDir);
+    mkdirSync(join(tmpDir, '.pythia/ctx'), { recursive: true });
+    writeFileSync(join(tmpDir, '.pythia/ctx/dep.md'), 'dep\n', 'utf8');
+    writeFileSync(
+      join(tmpDir, '.pythia/ctx/shell.context.md'),
+      `# Shell
+
+See [dep](./dep.md).
+
+## References
+
+`,
+      'utf8',
+    );
+    const result = runOp(tmpDir, { op: 'sync-legacy-inputs', glob: '.pythia' }, [], false, '9.9.9');
+    expect(result.status).toBe('applied');
+    const out = readFileSync(join(tmpDir, '.pythia/ctx/shell.context.md'), 'utf8');
+    expect(out).toMatch(/dep\.md#[0-9a-f]{5}/);
+    expect(out).not.toMatch(/## References\n\n\n$/);
   });
 
   it('skips when no workflow docs need migration', async () => {

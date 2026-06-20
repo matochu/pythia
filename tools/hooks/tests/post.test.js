@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { matchGlob } from '../post.js';
 import { pathsMdContent } from '../../cli/tests/helpers/paths-md.js';
 import { freshInstalledWorkspace } from '../../cli/tests/helpers/workspace.js';
+import { installWorkflowPlan, featureWorkflowDir, TEST_FEATURE_ID } from '../../cli/tests/helpers/workflow-paths.js';
 
 const hookDir = resolve(fileURLToPath(import.meta.url), '..');
 const postJs = join(hookDir, '..', 'post.js');
@@ -52,7 +53,7 @@ describe('post.js', () => {
   it('emits plan nudge for production .pythia/workflows/features/.../plans/ path', () => {
     const root = makeHookRoot('pythia-post-prod-');
     try {
-      const featureDir = join(root, '.pythia', 'workflows', 'features', 'feat-2026-test');
+      const featureDir = featureWorkflowDir(root, TEST_FEATURE_ID);
       const plans = join(featureDir, 'plans');
       mkdirSync(plans, { recursive: true });
       const planPath = join(plans, '1-min-valid.plan.md');
@@ -167,7 +168,7 @@ describe('matchGlob', () => {
   });
 
   it('matches prefix+suffix patterns (feat-*.md)', () => {
-    expect(matchGlob('feat-2026-test.md', 'feat-*.md')).toBe(true);
+    expect(matchGlob(`${TEST_FEATURE_ID}.md`, 'feat-*.md')).toBe(true);
     expect(matchGlob('feature.md', 'feat-*.md')).toBe(false);
   });
 
@@ -198,7 +199,7 @@ describe('post.js workflow checker routing', () => {
     try {
       const features = join(root, 'features');
       mkdirSync(features, { recursive: true });
-      const path = join(features, 'feat-2026-test.md');
+      const path = join(features, `${TEST_FEATURE_ID}.md`);
       writeFileSync(path, '# Feature\n\n[broken](./missing.md)\n', 'utf8');
       const r = runPost(path, root);
       expect(r.status).toBe(0);
@@ -306,36 +307,97 @@ describe('post.js workflow checker routing', () => {
     }
   });
 
-  it('Post-commands dispatch appends edited file path as final argv', () => {
-    const root = makeHookRoot('pythia-post-cmd-');
+  it('Post-commands dispatch appends edited file path as final argv', async () => {
+    const root = await freshInstalledWorkspace('pythia-post-cmd-');
     try {
-      const stubDir = join(root, '.pythia/runtime');
-      mkdirSync(stubDir, { recursive: true });
       const argvLog = join(root, 'argv.log');
-      const stubScript = join(stubDir, 'inputs.js');
+      const stubScript = join(root, '.pythia/runtime/inputs.js');
       writeFileSync(
         stubScript,
         `import { appendFileSync } from 'node:fs';\nappendFileSync(${JSON.stringify(argvLog)}, process.argv.slice(2).join('|') + '\\n');\n`,
         'utf8',
       );
 
-      const pathsMd = join(root, '.pythia/config/paths.md');
+      const planPath = installWorkflowPlan(root, {
+        planName: 'min-valid.plan.md',
+        fixturePath: validPlan,
+      });
+
+      const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
+      const r = runPost(planPath, root, runtimePost);
+      expect(r.status).toBe(0);
+      const logged = readFileSync(argvLog, 'utf8').trim().split('|');
+      expect(logged[0]).toBe('sync');
+      expect(logged[logged.length - 1]).toBe(planPath);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('Post-commands skip markdown outside .pythia (runtime excluded)', async () => {
+    const root = await freshInstalledWorkspace('pythia-post-cmd-skip-');
+    try {
+      const argvLog = join(root, 'argv.log');
       writeFileSync(
-        pathsMd,
-        `${readFileSync(pathsMd, 'utf8')}\n## Post-commands\n\n- *.plan.md  command: .pythia/runtime/inputs.js sync\n`,
+        join(root, '.pythia/runtime/inputs.js'),
+        `import { appendFileSync } from 'node:fs';\nappendFileSync(${JSON.stringify(argvLog)}, process.argv.slice(2).join('|') + '\\n');\n`,
         'utf8',
       );
 
       const plans = join(root, 'plans');
       mkdirSync(plans, { recursive: true });
-      const planPath = join(plans, 'min-valid.plan.md');
+      const planPath = join(plans, 'outside.plan.md');
       cpSync(validPlan, planPath);
 
-      const r = runPost(planPath, root);
+      const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
+      const r = runPost(planPath, root, runtimePost);
       expect(r.status).toBe(0);
-      const logged = readFileSync(argvLog, 'utf8').trim().split('|');
-      expect(logged[0]).toBe('sync');
-      expect(logged[logged.length - 1]).toBe(planPath);
+      expect(existsSync(argvLog)).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('Post-commands skip .pythia/config markdown', async () => {
+    const root = await freshInstalledWorkspace('pythia-post-cmd-config-skip-');
+    try {
+      const argvLog = join(root, 'argv.log');
+      writeFileSync(
+        join(root, '.pythia/runtime/inputs.js'),
+        `import { appendFileSync } from 'node:fs';\nappendFileSync(${JSON.stringify(argvLog)}, process.argv.slice(2).join('|') + '\\n');\n`,
+        'utf8',
+      );
+
+      const configPath = join(root, '.pythia/config/settings.md');
+      writeFileSync(configPath, '# Settings\n\nUser config.\n', 'utf8');
+
+      const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
+      const r = runPost(configPath, root, runtimePost);
+      expect(r.status).toBe(0);
+      expect(existsSync(argvLog)).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('Post-commands dispatch sync for .pythia/ctx/*.ctx.md', async () => {
+    const root = await freshInstalledWorkspace('pythia-post-cmd-ctx-');
+    try {
+      const argvLog = join(root, 'argv.log');
+      writeFileSync(
+        join(root, '.pythia/runtime/inputs.js'),
+        `import { appendFileSync } from 'node:fs';\nappendFileSync(${JSON.stringify(argvLog)}, process.argv.slice(2).join('|') + '\\n');\n`,
+        'utf8',
+      );
+
+      const ctxPath = join(root, '.pythia/ctx/note.ctx.md');
+      mkdirSync(join(ctxPath, '..'), { recursive: true });
+      writeFileSync(ctxPath, '# Note\n\nBody.\n', 'utf8');
+
+      const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
+      const r = runPost(ctxPath, root, runtimePost);
+      expect(r.status).toBe(0);
+      expect(readFileSync(argvLog, 'utf8').trim()).toMatch(/^sync\|/);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

@@ -1,10 +1,12 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { spawnSync } from 'node:child_process';
 import { isWorkspace, readManifest } from './workspace.js';
 import { loadZones, forEachWorkflowChecker } from '../lib/paths.js';
 import { hooksFileHasPythiaManaged } from '../lib/hook-detect.js';
 import { verifyPathsMdWorkflowDocs } from '../lib/paths-md-invariants.js';
 import { findUnresolvedMixedStates } from '../migrate/state.js';
+import { projectRoot, normalizePath } from '../lib/repo-root.js';
 
 /** @typedef {'ok' | 'warn' | 'fail'} HealthLevel */
 /** @typedef {{ id: string, level: HealthLevel, message: string }} HealthCheck */
@@ -173,8 +175,51 @@ export function checkWorkspaceHealth(target) {
     }
   }
 
+  checkInputsRuntime(target, checks);
+
   const ok = !checks.some((c) => c.level === 'fail');
   return { ok, checks };
+}
+
+/** inputs.js path anchor + check --all smoke (project root via manifest, not git). */
+function checkInputsRuntime(target, checks) {
+  const inputsJs = join(target, '.pythia/runtime/inputs.js');
+  if (!existsSync(inputsJs)) {
+    push(checks, 'inputs.runtime', 'fail', 'missing .pythia/runtime/inputs.js — run update');
+    return;
+  }
+  push(checks, 'inputs.runtime', 'ok', 'present');
+
+  const probe = join(target, '.pythia/config/paths.md');
+  try {
+    const resolved = projectRoot(probe);
+    if (normalizePath(resolved) !== normalizePath(target)) {
+      push(
+        checks,
+        'inputs.project-root',
+        'fail',
+        `resolved ${resolved} !== project target ${target}`,
+      );
+      return;
+    }
+    push(checks, 'inputs.project-root', 'ok', 'manifest anchor resolves to project target');
+  } catch (err) {
+    push(checks, 'inputs.project-root', 'fail', err?.message || 'project root resolution failed');
+    return;
+  }
+
+  const r = spawnSync(process.execPath, [inputsJs, 'check', '--all'], {
+    encoding: 'utf8',
+    cwd: target,
+  });
+  const detail = (r.stderr || r.stdout || '').trim().split('\n').slice(0, 8).join('; ');
+  if (r.status === 0) {
+    push(checks, 'inputs.check-all', 'ok', detail || 'all sync-eligible .pythia docs ok');
+  } else if (r.status === 2) {
+    push(checks, 'inputs.check-all', 'warn', detail || 'inputs check usage/skipped');
+  } else {
+    push(checks, 'inputs.check-all', 'fail', detail || `inputs check --all exit ${r.status}`);
+  }
 }
 
 function formatHuman(checks) {
@@ -200,4 +245,19 @@ export function doHealth({ target, json = false }) {
     console.log(result.ok ? 'health: OK' : 'health: FAIL');
   }
   return result.ok ? 0 : 1;
+}
+
+/**
+ * Post-update summary: inputs anchor + check --all (always printed on update).
+ * @param {string} target project root
+ */
+export function printUpdateHealthReport(target) {
+  const checks = [];
+  checkInputsRuntime(target, checks);
+  console.log('[update] health (inputs):');
+  for (const c of checks) {
+    console.log(`  ${c.level.toUpperCase().padEnd(4)} ${c.id}: ${c.message}`);
+  }
+  const failed = checks.some((c) => c.level === 'fail');
+  console.log(failed ? '[update] health: FAIL — run: npx pythia-workspace health' : '[update] health: OK');
 }

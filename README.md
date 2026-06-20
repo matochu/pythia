@@ -64,11 +64,13 @@ npx pythia-workspace uninstall [target-dir] # remove managed surfaces and runtim
 
 ### What lands in your project
 
+See [docs/workspace-manager.md](docs/workspace-manager.md#layout-and-terminology) for **project root vs pythia workspace**, git layers, and how `inputs.js` resolves paths.
+
 ```
 AGENTS.md / CLAUDE.md     # workflow instructions for Codex and Claude Code
 .agents/skills/           # skills surface for Codex
 .claude/skills/           # skills surface for Claude Code
-.pythia/
+.pythia/                  # pythia workspace (not the CLI target itself — target is the parent dir)
   manifest.json           # installed version + content hashes (managed by CLI)
   config/settings.md      # your workspace config — never overwritten
   README.md

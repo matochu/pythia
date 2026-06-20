@@ -14,7 +14,7 @@ function assertInProtectedZone(targetRoot, relpath) {
   const pythiaDir = resolve(targetRoot, '.pythia');
   const abs = resolve(targetRoot, relpath);
   const rel = relative(pythiaDir, abs);
-  if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) {
+  if (rel.startsWith('..') || isAbsolute(rel)) {
     throw new Error(`Op target must be inside .pythia/: ${relpath}`);
   }
 }
@@ -281,7 +281,7 @@ export function replaceSection(targetRoot, op, backups, dryRun, migrationVersion
 
 // Op: sync-legacy-inputs — migrate frontmatter inputs: → ## References (via inputs sync)
 export function syncLegacyInputs(targetRoot, op, _backups, dryRun, _migrationVersion) {
-  const globRoot = op.glob ?? '.pythia/workflows';
+  const globRoot = op.glob ?? '.pythia';
   assertInProtectedZone(targetRoot, globRoot);
   return migrateWorkflowInputs(targetRoot, { dryRun, globRoot });
 }

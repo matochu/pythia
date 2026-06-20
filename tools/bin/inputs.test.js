@@ -13,8 +13,15 @@ import {
   renderTrailingRegion,
 } from '../lib/refs.js';
 import { deriveDeps, hashFile, migrateWorkflowInputs } from '../lib/inputs-core.js';
+import { seedInputsFreshnessMigrationCorpus } from '../cli/tests/helpers/inputs-migration-corpus.js';
+import { TEST_FEATURE_ID, seedPythiaProjectRegistration } from '../cli/tests/helpers/workflow-paths.js';
 
 let root;
+const WF = `.pythia/workflows/features/${TEST_FEATURE_ID}`;
+
+function wf(rel) {
+  return `${WF}/${rel}`;
+}
 
 function initGit(dir) {
   spawnSync('git', ['init', dir], { encoding: 'utf8' });
@@ -38,6 +45,7 @@ function runInputs(args) {
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'pythia-inputs-'));
+  seedPythiaProjectRegistration(root);
   initGit(root);
 });
 
@@ -53,12 +61,21 @@ describe('splitHashFragment', () => {
 });
 
 describe('kindForPath', () => {
-  it('maps plan/research/doc/code', () => {
+  it('maps plan/research/note/doc/code and workflow artifact kinds', () => {
     expect(kindForPath('plans/x.plan.md')).toBe('plan');
-    expect(kindForPath('ctx/x.context.md')).toBe('research');
-    expect(kindForPath('notes/x.md')).toBe('doc');
-    expect(kindForPath('tools/bin/inputs.js')).toBe('code');
-    expect(kindForPath('notes/x.feat.md')).toBe('doc');
+    expect(kindForPath('.pythia/workflows/f/contexts/x.context.md')).toBe('research');
+    expect(kindForPath('.pythia/workflows/f/notes/x.md')).toBe('note');
+    expect(kindForPath('feat-slug.md')).toBe('feat');
+    expect(kindForPath('docs/guide.md')).toBe('doc');
+    expect(kindForPath('lib/module.js')).toBe('code');
+    expect(
+      kindForPath('docs/guide.md', {
+        targetAbs: join(root, 'docs/guide.md'),
+        root,
+      }),
+    ).toBe('doc');
+    expect(kindForPath('reports/x.review.md')).toBe('review');
+    expect(kindForPath('reports/x.implementation.md')).toBe('impl');
   });
 });
 
@@ -158,48 +175,48 @@ See [dep](../dep.md).
 
 describe('sync', () => {
   it('auto-fills typed References from body links only', () => {
-    writeDoc('dep.md', 'content\n');
-    const file = writeDoc('plan.md', '# Plan\n\nSee [dep](./dep.md).\n');
+    writeDoc(wf('dep.md'), 'content\n');
+    const file = writeDoc(wf('plans/plan.plan.md'), '# Plan\n\nSee [dep](../dep.md).\n');
     expect(runInputs(['sync', file]).status).toBe(0);
     const parsed = parseTrailingRefs(readFileSync(file, 'utf8'));
-    expect(parsed.references.some((r) => r.path === 'dep.md')).toBe(true);
+    expect(parsed.references.some((r) => r.path.includes('dep.md'))).toBe(true);
     expect(parsed.references[0].hash).toHaveLength(5);
   });
 
   it('removes standalone duplicate list items from body, leaves inline links', () => {
-    writeDoc('dep.md', 'content\n');
-    const file = writeDoc('plan.md', `# Plan
+    writeDoc(wf('dep.md'), 'content\n');
+    const file = writeDoc(wf('plans/plan.plan.md'), `# Plan
 
-- [dep](./dep.md)
+- [dep](../dep.md)
 
-Inline [dep](./dep.md) stays.
+Inline [dep](../dep.md) stays.
 `);
     runInputs(['sync', file]);
     const body = getBodyContent(readFileSync(file, 'utf8'));
     expect(body).not.toMatch(/^- \[dep\]/m);
-    expect(body).toContain('Inline [dep](./dep.md) stays.');
+    expect(body).toContain('Inline [dep](../dep.md) stays.');
   });
 
   it('registers reverse Used by repo-wide', () => {
-    writeDoc('feat-a/dep.md', 'dep\n');
-    const plan = writeDoc('feat-a/plan.md', '# Plan\n\n[dep](./dep.md)\n');
+    writeDoc(wf('dep.md'), 'dep\n');
+    const plan = writeDoc(wf('plans/plan.plan.md'), '# Plan\n\n[dep](../dep.md)\n');
     runInputs(['sync', plan]);
-    const depContent = readFileSync(join(root, 'feat-a/dep.md'), 'utf8');
+    const depContent = readFileSync(join(root, wf('dep.md')), 'utf8');
     expect(depContent).toContain('## Used by');
-    expect(depContent).toContain('plan.md');
+    expect(depContent).toContain('plan.plan.md');
     expect(runInputs(['check', plan]).status).toBe(0);
   });
 
   it('migrates and strips frontmatter inputs', () => {
-    writeDoc('dep.md', 'dep content\n');
-    const depHash = hashFile(join(root, 'dep.md'));
-    const file = writeDoc('ctx.md', `---
+    writeDoc(wf('dep.md'), 'dep content\n');
+    const depHash = hashFile(join(root, wf('dep.md')));
+    const file = writeDoc(wf('contexts/ctx.context.md'), `---
 inputs:
   - dep.md:${depHash}
 ---
 # Context
 
-[dep](./dep.md)
+[dep](../dep.md)
 `);
     runInputs(['sync', file]);
     const out = readFileSync(file, 'utf8');
@@ -208,8 +225,8 @@ inputs:
   });
 
   it('transfers legacy frontmatter deps without body link', () => {
-    writeDoc('legacy-dep.md', 'y\n');
-    const file = writeDoc('doc.md', `---
+    writeDoc(wf('legacy-dep.md'), 'y\n');
+    const file = writeDoc(wf('doc.md'), `---
 inputs:
   - legacy-dep.md:00000000
 ---
@@ -224,9 +241,9 @@ No links here.
   });
 
   it('preserves stored ## References without body link', () => {
-    writeDoc('orphan.md', 'x\n');
-    const hash = hashFile(join(root, 'orphan.md')).slice(0, 5);
-    const file = writeDoc('doc.md', `# Doc
+    writeDoc(wf('orphan.md'), 'x\n');
+    const hash = hashFile(join(root, wf('orphan.md'))).slice(0, 5);
+    const file = writeDoc(wf('doc.md'), `# Doc
 
 Body text only.
 
@@ -240,10 +257,10 @@ Body text only.
   });
 
   it('preserves trailing ## Used by after plan sync then context sync', () => {
-    const ctx = writeDoc('feat/contexts/ctx.context.md', '# Context\n\nBody.\n');
-    const plan = writeDoc('feat/plans/x.plan.md', '# Plan\n\n[ctx](../contexts/ctx.context.md)\n');
+    const ctx = writeDoc(wf('contexts/ctx.context.md'), '# Context\n\nBody.\n');
+    const plan = writeDoc(wf('plans/x.plan.md'), '# Plan\n\n[ctx](../contexts/ctx.context.md)\n');
     runInputs(['sync', plan]);
-    const ctxPath = join(root, 'feat/contexts/ctx.context.md');
+    const ctxPath = join(root, wf('contexts/ctx.context.md'));
     let parsed = parseTrailingRefs(readFileSync(ctxPath, 'utf8'));
     expect(parsed?.usedBy?.some((u) => u.path.includes('x.plan'))).toBe(true);
 
@@ -256,9 +273,9 @@ Body text only.
   });
 
   it('--keep-manual is deprecated alias (same as default sync)', () => {
-    writeDoc('linked.md', 'x\n');
-    writeDoc('manual.md', 'y\n');
-    const file = writeDoc('doc.md', `---
+    writeDoc(wf('linked.md'), 'x\n');
+    writeDoc(wf('manual.md'), 'y\n');
+    const file = writeDoc(wf('doc.md'), `---
 inputs:
   - manual.md:00000000
 ---
@@ -270,50 +287,143 @@ inputs:
     expect(r.status).toBe(0);
     const parsed = parseTrailingRefs(readFileSync(file, 'utf8'));
     const paths = parsed.references.map((x) => x.path);
-    expect(paths).toContain('linked.md');
+    expect(paths.some((p) => p.endsWith('linked.md'))).toBe(true);
     expect(paths.some((p) => p.endsWith('manual.md'))).toBe(true);
     expect(`${r.stdout}${r.stderr}`).not.toMatch(/manual dep not found as a link/);
+  });
+
+  it('skips sync outside .pythia markdown scope', () => {
+    const file = writeDoc('package.json', '{"name":"x"}\n');
+    const r = runInputs(['sync', file]);
+    expect(r.status).toBe(2);
+    expect(readFileSync(file, 'utf8')).not.toContain('## References');
+  });
+
+  it('does not append References to non-workflow link targets', () => {
+    writeDoc('package.json', '{"name":"x"}\n');
+    const plan = writeDoc(wf('plans/plan.plan.md'), '# Plan\n\nSee [pkg](../../../../../package.json).\n');
+    expect(runInputs(['sync', plan]).status).toBe(0);
+    expect(readFileSync(join(root, 'package.json'), 'utf8')).not.toContain('## References');
+    const parsed = parseTrailingRefs(readFileSync(plan, 'utf8'));
+    expect(parsed?.references?.some((r) => r.path.includes('package.json'))).toBe(true);
+  });
+
+  it('omits empty References region when there are no deps', () => {
+    const file = writeDoc(wf('empty.md'), '# Empty\n\nNo links.\n');
+    runInputs(['sync', file]);
+    expect(readFileSync(file, 'utf8')).not.toContain('## References');
+  });
+
+  it('syncs markdown under .pythia/ctx (not only workflows)', () => {
+    writeDoc('.pythia/ctx/linked.md', 'linked\n');
+    const file = writeDoc('.pythia/ctx/note.md', '# Note\n\n[linked](./linked.md)\n');
+    expect(runInputs(['sync', file]).status).toBe(0);
+    expect(readFileSync(file, 'utf8')).toContain('## References');
+  });
+
+  it('skips .pythia/runtime markdown', () => {
+    const file = writeDoc('.pythia/runtime/note.md', '# Runtime\n');
+    expect(runInputs(['sync', file]).status).toBe(2);
+  });
+
+  it('preserves stored References entry when sync target is temporarily missing but still cited in body', () => {
+    const plan = writeDoc(wf('plans/plan.plan.md'), `# Plan
+
+Still cites [gone](./gone.md).
+
+## References
+
+- [note] [gone](./gone.md#abc12)
+`);
+    const r = runInputs(['sync', plan]);
+    expect(r.status).toBe(0);
+    const out = readFileSync(plan, 'utf8');
+    expect(out).toMatch(/\[note\] \[gone\]\(\.\/gone\.md#abc12\)/);
+  });
+
+  it('preserves missing ref when body doc-relative path differs from repo-root References path', () => {
+    const ctxRel = `${WF}/contexts/x.context.md`;
+    const plan = writeDoc(wf('plans/plan.plan.md'), `# Plan
+
+Uses [ctx](../contexts/x.context.md).
+
+## References
+
+- [ctx] [x](${ctxRel}#abc12)
+`);
+    const r = runInputs(['sync', plan]);
+    expect(r.status).toBe(0);
+    const out = readFileSync(plan, 'utf8');
+    expect(out).toContain(`${ctxRel}#abc12`);
+  });
+
+  it('drops stored References entry when target is missing and no longer cited in body', () => {
+    const plan = writeDoc(wf('plans/plan.plan.md'), `# Plan
+
+No body link to gone.
+
+## References
+
+- [note] [gone](./gone.md#abc12)
+`);
+    const r = runInputs(['sync', plan]);
+    expect(r.status).toBe(0);
+    const out = readFileSync(plan, 'utf8');
+    expect(out).not.toMatch(/gone\.md/);
   });
 });
 
 describe('check', () => {
   it('reads References #hash and flags stale', () => {
-    writeDoc('dep.md', 'v1\n');
-    const hash = hashFile(join(root, 'dep.md'));
-    const file = writeDoc('doc.md', `# Doc
+    writeDoc(wf('dep.md'), 'v1\n');
+    const hash = hashFile(join(root, wf('dep.md')));
+    const file = writeDoc(wf('doc.md'), `# Doc
 
 ## References
 
 - [doc] [dep](./dep.md#${hash})
 `);
     expect(runInputs(['check', file]).status).toBe(0);
-    writeFileSync(join(root, 'dep.md'), 'v2\n');
+    writeFileSync(join(root, wf('dep.md')), 'v2\n');
     expect(runInputs(['check', file]).status).toBe(1);
   });
 
   it('skips docs without ## References (exit 0)', () => {
-    const file = writeDoc('plain.md', '# No refs\n');
+    const file = writeDoc(wf('plain.md'), '# No refs\n');
     expect(runInputs(['check', file]).status).toBe(0);
   });
 
   it('--all aggregates and exits 1 when any stale', () => {
-    writeDoc('.pythia/workflows/feat/dep.md', 'v1\n');
-    const hash = hashFile(join(root, '.pythia/workflows/feat/dep.md'));
-    writeDoc('.pythia/workflows/feat/doc.md', `# Doc
+    writeDoc(wf('dep.md'), 'v1\n');
+    const hash = hashFile(join(root, wf('dep.md')));
+    writeDoc(wf('doc.md'), `# Doc
 
 ## References
 
 - [doc] [dep](./dep.md#${hash})
 `);
-    writeFileSync(join(root, '.pythia/workflows/feat/dep.md'), 'v2\n');
+    writeFileSync(join(root, wf('dep.md')), 'v2\n');
+    expect(runInputs(['check', '--all']).status).toBe(1);
+  });
+
+  it('--all scans .pythia/ctx markdown outside workflows', () => {
+    writeDoc('.pythia/ctx/dep.md', 'v1\n');
+    const hash = hashFile(join(root, '.pythia/ctx/dep.md'));
+    writeDoc('.pythia/ctx/user.md', `# User
+
+## References
+
+- [note] [dep](./dep.md#${hash})
+`);
+    writeFileSync(join(root, '.pythia/ctx/dep.md'), 'v2\n');
     expect(runInputs(['check', '--all']).status).toBe(1);
   });
 });
 
 describe('migrateWorkflowInputs', () => {
   it('skips docs whose only body links are inside fenced code blocks', () => {
-    writeDoc('.pythia/workflows/feat/ghost.md', 'ghost\n');
-    writeDoc('.pythia/workflows/feat/doc.md', `# Doc
+    writeDoc(wf('ghost.md'), 'ghost\n');
+    writeDoc(wf('doc.md'), `# Doc
 
 \`\`\`md
 [ghost](../ghost.md)
@@ -321,19 +431,43 @@ describe('migrateWorkflowInputs', () => {
 `);
     const result = migrateWorkflowInputs(root);
     expect(result.status).toBe('skipped');
-    expect(readFileSync(join(root, '.pythia/workflows/feat/doc.md'), 'utf8')).not.toContain('## References');
+    expect(readFileSync(join(root, wf('doc.md')), 'utf8')).not.toContain('## References');
+  });
+});
+
+describe('inputs migration corpus (unit)', () => {
+  it('legacy context migrates with non-empty References and [note] dep kind', () => {
+    const paths = seedInputsFreshnessMigrationCorpus(root);
+    runInputs(['sync', paths.legacyContext]);
+    const out = readFileSync(paths.legacyContext, 'utf8');
+    expect(out).toMatch(/\[note\].*dep\.md#/);
+    expect(out).not.toMatch(/## References\n\n\n## Used by/s);
+  });
+
+  it('plan references feat doc as [feat]', () => {
+    const paths = seedInputsFreshnessMigrationCorpus(root);
+    runInputs(['sync', paths.plan]);
+    const out = readFileSync(paths.plan, 'utf8');
+    expect(out).toMatch(new RegExp(`\\[feat\\].*${TEST_FEATURE_ID}\\.md#`));
+  });
+
+  it('does not corrupt package.json when plan links to it', () => {
+    const paths = seedInputsFreshnessMigrationCorpus(root);
+    const before = readFileSync(paths.packageJson, 'utf8');
+    runInputs(['sync', paths.plan]);
+    expect(readFileSync(paths.packageJson, 'utf8')).toBe(before);
   });
 });
 
 describe('rdeps', () => {
   it('finds repo-wide dependents and flags stale', () => {
-    writeDoc('.pythia/workflows/feat-a/target.md', 'v1\n');
-    const user = writeDoc('.pythia/workflows/feat-b/user.md', `# User
+    writeDoc('.pythia/workflows/features/feat-a/target.md', 'v1\n');
+    const user = writeDoc('.pythia/workflows/features/feat-b/user.md', `# User
 
 [target](../feat-a/target.md)
 `);
     runInputs(['sync', user]);
-    writeFileSync(join(root, '.pythia/workflows/feat-a/target.md'), 'v2\n');
-    expect(runInputs(['rdeps', join(root, '.pythia/workflows/feat-a/target.md')]).status).toBe(1);
+    writeFileSync(join(root, '.pythia/workflows/features/feat-a/target.md'), 'v2\n');
+    expect(runInputs(['rdeps', join(root, '.pythia/workflows/features/feat-a/target.md')]).status).toBe(1);
   });
 });

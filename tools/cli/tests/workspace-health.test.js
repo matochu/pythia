@@ -30,6 +30,8 @@ describe('checkWorkspaceHealth', () => {
     expect(result.checks.some((c) => c.level === 'fail')).toBe(false);
     expect(result.checks.find((c) => c.id === 'workspace')?.level).toBe('ok');
     expect(result.checks.find((c) => c.id === '.pythia/runtime/hooks/post.js')?.level).toBe('ok');
+    expect(result.checks.find((c) => c.id === 'inputs.project-root')?.level).toBe('ok');
+    expect(result.checks.find((c) => c.id === 'inputs.check-all')?.level).toBe('ok');
   });
 
   it('fails when manifest missing', () => {

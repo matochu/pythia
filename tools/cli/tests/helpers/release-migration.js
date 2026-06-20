@@ -31,10 +31,10 @@ export function hasStagingNextMigration(root = packageRoot) {
 }
 
 /**
- * Tmp package root: copy repo, bump to releaseVersion, write assets/migrations/<release>.md from next.md.
+ * Tmp package root at an explicit semver (uses shipped assets/migrations/<version>.md when present).
  */
-export function materializeReleasePackage(releaseVersion, root = packageRoot) {
-  const fakeRoot = mkdtempSync(join(tmpdir(), 'pythia-pkg-release-'));
+export function materializePackageAtVersion(version, root = packageRoot) {
+  const fakeRoot = mkdtempSync(join(tmpdir(), 'pythia-pkg-shipped-'));
   cpSync(root, fakeRoot, {
     recursive: true,
     force: true,
@@ -42,8 +42,14 @@ export function materializeReleasePackage(releaseVersion, root = packageRoot) {
   });
   const pkgPath = join(fakeRoot, 'package.json');
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-  pkg.version = releaseVersion;
+  pkg.version = version;
   writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
+  return fakeRoot;
+}
+
+/** Tmp package root: copy repo, bump to releaseVersion, write assets/migrations/<release>.md from next.md. */
+export function materializeReleasePackage(releaseVersion, root = packageRoot) {
+  const fakeRoot = materializePackageAtVersion(releaseVersion, root);
   writeFileSync(
     join(fakeRoot, 'assets/base/config/paths.md'),
     pathsMdContent('new'),

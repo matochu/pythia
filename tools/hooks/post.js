@@ -16,10 +16,11 @@
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { resolve, dirname, basename } from 'node:path';
+import { resolve, dirname, basename, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { editedPaths, readEvent, repoRoot, warn, isHookEntrypoint, resolveEditedPath } from '../lib/event.js';
 import { loadZones, zone } from '../lib/paths.js';
+import { isPythiaSyncMarkdownRelPath } from '../lib/refs.js';
 import { nudge } from './workflow-nudge.js';
 
 const CHECKS = resolve(dirname(fileURLToPath(import.meta.url)), '../checks');
@@ -56,10 +57,15 @@ function main() {
     const p = resolveEditedPath(root, raw);
     if (!existsSync(p)) continue;
     const base = basename(p);
+    const relFromRoot = root ? relative(root, p).replace(/\\/g, '/') : '';
 
     if (root) {
       for (const entry of postCmds) {
-        if (matchGlob(base, entry.path) && entry.command) {
+        if (
+          isPythiaSyncMarkdownRelPath(relFromRoot)
+          && matchGlob(base, entry.path)
+          && entry.command
+        ) {
           const parts = entry.command.trim().split(/\s+/);
           const scriptRel = parts[0];
           const fixedArgs = parts.slice(1);
@@ -70,6 +76,7 @@ function main() {
               stdio: ['ignore', 'pipe', 'pipe'],
             });
             if (r.stderr) warn(r.stderr.trim());
+            break;
           }
         }
       }

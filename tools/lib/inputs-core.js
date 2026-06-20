@@ -10,11 +10,11 @@
  * Exit: 0 = ok, 1 = stale/error, 2 = usage error
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, realpathSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
 import { relative, resolve, join, sep, dirname } from 'node:path';
 import { extractRelativeLinks, resolveLink } from './md.js';
+import { projectRoot as findProjectRoot, normalizePath } from './repo-root.js';
 import {
   parseTrailingRefs,
   writeTrailingRefs,
@@ -24,6 +24,9 @@ import {
   docRelativePath,
   resolveDocLink,
   renderTrailingRegion,
+  isPythiaSyncMarkdownRelPath,
+  repoOrDocRelativePath,
+  usedByLinksToConsumer,
 } from './refs.js';
 
 const HASH_LEN = 5;
@@ -43,36 +46,16 @@ export function die(msg, code = 2) {
 }
 
 export function hashFile(path, len = HASH_LEN) {
-  const content = readFileSync(path);
+  const raw = readFileSync(path, 'utf8');
+  const content = path.endsWith('.md') ? getBodyContent(raw) : raw;
   return createHash('sha256').update(content).digest('hex').slice(0, len);
 }
 
 export function repoRoot(startPath = process.cwd()) {
-  let dir = resolve(startPath);
   try {
-    if (existsSync(dir) && statSync(dir).isFile()) dir = dirname(dir);
-  } catch {
-    // keep dir
-  }
-  while (true) {
-    if (existsSync(join(dir, '.git'))) {
-      const r = spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8', cwd: dir });
-      if (r.status === 0) return normalizePath(r.stdout.trim());
-    }
-    const parent = dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  const r = spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' });
-  if (r.status !== 0) die('not inside a Git worktree', 2);
-  return normalizePath(r.stdout.trim());
-}
-
-function normalizePath(p) {
-  try {
-    return realpathSync(p);
-  } catch {
-    return resolve(p);
+    return findProjectRoot(startPath);
+  } catch (err) {
+    die(err?.message || 'not inside a pythia project', 2);
   }
 }
 
@@ -83,6 +66,14 @@ function samePath(a, b) {
 function isUnderRoot(absPath, root) {
   const rel = relative(normalizePath(root), normalizePath(absPath));
   return rel !== '..' && !rel.startsWith(`..${sep}`) && !rel.startsWith('..');
+}
+
+function workflowRelPath(file, root) {
+  return relative(normalizePath(root), normalizePath(resolve(file))).replace(/\\/g, '/');
+}
+
+function isPythiaSyncMarkdownFile(file, root) {
+  return isPythiaSyncMarkdownRelPath(workflowRelPath(file, root));
 }
 
 function hasFrontmatter(content) {
@@ -207,8 +198,8 @@ export function deriveDeps(file, opts = {}) {
   return deps.sort();
 }
 
-function removeBodyDuplicateListItems(file, bodyContent, refPaths) {
-  const refSet = new Set(refPaths);
+function removeBodyDuplicateListItems(file, bodyContent, refPaths, root) {
+  const refKeys = new Set(refPaths.map(depMapKey));
   const lines = bodyContent.split('\n');
   let inFence = false;
   const out = [];
@@ -226,10 +217,12 @@ function removeBodyDuplicateListItems(file, bodyContent, refPaths) {
     const m = line.match(/^\s*-\s+\[([^\]]*)\]\(([^)]+)\)\s*$/);
     if (m) {
       const { path } = splitHashFragment(m[2]);
-      const abs = resolveDocLink(file, path);
+      const abs = resolveDocLink(file, path, root);
       if (abs) {
-        const rel = docRelativePath(file, abs);
-        if (refSet.has(rel)) continue;
+        const canonical = repoOrDocRelativePath(file, abs, root);
+        if (refKeys.has(depMapKey(canonical))) continue;
+        const docRel = docRelativePath(file, abs);
+        if (refKeys.has(depMapKey(docRel))) continue;
       }
     }
     out.push(line);
@@ -238,22 +231,18 @@ function removeBodyDuplicateListItems(file, bodyContent, refPaths) {
   return out.join('\n');
 }
 
-function readUsedByEntries(file) {
-  const content = readFileSync(file, 'utf8');
-  const parsed = parseTrailingRefs(content);
-  return parsed?.usedBy ?? [];
-}
-
 function addUsedByBacklink(targetFile, sourceFile, sourceBaseName) {
   if (!existsSync(targetFile)) return;
+  const root = repoRoot(targetFile);
+  if (!isPythiaSyncMarkdownFile(targetFile, root)) return;
   const content = readFileSync(targetFile, 'utf8');
-  const rel = docRelativePath(targetFile, sourceFile);
-  const kind = kindForPath(sourceFile);
+  const rel = repoOrDocRelativePath(targetFile, sourceFile, root);
+  const kind = kindForPath(rel, { targetAbs: sourceFile, root });
   const text = sourceBaseName.replace(/\.(plan|context|implementation|review|audit)\.md$/, '').replace(/\.md$/, '');
 
   const parsed = parseTrailingRefs(content);
   const usedBy = parsed?.usedBy ?? [];
-  if (usedBy.some((u) => u.path === rel || u.path.endsWith(sourceBaseName))) return;
+  if (usedByLinksToConsumer(usedBy, targetFile, sourceFile, root)) return;
 
   usedBy.push({ kind, text, path: rel });
   const refs = parsed?.references ?? [];
@@ -262,26 +251,28 @@ function addUsedByBacklink(targetFile, sourceFile, sourceBaseName) {
 
 function removeUsedByBacklink(targetFile, sourceFile) {
   if (!existsSync(targetFile)) return;
+  const root = repoRoot(targetFile);
+  if (!isPythiaSyncMarkdownFile(targetFile, root)) return;
   const content = readFileSync(targetFile, 'utf8');
   const parsed = parseTrailingRefs(content);
   if (!parsed) return;
 
-  const sourceBase = sourceFile.split('/').pop();
-  const rel = docRelativePath(targetFile, sourceFile);
   const usedBy = parsed.usedBy.filter(
-    (u) => u.path !== rel && !u.path.endsWith(sourceBase),
+    (u) => !usedByLinksToConsumer([u], targetFile, sourceFile, root),
   );
   writeTrailingRefs(targetFile, { references: parsed.references, usedBy });
 }
 
-function collectMarkdownFiles(dir, acc = []) {
+const PYTHIA_SYNC_SKIP_DIRS = new Set(['runtime', 'backups', '.git', 'node_modules']);
+
+function collectMarkdownFiles(dir, acc = [], { skipDirs = PYTHIA_SYNC_SKIP_DIRS } = {}) {
   if (!existsSync(dir)) return acc;
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) {
-      if (name === 'node_modules' || name === '.git') continue;
-      collectMarkdownFiles(p, acc);
+      if (skipDirs.has(name)) continue;
+      collectMarkdownFiles(p, acc, { skipDirs });
     } else if (name.endsWith('.md')) {
       acc.push(p);
     }
@@ -293,11 +284,38 @@ function depMapKey(relPath) {
   return relPath.replace(/^\.\//, '');
 }
 
+/** Normalize body href or stored dep to a comparable repo-root-relative key. */
+function canonicalDepKey(file, hrefOrDep, root) {
+  const raw = hrefOrDep.split('#')[0].trim();
+  if (!raw) return '';
+  const abs = resolveDocLink(file, raw, root);
+  if (abs) {
+    return depMapKey(repoOrDocRelativePath(file, abs, root));
+  }
+  return depMapKey(raw);
+}
+
+function buildBodyDepKeys(file, content, root) {
+  const keys = new Set();
+  for (const link of extractRelativeLinks(getBodyContent(content), { skipFenced: true })) {
+    keys.add(canonicalDepKey(file, link.href, root));
+  }
+  return keys;
+}
+
+function isDepCitedInBody(file, dep, bodyDepKeys, root) {
+  return bodyDepKeys.has(canonicalDepKey(file, dep, root));
+}
+
 function tryAddSyncDep(map, file, depPath, root) {
   const raw = depPath.split('#')[0].trim();
   if (!raw || /^https?:\/\//.test(raw)) return;
 
-  const abs = resolveDocLink(file, raw) ?? (existsSync(resolve(root, raw)) ? resolve(root, raw) : null);
+  let abs = resolveDocLink(file, raw, root);
+  if (abs && !existsSync(abs)) abs = null;
+  if (!abs && !raw.startsWith('/') && existsSync(resolve(root, raw))) {
+    abs = resolve(root, raw);
+  }
   if (abs) {
     try {
       if (statSync(abs).isDirectory()) return;
@@ -306,7 +324,7 @@ function tryAddSyncDep(map, file, depPath, root) {
     }
     if (samePath(abs, file)) return;
     if (!isUnderRoot(abs, root)) return;
-    const rel = docRelativePath(file, abs);
+    const rel = repoOrDocRelativePath(file, abs, root);
     map.set(depMapKey(rel), rel);
     return;
   }
@@ -333,8 +351,13 @@ function collectSyncDeps(file, root, { oldRefs, manualEntries }) {
 }
 
 export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverride } = {}) {
-  let content = readFileSync(file, 'utf8');
   const root = rootOverride ?? repoRoot(file);
+  if (!isPythiaSyncMarkdownFile(file, root)) {
+    console.error(`sync: skipped — not .pythia markdown (runtime excluded): ${workflowRelPath(file, root)}`);
+    return 2;
+  }
+
+  let content = readFileSync(file, 'utf8');
   const fm = extractFrontmatter(content);
   const manualEntries = fm ? parseInputs(fm) : null;
 
@@ -344,10 +367,10 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
   );
   const preservedUsedBy = oldRefs?.usedBy ?? [];
 
-  const bodyDeps = deriveDeps(file, { scope: 'body', root });
   const allDeps = collectSyncDeps(file, root, { oldRefs, manualEntries });
+  const bodyDepKeys = buildBodyDepKeys(file, content, root);
 
-  let bodyContent = removeBodyDuplicateListItems(file, getBodyContent(content), bodyDeps);
+  let bodyContent = removeBodyDuplicateListItems(file, getBodyContent(content), allDeps, root);
   bodyContent = bodyContent.replace(/\n+$/, '');
 
   const sourceBase = file.split('/').pop();
@@ -358,14 +381,14 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
     if (!newDepKeys.has(oldKey)) {
       const oldDep = (oldRefs?.references ?? []).find((r) => depMapKey(r.path) === oldKey)?.path;
       if (oldDep) {
-        const targetAbs = resolveDocLink(file, oldDep);
+        const targetAbs = resolveDocLink(file, oldDep, root);
         if (targetAbs) removeUsedByBacklink(targetAbs, file);
       }
     }
   }
 
   for (const dep of allDeps) {
-    const targetAbs = resolveDocLink(file, dep);
+    const targetAbs = resolveDocLink(file, dep, root);
     if (targetAbs) addUsedByBacklink(targetAbs, file, sourceBase);
   }
 
@@ -374,28 +397,40 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
   const changedPaths = [];
 
   for (const dep of allDeps) {
-    const abs = resolveDocLink(file, dep);
-    let hash = null;
-    if (abs && existsSync(abs)) {
-      hash = hashFile(abs);
-      const oldHash = oldHashByPath.get(depMapKey(dep));
-      if (oldHash && oldHash !== hash) {
-        changed++;
-        changedPaths.push(dep);
-      } else if (!oldHash) {
-        changed++;
-        changedPaths.push(dep);
-      }
-    } else {
-      console.warn(`sync: missing target ${dep}`);
-      hash = oldHashByPath.get(depMapKey(dep)) ?? '00000';
-    }
+    const abs = resolveDocLink(file, dep, root);
     const text = dep.split('/').pop().replace(/\.md$/, '');
-    references.push({ kind: kindForPath(dep), text, path: dep, hash });
+    const kindTarget = abs ?? resolveDocLink(file, dep, root);
+    const kind = kindForPath(dep, { targetAbs: kindTarget ?? undefined, root });
+    if (!abs || !existsSync(abs)) {
+      console.warn(`sync: missing target ${dep}`);
+      const oldRef = (oldRefs?.references ?? []).find((r) => depMapKey(r.path) === depMapKey(dep));
+      if (isDepCitedInBody(file, dep, bodyDepKeys, root)) {
+        references.push({
+          kind,
+          text,
+          path: dep,
+          hash: oldRef?.hash ?? null,
+        });
+      }
+      continue;
+    }
+    let hash = hashFile(abs);
+    const oldHash = oldHashByPath.get(depMapKey(dep));
+    if (oldHash && oldHash !== hash) {
+      changed++;
+      changedPaths.push(dep);
+    } else if (!oldHash) {
+      changed++;
+      changedPaths.push(dep);
+    }
+    references.push({ kind, text, path: dep, hash });
   }
 
   const regionStr = renderTrailingRegion({ references, usedBy: preservedUsedBy });
-  writeFileSync(file, bodyContent ? `${bodyContent}\n\n${regionStr}` : regionStr, 'utf8');
+  const out = regionStr
+    ? (bodyContent ? `${bodyContent}\n\n${regionStr}` : regionStr)
+    : bodyContent;
+  writeFileSync(file, out, 'utf8');
 
   if (manualEntries?.length) {
     stripFrontmatterInputs(file);
@@ -438,7 +473,8 @@ function checkLegacyFrontmatter(file, fm, { verbose = false } = {}) {
   return { status: stale || invalid ? 'fail' : 'ok', stale, invalid };
 }
 
-function checkOneFile(file, { verbose = false } = {}) {
+function checkOneFile(file, { verbose = false, root: rootOverride } = {}) {
+  const root = rootOverride ?? repoRoot(file);
   const content = readFileSync(file, 'utf8');
   const parsed = parseTrailingRefs(content);
 
@@ -455,7 +491,7 @@ function checkOneFile(file, { verbose = false } = {}) {
   let invalid = 0;
 
   for (const ref of parsed.references) {
-    const abs = resolveDocLink(file, ref.path);
+    const abs = resolveDocLink(file, ref.path, root);
     if (!abs || !existsSync(abs)) {
       console.log(`! ${ref.path} — MISSING`);
       invalid++;
@@ -478,7 +514,7 @@ function checkOneFile(file, { verbose = false } = {}) {
   return { status: stale || invalid ? 'fail' : 'ok', stale, invalid };
 }
 
-export function cmdCheck(file, { all = false, glob = '.pythia/workflows' } = {}) {
+export function cmdCheck(file, { all = false, glob = '.pythia' } = {}) {
   if (all) return cmdCheckAll(glob);
 
   const result = checkOneFile(file, { verbose: true });
@@ -491,10 +527,12 @@ export function cmdCheck(file, { all = false, glob = '.pythia/workflows' } = {})
   return 0;
 }
 
-export function cmdCheckAll(globPath = '.pythia/workflows') {
+export function cmdCheckAll(globPath = '.pythia') {
   const root = repoRoot();
   const searchRoot = resolve(root, globPath);
-  const files = collectMarkdownFiles(searchRoot);
+  const files = collectMarkdownFiles(searchRoot).filter((abs) =>
+    isPythiaSyncMarkdownRelPath(relative(root, abs).replace(/\\/g, '/')),
+  );
   let totalStale = 0;
   let staleFiles = 0;
 
@@ -526,19 +564,21 @@ export function cmdRdeps(file) {
   const cached = parseTrailingRefs(readFileSync(file, 'utf8'));
   if (cached?.usedBy) {
     for (const u of cached.usedBy) {
-      const docPath = resolveDocLink(file, u.path);
+      const docPath = resolveDocLink(file, u.path, root);
       if (!docPath || !existsSync(docPath)) continue;
       const rel = relative(root, docPath);
       dependents.set(rel, { path: rel, source: 'cache' });
     }
   }
 
-  const allMd = collectMarkdownFiles(resolve(root, '.pythia'));
+  const allMd = collectMarkdownFiles(resolve(root, '.pythia')).filter((abs) =>
+    isPythiaSyncMarkdownRelPath(relative(root, abs).replace(/\\/g, '/')),
+  );
   for (const doc of allMd) {
     const parsed = parseTrailingRefs(readFileSync(doc, 'utf8'));
     if (!parsed) continue;
     for (const ref of parsed.references) {
-      const abs = resolveDocLink(doc, ref.path);
+      const abs = resolveDocLink(doc, ref.path, root);
       if (abs && samePath(abs, targetAbs)) {
         dependents.set(relative(root, doc), {
           path: relative(root, doc),
@@ -560,7 +600,7 @@ export function cmdRdeps(file) {
     if (!existsSync(docPath)) continue;
     const parsed = parseTrailingRefs(readFileSync(docPath, 'utf8'));
     const ref = parsed?.references.find((r) => {
-      const abs = resolveDocLink(docPath, r.path);
+      const abs = resolveDocLink(docPath, r.path, root);
       return abs && samePath(abs, targetAbs);
     });
     const stored = ref?.hash ?? info.storedHash;
@@ -643,7 +683,7 @@ function main() {
   if (cmd === 'check' && args[1] === '--all') {
     const root = repoRoot();
     process.chdir(root);
-    process.exit(cmdCheckAll(args[2] ?? '.pythia/workflows'));
+    process.exit(cmdCheckAll(args[2] ?? '.pythia'));
   }
 
   const file = args[1];
@@ -672,43 +712,59 @@ function main() {
  * Workspace migration: legacy frontmatter `inputs:` → ## References via sync.
  * Idempotent — skips docs that already have ## References and no legacy inputs.
  */
-export function migrateWorkflowInputs(targetRoot, { dryRun = false, globRoot = '.pythia/workflows' } = {}) {
-  const workflowsDir = resolve(targetRoot, globRoot);
-  if (!existsSync(workflowsDir)) {
-    return { status: 'skipped', reason: 'workflows dir missing', changedPaths: [] };
+export function migrateWorkflowInputs(targetRoot, { dryRun = false, globRoot = '.pythia' } = {}) {
+  const pythiaDir = resolve(targetRoot, globRoot);
+  if (!existsSync(pythiaDir)) {
+    return { status: 'skipped', reason: 'pythia dir missing', changedPaths: [] };
   }
 
-  const files = collectMarkdownFiles(workflowsDir);
+  const files = collectMarkdownFiles(pythiaDir).filter((abs) =>
+    isPythiaSyncMarkdownRelPath(relative(targetRoot, abs).replace(/\\/g, '/')),
+  );
   const changedPaths = [];
   let touched = 0;
+  const maxPasses = 5;
 
-  for (const abs of files) {
-    const rel = relative(targetRoot, abs);
-    const content = readFileSync(abs, 'utf8');
-    const fm = extractFrontmatter(content);
-    const legacyInputs = fm ? parseInputs(fm) : null;
-    const hasLegacy = Boolean(legacyInputs?.length);
-    const parsed = parseTrailingRefs(content);
-    const bodyLinks = extractRelativeLinks(getBodyContent(content), { skipFenced: true });
+  for (let pass = 0; pass < maxPasses; pass++) {
+    let passChanged = 0;
+    for (const abs of files) {
+      const content = readFileSync(abs, 'utf8');
+      const fm = extractFrontmatter(content);
+      const legacyInputs = fm ? parseInputs(fm) : null;
+      const hasLegacy = Boolean(legacyInputs?.length);
+      const parsed = parseTrailingRefs(content);
+      const bodyLinks = extractRelativeLinks(getBodyContent(content), { skipFenced: true });
+      const emptyShell =
+        parsed
+        && parsed.references.length === 0
+        && parsed.usedBy.length === 0
+        && content.includes('## References');
+      const hasRefs = Boolean(parsed?.references?.length);
+      const hasBodyLinks = bodyLinks.length > 0;
 
-    if (!hasLegacy) {
-      if (parsed?.references?.length) continue;
-      if (!bodyLinks.length) continue;
+      if (!hasLegacy && !emptyShell && !hasBodyLinks && !hasRefs) continue;
+
+      const rel = relative(targetRoot, abs);
+      if (dryRun) {
+        if (!changedPaths.includes(rel)) {
+          changedPaths.push(rel);
+          touched++;
+        }
+        continue;
+      }
+
+      const before = readFileSync(abs, 'utf8');
+      cmdSync(abs, { root: targetRoot });
+      const after = readFileSync(abs, 'utf8');
+      if (before !== after) {
+        passChanged++;
+        if (!changedPaths.includes(rel)) {
+          changedPaths.push(rel);
+          touched++;
+        }
+      }
     }
-
-    if (dryRun) {
-      changedPaths.push(rel);
-      touched++;
-      continue;
-    }
-
-    const before = readFileSync(abs, 'utf8');
-    cmdSync(abs, { root: targetRoot });
-    const after = readFileSync(abs, 'utf8');
-    if (before !== after) {
-      changedPaths.push(rel);
-      touched++;
-    }
+    if (!dryRun && passChanged === 0) break;
   }
 
   if (touched === 0) {

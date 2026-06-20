@@ -2,6 +2,78 @@
 
 `pythia-workspace` is an `npx`-distributable CLI that provisions and refreshes AI agent workspaces. It installs the canonical skills, generates AGENTS.md and CLAUDE.md from one instruction source, seeds a base `.pythia` structure, and materializes a version-pinned migration engine into `.pythia/runtime/`.
 
+## Layout and terminology
+
+The CLI **`target-dir`** (default: cwd) is the **project root** — the directory that *contains* `.pythia/`, not `.pythia/` itself.
+
+```
+~/my-app/                      ← PROJECT ROOT (CLI target-dir)
+├── package.json               ← your project
+├── skills/                    ← project-level assets (when present)
+├── AGENTS.md / CLAUDE.md      ← managed instruction files
+└── .pythia/                   ← PYTHIA WORKSPACE
+    ├── manifest.json          ← workspace registration + migration state
+    ├── package.json           ← runtime registration (frameworkVersion; npm --prefix .pythia)
+    ├── config/settings.md     ← user config (seed-if-missing)
+    ├── config/paths.md        ← checker / post-hook routing
+    ├── runtime/inputs.js      ← freshness sync/check (materialized by update)
+    └── workflows/             ← feature artifacts (sync zone for ## References)
+        └── features/feat-…/
+            ├── plans/*.plan.md
+            ├── contexts/*.context.md
+            └── reports/*.review.md · …
+```
+
+| Term | Path | Role |
+|---|---|---|
+| **Project root** | `target-dir` / parent of `.pythia/` | Host repo: your code, skills surfaces, managed AGENTS/CLAUDE |
+| **Pythia workspace** | `.pythia/` | Workflow state, config, runtime, migrations |
+| **Sync zone** | `.pythia/**/*.md` minus `runtime/`, `config/`, `backups/`, `README.md` | Markdown that gets `## References` / `## Used by` via `inputs.js sync` |
+
+### Git vs path resolution
+
+Git is **VCS / backup only**. It does **not** define where workflow links resolve.
+
+| Layer | Path | When (`gitStrategy`) |
+|---|---|---|
+| **Project git** | `{project-root}/.git` | `shared` — `.pythia/` tracked in the project repo |
+| **Pythia git** | `{project-root}/.pythia/.git` | `pythia` (default) — separate local repo for `.pythia/` only |
+| **None** | — | `ignore` — CLI does not run `git init` |
+
+`inputs.js` (sync / check / rdeps) resolves link targets from the **project root**, discovered by walking up to `.pythia/manifest.json` (or legacy `version.json`, or `.pythia/package.json`). No `git rev-parse`.
+
+Example: a plan under `.pythia/workflows/…/plans/` links to `skills/plan/SKILL.md` → resolved as `{project-root}/skills/plan/SKILL.md`.
+
+Post-save hook (see `config/paths.md` → Post-commands) runs `.pythia/runtime/inputs.js sync` on edited sync-zone markdown.
+
+### Two root finders in runtime (known divergence)
+
+Not all runtime scripts use the same anchor. Today:
+
+| Module | Root discovery | Used for |
+|---|---|---|
+| `repo-root.js` → `projectRoot()` | Walk up to `.pythia/manifest.json` (or `version.json` / `.pythia/package.json`) | `inputs.js`, `cross-refs.js`, `pythia health` |
+| `event.js` → `repoRoot(event)` | Walk up to first `.git` from `event.cwd` | `post.js` / `pre.js` hook routing (`loadZones`, edited-path resolution) |
+
+In the common case — project git at `{project-root}/.git` — both resolve to the same directory. They can **diverge** when git lives above the pythia project (monorepo: git root = repo root, `.pythia/` lives in a subfolder): hooks treat the git toplevel as cwd root; inputs treat the **manifest parent** as project root.
+
+Hooks stay git-based for historical host compatibility (`event.cwd`, Claude `CLAUDE_PROJECT_DIR`). Unifying on manifest-based `projectRoot()` is a future cleanup, not required for 0.3.6.
+
+### `inputs.js check --all`
+
+Batch freshness pass over the sync zone (default tree: `.pythia/`):
+
+1. Walk all sync-eligible `.pythia/**/*.md`
+2. For each file with `## References`, compare stored hash per ref to the current content of the target file
+3. Exit `0` if all fresh; exit `1` if any **STALE** (target changed) or **MISSING** / invalid ref
+
+Does not modify files — read-only audit. Used by:
+
+- **`pythia health`** (`inputs.check-all`) — smoke after install/update: runtime + project-root anchor + full-tree freshness
+- **`update`** — prints the same inputs health block at the end (`[update] health (inputs): …`)
+
+Single-file check: `node .pythia/runtime/inputs.js check path/to/doc.md`.
+
 ## Commands
 
 ```bash
@@ -27,7 +99,7 @@ npx pythia-workspace uninstall [target-dir] # remove managed surfaces and runtim
 
 `version` reads `.pythia/manifest.json` and prints framework version, migrated version, surfaces, installed skill count, pending migration status, and npm registry status (`registry:` line). When `registryCheck.checkedAt` is older than 24 hours (or missing), it runs `npm view pythia-workspace version` and stores the result in `manifest.registryCheck`. Exits `1` when no workspace manifest is found. Writes only `registryCheck` when refreshing stale cache.
 
-`health` verifies a workspace has the minimum expected layout: valid manifest fields, protected `.pythia/config/*` seeds, materialized runtime essentials, installed skill surfaces, host hook wiring for enabled surfaces, and managed instruction files. Also checks `findUnresolvedMixedStates` (fail), `paths.md` Workflow docs invariants (warn, same rules as `migrate:verify`), and missing runtime checkers (warn). Pending `migratedVersion` behind `frameworkVersion` is **warn**. Exits `0` when no fail-level checks remain, `1` otherwise. Use `--json` for machine-readable output. Default target is cwd (omit `[target-dir]`).
+`health` verifies a workspace has the minimum expected layout: valid manifest fields, protected `.pythia/config/*` seeds, materialized runtime essentials, installed skill surfaces, host hook wiring for enabled surfaces, and managed instruction files. Also checks `findUnresolvedMixedStates` (fail), `paths.md` Workflow docs invariants (warn, same rules as `migrate:verify`), missing runtime checkers (warn), and **inputs runtime** (`inputs.project-root` — manifest anchor; `inputs.check-all` — `inputs.js check --all` over the sync zone). Pending `migratedVersion` behind `frameworkVersion` is **warn**. Exits `0` when no fail-level checks remain, `1` otherwise. Use `--json` for machine-readable output. Default target is cwd (omit `[target-dir]`).
 
 `uninstall` accepts:
 
@@ -64,6 +136,7 @@ Same lifecycle refresh as `init` (steps 2–10), plus:
 3. Prunes removed package skills (only entries in `installedSkills`)
 4. Warns when workspace `paths.md` references checkers missing from `.pythia/runtime/checks/`
 5. Refreshes `manifest.registryCheck` via npm (unless `--dry-run`)
+6. Prints post-update **inputs health** (`inputs.project-root`, `inputs.check-all`) — see [Layout and terminology](#layout-and-terminology)
 
 ## What `uninstall` does
 

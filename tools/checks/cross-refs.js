@@ -8,22 +8,14 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { getSectionContent, resolveLink } from '../lib/md.js';
-import { parseTrailingRefs, resolveDocLink, docRelativePath } from '../lib/refs.js';
+import { parseTrailingRefs, resolveDocLink, usedByLinksToConsumer } from '../lib/refs.js';
+import { repoRoot } from '../lib/repo-root.js';
 
 const [file] = process.argv.slice(2);
 if (!file) { console.error('Usage: node .pythia/runtime/checks/cross-refs.js <plan.md>'); process.exit(2); }
 if (!existsSync(file)) { console.error(`${file}:0: [io.missing_file] File not found`); process.exit(2); }
 
-/** @param {Array<{path:string}>} usedBy @param {string} consumerFile @param {string} fromFile */
-function usedByLinksBack(usedBy, consumerFile, fromFile) {
-  if (!usedBy?.length) return false;
-  const sourceBase = basename(consumerFile);
-  const rel = docRelativePath(fromFile, consumerFile);
-  return usedBy.some(
-    (u) => u.path === rel || basename(u.path) === sourceBase,
-  );
-}
-
+const root = repoRoot(file);
 const content = readFileSync(file, 'utf8');
 let failed = false;
 
@@ -47,7 +39,7 @@ if (contextsSection) {
       continue;
     }
 
-    if (!usedByLinksBack(usedBy, file, contextFile)) {
+    if (!usedByLinksToConsumer(usedBy, contextFile, file, root)) {
       console.error(`${file}:0: [cross-refs.missing_backlink] Context ${basename(contextFile)} ## Used by does not reference this plan (${basename(file)})`);
       failed = true;
     }
@@ -58,13 +50,17 @@ const parsed = parseTrailingRefs(content);
 if (parsed?.references?.length) {
   const sourceBase = basename(file);
   for (const ref of parsed.references) {
-    const targetFile = resolveDocLink(file, ref.path);
-    if (!targetFile || !existsSync(targetFile)) continue;
+    const targetFile = resolveDocLink(file, ref.path, root);
+    if (!targetFile || !existsSync(targetFile)) {
+      console.error(`${file}:0: [cross-refs.missing_ref_target] ## References target missing: ${ref.path}`);
+      failed = true;
+      continue;
+    }
 
     const targetContent = readFileSync(targetFile, 'utf8');
     const targetParsed = parseTrailingRefs(targetContent);
     const usedBy = targetParsed?.usedBy ?? [];
-    if (!usedByLinksBack(usedBy, file, targetFile)) {
+    if (!usedByLinksToConsumer(usedBy, targetFile, file, root)) {
       console.error(`${file}:0: [cross-refs.missing_used_by_ref] Target ${basename(targetFile)} ## Used by does not reference ${sourceBase} (from ## References)`);
       failed = true;
     }

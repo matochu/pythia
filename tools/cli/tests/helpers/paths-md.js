@@ -18,16 +18,8 @@ export function hasHooksHardeningPaths(content) {
   return content.includes('role-boundary.js') && content.includes('*.context.md');
 }
 
-/** Post-commands zone lists inputs.js sync for all workflow doc globs. */
+/** Post-commands zone lists inputs.js sync (catch-all *.md; scope filtered in post.js). */
 export function hasInputsFreshnessPostCommands(content) {
   if (!content.includes('## Post-commands')) return false;
-  const globs = [
-    '*.plan.md',
-    '*.context.md',
-    '*.review.md',
-    '*.implementation.md',
-    '*.audit.md',
-    'feat-*.md',
-  ];
-  return globs.every((g) => content.includes(`${g}  command:`));
+  return content.includes('*.md  command: .pythia/runtime/inputs.js sync');
 }
