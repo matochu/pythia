@@ -15,6 +15,14 @@ function makeOpts(target, dryRun = false) {
   return { target, dryRun, packageRoot };
 }
 
+function latestManagedOverwriteBackup(target, relpath) {
+  const dir = join(target, '.pythia/backups/managed-overwrites');
+  if (!existsSync(dir)) return null;
+  const prefix = `${relpath.replace(/\//g, '--')}.`;
+  const hit = readdirSync(dir).filter((n) => n.startsWith(prefix)).sort().at(-1);
+  return hit ? join(dir, hit) : null;
+}
+
 function latestShippedMigrationVersion(root = packageRoot) {
   const versions = readdirSync(join(root, 'assets/migrations'))
     .map((f) => f.match(/^(\d+\.\d+\.\d+)\.md$/)?.[1])
@@ -265,26 +273,29 @@ describe('update', () => {
     await doUpdate(makeOpts(tmpDir));
     const after = readFileSync(join(tmpDir, 'AGENTS.md'), 'utf8');
     expect(after).toBe(before);
-    expect(existsSync(join(tmpDir, 'AGENTS.md.bak'))).toBe(false);
+    expect(latestManagedOverwriteBackup(tmpDir, 'AGENTS.md')).toBeNull();
   });
 
-  it('writes .bak when AGENTS.md has been locally modified', async () => {
+  it('backs up locally modified AGENTS.md under .pythia/backups', async () => {
     await doInit(makeOpts(tmpDir));
     const original = readFileSync(join(tmpDir, 'AGENTS.md'), 'utf8');
     writeFileSync(join(tmpDir, 'AGENTS.md'), original + '\n# Local edit', 'utf8');
     await doUpdate(makeOpts(tmpDir));
-    expect(existsSync(join(tmpDir, 'AGENTS.md.bak'))).toBe(true);
-    const bak = readFileSync(join(tmpDir, 'AGENTS.md.bak'), 'utf8');
+    const backupPath = latestManagedOverwriteBackup(tmpDir, 'AGENTS.md');
+    expect(backupPath).not.toBeNull();
+    const bak = readFileSync(backupPath, 'utf8');
     expect(bak).toContain('# Local edit');
+    expect(existsSync(join(tmpDir, 'AGENTS.md.bak'))).toBe(false);
   });
 
-  it('writes .bak for first-adoption of unrecorded pre-existing file', async () => {
+  it('backs up first-adoption of unrecorded pre-existing AGENTS.md under .pythia/backups', async () => {
     await doInit(makeOpts(tmpDir));
     const manifest = JSON.parse(readFileSync(join(tmpDir, '.pythia', 'manifest.json'), 'utf8'));
     delete manifest.generated['AGENTS.md'];
     writeFileSync(join(tmpDir, '.pythia', 'manifest.json'), JSON.stringify(manifest));
     await doUpdate(makeOpts(tmpDir));
-    expect(existsSync(join(tmpDir, 'AGENTS.md.bak'))).toBe(true);
+    expect(latestManagedOverwriteBackup(tmpDir, 'AGENTS.md')).not.toBeNull();
+    expect(existsSync(join(tmpDir, 'AGENTS.md.bak'))).toBe(false);
   });
 
   it('does not clobber seed-if-missing files (config.md)', async () => {
@@ -296,13 +307,13 @@ describe('update', () => {
     expect(after).toBe(customConfig);
   });
 
-  it('dry-run writes nothing including no .bak', async () => {
+  it('dry-run writes nothing including no managed overwrite backup', async () => {
     await doInit(makeOpts(tmpDir));
     const original = readFileSync(join(tmpDir, 'AGENTS.md'), 'utf8');
     writeFileSync(join(tmpDir, 'AGENTS.md'), original + '\n# Local', 'utf8');
     const beforeContent = readFileSync(join(tmpDir, 'AGENTS.md'), 'utf8');
     await doUpdate(makeOpts(tmpDir, true));
-    expect(existsSync(join(tmpDir, 'AGENTS.md.bak'))).toBe(false);
+    expect(latestManagedOverwriteBackup(tmpDir, 'AGENTS.md')).toBeNull();
     expect(readFileSync(join(tmpDir, 'AGENTS.md'), 'utf8')).toBe(beforeContent);
   });
 

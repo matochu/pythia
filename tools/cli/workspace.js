@@ -92,6 +92,18 @@ function seedIfMissing(target, relpath, content, dryRun) {
   console.log(`  seeded: ${relpath}`);
 }
 
+/** Preserve locally modified managed files under `.pythia/backups/` (never `<file>.bak` at project root). */
+function backupManagedOverwrite(target, relpath, currentContent) {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const safeRel = relpath.replace(/\//g, '--');
+  const backupRel = join('.pythia', 'backups', 'managed-overwrites', `${safeRel}.${stamp}`);
+  const backupDest = join(target, backupRel);
+  mkdirSync(dirname(backupDest), { recursive: true });
+  writeFileSync(backupDest, currentContent, 'utf8');
+  const gitignorePath = join(target, '.pythia', 'backups', '.gitignore');
+  if (!existsSync(gitignorePath)) writeFileSync(gitignorePath, '*\n', 'utf8');
+}
+
 function writeManaged(target, relpath, content, existingManifest, dryRun) {
   const dest = join(target, relpath);
   const newHash = sha256(content);
@@ -106,7 +118,7 @@ function writeManaged(target, relpath, content, existingManifest, dryRun) {
       if (dryRun) {
         console.log(`  [backup+overwrite] ${relpath} (local modifications detected)`);
       } else {
-        writeFileSync(dest + '.bak', currentContent, 'utf8');
+        backupManagedOverwrite(target, relpath, currentContent);
         writeFileSync(dest, content, 'utf8');
         console.log(`  backed up and refreshed: ${relpath}`);
       }

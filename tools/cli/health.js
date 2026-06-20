@@ -181,7 +181,7 @@ export function checkWorkspaceHealth(target) {
   return { ok, checks };
 }
 
-/** inputs.js path anchor + check --all smoke (project root via manifest, not git). */
+/** inputs.js path anchor + CLI smoke (project root via manifest, not git). Document freshness is `inputs check --all`, not health. */
 function checkInputsRuntime(target, checks) {
   const inputsJs = join(target, '.pythia/runtime/inputs.js');
   if (!existsSync(inputsJs)) {
@@ -208,17 +208,27 @@ function checkInputsRuntime(target, checks) {
     return;
   }
 
-  const r = spawnSync(process.execPath, [inputsJs, 'check', '--all'], {
+  const anchor = join(target, '.pythia/config/paths.md');
+  if (!existsSync(anchor)) {
+    push(checks, 'inputs.cli', 'warn', 'paths.md anchor missing — skipping inputs.js CLI smoke');
+    return;
+  }
+
+  const r = spawnSync(process.execPath, [inputsJs, 'check', anchor], {
     encoding: 'utf8',
     cwd: target,
   });
-  const detail = (r.stderr || r.stdout || '').trim().split('\n').slice(0, 8).join('; ');
-  if (r.status === 0) {
-    push(checks, 'inputs.check-all', 'ok', detail || 'all sync-eligible .pythia docs ok');
-  } else if (r.status === 2) {
-    push(checks, 'inputs.check-all', 'warn', detail || 'inputs check usage/skipped');
+  if (r.status !== 0) {
+    const detail = (r.stderr || r.stdout || '').trim().split('\n').slice(0, 3).join('; ');
+    const fallback =
+      r.status === 2
+        ? 'inputs.js check failed (usage/io error)'
+        : r.status === 1
+          ? 'inputs.js check reported stale or missing references on anchor file'
+          : `inputs.js check failed (exit ${r.status})`;
+    push(checks, 'inputs.cli', 'fail', detail || fallback);
   } else {
-    push(checks, 'inputs.check-all', 'fail', detail || `inputs check --all exit ${r.status}`);
+    push(checks, 'inputs.cli', 'ok', 'inputs.js CLI executable (manifest anchor file)');
   }
 }
 
@@ -248,16 +258,16 @@ export function doHealth({ target, json = false }) {
 }
 
 /**
- * Post-update summary: inputs anchor + check --all (always printed on update).
+ * Post-update summary: inputs runtime wiring only (not document freshness).
  * @param {string} target project root
  */
 export function printUpdateHealthReport(target) {
   const checks = [];
   checkInputsRuntime(target, checks);
-  console.log('[update] health (inputs):');
+  console.log('[update] inputs runtime:');
   for (const c of checks) {
     console.log(`  ${c.level.toUpperCase().padEnd(4)} ${c.id}: ${c.message}`);
   }
   const failed = checks.some((c) => c.level === 'fail');
-  console.log(failed ? '[update] health: FAIL — run: npx pythia-workspace health' : '[update] health: OK');
+  console.log(failed ? '[update] inputs runtime: FAIL — run: npx pythia-workspace health' : '[update] inputs runtime: OK');
 }

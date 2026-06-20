@@ -1,11 +1,11 @@
 import { readFileSync, readdirSync, statSync, cpSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join, relative, resolve, dirname } from 'node:path';
+import { join, relative, resolve, dirname, sep } from 'node:path';
 import { extractRelativeLinks } from '../../../lib/md.js';
 import { getBodyContent, parseTrailingRefs, isPythiaSyncMarkdownRelPath, resolveDocLink, repoOrDocRelativePath } from '../../../lib/refs.js';
 
-const VALID_KINDS = new Set(['feat', 'review', 'impl', 'audit', 'retro', 'research', 'ctx', 'plan', 'note', 'doc', 'code']);
+const VALID_KINDS = new Set(['feat', 'review', 'impl', 'audit', 'retro', 'research', 'ctx', 'plan', 'note', 'doc', 'code', 'skill', 'url']);
 
-const SYNC_TYPED_REF = /^- \[(feat|review|impl|audit|retro|research|ctx|plan|note|doc|code)\] \[[^\]]*\]\([^)]+\)/m;
+const SYNC_TYPED_REF = /^- \[(feat|review|impl|audit|retro|research|ctx|plan|note|doc|code|skill|url)\] \[[^\]]*\]\([^)]+\)/m;
 
 const SKIP_DIRS = new Set(['runtime', 'backups', '.git', 'node_modules']);
 
@@ -13,6 +13,7 @@ const SKIP_DIRS = new Set(['runtime', 'backups', '.git', 'node_modules']);
 function isAuditCorruptionExcludedRelPath(rel) {
   return rel.includes('/tests/')
     || rel.includes('/__tests__/')
+    || rel.includes('/fixtures/')
     || rel.endsWith('.test.js')
     || rel.endsWith('.test.ts');
 }
@@ -48,12 +49,30 @@ function absCitedTarget(wsRoot, fromRelFile, href) {
 function normalizeCitedPath(wsRoot, fromRelFile, href) {
   const clean = href.split('#')[0].trim();
   if (/^https?:\/\//.test(clean)) return clean;
-  for (const marker of ['.pythia/workflows/', '.pythia/', '.claude/skills/', 'skills/', 'tools/', 'assets/']) {
+  for (const marker of [
+    '.pythia/workflows/',
+    '.pythia/',
+    '.claude/skills/',
+    '.claude/',
+    '.agents/skills/',
+    '.agents/',
+    'skills/',
+    'tools/',
+    'assets/',
+  ]) {
     const idx = clean.lastIndexOf(marker);
     if (idx !== -1) return clean.slice(idx);
   }
   const absFile = join(wsRoot, fromRelFile);
   const absTarget = absCitedTarget(wsRoot, fromRelFile, clean);
+  if (absTarget) {
+    const wsAbs = resolve(wsRoot);
+    const targetAbs = resolve(absTarget);
+    if (targetAbs === wsAbs || targetAbs.startsWith(`${wsAbs}${sep}`)) {
+      const fromRoot = relative(wsAbs, targetAbs).replace(/\\/g, '/');
+      if (!fromRoot.startsWith('..')) return fromRoot;
+    }
+  }
   return repoOrDocRelativePath(absFile, absTarget, wsRoot);
 }
 
@@ -117,10 +136,15 @@ export function copyRealPythiaTree(sourceRoot, targetDir) {
 export function copyLinkedRepoRoot(sourceRoot, targetDir) {
   const entries = [
     'package.json',
+    'config.json',
+    '.npmignore',
     'skills',
     'tools',
     'assets',
     'scripts',
+    'docs',
+    'navigation',
+    'rules',
     'AGENTS.md',
     'CLAUDE.md',
     'README.md',
@@ -131,12 +155,13 @@ export function copyLinkedRepoRoot(sourceRoot, targetDir) {
     if (!existsSync(src)) continue;
     cpSync(src, join(targetDir, entry), { recursive: true, force: true });
   }
-  for (const nested of ['.github/workflows']) {
+  for (const nested of ['.github/workflows', '.claude']) {
     const src = join(sourceRoot, nested);
     if (!existsSync(src)) continue;
     cpSync(src, join(targetDir, nested), { recursive: true, force: true });
   }
   ensureLinkedAgentStubs(targetDir);
+  ensureLinkedScriptStubs(targetDir);
 }
 
 /** Minimal agent stubs for workflow docs that reference `.claude/agents/*.md`. */
@@ -152,12 +177,24 @@ function ensureLinkedAgentStubs(targetDir) {
   }
 }
 
-/** Empty ## References shell with no entries and no Used by. */
+/** Legacy script paths cited from pre-migration context docs. */
+function ensureLinkedScriptStubs(targetDir) {
+  const scriptsDir = join(targetDir, 'scripts');
+  mkdirSync(scriptsDir, { recursive: true });
+  for (const name of ['inputs.sh', 'validate-workflow-doc.sh']) {
+    const dest = join(scriptsDir, name);
+    if (existsSync(dest)) continue;
+    writeFileSync(dest, `#!/usr/bin/env bash\n# stub for migration audit\n`, 'utf8');
+  }
+}
+
+/** Empty ## References shell with no entries, no trail prose, and no Used by. */
 export function hasEmptyReferencesShell(content) {
   const parsed = parseTrailingRefs(content);
   if (!parsed) return false;
   if (parsed.references.length > 0) return false;
   if (parsed.usedBy.length > 0) return false;
+  if (parsed.regionTrail?.length) return false;
   return content.includes('## References');
 }
 

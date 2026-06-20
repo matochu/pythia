@@ -34,6 +34,14 @@ afterEach(() => {
   rmSync(tmpDir, { recursive: true, force: true });
 });
 
+function latestManagedOverwriteBackup(target, relpath) {
+  const dir = join(target, '.pythia/backups/managed-overwrites');
+  if (!existsSync(dir)) return null;
+  const prefix = `${relpath.replace(/\//g, '--')}.`;
+  const hit = readdirSync(dir).filter((n) => n.startsWith(prefix)).sort().at(-1);
+  return hit ? join(dir, hit) : null;
+}
+
 // ── skills installation ───────────────────────────────────────────────────────
 
 describe('update: skills', () => {
@@ -139,7 +147,7 @@ describe('update: managed file refresh', () => {
 
     await doUpdate(makeOpts(tmpDir));
 
-    expect(existsSync(join(tmpDir, 'CLAUDE.md.bak'))).toBe(false);
+    expect(latestManagedOverwriteBackup(tmpDir, 'CLAUDE.md')).toBeNull();
     const manifest = readManifest(tmpDir);
     expect(manifest.generated['CLAUDE.md']).toBe(beforeHash);
   });
@@ -152,7 +160,10 @@ describe('update: managed file refresh', () => {
 
     await doUpdate(makeOpts(tmpDir));
 
-    expect(existsSync(join(tmpDir, 'CLAUDE.md.bak'))).toBe(true);
+    const backupPath = latestManagedOverwriteBackup(tmpDir, 'CLAUDE.md');
+    expect(backupPath).not.toBeNull();
+    expect(readFileSync(backupPath, 'utf8')).toContain('# User addition');
+    expect(existsSync(join(tmpDir, 'CLAUDE.md.bak'))).toBe(false);
     // Original content restored from package
     const current = readFileSync(claudePath, 'utf8');
     expect(current).not.toContain('# User addition');

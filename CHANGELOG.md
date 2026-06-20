@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.7] - 2026-06-20
+
+### Fixed
+
+- Sync keeps plain bibliography and region prose in task/idea docs; drops missing internal paths with a stderr warning
+- `Related Documents` and similar body sections stay in the body and are not copied to the typed References footer
+- Project root for `inputs sync` / `check` / `rdeps` comes from `.pythia/manifest.json`, not `git rev-parse`
+- Repo-root paths like `skills/plan/SKILL.md` resolve from the project root before doc-relative paths
+- Post-save sync runs only on eligible `.pythia/**/*.md` (excludes runtime, config, backups, root README)
+
+### Changed
+
+- `pythia health` verifies inputs runtime + project-root anchor + CLI smoke (`inputs.cli`); document freshness stays on `inputs check --all`
+- `pythia update` backs up edited `AGENTS.md` / `CLAUDE.md` to `.pythia/backups/managed-overwrites/`
+- `pythia update` prints inputs runtime wiring summary (not full-tree freshness)
+- `cross-refs` fails when a References entry targets a missing file
+- Sync sets generated `## References` / `## Used by` labels from target `title:` / `# H1` when body link text is a filename placeholder; body markdown links are never rewritten
+- `kindForPath` covers workflow artifact types including retro and skill paths
+
+### Documentation
+
+- `docs/workspace-manager.md`: project root, workspace layout, git strategies, `inputs check --all`
+- `README.md`: link to workspace terminology
+
 ## [0.3.6] - 2026-06-20
 
 ### Features
@@ -91,7 +115,7 @@ All notable changes to this project will be documented in this file.
 - **Skill pruning no longer deletes user-authored skills** — `update` tracks which skills it installed (`installedSkills` in manifest) and only prunes those that pythia previously installed and that have since been removed from the package; custom skills are never touched
 - **`surfaces`/`gitStrategy` resolution** — `update` now reads these from the manifest when present, otherwise prompts (interactive) or applies non-interactive defaults, instead of silently guessing from disk state
 - **Consistent `gitStrategy`/`surfaces` resolution across all CLI entry points** — the explicit `init` command, the explicit `update` command, and the bare auto-detect invocation (`pythia-workspace [target-dir]`) now resolve defaults through the same code path (explicit flag → manifest → interactive prompt → non-interactive default). Previously the auto-detect path bypassed both the prompt and the documented `pythia` default, silently writing `gitStrategy: "ignore"` and skipping the `git init .pythia/.git` side effect
-- **Adoption-baseline detection now matches the relaxed migration zone** — a workspace is considered "adopted" (`migratedVersion: 0.0.0`, must run migrations) if it has *any* pre-existing content under `.pythia/`, not just `.pythia/workflows/`; this was inconsistent with the migration zone already covering all of `.pythia/`
+- **Adoption-baseline detection now matches the relaxed migration zone** — a workspace is considered "adopted" (`migratedVersion: 0.0.0`, must run migrations) if it has _any_ pre-existing content under `.pythia/`, not just `.pythia/workflows/`; this was inconsistent with the migration zone already covering all of `.pythia/`
 
 ### Breaking
 

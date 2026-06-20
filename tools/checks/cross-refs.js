@@ -7,7 +7,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
-import { getSectionContent, resolveLink } from '../lib/md.js';
+import { getSectionContent } from '../lib/md.js';
 import { parseTrailingRefs, resolveDocLink, usedByLinksToConsumer } from '../lib/refs.js';
 import { repoRoot } from '../lib/repo-root.js';
 
@@ -27,8 +27,8 @@ if (contextsSection) {
     const href = m[2].split('#')[0].trim();
     if (!href || /^https?:\/\//.test(href)) continue;
 
-    const contextFile = resolveLink(file, href);
-    if (!existsSync(contextFile)) continue;
+    const contextFile = resolveDocLink(file, href, root);
+    if (!contextFile || !existsSync(contextFile)) continue;
 
     const contextContent = readFileSync(contextFile, 'utf8');
     const targetParsed = parseTrailingRefs(contextContent);

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
-import { kindForPath, isPythiaSyncMarkdownRelPath, usedByLinksToConsumer, resolveDocLink } from './refs.js';
+import { kindForPath, isPythiaSyncMarkdownRelPath, usedByLinksToConsumer, resolveDocLink, parseTrailingRefs, isExternalBibliographyHref, normalizeBibliographyPath, defaultRefText, splitBodyAndRegion, extractBibliographyFromTrail } from './refs.js';
 import { normalizePath } from './repo-root.js';
 
 let tmpDir;
@@ -27,7 +27,20 @@ describe('kindForPath', () => {
     expect(kindForPath('a.implementation.md')).toBe('impl');
     expect(kindForPath('a.audit.md')).toBe('audit');
     expect(kindForPath('a.retro.md')).toBe('retro');
+    expect(kindForPath('feat-2026-05-bmad-adaptations.retro.md')).toBe('retro');
     expect(kindForPath('.pythia/workflows/f/notes/x.md')).toBe('note');
+  });
+
+  it('classifies skills/*/SKILL.md as skill (not doc)', () => {
+    expect(kindForPath('skills/workflow/SKILL.md')).toBe('skill');
+    expect(kindForPath('.claude/skills/plan/SKILL.md')).toBe('skill');
+    expect(kindForPath('.agents/skills/research/SKILL.md')).toBe('skill');
+  });
+
+  it('defaultRefText uses skill folder name and artifact stems', () => {
+    expect(defaultRefText('skills/workflow/SKILL.md')).toBe('workflow');
+    expect(defaultRefText('feat-2026-05-bmad-adaptations.retro.md')).toBe('feat-2026-05-bmad-adaptations');
+    expect(defaultRefText('1-cross-links.plan.md')).toBe('1-cross-links');
   });
 
   it('classifies repo paths outside .pythia as doc or code', () => {
@@ -50,6 +63,10 @@ describe('kindForPath', () => {
     const researchPath = join(tmpDir, '.pythia/workflows/f/contexts/topic-research.context.md');
     writeFileSync(researchPath, `---\ntype: research-context\n---\n# Research\n`);
     expect(kindForPath('topic-research.context.md', { targetAbs: researchPath, root: tmpDir })).toBe('research');
+  });
+
+  it('maps external https hrefs to url, not code', () => {
+    expect(kindForPath('https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f')).toBe('url');
   });
 });
 
@@ -97,6 +114,33 @@ describe('resolveDocLink', () => {
   });
 });
 
+describe('splitBodyAndRegion', () => {
+  it('uses last ## References as trailing freshness footer', () => {
+    const content = `# Doc
+
+## References
+
+Manual mid-body bibliography.
+
+- [a](./a.md)
+
+## Analysis
+
+More prose.
+
+## References
+
+- [doc] [b](./b.md#abc12)
+`;
+    const { bodyLines, references } = splitBodyAndRegion(content);
+    const body = bodyLines.join('\n');
+    expect(body).toContain('Manual mid-body bibliography');
+    expect(body).toContain('## Analysis');
+    expect(references).toHaveLength(1);
+    expect(references[0].path).toBe('./b.md');
+  });
+});
+
 describe('isPythiaSyncMarkdownRelPath', () => {
   it('includes .pythia markdown except runtime, config, backups, README', () => {
     expect(isPythiaSyncMarkdownRelPath('.pythia/workflows/a.plan.md')).toBe(true);
@@ -108,5 +152,89 @@ describe('isPythiaSyncMarkdownRelPath', () => {
     expect(isPythiaSyncMarkdownRelPath('.pythia/runtime/x.md')).toBe(false);
     expect(isPythiaSyncMarkdownRelPath('docs/x.md')).toBe(false);
     expect(isPythiaSyncMarkdownRelPath('.pythia/workflows/x.js')).toBe(false);
+  });
+});
+
+describe('parseTrailingRefs bibliography', () => {
+  it('parses plain `- [label](path)` lines and region trail prose', () => {
+    const content = `# Task
+
+## References
+
+Links to related docs.
+
+- [Workflows](../workflows/report.md)
+- [Jira](https://example.atlassian.net/browse/INT-291)
+
+---
+**Last Updated**: 2025-07-01
+`;
+    const parsed = parseTrailingRefs(content);
+    expect(parsed?.references).toHaveLength(2);
+    expect(parsed?.references?.[0]?.path).toBe('../workflows/report.md');
+    expect(parsed?.references?.[1]?.path).toBe('https://example.atlassian.net/browse/INT-291');
+    expect(parsed?.regionTrail).toContain('Links to related docs.');
+    expect(parsed?.regionTrail.some((l) => l.includes('Last Updated'))).toBe(true);
+  });
+
+  it('normalizes mdc: href prefix', () => {
+    expect(normalizeBibliographyPath('mdc:skills/plan/SKILL.md')).toBe('skills/plan/SKILL.md');
+  });
+
+  it('detects external bibliography hrefs', () => {
+    expect(isExternalBibliographyHref('https://jira.example/browse/X')).toBe(true);
+    expect(isExternalBibliographyHref('../rules/foo.md')).toBe(false);
+  });
+
+  it('parses `- Label: [title](path)` and `- Label: https://` bibliography lines', () => {
+    const content = `# Context
+
+## References
+
+- Feature research: [Comparison Criteria](../workflows/f/contexts/criteria.context.md)
+- Anthropic, "Building Effective AI Agents": https://www.anthropic.com/research/building-effective-agents
+`;
+    const parsed = parseTrailingRefs(content);
+    expect(parsed?.references).toHaveLength(2);
+    expect(parsed?.references?.[0]?.text).toBe('Comparison Criteria');
+    expect(parsed?.references?.[1]?.text).toContain('Anthropic');
+    expect(parsed?.references?.[1]?.kind).toBe('url');
+    expect(parsed?.references?.[1]?.path).toContain('anthropic.com');
+  });
+
+  it('parses plain link with em dash trailing prose', () => {
+    const { external } = extractBibliographyFromTrail([
+      '- [llmwiki](https://github.com/lucasastorian/llmwiki) — open source wiki',
+    ]);
+    expect(external).toHaveLength(1);
+    expect(external[0].text).toBe('llmwiki');
+    expect(external[0].path).toContain('github.com/lucasastorian/llmwiki');
+    expect(external[0].kind).toBe('url');
+  });
+
+  it('parses period-before-URL bibliography lines', () => {
+    const { external } = extractBibliographyFromTrail([
+      '- BMAD-METHOD repo. https://github.com/bmad-code-org/BMAD-METHOD',
+    ]);
+    expect(external).toHaveLength(1);
+    expect(external[0].text).toBe('BMAD-METHOD repo');
+    expect(external[0].path).toContain('github.com/bmad-code-org/BMAD-METHOD');
+  });
+
+  it('parses academic quoted-title URL lines', () => {
+    const { external } = extractBibliographyFromTrail([
+      '- buildmode.dev. "BMad Method in Action: Your Complete Implementation Guide (Part 2)." https://buildmode.dev/blog/mastering-bmad-method-2025/',
+    ]);
+    expect(external).toHaveLength(1);
+    expect(external[0].text).toBe('BMad Method in Action: Your Complete Implementation Guide (Part 2).');
+  });
+
+  it('parses period-before-link bibliography lines', () => {
+    const { internal } = extractBibliographyFromTrail([
+      '- Pythia comparison framework. [criteria.context.md](llm-agent-systems-comparison-criteria.context.md)',
+    ]);
+    expect(internal).toHaveLength(1);
+    expect(internal[0].text).toBe('criteria.context.md');
+    expect(internal[0].path).toBe('llm-agent-systems-comparison-criteria.context.md');
   });
 });

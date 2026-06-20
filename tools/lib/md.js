@@ -95,3 +95,30 @@ export function getSectionContent(content, header) {
   const end = lines.findIndex((l, i) => i > start && /^## /.test(l));
   return (end === -1 ? lines.slice(start + 1) : lines.slice(start + 1, end)).join('\n');
 }
+
+/**
+ * Human title for a markdown doc: frontmatter `title:` then first body `# H1`.
+ * @param {string} content
+ * @returns {string|null}
+ */
+export function markdownTitleFromContent(content) {
+  const { frontmatter, body } = parseFrontmatter(content);
+  if (frontmatter) {
+    const m = frontmatter.match(/^title:\s*(.+)$/m);
+    if (m) {
+      const raw = m[1].trim();
+      return raw.replace(/^['"]|['"]$/g, '');
+    }
+  }
+  for (const line of body.split('\n')) {
+    const m = line.match(/^#\s+(.+)$/);
+    if (m) return m[1].trim();
+  }
+  return null;
+}
+
+/** @param {string} absPath */
+export function readMarkdownTitle(absPath) {
+  if (!existsSync(absPath)) return null;
+  return markdownTitleFromContent(readFileSync(absPath, 'utf8'));
+}

@@ -67,12 +67,15 @@ Batch freshness pass over the sync zone (default tree: `.pythia/`):
 2. For each file with `## References`, compare stored hash per ref to the current content of the target file
 3. Exit `0` if all fresh; exit `1` if any **STALE** (target changed) or **MISSING** / invalid ref
 
-Does not modify files — read-only audit. Used by:
+Does not modify files — read-only audit. Run explicitly when you care about document consistency:
 
-- **`pythia health`** (`inputs.check-all`) — smoke after install/update: runtime + project-root anchor + full-tree freshness
-- **`update`** — prints the same inputs health block at the end (`[update] health (inputs): …`)
+```bash
+node .pythia/runtime/inputs.js check --all
+```
 
 Single-file check: `node .pythia/runtime/inputs.js check path/to/doc.md`.
+
+**Not** part of `pythia health` — stale or missing refs during active editing are normal; health only verifies the inputs runtime is installed and executable.
 
 ## Commands
 
@@ -99,7 +102,7 @@ npx pythia-workspace uninstall [target-dir] # remove managed surfaces and runtim
 
 `version` reads `.pythia/manifest.json` and prints framework version, migrated version, surfaces, installed skill count, pending migration status, and npm registry status (`registry:` line). When `registryCheck.checkedAt` is older than 24 hours (or missing), it runs `npm view pythia-workspace version` and stores the result in `manifest.registryCheck`. Exits `1` when no workspace manifest is found. Writes only `registryCheck` when refreshing stale cache.
 
-`health` verifies a workspace has the minimum expected layout: valid manifest fields, protected `.pythia/config/*` seeds, materialized runtime essentials, installed skill surfaces, host hook wiring for enabled surfaces, and managed instruction files. Also checks `findUnresolvedMixedStates` (fail), `paths.md` Workflow docs invariants (warn, same rules as `migrate:verify`), missing runtime checkers (warn), and **inputs runtime** (`inputs.project-root` — manifest anchor; `inputs.check-all` — `inputs.js check --all` over the sync zone). Pending `migratedVersion` behind `frameworkVersion` is **warn**. Exits `0` when no fail-level checks remain, `1` otherwise. Use `--json` for machine-readable output. Default target is cwd (omit `[target-dir]`).
+`health` verifies a workspace has the minimum expected layout: valid manifest fields, protected `.pythia/config/*` seeds, materialized runtime essentials, installed skill surfaces, host hook wiring for enabled surfaces, and managed instruction files. Also checks `findUnresolvedMixedStates` (fail), `paths.md` Workflow docs invariants (warn, same rules as `migrate:verify`), missing runtime checkers (warn), and **inputs runtime** (`inputs.project-root` — manifest anchor resolves to project root; `inputs.cli` — `inputs.js check` runs against `.pythia/config/paths.md`). Document freshness (`inputs check --all`) is intentionally **not** included — use it separately when auditing workflow docs. Pending `migratedVersion` behind `frameworkVersion` is **warn**. Exits `0` when no fail-level checks remain, `1` otherwise. Use `--json` for machine-readable output. Default target is cwd (omit `[target-dir]`).
 
 `uninstall` accepts:
 
@@ -136,7 +139,7 @@ Same lifecycle refresh as `init` (steps 2–10), plus:
 3. Prunes removed package skills (only entries in `installedSkills`)
 4. Warns when workspace `paths.md` references checkers missing from `.pythia/runtime/checks/`
 5. Refreshes `manifest.registryCheck` via npm (unless `--dry-run`)
-6. Prints post-update **inputs health** (`inputs.project-root`, `inputs.check-all`) — see [Layout and terminology](#layout-and-terminology)
+6. Prints post-update **inputs runtime** summary (`inputs.project-root`, `inputs.cli`) — see [Layout and terminology](#layout-and-terminology)
 
 ## What `uninstall` does
 

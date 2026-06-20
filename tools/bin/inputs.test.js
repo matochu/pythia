@@ -12,7 +12,7 @@ import {
   getBodyContent,
   renderTrailingRegion,
 } from '../lib/refs.js';
-import { deriveDeps, hashFile, migrateWorkflowInputs } from '../lib/inputs-core.js';
+import { deriveDeps, hashFile, isWorkflowConsumerFile, migrateWorkflowInputs } from '../lib/inputs-core.js';
 import { seedInputsFreshnessMigrationCorpus } from '../cli/tests/helpers/inputs-migration-corpus.js';
 import { TEST_FEATURE_ID, seedPythiaProjectRegistration } from '../cli/tests/helpers/workflow-paths.js';
 
@@ -76,6 +76,29 @@ describe('kindForPath', () => {
     ).toBe('doc');
     expect(kindForPath('reports/x.review.md')).toBe('review');
     expect(kindForPath('reports/x.implementation.md')).toBe('impl');
+  });
+});
+
+describe('isWorkflowConsumerFile', () => {
+  it('recognizes .pythia/workflows paths and artifact suffixes under .pythia', () => {
+    expect(isWorkflowConsumerFile(writeDoc(wf('plans/p.plan.md'), '# Plan\n'), root)).toBe(true);
+    expect(isWorkflowConsumerFile(writeDoc('.pythia/workflows/tasks/task.md', '# Task\n'), root)).toBe(true);
+    expect(isWorkflowConsumerFile(writeDoc(wf('contexts/x.context.md'), '# Context\n'), root)).toBe(true);
+  });
+
+  it('rejects /workflows/ paths outside .pythia (no false positives)', () => {
+    expect(isWorkflowConsumerFile(writeDoc('docs/workflows/guide.md', '# Guide\n'), root)).toBe(false);
+    expect(isWorkflowConsumerFile(writeDoc('src/workflows/planning/file.md', '# File\n'), root)).toBe(false);
+  });
+
+  it('rejects workflow artifact suffixes outside .pythia sync zone', () => {
+    expect(isWorkflowConsumerFile(writeDoc('docs/foo.plan.md', '# Plan\n'), root)).toBe(false);
+    expect(isWorkflowConsumerFile(writeDoc('src/reports/x.audit.md', '# Audit\n'), root)).toBe(false);
+  });
+
+  it('rejects non-sync-eligible .pythia markdown', () => {
+    expect(isWorkflowConsumerFile(writeDoc('.pythia/config/settings.md', '# Settings\n'), root)).toBe(false);
+    expect(isWorkflowConsumerFile(writeDoc('.pythia/runtime/note.md', '# Runtime\n'), root)).toBe(false);
   });
 });
 
@@ -338,7 +361,7 @@ Still cites [gone](./gone.md).
     const r = runInputs(['sync', plan]);
     expect(r.status).toBe(0);
     const out = readFileSync(plan, 'utf8');
-    expect(out).toMatch(/\[note\] \[gone\]\(\.\/gone\.md#abc12\)/);
+    expect(out).toMatch(/\[note\] \[gone\]\(.*gone\.md#abc12\)/);
   });
 
   it('preserves missing ref when body doc-relative path differs from repo-root References path', () => {
@@ -357,7 +380,26 @@ Uses [ctx](../contexts/x.context.md).
     expect(out).toContain(`${ctxRel}#abc12`);
   });
 
-  it('drops stored References entry when target is missing and no longer cited in body', () => {
+  it('dedupes doc-relative and repo-root missing deps and keeps stored hash', () => {
+    const ctxRel = `${WF}/contexts/x.context.md`;
+    const plan = writeDoc(wf('plans/plan.plan.md'), `# Plan
+
+Uses [ctx](../contexts/x.context.md).
+
+## References
+
+- [ctx] [x](${ctxRel}#abc12)
+- [ctx] [x](../contexts/x.context.md)
+`);
+    const r = runInputs(['sync', plan]);
+    expect(r.status).toBe(0);
+    const parsed = parseTrailingRefs(readFileSync(plan, 'utf8'));
+    expect(parsed?.references).toHaveLength(1);
+    expect(parsed?.references?.[0]?.hash).toBe('abc12');
+    expect(parsed?.references?.[0]?.path).toBe(ctxRel);
+  });
+
+  it('preserves bibliography-only stored ref when target is missing and not cited in body', () => {
     const plan = writeDoc(wf('plans/plan.plan.md'), `# Plan
 
 No body link to gone.
@@ -369,7 +411,411 @@ No body link to gone.
     const r = runInputs(['sync', plan]);
     expect(r.status).toBe(0);
     const out = readFileSync(plan, 'utf8');
-    expect(out).not.toMatch(/gone\.md/);
+    expect(out).toMatch(/gone\.md#abc12/);
+  });
+
+  it('preserves plain bibliography task doc on sync (missing targets + external URLs)', () => {
+    const task = writeDoc('.pythia/workflows/tasks/task-2025-sample.md', `# Task
+
+Summary only — links live in References.
+
+## References
+
+Links to related docs.
+
+- [Workflows Status](../workflows/report.md)
+- [Commands](../commands/methodology.md)
+- [Jira Ticket](https://example.atlassian.net/browse/INT-291)
+
+---
+**Last Updated**: 2025-07-01
+`);
+    expect(runInputs(['sync', task]).status).toBe(0);
+    const out = readFileSync(task, 'utf8');
+    expect(out).toContain('## References');
+    expect(out).not.toContain('../workflows/report.md');
+    expect(out).not.toContain('../commands/methodology.md');
+    expect(out).toContain('https://example.atlassian.net/browse/INT-291');
+    expect(out).toContain('Links to related docs.');
+    expect(out).toContain('**Last Updated**: 2025-07-01');
+  });
+
+  it('task knowledge-sharing: typed refs only for resolvable paths; missing dropped', () => {
+    writeDoc('navigation/documentation-map.md', '# Documentation Map\n');
+    writeDoc('rules/llm-confluence-guidelines.md', '# Confluence Guidelines for LLM\n');
+    const fixture = readFileSync(
+      resolve('tools/fixtures/workflow-docs/task-knowledge-sharing-pre-sync.md'),
+      'utf8',
+    );
+    const task = writeDoc('.pythia/workflows/tasks/task-knowledge-sharing.md', fixture);
+    const r = runInputs(['sync', task, '--verbose']);
+    expect(r.status).toBe(0);
+    expect(`${r.stdout}${r.stderr}`).toMatch(/dropped missing target.*confluence-structure/i);
+    const out = readFileSync(task, 'utf8');
+    const parsed = parseTrailingRefs(out);
+    expect(parsed?.references?.some((ref) => ref.path.includes('documentation-map.md') && ref.hash)).toBe(true);
+    expect(parsed?.references?.some((ref) => ref.path.includes('llm-confluence-guidelines.md') && ref.hash)).toBe(true);
+    expect(parsed?.references?.some((ref) => ref.path.includes('confluence-structure'))).toBe(false);
+    expect(out).toContain('## Related Documents');
+    expect(out).toContain('documentation-standards.md');
+    expect(out).not.toMatch(/## References[\s\S]*documentation-standards\.md#?/);
+  });
+
+  it('preserves stored hash for missing target on task doc under .pythia/workflows/tasks', () => {
+    const task = writeDoc('.pythia/workflows/tasks/task-stale-ref.md', `# Task
+
+Body cites [gone](../navigation/gone.md).
+
+## References
+
+- [doc] [gone](../navigation/gone.md#abc12)
+`);
+    expect(runInputs(['sync', task]).status).toBe(0);
+    const out = readFileSync(task, 'utf8');
+    expect(out).toMatch(/navigation\/gone\.md#abc12/);
+  });
+
+  it('Related Documents bibliography does not become typed References footer', () => {
+    writeDoc('navigation/documentation-standards.md', '# Documentation Standards\n');
+    const task = writeDoc('.pythia/workflows/tasks/task-wiped-footer.md', `# Task
+
+## Related Documents
+
+- [Documentation Standards](../navigation/documentation-standards.md)
+`);
+    expect(runInputs(['sync', task]).status).toBe(0);
+    const out = readFileSync(task, 'utf8');
+    expect(out).toContain('[Documentation Standards](../navigation/documentation-standards.md)');
+    expect(out).not.toContain('## References');
+  });
+
+  it('preserves legacy frontmatter hash for missing script target on sync', () => {
+    const ctx = writeDoc(wf('contexts/deep.context.md'), `---
+inputs:
+  - scripts/inputs.sh:ca69a910
+---
+# Context
+
+No body links.
+`);
+    expect(runInputs(['sync', ctx]).status).toBe(0);
+    const out = readFileSync(ctx, 'utf8');
+    expect(out).toMatch(/scripts\/inputs\.sh#ca69a910/);
+    expect(out).not.toContain('inputs:');
+  });
+
+  it('sync is quiet by default; --verbose prints per-file summary', () => {
+    writeDoc(wf('contexts/ctx.context.md'), '# Context\n');
+    const plan = writeDoc(wf('plans/p.plan.md'), '# Plan\n\nSee [ctx](../contexts/ctx.context.md).\n');
+    const quiet = runInputs(['sync', plan]);
+    expect(quiet.status).toBe(0);
+    expect(`${quiet.stdout}${quiet.stderr}`).not.toMatch(/^sync:/m);
+
+    writeFileSync(plan, readFileSync(plan, 'utf8').replace('# Plan', '# Plan updated'));
+    const loud = runInputs(['sync', plan, '--verbose']);
+    expect(loud.status).toBe(0);
+    expect(`${loud.stdout}${loud.stderr}`).toMatch(/^sync: \d+ deps/m);
+  });
+
+  it('uses body link text instead of filename stem in References', () => {
+    writeDoc(wf('contexts/ctx.context.md'), '# Context\n');
+    const plan = writeDoc(wf('plans/p.plan.md'), '# Plan\n\nSee [Workflow Restructure](../contexts/ctx.context.md).\n');
+    runInputs(['sync', plan]);
+    const parsed = parseTrailingRefs(readFileSync(plan, 'utf8'));
+    expect(parsed?.references?.some((r) => r.text === 'Workflow Restructure')).toBe(true);
+  });
+
+  it('audit report: path-as-link-text in body preserved; References use target H1', () => {
+    writeDoc(
+      wf('plans/1-inputs-dep-tracking.plan.md'),
+      '# Plan 1-inputs-dep-tracking: Inputs Dependency Tracking for Markdown Files\n',
+    );
+    writeDoc(
+      wf('reports/1-inputs-dep-tracking.implementation.md'),
+      '# Implementation Report: 1-inputs-dep-tracking\n',
+    );
+    const audit = writeDoc(wf('reports/1-inputs-dep-tracking.audit.md'), `# Architect Audit: 1-inputs-dep-tracking
+
+Plan: [plans/1-inputs-dep-tracking.plan.md](../plans/1-inputs-dep-tracking.plan.md)
+Implementation: [reports/1-inputs-dep-tracking.implementation.md](./1-inputs-dep-tracking.implementation.md)
+
+## Conformance
+
+Partial conformance notes.
+`);
+    runInputs(['sync', audit]);
+    const out = readFileSync(audit, 'utf8');
+    expect(out).toMatch(
+      /\[plan\] \[Plan 1-inputs-dep-tracking: Inputs Dependency Tracking for Markdown Files\]/,
+    );
+    expect(out).toMatch(/\[impl\] \[Implementation Report: 1-inputs-dep-tracking\]/);
+    const body = getBodyContent(out);
+    expect(body).toContain('[plans/1-inputs-dep-tracking.plan.md](../plans/1-inputs-dep-tracking.plan.md)');
+    expect(body).toContain('[reports/1-inputs-dep-tracking.implementation.md](./1-inputs-dep-tracking.implementation.md)');
+    expect(body).not.toContain('[Plan 1-inputs-dep-tracking: Inputs Dependency Tracking for Markdown Files](../plans/');
+  });
+
+  it('does not rewrite filename placeholder labels in body on sync', () => {
+    writeDoc(
+      wf('contexts/lifecycle-process-inventory-and-config-brainstorm.context.md'),
+      '# Lifecycle Process Inventory and Config Brainstorm\n',
+    );
+    const plan = writeDoc(wf('plans/p.plan.md'), `# Plan
+
+- [lifecycle-process-inventory-and-config-brainstorm.context.md](../contexts/lifecycle-process-inventory-and-config-brainstorm.context.md) — consulted for process inventory.
+`);
+    runInputs(['sync', plan]);
+    const body = getBodyContent(readFileSync(plan, 'utf8'));
+    expect(body).toContain('[lifecycle-process-inventory-and-config-brainstorm.context.md](../contexts/lifecycle-process-inventory-and-config-brainstorm.context.md)');
+    const parsed = parseTrailingRefs(readFileSync(plan, 'utf8'));
+    expect(parsed?.references?.some((r) => r.text === 'Lifecycle Process Inventory and Config Brainstorm')).toBe(true);
+  });
+
+  it('legacy frontmatter migration uses target H1 titles, not path stems', () => {
+    writeDoc(
+      wf('plans/1-inputs-dep-tracking.plan.md'),
+      '# Plan 1-inputs-dep-tracking: Inputs Dependency Tracking for Markdown Files\n',
+    );
+    writeDoc(
+      wf('reports/1-inputs-dep-tracking.implementation.md'),
+      '# Implementation Report: 1-inputs-dep-tracking\n',
+    );
+    const planHash = hashFile(join(root, wf('plans/1-inputs-dep-tracking.plan.md')));
+    const implHash = hashFile(join(root, wf('reports/1-inputs-dep-tracking.implementation.md')));
+    const audit = writeDoc(wf('reports/1-inputs-dep-tracking.audit.md'), `---
+inputs:
+  - ${WF}/plans/1-inputs-dep-tracking.plan.md:${planHash}
+  - ${WF}/reports/1-inputs-dep-tracking.implementation.md:${implHash}
+---
+# Architect Audit: 1-inputs-dep-tracking
+
+No body links.
+`);
+    runInputs(['sync', audit]);
+    const parsed = parseTrailingRefs(readFileSync(audit, 'utf8'));
+    expect(parsed?.references?.some((r) => r.text.includes('Plan 1-inputs-dep-tracking: Inputs Dependency Tracking'))).toBe(true);
+    expect(parsed?.references?.some((r) => r.text === 'Implementation Report: 1-inputs-dep-tracking')).toBe(true);
+    expect(parsed?.references?.every((r) => !/^plans\//.test(r.text) && !/^reports\//.test(r.text))).toBe(true);
+  });
+
+  it('preserves external URLs from period and academic bibliography on sync', () => {
+    const ctx = writeDoc(wf('contexts/bmad-method-deep-dive.context.md'), `# BMAD-METHOD Deep-Dive
+
+## References
+
+- BMAD-METHOD repo. https://github.com/bmad-code-org/BMAD-METHOD
+- buildmode.dev. "BMad Method in Action." https://buildmode.dev/blog/mastering-bmad-method-2025/
+- [llmwiki](https://github.com/lucasastorian/llmwiki) — open source wiki
+`);
+    runInputs(['sync', ctx]);
+    const out = readFileSync(ctx, 'utf8');
+    expect(out).toMatch(/\[url\] \[BMAD-METHOD repo\]\(https:\/\/github\.com\/bmad-code-org\/BMAD-METHOD\)/);
+    expect(out).toMatch(/\[url\] \[BMad Method in Action\.\]\(https:\/\/buildmode\.dev\//);
+    expect(out).toMatch(/\[url\] \[llmwiki\]\(https:\/\/github\.com\/lucasastorian\/llmwiki\)/);
+  });
+
+  it('References use target title when body link label is filename placeholder', () => {
+    writeDoc(
+      wf('contexts/skill-architecture-and-language-settings.context.md'),
+      '---\ntitle: Skill Architecture and Language Settings Research\n---\n\n# Skill Architecture and Language Settings Research\n',
+    );
+    writeDoc(
+      wf('contexts/skill-config-overrides-research.context.md'),
+      '# Skill Config Overrides Research\n',
+    );
+    const research = writeDoc(wf('contexts/mattpocock.context.md'), `# Research
+
+## Pre-Search Summary
+
+Prior work:
+
+- [skill-architecture-and-language-settings.context.md](./skill-architecture-and-language-settings.context.md)
+- [skill-config-overrides-research.context.md](./skill-config-overrides-research.context.md)
+`);
+    runInputs(['sync', research]);
+    const body = getBodyContent(readFileSync(research, 'utf8'));
+    expect(body).toContain('[skill-architecture-and-language-settings.context.md](./skill-architecture-and-language-settings.context.md)');
+    expect(body).toContain('[skill-config-overrides-research.context.md](./skill-config-overrides-research.context.md)');
+    const parsed = parseTrailingRefs(readFileSync(research, 'utf8'));
+    expect(parsed?.references?.some((r) => r.text === 'Skill Architecture and Language Settings Research')).toBe(true);
+    expect(parsed?.references?.some((r) => r.text === 'Skill Config Overrides Research')).toBe(true);
+  });
+
+  it('classifies skills with folder label, not SKILL filename', () => {
+    mkdirSync(join(root, 'skills/workflow'), { recursive: true });
+    writeFileSync(join(root, 'skills/workflow/SKILL.md'), '# Workflow\n');
+    const plan = writeDoc(wf('plans/p.plan.md'), '# Plan\n\nSee [workflow](../../../../../skills/workflow/SKILL.md).\n');
+    runInputs(['sync', plan]);
+    const out = readFileSync(plan, 'utf8');
+    expect(out).toMatch(/\[skill\] \[workflow\]\(skills\/workflow\/SKILL\.md#/);
+  });
+
+  it('reclassifies feat-*.retro.md as retro on sync', () => {
+    const retroRel = `${WF}/notes/feat-test.retro.md`;
+    writeDoc(retroRel, '# Retro\n');
+    const plan = writeDoc(wf('plans/p.plan.md'), `# Plan
+
+## References
+
+- [feat] [feat-test](${retroRel}#abc12)
+`);
+    runInputs(['sync', plan]);
+    const out = readFileSync(plan, 'utf8');
+    expect(out).toMatch(/\[retro\] \[feat-test\]/);
+  });
+
+  it('preserves plan ## Contexts bibliography when same deps appear in References', () => {
+    writeDoc(wf('contexts/a.context.md'), '# Context\n');
+    const ctxHash = hashFile(join(root, wf('contexts/a.context.md')));
+    const plan = writeDoc(wf('plans/p.plan.md'), `# Plan
+
+## Contexts
+
+- [Workflow Restructure](../contexts/a.context.md)
+
+## References
+
+- [ctx] [a](../contexts/a.context.md#${ctxHash})
+`);
+    runInputs(['sync', plan]);
+    const body = getBodyContent(readFileSync(plan, 'utf8'));
+    expect(body).toContain('[Workflow Restructure](../contexts/a.context.md)');
+  });
+
+  it('preserves research Pre-Search Summary link lists (mattpocock fixture)', () => {
+    const featId = 'feat-2026-05-skill-workflow-architecture-improvements';
+    const featDir = `.pythia/workflows/features/${featId}`;
+    const ctxDir = `${featDir}/contexts`;
+    writeDoc(`${ctxDir}/skill-architecture-and-language-settings.context.md`, '---\ntitle: Skill Architecture and Language Settings Research\n---\n\n# Skill Architecture and Language Settings Research\n');
+    writeDoc(`${ctxDir}/skill-config-overrides-research.context.md`, '# Skill Config Overrides Research\n');
+    const fixture = readFileSync(
+      resolve('tools/fixtures/workflow-docs/mattpocock-pre-sync.context.md'),
+      'utf8',
+    );
+    const target = writeDoc(`${ctxDir}/mattpocock-skills-project-research.context.md`, fixture);
+    expect(runInputs(['sync', target]).status).toBe(0);
+    const body = getBodyContent(readFileSync(target, 'utf8'));
+    expect(body).toContain('## Pre-Search Summary');
+    expect(body).toContain('[skill-architecture-and-language-settings.context.md](./skill-architecture-and-language-settings.context.md)');
+    expect(body).toContain('[skill-config-overrides-research.context.md](./skill-config-overrides-research.context.md)');
+  });
+
+  it('syncs legacy frontmatter-only plan into ## References', () => {
+    writeDoc(wf('feat-test.md'), '# Feature\n');
+    writeDoc(wf('contexts/a.context.md'), '# Context\n');
+    writeDoc(wf('reports/r.review.md'), '# Review\n');
+    const featHash = hashFile(join(root, wf('feat-test.md')));
+    const ctxHash = hashFile(join(root, wf('contexts/a.context.md')));
+    const reviewHash = hashFile(join(root, wf('reports/r.review.md')));
+    const plan = writeDoc(wf('plans/5-sample.plan.md'), `---
+inputs:
+  - ${WF}/feat-test.md:${featHash}
+  - ${WF}/contexts/a.context.md:${ctxHash}
+  - ${WF}/reports/r.review.md:${reviewHash}
+---
+# Plan
+
+No body dependency links.
+`);
+    expect(runInputs(['sync', plan]).status).toBe(0);
+    const out = readFileSync(plan, 'utf8');
+    expect(out).toContain('## References');
+    expect(out).not.toMatch(/^inputs:/m);
+    expect(out).toMatch(/feat-test\.md#/);
+    expect(out).toMatch(/a\.context\.md#/);
+    expect(out).toMatch(/r\.review\.md#/);
+  });
+
+  it('ctx bibliography: prose links become typed refs; external URLs kept', () => {
+    writeDoc('.pythia/ctx/pythia-workflow-mental-model.ctx.md', '# Pythia Workflow Mental Model\n');
+    writeDoc(
+      '.pythia/workflows/features/feat-2026-04-llm-wiki-integration/contexts/llm-agent-systems-comparison-criteria.context.md',
+      '# LLM Agent Systems — Comparison Criteria & Existing Taxonomies\n',
+    );
+    const ctx = writeDoc('.pythia/ctx/llm-agent-and-sdd-comparison-criteria.ctx.md', `# LLM Agent and SDD System Comparison Criteria
+
+Read with [Pythia Workflow Mental Model](pythia-workflow-mental-model.ctx.md).
+
+## References
+
+- Feature-local source research: [LLM Agent Systems — Comparison Criteria & Existing Taxonomies](../workflows/features/feat-2026-04-llm-wiki-integration/contexts/llm-agent-systems-comparison-criteria.context.md)
+- Pythia workflow mental model: [Pythia Workflow Mental Model](pythia-workflow-mental-model.ctx.md)
+- Anthropic, "Building Effective AI Agents": https://www.anthropic.com/research/building-effective-agents
+`);
+    expect(runInputs(['sync', ctx]).status).toBe(0);
+    const out = readFileSync(ctx, 'utf8');
+    expect(out).toMatch(/\[url\] \[Anthropic.*\]\(https:\/\/www\.anthropic\.com\/research\/building-effective-agents\)/);
+    expect(out).toMatch(/\[.*\] \[LLM Agent Systems — Comparison Criteria & Existing Taxonomies\]/);
+    expect(out).toMatch(/\[.*\] \[Pythia Workflow Mental Model\]/);
+    expect(out).toMatch(/pythia-workflow-mental-model\.ctx\.md#/);
+  });
+
+  it('reclassifies mistagged external refs (code → url) on sync', () => {
+    const ctx = writeDoc('.pythia/ctx/external-refs.ctx.md', `# Context
+
+## References
+
+- [code] [Karpathy's LLM Wiki gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+- [Karpathy gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+`);
+    expect(runInputs(['sync', ctx]).status).toBe(0);
+    const out = readFileSync(ctx, 'utf8');
+    expect(out).toMatch(/\[url\] \[Karpathy's LLM Wiki gist\]\(https:\/\/gist\.github\.com\/karpathy\//);
+    expect(out).not.toMatch(/\[code\].*gist\.github\.com/);
+  });
+
+  it('addUsedByBacklink preserves bibliography URLs on target', () => {
+    writeDoc('.pythia/ctx/target.ctx.md', `# Target Context
+
+## References
+
+- Anthropic, "Agents": https://www.anthropic.com/research/building-effective-agents
+`);
+    writeDoc(
+      wf('contexts/consumer.context.md'),
+      '# BMAD-METHOD Deep-Dive\n\nSee [comparison criteria](../../../../ctx/target.ctx.md).\n',
+    );
+    const consumer = join(root, wf('contexts/consumer.context.md'));
+    const target = join(root, '.pythia/ctx/target.ctx.md');
+    runInputs(['sync', consumer]);
+    const out = readFileSync(target, 'utf8');
+    expect(out).toContain('https://www.anthropic.com/research/building-effective-agents');
+    expect(out).toMatch(/\[BMAD-METHOD Deep-Dive\]/);
+  });
+
+  it('sync refreshes placeholder Used by labels to consumer H1 titles', () => {
+    writeDoc('.pythia/ctx/target.ctx.md', `# Target Context
+
+## References
+
+## Used by
+
+- [research] [bmad-method-deep-dive](.pythia/workflows/f/contexts/bmad-method-deep-dive.context.md)
+`);
+    writeDoc(
+      '.pythia/workflows/f/contexts/bmad-method-deep-dive.context.md',
+      '# BMAD-METHOD Deep-Dive\n\nBody.\n',
+    );
+    const target = join(root, '.pythia/ctx/target.ctx.md');
+    expect(runInputs(['sync', target]).status).toBe(0);
+    const out = readFileSync(target, 'utf8');
+    expect(out).toMatch(/\[research\] \[BMAD-METHOD Deep-Dive\]/);
+    expect(out).not.toMatch(/\[research\] \[bmad-method-deep-dive\]/);
+  });
+
+  it('migrateWorkflowInputs does not wipe plain bibliography-only task docs', () => {
+    writeDoc('.pythia/workflows/tasks/task-migrate-plain.md', `# Task
+
+## References
+
+- [Rules](../rules/foo.md)
+- [External](https://example.com/doc)
+`);
+    const result = migrateWorkflowInputs(root);
+    expect(result.changedPaths).toContain('.pythia/workflows/tasks/task-migrate-plain.md');
+    const out = readFileSync(join(root, '.pythia/workflows/tasks/task-migrate-plain.md'), 'utf8');
+    expect(out).not.toContain('../rules/foo.md');
+    expect(out).toContain('https://example.com/doc');
   });
 });
 
@@ -417,6 +863,26 @@ describe('check', () => {
 `);
     writeFileSync(join(root, '.pythia/ctx/dep.md'), 'v2\n');
     expect(runInputs(['check', '--all']).status).toBe(1);
+  });
+
+  it('task doc with missing hashed ref exits 0 (bibliography-tolerant)', () => {
+    const task = writeDoc('.pythia/workflows/tasks/task-check.md', `# Task
+
+## References
+
+- [doc] [gone](../navigation/gone.md#abc12)
+`);
+    expect(runInputs(['check', task]).status).toBe(0);
+  });
+
+  it('context doc with missing hashed ref exits 1 (strict freshness)', () => {
+    const ctx = writeDoc(wf('contexts/strict.context.md'), `# Context
+
+## References
+
+- [code] [inputs.sh](scripts/inputs.sh#ca69a)
+`);
+    expect(runInputs(['check', ctx]).status).toBe(1);
   });
 });
 

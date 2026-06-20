@@ -55,6 +55,25 @@ ${renderTrailingRegion({
     expect(runCrossRefs(plan).status).toBe(0);
   });
 
+  it('passes when ## Contexts uses repo-root-relative paths', () => {
+    const planRel = '.pythia/workflows/f/plans/x.plan.md';
+    const ctxRel = '.pythia/workflows/f/contexts/a.context.md';
+    writeDoc(ctxRel, `# Context
+
+Body.
+${renderTrailingRegion({
+  references: [],
+  usedBy: [{ kind: 'plan', text: 'x', path: planRel }],
+})}`);
+    const plan = writeDoc(planRel, `# Plan
+
+## Contexts
+
+- [a](${ctxRel})
+`);
+    expect(runCrossRefs(plan).status).toBe(0);
+  });
+
   it('fails when ## Contexts target lacks trailing backlink (no substring false positive)', () => {
     writeDoc('contexts/a.context.md', `# Context
 

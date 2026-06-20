@@ -2,7 +2,7 @@
  * Integration tests: pythia health subcommand.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { rmSync, unlinkSync, existsSync } from 'fs';
+import { rmSync, unlinkSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
 import {
@@ -31,13 +31,32 @@ describe('checkWorkspaceHealth', () => {
     expect(result.checks.find((c) => c.id === 'workspace')?.level).toBe('ok');
     expect(result.checks.find((c) => c.id === '.pythia/runtime/hooks/post.js')?.level).toBe('ok');
     expect(result.checks.find((c) => c.id === 'inputs.project-root')?.level).toBe('ok');
-    expect(result.checks.find((c) => c.id === 'inputs.check-all')?.level).toBe('ok');
+    expect(result.checks.find((c) => c.id === 'inputs.cli')?.level).toBe('ok');
   });
 
   it('fails when manifest missing', () => {
     const result = checkWorkspaceHealth('/nonexistent/path');
     expect(result.ok).toBe(false);
     expect(result.checks[0].level).toBe('fail');
+  });
+
+  it('fails inputs.cli when anchor check exits 1 (stale references)', async () => {
+    const dir = await freshInstalledWorkspace('pythia-ws-health-stale-');
+    try {
+      const anchor = join(dir, '.pythia/config/paths.md');
+      const content = `${readFileSync(anchor, 'utf8').trim()}
+
+## References
+
+- [doc] [readme](../README.md#00000)
+`;
+      writeFileSync(anchor, content, 'utf8');
+      const result = checkWorkspaceHealth(dir);
+      expect(result.checks.find((c) => c.id === 'inputs.cli')?.level).toBe('fail');
+      expect(result.ok).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
