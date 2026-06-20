@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.6] - 2026-06-20
+
+### Features
+
+- **Link-derived inputs freshness** — workflow docs track dependencies in a typed trailing `## References` / `## Used by` region instead of frontmatter `inputs:`; cite sources as markdown links in the body and run `pythia update` to migrate legacy docs
+- **`inputs.js sync`** — derives references from body links (fence-aware), merges stored refs and legacy frontmatter deps, refreshes hashes, and maintains reverse `## Used by` backlinks repo-wide
+- **`inputs.js check` / `rdeps`** — validate stored reference hashes (`check --all` for workflow trees); `rdeps` lists dependents of a file and flags stale consumers
+- **Post-commands hook zone** — `.pythia/config/paths.md` can declare `command:` entries that run synchronously after a workflow doc save and before read-only checkers (wired for plan, context, review, implementation, audit, and feature docs via `inputs.js sync`)
+- **`sync-legacy-inputs` migration op** — auto-migrates remaining frontmatter `inputs:` blocks under `.pythia/workflows/` during workspace update
+
+### Changed
+
+- **Workflow skills** — `/plan`, `/replan`, `/research`, `/ctx`, `/feat`, and `/implement` cite dependencies as body links; trailing reference sections are maintained by hook sync, not hand-edited
+- **`inputs-fresh.js` checker** — reads the trailing `## References` block instead of YAML frontmatter
+- **`cross-refs.js` checker** — validates context backlinks and References/Used-by round-trips using structured parsing
+
 ## [0.3.5] - 2026-06-19
 
 ### Fixed

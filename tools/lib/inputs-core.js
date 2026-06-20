@@ -176,10 +176,10 @@ export function deriveDeps(file, opts = {}) {
 
   if (scope === 'refs' || scope === 'all') {
     const parsed = parseTrailingRefs(content);
-    if (!parsed) return scope === 'refs' ? [] : deriveDeps(file, { scope: 'body' });
+    if (!parsed) return scope === 'refs' ? [] : deriveDeps(file, { scope: 'body', root });
     const refs = parsed.references.map((r) => ({ path: r.path, hash: r.hash }));
     if (scope === 'refs') return refs;
-    const bodyDeps = deriveDeps(file, { scope: 'body' });
+    const bodyDeps = deriveDeps(file, { scope: 'body', root });
     return [...new Set([...bodyDeps, ...refs.map((r) => r.path)])];
   }
 
@@ -689,7 +689,7 @@ export function migrateWorkflowInputs(targetRoot, { dryRun = false, globRoot = '
     const legacyInputs = fm ? parseInputs(fm) : null;
     const hasLegacy = Boolean(legacyInputs?.length);
     const parsed = parseTrailingRefs(content);
-    const bodyLinks = extractRelativeLinks(getBodyContent(content));
+    const bodyLinks = extractRelativeLinks(getBodyContent(content), { skipFenced: true });
 
     if (!hasLegacy) {
       if (parsed?.references?.length) continue;

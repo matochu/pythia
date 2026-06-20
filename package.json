@@ -1,6 +1,6 @@
 {
   "name": "pythia-workspace",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "type": "module",
   "description": "AI workspace manager",
   "author": "Serhii Frolov <matochu@gmail.com>",

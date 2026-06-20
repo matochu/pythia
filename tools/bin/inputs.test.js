@@ -12,7 +12,7 @@ import {
   getBodyContent,
   renderTrailingRegion,
 } from '../lib/refs.js';
-import { deriveDeps, hashFile } from '../lib/inputs-core.js';
+import { deriveDeps, hashFile, migrateWorkflowInputs } from '../lib/inputs-core.js';
 
 let root;
 
@@ -136,6 +136,23 @@ describe('deriveDeps', () => {
 `);
     const refs = deriveDeps(file, { scope: 'refs', root });
     expect(refs).toEqual([{ path: './src.md', hash: 'abc12' }]);
+  });
+
+  it('scope all forwards root to nested body derivation', () => {
+    writeDoc('dep.md', 'outside zone\n');
+    const zoneRoot = join(root, 'zone');
+    const file = writeDoc('zone/inner.md', `# Inner
+
+See [dep](../dep.md).
+
+## References
+
+- [doc] [local](./local.md#aaaaa)
+`);
+    writeDoc('zone/local.md', 'inside\n');
+    const restricted = deriveDeps(file, { scope: 'all', root: zoneRoot });
+    expect(restricted).not.toContain('../dep.md');
+    expect(restricted.some((p) => p.includes('local'))).toBe(true);
   });
 });
 
@@ -290,6 +307,21 @@ describe('check', () => {
 `);
     writeFileSync(join(root, '.pythia/workflows/feat/dep.md'), 'v2\n');
     expect(runInputs(['check', '--all']).status).toBe(1);
+  });
+});
+
+describe('migrateWorkflowInputs', () => {
+  it('skips docs whose only body links are inside fenced code blocks', () => {
+    writeDoc('.pythia/workflows/feat/ghost.md', 'ghost\n');
+    writeDoc('.pythia/workflows/feat/doc.md', `# Doc
+
+\`\`\`md
+[ghost](../ghost.md)
+\`\`\`
+`);
+    const result = migrateWorkflowInputs(root);
+    expect(result.status).toBe('skipped');
+    expect(readFileSync(join(root, '.pythia/workflows/feat/doc.md'), 'utf8')).not.toContain('## References');
   });
 });
 
