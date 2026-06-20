@@ -43,7 +43,11 @@ const appliedSteps = [];
 for (const step of autoSteps) {
   try {
     const result = runOp(targetRoot, step.op, backups, dryRun, version);
-    if (result.changedPath) changedPaths.push(result.changedPath);
+    if (result.changedPaths?.length) {
+      changedPaths.push(...result.changedPaths);
+    } else if (result.changedPath) {
+      changedPaths.push(result.changedPath);
+    }
     appliedSteps.push(step.stepNum);
     console.log(`  step ${step.stepNum} (${step.op?.op ?? 'auto'}): ${result.status}`);
   } catch (err) {

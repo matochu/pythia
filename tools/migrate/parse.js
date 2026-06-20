@@ -33,7 +33,7 @@ export function parseMigration(content) {
       const op = {};
       const MULTILINE_KEYS = new Set(['content', 'find', 'replace']);
       const OP_FIELD_KEYS = new Set([
-        'op', 'path', 'find', 'replace', 'from', 'to', 'key', 'value', 'section', 'content', 'after_section',
+        'op', 'path', 'find', 'replace', 'from', 'to', 'key', 'value', 'section', 'content', 'after_section', 'skip_if', 'glob',
       ]);
       let i = 0;
       while (i < opLines.length) {

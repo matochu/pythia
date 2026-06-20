@@ -97,18 +97,18 @@ Brainstorm mode suppresses Scenario B's overwrite question for existing plan pat
 Run this sequence once on activation before the first brainstorm response:
 
 1. **Inputs check**
-   - run `.pythia/runtime/inputs.js check <plan-file>`
-   - surface raw `STALE` or `MISSING` results
-   - if no `inputs:` block exists, skip silently
+   - run `.pythia/runtime/inputs.js check <plan-file>` when the plan has `## References`
+   - surface raw `STALE`, `MISSING`, or `INVALID` results
+   - if no `## References`, skip silently
    - if the script is missing or not executable, skip silently
 2. **Closed plans review**
    - scan sibling `plans/` for implemented or archived plans
    - extract `[risk]` and `[plan]` items from their `## Retrospective`
    - if no closed plans exist, skip silently
 3. **Context freshness**
-   - for each context in `## Contexts`, run `.pythia/runtime/inputs.js check <context-file>` when the context declares `inputs:`
+   - for each context in `## Contexts`, run `.pythia/runtime/inputs.js check <context-file>` when the context has `## References`
    - surface stale findings and which plan sections may be affected
-   - do not update contexts automatically
+   - do not edit `## References` or `## Used by` manually — `sync` on save handles backlinks
 4. **Proactive suggestions**
    - list 2-4 concrete improvement candidates
    - prioritize by likely impact
@@ -193,22 +193,17 @@ If the parent feature doc is missing, skip silently.
 
 For standalone fixes, do not use the feature-doc lookup above. Update `.pythia/workflows/fixes/fixes.md` instead, using the fix-case rules in `## Fix routing`.
 
-**Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
-
 **Inputs integration**:
 
-- Before trusting any context artifact listed in `## Contexts`, if that context file declares `inputs:`, run `.pythia/runtime/inputs.js check <context-file>`.
-- If the check reports `STALE`, `MISSING`, or `INVALID`, surface that raw result to the user before proceeding. This skill does not assign a global warn/block policy and must not hide the check output.
-- If a context file has no `inputs:` block, proceed normally and do not invent one just because the plan consumes it.
-- Create plan: run `.pythia/runtime/inputs.js add <plan-file> <dep> [<dep>...]` to record the feature doc and each consulted context as direct plan inputs. Do not run `update` on first creation.
-- Revise stale plan: rewrite the plan content first. Run `.pythia/runtime/inputs.js update <plan-file>` only after the document already reflects the current source files.
+- List consulted contexts in `## Contexts`; cite other dependencies as markdown links in the body. Never hand-write or edit trailing `## References` / `## Used by`.
+- The plan auto-syncs on save. Before trusting a context, run `.pythia/runtime/inputs.js check <context-file>` when it has `## References`; surface `STALE`, `MISSING`, or `INVALID` raw output.
 
 **Validation** (before completing):
 
 - **Workflow-doc validation (Validator subagent)**: When the plan is **saved to disk**, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` (`.agents/skills/validate/SKILL.md` or `.claude/skills/validate/SKILL.md` in this repo) and **absolute** path to the plan file. **Do not** claim the plan matches the format contract until **exit `0`**. **PostToolUse hook warnings ≠ PASS** — see [hook-integration.md](../workflow/references/hook-integration.md).
   - **(Concrete tooling — if “spawn a Validator subagent” is unclear in your host)** “Validator subagent” **does not** mean a magic built-in role. Start a **separate delegated task** (e.g. Cursor **Task**, or your product’s equivalent) so validation runs **outside** this Architect thread. Use a **short, shell-capable** profile your stack supports — commonly `subagent_type="generalPurpose"` or the same type your [/loop skill](../loop/SKILL.md) uses for one-shot subagent handoffs when no dedicated Validator type exists. Put **only** the filled **handoff prompt** from [/validate skill](../validate/SKILL.md) § Validator subagent in the delegated body (paths substituted); **do not** paste plan content, step drafts, or long architecture narrative — only validation instructions.
   - **Inline fallback** (only if no subagent): open that validate skill and complete **one** validation run for that path **as defined in that skill**; report exit code + stderr; label **inline fallback**. Fix reported issues before finishing.
-- Confirm the ambiguity checkpoint and user choice where trade-offs matter; revision log uses the table format in plan-format; `## Navigation` links cover all steps; dates are `YYYY-MM-DD`; each listed context’s `## Used by` references this plan.
+- Confirm the ambiguity checkpoint and user choice where trade-offs matter; revision log uses the table format in plan-format; `## Navigation` links cover all steps; dates are `YYYY-MM-DD`; plan body cites each listed context as a markdown link (backlinks are maintained by `sync`, validated by `cross-refs.js`).
 
 **Migration**: If an existing plan lacks **Plan-Version**, add v1, set Last review round to "Initial plan — no review yet", and add an empty revision-log table as in plan-format.
 

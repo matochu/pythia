@@ -268,16 +268,10 @@ When the replan is **Trigger 3: Manual edits**:
 
 User-only; accumulates explicit user choices, corrections, artifact-placement choices, rejected/accepted directions, and durable workflow preferences. Not round-specific — accumulates throughout replanning cycles. Write only when user-driven decisions exist; omit entirely if none were captured. Format: `{context/condition}: {decision, correction, or preference}`. The section itself means "user"; do not prefix entries with `User:`.
 
-**Cross-reference update** (after writing plan): For each context listed in `## Contexts`, update that context file's `## Used by` section to add a link back to this plan if not already present.
-
 **Inputs integration**:
 
-- Before replanning, run `.pythia/runtime/inputs.js check <artifact>` on the current plan and on each cited context, review, or implementation artifact that declares `inputs:`.
-- If any such check reports `STALE`, `MISSING`, or `INVALID`, surface that raw result to the user before continuing. `/replan` still does not assign a global warn/block policy and must not hide or reinterpret the result.
-- If a loaded artifact has no `inputs:` block, proceed normally and do not invent one for consumption.
-- Record the feature doc, each consulted context, and the triggering review or implementation artifact with `.pythia/runtime/inputs.js add <plan-file> <dep> [<dep>...]`.
-- For Trigger 3 (Manual edits), still record the feature doc and each consulted direct artifact, but do not fabricate a review input when no review artifact triggered the revision.
-- Rewrite the revised plan content first. Run `.pythia/runtime/inputs.js update <plan-file>` only after the document already reflects the current source files.
+- List consulted contexts in `## Contexts`; cite other dependencies as markdown links in the body. Never hand-write or edit trailing `## References` / `## Used by`.
+- The revised plan auto-syncs on save. Before replanning, run `.pythia/runtime/inputs.js check` on the plan or cited context when it has `## References`; surface `STALE`, `MISSING`, or `INVALID` raw output.
 
 **Validation** (before completing):
 
@@ -295,7 +289,7 @@ User-only; accumulates explicit user choices, corrections, artifact-placement ch
 - Verify `## Navigation` is updated with links to all new or amended steps
 - Verify `## Retrospective` block added to plan file for this replan cycle **if discoveries exist** (skip if nothing new was learned)
 - Verify date format is `YYYY-MM-DD` (from `date +%Y-%m-%d`)
-- Verify each context in `## Contexts` has this plan listed in its `## Used by` section
+- Verify the revised plan body cites each context in `## Contexts` as a markdown link (`sync` maintains `## Used by` backlinks; `cross-refs.js` validates the round-trip)
 - For Trigger 2: verify no existing steps were deleted, renumbered, or reordered
 - For Trigger 2: verify every new/amended step has `**Added**` or `**Amended**` version marker
 - For Trigger 3: verify **`## Plan revision log`** **Round** is exactly **`Manual`**; verify **Last review round** was not falsified; verify step markers use `(Manual)` where steps were added/amended

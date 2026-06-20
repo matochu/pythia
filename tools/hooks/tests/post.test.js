@@ -305,4 +305,39 @@ describe('post.js workflow checker routing', () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it('Post-commands dispatch appends edited file path as final argv', () => {
+    const root = makeHookRoot('pythia-post-cmd-');
+    try {
+      const stubDir = join(root, '.pythia/runtime');
+      mkdirSync(stubDir, { recursive: true });
+      const argvLog = join(root, 'argv.log');
+      const stubScript = join(stubDir, 'inputs.js');
+      writeFileSync(
+        stubScript,
+        `import { appendFileSync } from 'node:fs';\nappendFileSync(${JSON.stringify(argvLog)}, process.argv.slice(2).join('|') + '\\n');\n`,
+        'utf8',
+      );
+
+      const pathsMd = join(root, '.pythia/config/paths.md');
+      writeFileSync(
+        pathsMd,
+        `${readFileSync(pathsMd, 'utf8')}\n## Post-commands\n\n- *.plan.md  command: .pythia/runtime/inputs.js sync\n`,
+        'utf8',
+      );
+
+      const plans = join(root, 'plans');
+      mkdirSync(plans, { recursive: true });
+      const planPath = join(plans, 'min-valid.plan.md');
+      cpSync(validPlan, planPath);
+
+      const r = runPost(planPath, root);
+      expect(r.status).toBe(0);
+      const logged = readFileSync(argvLog, 'utf8').trim().split('|');
+      expect(logged[0]).toBe('sync');
+      expect(logged[logged.length - 1]).toBe(planPath);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });

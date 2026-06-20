@@ -16,10 +16,16 @@ export function parseFrontmatter(content) {
  * Extract all relative markdown links from content: [text](path).
  * Returns an array of { text, href, line } where href is not a URL and not an anchor.
  */
-export function extractRelativeLinks(content) {
+export function extractRelativeLinks(content, { skipFenced = false } = {}) {
   const lines = content.split('\n');
   const links = [];
+  let inFence = false;
   for (let i = 0; i < lines.length; i++) {
+    if (skipFenced && lines[i].startsWith('```')) {
+      inFence = !inFence;
+      continue;
+    }
+    if (skipFenced && inFence) continue;
     const re = /\[([^\]]*)\]\(([^)]+)\)/g;
     let m;
     while ((m = re.exec(lines[i])) !== null) {

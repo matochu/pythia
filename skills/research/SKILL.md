@@ -135,11 +135,8 @@ Omit `[u] Update context` when no context file exists yet, or mark it unavailabl
 
 **Inputs integration**:
 
-- `/research` produces `*.context.md` artifacts.
-- Create: when the research output is grounded in direct repo-file evidence, run `.pythia/runtime/inputs.js add <context-file> <dep> [<dep>...]` to record those direct source files. Do not run `update` on first creation.
-- Revise stale research context: rewrite the context content first. Run `.pythia/runtime/inputs.js update <context-file>` only after the document already reflects the current source files.
-- If there are no direct file dependencies, do not add an `inputs:` block.
-- If `.pythia/runtime/inputs.js add` or `.pythia/runtime/inputs.js update` returns an error, show that raw failure to the user.
+- Cite dependencies as markdown links in the context body. Never hand-write or edit trailing `## References` / `## Used by`.
+- The context file auto-syncs on save. If `sync` or `check` returns an error, show that raw failure to the user.
 
 If Researcher cannot be launched, tell the user to run `/research` with the same feature and topic, or retry when the agent is available.
 

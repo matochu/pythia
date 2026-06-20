@@ -178,6 +178,15 @@ describe('parseZones', () => {
   });
 });
 
+describe('parseEntryBody command:', () => {
+  it('parses command: key as a first-class field', () => {
+    expect(parseEntryBody('*.plan.md  command: .pythia/runtime/inputs.js sync')).toEqual({
+      path: '*.plan.md',
+      command: '.pythia/runtime/inputs.js sync',
+    });
+  });
+});
+
 describe('generatedCachePaths', () => {
   it('returns only paths with source annotation', () => {
     const zones = parseZones(SAMPLE);

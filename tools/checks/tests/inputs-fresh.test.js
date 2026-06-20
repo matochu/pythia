@@ -5,7 +5,6 @@ import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 
 const inputsFreshSrc = resolve('tools/checks/inputs-fresh.js');
-const inputsSrc = resolve('tools/bin/inputs.js');
 
 let root;
 
@@ -13,6 +12,23 @@ afterEach(() => {
   if (root) rmSync(root, { recursive: true, force: true });
   root = undefined;
 });
+
+function materializeRuntime({ withInputs = true } = {}) {
+  const runtimeDir = join(root, '.pythia/runtime');
+  mkdirSync(join(runtimeDir, 'checks'), { recursive: true });
+  mkdirSync(join(runtimeDir, 'lib'), { recursive: true });
+  for (const f of ['refs.js', 'md.js', 'inputs-core.js']) {
+    cpSync(resolve(`tools/lib/${f}`), join(runtimeDir, 'lib', f));
+  }
+  if (withInputs) {
+    writeFileSync(
+      join(runtimeDir, 'inputs.js'),
+      "#!/usr/bin/env node\nimport { main } from './lib/inputs-core.js';\nmain();\n",
+      'utf8',
+    );
+  }
+  cpSync(inputsFreshSrc, join(runtimeDir, 'checks/inputs-fresh.js'));
+}
 
 function runInputsFresh(docPath) {
   const checker = join(root, '.pythia/runtime/checks/inputs-fresh.js');
@@ -23,7 +39,7 @@ function runInputsFresh(docPath) {
 }
 
 describe('inputs-fresh.js', () => {
-  it('error message references .pythia/runtime/inputs.js on stale inputs', () => {
+  it('error message references .pythia/runtime/inputs.js on stale references', () => {
     root = mkdtempSync(join(tmpdir(), 'pythia-inputs-fresh-'));
     spawnSync('git', ['init', root], { encoding: 'utf8' });
     spawnSync('git', ['-C', root, 'config', 'user.email', 'test@test.com'], { encoding: 'utf8' });
@@ -34,23 +50,20 @@ describe('inputs-fresh.js', () => {
     const doc = join(root, 'x.context.md');
     writeFileSync(
       doc,
-      `---
-inputs:
-  - dep.md:00000000
----
-# Context
+      `# Context
+
+## References
+
+- [doc] [dep](./dep.md#00000)
 `,
       'utf8',
     );
 
-    const runtimeDir = join(root, '.pythia/runtime');
-    mkdirSync(join(runtimeDir, 'checks'), { recursive: true });
-    cpSync(inputsSrc, join(runtimeDir, 'inputs.js'));
-    cpSync(inputsFreshSrc, join(runtimeDir, 'checks/inputs-fresh.js'));
+    materializeRuntime();
 
     const r = runInputsFresh(doc);
     expect(r.status).toBe(1);
-    expect(r.stderr).toMatch(/\.pythia\/runtime\/inputs\.js/);
+    expect(r.stderr).toMatch(/\.pythia\/runtime\/inputs\.js sync/);
     expect(r.stderr).not.toMatch(/scripts\/inputs\.js/);
   });
 
@@ -58,23 +71,20 @@ inputs:
     root = mkdtempSync(join(tmpdir(), 'pythia-inputs-fresh-skip-'));
     const doc = join(root, 'x.context.md');
     writeFileSync(doc, '# Context\n', 'utf8');
-    mkdirSync(join(root, '.pythia/runtime/checks'), { recursive: true });
-    cpSync(inputsFreshSrc, join(root, '.pythia/runtime/checks/inputs-fresh.js'));
+    materializeRuntime({ withInputs: false });
 
     const r = runInputsFresh(doc);
     expect(r.status).toBe(0);
     expect(r.stderr).toBe('');
   });
 
-  it('exits 0 when document declares no inputs', () => {
+  it('exits 0 when document declares no references', () => {
     root = mkdtempSync(join(tmpdir(), 'pythia-inputs-fresh-none-'));
+    spawnSync('git', ['init', root], { encoding: 'utf8' });
     const doc = join(root, 'plain.md');
-    writeFileSync(doc, '# No frontmatter inputs\n', 'utf8');
+    writeFileSync(doc, '# No references\n', 'utf8');
 
-    const runtimeDir = join(root, '.pythia/runtime');
-    mkdirSync(join(runtimeDir, 'checks'), { recursive: true });
-    cpSync(inputsSrc, join(runtimeDir, 'inputs.js'));
-    cpSync(inputsFreshSrc, join(runtimeDir, 'checks/inputs-fresh.js'));
+    materializeRuntime();
 
     const r = runInputsFresh(doc);
     expect(r.status).toBe(0);

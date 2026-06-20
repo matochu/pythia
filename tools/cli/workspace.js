@@ -249,10 +249,13 @@ function materializeHookRuntime(packageRoot, target, dryRun) {
       });
     }
   }
-  const inputsSrc = join(packageRoot, 'tools', 'bin', 'inputs.js');
-  if (existsSync(inputsSrc)) {
+  const inputsStub = `#!/usr/bin/env node
+import { main } from './lib/inputs-core.js';
+main();
+`;
+  if (existsSync(join(packageRoot, 'tools', 'lib', 'inputs-core.js'))) {
     mkdirSync(runtimeDir, { recursive: true });
-    cpSync(inputsSrc, join(runtimeDir, 'inputs.js'), { force: true });
+    writeFileSync(join(runtimeDir, 'inputs.js'), inputsStub, 'utf8');
   }
   const packagePathsSrc = join(packageRoot, 'assets', 'base', 'config', 'paths.md');
   if (existsSync(packagePathsSrc)) {
@@ -686,7 +689,11 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
     for (const step of autoSteps) {
       try {
         const result = runOp(target, step.op, backups, dryRun, v);
-        if (result.changedPath) changedPaths.push(result.changedPath);
+        if (result.changedPaths?.length) {
+          changedPaths.push(...result.changedPaths);
+        } else if (result.changedPath) {
+          changedPaths.push(result.changedPath);
+        }
         appliedSteps.push(step.stepNum);
         console.log(`  step ${step.stepNum}: ${result.status}`);
       } catch (err) {

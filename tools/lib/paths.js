@@ -21,7 +21,7 @@ export function resolvePackagePathsMd() {
  *   - path: a.js, b.js                  → shorthand checker list (no `checker` word)
  * Glob tokens may use `*` or markdown-escaped `\*` (normalized to `*`).
  * @param {string} content
- * @returns {Map<string, Array<{path: string, source?: string, checker?: string}>>}
+ * @returns {Map<string, Array<{path: string, source?: string, checker?: string, command?: string}>>}
  */
 export function parseZones(content) {
   const zones = new Map();
@@ -61,7 +61,7 @@ export function unescapeMdPath(token) {
  * Supports explicit `source:` / `checker:`, shorthand `path: checker-list`, or plain path.
  */
 export function parseEntryBody(body) {
-  const explicit = body.match(/^(.+?)\s+(source|checker):\s+(.*)$/);
+  const explicit = body.match(/^(.+?)\s+(source|checker|command):\s+(.*)$/);
   if (explicit) {
     const key = explicit[2];
     const value = explicit[3].trim();
@@ -84,7 +84,7 @@ export function parseEntryBody(body) {
 /**
  * Load zones from the workspace paths.md, falling back to the package asset.
  * @param {string} root - repo/workspace root directory
- * @returns {Map<string, Array<{path: string, source?: string, checker?: string}>>}
+ * @returns {Map<string, Array<{path: string, source?: string, checker?: string, command?: string}>>}
  */
 export function loadZones(root) {
   const candidates = [

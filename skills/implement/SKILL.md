@@ -268,6 +268,11 @@ When the user chooses `[q]` after an implementation round:
 8. Do not paste raw QA output verbatim into the implementation report.
 9. Re-run workflow-doc validation for the implementation report after appending QA validation guidance.
 
+**Inputs integration**:
+
+- Cite dependencies as markdown links in the report body (plan, contexts, feature doc). Never hand-write or edit trailing `## References` / `## Used by`.
+- The implementation report auto-syncs on save. Run `.pythia/runtime/inputs.js check` on cited plan/context files when verifying grounding.
+
 ## Validation (before completing)
 
 - **Workflow-doc validation (Validator subagent)**: After `reports/{plan-slug}.implementation.md` is updated on disk, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to the implementation report. **Do not** complete until **exit `0`**. **PostToolUse hook warnings ≠ PASS** — see [hook-integration.md](../workflow/references/hook-integration.md).

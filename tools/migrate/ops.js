@@ -1,8 +1,9 @@
-// The 7 auto ops for the migration engine.
+// Auto ops for the migration engine.
 // All ops: apply only within .pythia/, are idempotent, back up before mutating existing files.
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'fs';
 import { join, dirname, relative, resolve, isAbsolute } from 'path';
 import { createHash } from 'crypto';
+import { migrateWorkflowInputs } from '../lib/inputs-core.js';
 
 function sha256(content) {
   return createHash('sha256').update(content, 'utf8').digest('hex');
@@ -208,15 +209,20 @@ export function replaceOnce(targetRoot, op, backups, dryRun, migrationVersion) {
   const abs = join(targetRoot, path);
   if (!existsSync(abs)) throw new Error(`replace-once: file not found: ${path}`);
   const content = readFileSync(abs, 'utf8');
-  if (!content.includes(find)) {
-    if (replace && content.includes(replace)) {
+  const findStr = dedentBlock(String(find ?? ''));
+  const replaceStr = dedentBlock(String(replace ?? ''));
+  if (!content.includes(findStr)) {
+    if (replaceStr && content.includes(replaceStr)) {
       return { status: 'skipped', reason: 'replacement already present' };
+    }
+    if (op.skip_if && content.includes(op.skip_if)) {
+      return { status: 'skipped', reason: 'skip_if matched' };
     }
     throw new Error(`replace-once: pattern not found and replacement content absent: ${path}`);
   }
   backup(targetRoot, path, backups, dryRun, migrationVersion);
-  const escaped = escapeRegex(find);
-  const newContent = content.replace(new RegExp(escaped), replace);
+  const escaped = escapeRegex(findStr);
+  const newContent = content.replace(new RegExp(escaped), replaceStr);
   if (!dryRun) writeFileSync(abs, newContent, 'utf8');
   return { status: 'applied', changedPath: path };
 }
@@ -273,6 +279,13 @@ export function replaceSection(targetRoot, op, backups, dryRun, migrationVersion
   return { status: 'applied', changedPath: path };
 }
 
+// Op: sync-legacy-inputs — migrate frontmatter inputs: → ## References (via inputs sync)
+export function syncLegacyInputs(targetRoot, op, _backups, dryRun, _migrationVersion) {
+  const globRoot = op.glob ?? '.pythia/workflows';
+  assertInProtectedZone(targetRoot, globRoot);
+  return migrateWorkflowInputs(targetRoot, { dryRun, globRoot });
+}
+
 const OP_MAP = {
   'ensure-dir': ensureDir,
   'write-if-missing': writeIfMissing,
@@ -282,6 +295,7 @@ const OP_MAP = {
   'append-to-section': appendToSection,
   'replace-once': replaceOnce,
   'replace-section': replaceSection,
+  'sync-legacy-inputs': syncLegacyInputs,
 };
 
 export function runOp(targetRoot, op, backups, dryRun, migrationVersion) {

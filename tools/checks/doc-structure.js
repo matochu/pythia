@@ -53,8 +53,23 @@ function countLines(lines, pattern) {
 
 // ── validators ────────────────────────────────────────────────────────────────
 
-function validatePlan(file, lines) {
+function checkTrailingRefsPlacement(file, lines) {
   const errors = [];
+  const refIdx = lines.findIndex((l) => l === '## References');
+  if (refIdx === -1) return errors;
+  for (let i = refIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (line === '## Used by') continue;
+    if (/^## /.test(line)) {
+      errors.push(`${file}:${i + 1}: [doc-structure.trailing_refs_not_last] ## References must be the last ## heading (found '${line.slice(3)}' after it)`);
+      break;
+    }
+  }
+  return errors;
+}
+
+function validatePlan(file, lines) {
+  const errors = checkTrailingRefsPlacement(file, lines);
 
   const h1Count = countLines(lines, /^# [^#]/);
   if (h1Count !== 1) errors.push(`${file}:${lineFor(lines, /^# /)}: [plan.header.h1_count] Expected exactly one H1 title line (found ${h1Count})`);
@@ -152,7 +167,7 @@ function validatePlan(file, lines) {
 }
 
 function validateReview(file, lines) {
-  const errors = [];
+  const errors = checkTrailingRefsPlacement(file, lines);
 
   if (!hasLine(lines, /^## Navigation$/))
     errors.push(`${file}:0: [review.section.navigation] Missing ## Navigation`);
@@ -218,7 +233,7 @@ function validateReview(file, lines) {
 }
 
 function validateImplementation(file, lines) {
-  const errors = [];
+  const errors = checkTrailingRefsPlacement(file, lines);
 
   if (!hasLine(lines, /^# Implementation Report:/))
     errors.push(`${file}:1: [impl.header.h1] Missing H1 starting with # Implementation Report:`);
@@ -266,7 +281,7 @@ function validateImplementation(file, lines) {
 }
 
 function validateAudit(file, lines) {
-  const errors = [];
+  const errors = checkTrailingRefsPlacement(file, lines);
 
   if (!hasLine(lines, /^# Architect Audit:/))
     errors.push(`${file}:1: [audit.header.h1] Missing H1 # Architect Audit:`);

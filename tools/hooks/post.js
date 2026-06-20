@@ -50,11 +50,30 @@ function main() {
   const root = repoRoot(event);
   const zones = root ? loadZones(root) : new Map();
   const wfDocs = zone(zones, 'Workflow docs');
+  const postCmds = zone(zones, 'Post-commands');
 
   for (const raw of paths) {
     const p = resolveEditedPath(root, raw);
     if (!existsSync(p)) continue;
     const base = basename(p);
+
+    if (root) {
+      for (const entry of postCmds) {
+        if (matchGlob(base, entry.path) && entry.command) {
+          const parts = entry.command.trim().split(/\s+/);
+          const scriptRel = parts[0];
+          const fixedArgs = parts.slice(1);
+          const script = resolve(root, scriptRel);
+          if (existsSync(script)) {
+            const r = spawnSync(process.execPath, [script, ...fixedArgs, p], {
+              encoding: 'utf8',
+              stdio: ['ignore', 'pipe', 'pipe'],
+            });
+            if (r.stderr) warn(r.stderr.trim());
+          }
+        }
+      }
+    }
 
     for (const entry of wfDocs) {
       if (matchGlob(base, entry.path) && entry.checker) {

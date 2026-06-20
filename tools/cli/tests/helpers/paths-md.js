@@ -17,3 +17,17 @@ export function pathsMdContent(variant = 'new') {
 export function hasHooksHardeningPaths(content) {
   return content.includes('role-boundary.js') && content.includes('*.context.md');
 }
+
+/** Post-commands zone lists inputs.js sync for all workflow doc globs. */
+export function hasInputsFreshnessPostCommands(content) {
+  if (!content.includes('## Post-commands')) return false;
+  const globs = [
+    '*.plan.md',
+    '*.context.md',
+    '*.review.md',
+    '*.implementation.md',
+    '*.audit.md',
+    'feat-*.md',
+  ];
+  return globs.every((g) => content.includes(`${g}  command:`));
+}

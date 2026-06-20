@@ -255,6 +255,45 @@ describe('ops: rename-file', () => {
   });
 });
 
+describe('ops: sync-legacy-inputs', () => {
+  it('migrates legacy frontmatter inputs to ## References', async () => {
+    await seedWorkspace(tmpDir);
+    mkdirSync(join(tmpDir, '.pythia/workflows/feat-test'), { recursive: true });
+    writeFileSync(join(tmpDir, '.pythia/workflows/feat-test/dep.md'), 'dep body\n', 'utf8');
+    writeFileSync(join(tmpDir, '.pythia/workflows/feat-test/ctx.md'), `---
+inputs:
+  - .pythia/workflows/feat-test/dep.md:00000000
+---
+# Context
+
+See [dep](./dep.md).
+`, 'utf8');
+    const result = runOp(
+      tmpDir,
+      { op: 'sync-legacy-inputs', glob: '.pythia/workflows' },
+      [],
+      false,
+      '9.9.9',
+    );
+    expect(result.status).toBe('applied');
+    const out = readFileSync(join(tmpDir, '.pythia/workflows/feat-test/ctx.md'), 'utf8');
+    expect(out).not.toMatch(/^inputs:/m);
+    expect(out).toContain('## References');
+  });
+
+  it('skips when no workflow docs need migration', async () => {
+    await seedWorkspace(tmpDir);
+    const result = runOp(
+      tmpDir,
+      { op: 'sync-legacy-inputs', glob: '.pythia/workflows' },
+      [],
+      false,
+      '9.9.9',
+    );
+    expect(result.status).toBe('skipped');
+  });
+});
+
 // ─── state file ───────────────────────────────────────────────────────────────
 
 describe('state file', () => {

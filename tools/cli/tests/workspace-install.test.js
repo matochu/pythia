@@ -84,7 +84,7 @@ describe('.pythia/runtime/inputs.js', () => {
       cwd: workspaceDir,
     });
     expect(r.status).toBe(0);
-    expect(r.stdout).toMatch(/no inputs declared/);
+    expect(r.stdout).toMatch(/no inputs declared|SKIP \(no ## References\)/);
   });
 
   it('add: records a dependency and stamps its hash', () => {

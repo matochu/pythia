@@ -109,11 +109,8 @@ After receiving PM-enriched content and the Architect decision about draft plans
 
 **Inputs integration**:
 
-- `/feat` produces feature documents (`feat-YYYY-MM-{slug}.md`).
-- Create: when the feature doc is grounded in direct repo-file evidence, run `.pythia/runtime/inputs.js add <feature-doc> <dep> [<dep>...]` to record those direct source files. Do not run `update` on first creation.
-- Revise stale feature doc: rewrite the document content first. Run `.pythia/runtime/inputs.js update <feature-doc>` only after the document already reflects the current source files.
-- If there are no direct file dependencies, do not add an `inputs:` block.
-- If `.pythia/runtime/inputs.js add` or `.pythia/runtime/inputs.js update` returns an error, show that raw failure to the user.
+- Cite dependencies as markdown links in the feature doc body. Never hand-write or edit trailing `## References` / `## Used by`.
+- The feature doc auto-syncs on save. If `sync` or `check` returns an error, show that raw failure to the user.
 
 **Output**: Feature document in `.pythia/workflows/features/feat-YYYY-MM-{slug}/feat-YYYY-MM-{slug}.md`
 
