@@ -43,6 +43,12 @@ describe('links.js', () => {
     expect(run(`${fixtures}/valid/min.valid.plan.md`).code).toBe(0);
   });
 
+  it('links inside fenced examples are ignored', () => {
+    const plan = join(dir, 'fenced-link.plan.md');
+    writeFileSync(plan, '```md\n[missing](./no-such-file.md)\n```\n', 'utf8');
+    expect(run(plan).code).toBe(0);
+  });
+
   it('no args → exit 2', () => {
     expect(run().code).toBe(2);
   });

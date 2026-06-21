@@ -71,7 +71,7 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
   4. **Question**: explicit user choice request (e.g. "Which option should be baseline?")
 - Keep options concrete and codebase-relevant; avoid generic textbook alternatives.
 
-**Before generating plan**: Get current date via `date +%Y-%m-%d`. Use this date in the **Date Created** field.
+**Before generating plan**: Get current date via `date +%Y-%m-%d`. Use this date in the plan revision log and any date-bearing body sections required by [plan-format.md](../workflow/references/plan-format.md).
 
 ## Plan Brainstorm Mode
 
@@ -205,7 +205,7 @@ For standalone fixes, do not use the feature-doc lookup above. Update `.pythia/w
   - **Inline fallback** (only if no subagent): open that validate skill and complete **one** validation run for that path **as defined in that skill**; report exit code + stderr; label **inline fallback**. Fix reported issues before finishing.
 - Confirm the ambiguity checkpoint and user choice where trade-offs matter; revision log uses the table format in plan-format; `## Navigation` links cover all steps; dates are `YYYY-MM-DD`; plan body cites each listed context as a markdown link (backlinks are maintained by `sync`, validated by `cross-refs.js`).
 
-**Migration**: If an existing plan lacks **Plan-Version**, add v1, set Last review round to "Initial plan — no review yet", and add an empty revision-log table as in plan-format.
+**Migration**: If an existing plan lacks metadata **Version**, add `Version: v1`, set `Round: none`, and add an empty revision-log table as in plan-format.
 
 ## Post-save response contract
 

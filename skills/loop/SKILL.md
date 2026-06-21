@@ -132,7 +132,7 @@ Read artifact files to determine lifecycle position:
 **ENTRY: fix (plan-fix)** → Orchestrator (current context)
 
 - Patch plan.md (≤ 2 steps only)
-- Increment Plan-Version, add revision log
+- Increment metadata Version, add revision log
 - Spawn Developer subagent to re-implement amended steps
 - Re-audit (if second plan-fix → escalate to re-plan)
 
@@ -256,7 +256,7 @@ If iteration_count > 2:
 3. For each problem marked as `plan error`:
    - Amend the affected step in the plan.
    - Add version marker: **Amended**: v{N} (A{audit-round})
-   - Increment Plan-Version.
+   - Increment metadata Version.
    - Add revision log entry (trigger: Audit A{audit-round}).
 4. Save updated plan to plans/{plan-slug}.plan.md.
 

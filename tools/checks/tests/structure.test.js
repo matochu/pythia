@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
-const checker = resolve('tools/checks/doc-structure.js');
+const checker = resolve('tools/checks/structure.js');
 const fixtures = resolve('tools/fixtures/workflow-docs');
 
 function run(...args) {
@@ -10,7 +10,7 @@ function run(...args) {
   return { code: r.status, stderr: r.stderr, stdout: r.stdout };
 }
 
-describe('doc-structure.js — valid fixtures', () => {
+describe('structure.js — valid fixtures', () => {
   it('min.valid.plan.md exits 0', () => {
     expect(run(`${fixtures}/valid/min.valid.plan.md`).code).toBe(0);
   });
@@ -31,7 +31,7 @@ describe('doc-structure.js — valid fixtures', () => {
   });
 });
 
-describe('doc-structure.js — invalid fixtures', () => {
+describe('structure.js — invalid fixtures', () => {
   it('bad-round.plan.md exits 1', () => {
     const r = run(`${fixtures}/invalid/bad-round.plan.md`);
     expect(r.code).toBe(1);
@@ -53,7 +53,7 @@ describe('doc-structure.js — invalid fixtures', () => {
   });
 });
 
-describe('doc-structure.js — usage errors', () => {
+describe('structure.js — usage errors', () => {
   it('no args exits 2', () => {
     expect(run().code).toBe(2);
   });

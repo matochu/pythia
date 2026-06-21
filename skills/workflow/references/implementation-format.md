@@ -29,12 +29,16 @@
 
 ## Full Format
 
+Metadata follows [artifact-metadata.md](artifact-metadata.md). Use artifact type `implementation-report`; do not duplicate or extend metadata fields in this format.
+
 ```markdown
 # Implementation Report: {plan-slug}
 
 Date: {YYYY-MM-DD}
-Plan: [plans/{plan-slug}.plan.md](../plans/{plan-slug}.plan.md)
-Review: [reports/{plan-slug}.review.md](./{plan-slug}.review.md)
+
+## Metadata
+
+{metadata for artifact type `implementation-report` from artifact-metadata.md}
 
 ## Plan–Implementation Compatibility
 

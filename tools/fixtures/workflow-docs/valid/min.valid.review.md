@@ -1,3 +1,16 @@
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: min.valid-review
+- **Title**: min.valid-review
+- **Artifact**: review
+- **Feature**: fixture
+- **Status**: completed
+- **Plan**: plans/min.valid.plan.md
+- **Plan-Version**: v1
+- **Round**: R1
+- **Verdict**: NEEDS_REVISION
+
 ## Navigation
 
 - [Retrospective](#retrospective)

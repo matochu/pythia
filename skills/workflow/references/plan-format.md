@@ -19,17 +19,14 @@
 
 ## Required Structure
 
+Metadata follows [artifact-metadata.md](artifact-metadata.md). Use artifact type `plan`; do not duplicate or extend metadata fields in this format.
+
 ````markdown
-# Plan {Plan-Id}: {Title}
+# Plan {Id}: {Title}
 
 ## Metadata
 
-- **Plan-Id**: {plan-slug}
-- **Plan-Version**: v1 (or v2, v3...)
-- **Branch**: {git-branch-name}
-- **Status**: Draft
-- **Last review round**: [reports/{plan-slug}.review.md → ## {plan-slug} R{n} — YYYY-MM-DD](../reports/{plan-slug}.review.md#plan-slug-rn--yyyy-mm-dd) (or "Initial plan — no review yet")
-- **Implementation report**: [reports/{plan-slug}.implementation.md](../reports/{plan-slug}.implementation.md) (omit until implementation starts)
+{metadata for artifact type `plan` from artifact-metadata.md}
 
 ## Contexts
 
@@ -137,11 +134,11 @@ Done when:
 
 ## Key Fields
 
-- **Plan-Id**: Plan identifier (typically plan-slug)
-- **Plan-Version**: v1 (initial), v2, v3... (incremented on each revision)
+- **Id**: Plan identifier (typically plan-slug)
+- **Version**: v1 (initial), v2, v3... (incremented on each revision)
 - **Status** (document lifecycle, required in `## Metadata`): Must be exactly one of the allowed values in **Plan document status** below. New plans from `/plan` start as **Draft**. This is **not** the same as per-step `**Status**` inside `### Step N` (see **Step Status**).
 - **Branch**: Git branch name for this plan's implementation
-- **Last review round**: Link to review round (or "Initial plan — no review yet")
+- **Round**: Link to latest review round (or "Initial plan — no review yet")
 - **Contexts**: Links to context documents consulted when writing the plan (omit if none)
 - **Plan revision log**: Table with version, round, date, changed steps, and summary — updated by Architect on every replan; Developer uses this to identify what to execute in the current version
 - **Code / patterns** (optional): Reference to quality guidelines + implementation constraints for this plan
@@ -152,7 +149,7 @@ Done when:
 
 **Where**: `## Metadata` → line `- **Status**: …` (exactly one; spelling and casing as below).
 
-**Allowed values** (canonical strings for `.pythia/runtime/checks/doc-structure.js --type plan`):
+**Allowed values** (canonical strings for `.pythia/runtime/checks/structure.js --type plan`):
 
 | Status | When to use |
 | ------ | ----------- |
@@ -241,7 +238,7 @@ _{What does NOT change — e.g. "Wire format unchanged. Plugin call site unchang
 
 From the Pythia repository root, run:
 
-`node .pythia/runtime/checks/doc-structure.js --type plan <path-to-plan.md>`
+`node .pythia/runtime/checks/structure.js --type plan <path-to-plan.md>`
 
 The script checks required sections, metadata keys (including **Status** against **Plan document status**), Navigation step links, and required fields inside each `### Step N` block.
 

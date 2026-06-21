@@ -52,9 +52,11 @@ describe('workflow-state helpers', () => {
     expect(extractVerdict('- **Verdict**: needs-fixes\n')).toBe('needs-fixes');
   });
 
-  it('extractReviewVerdict prefers Metadata Last Status', () => {
+  it('extractReviewVerdict prefers metadata Verdict', () => {
     const md = `## Metadata
-- **Last Status**: READY
+- **Schema**: pythia-artifact-v1
+- **Artifact**: review
+- **Verdict**: READY
 
 ## feat R1 — 2026-01-01
 Verdict: NEEDS_REVISION
@@ -118,8 +120,10 @@ describe('computeWorkflowNudges — review', () => {
     touch(
       review,
       `## Metadata
-- **Last Status**: NEEDS_REVISION
-- **Last Review Round**: R2
+- **Schema**: pythia-artifact-v1
+- **Artifact**: review
+- **Round**: R2
+- **Verdict**: NEEDS_REVISION
 
 ## Retrospective
 - [process] prior CONCERN-HIGH mentioned in narrative

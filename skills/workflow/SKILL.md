@@ -129,7 +129,7 @@ See [references/](./references/) for full documentation.
 ### Plan Creation/Revision
 
 - Input: Feature context + plan slug (required) + optional review text or link to round
-- Output: Full plan document with Plan-Id, Plan-Version, Plan revision log
+- Output: Full plan document with universal artifact metadata (`Id`, `Version`) and Plan revision log
 - Format: See `references/plan-format.md`
 - Plan-level optional: Code/patterns (reference to quality guidelines + implementation constraints), Out of scope
 

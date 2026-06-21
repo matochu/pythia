@@ -1,8 +1,20 @@
 # Implementation Report: fixture-plan
 
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: min.valid-implementation
+- **Title**: Implementation Report: fixture-plan
+- **Artifact**: implementation-report
+- **Feature**: fixture
+- **Status**: completed
+- **Plan**: plans/min.valid.plan.md
+- **Plan-Version**: v1
+- **Review**: reports/min.valid.review.md
+- **Round**: I1
+- **Result**: implemented
+
 Date: 2026-01-01
-Plan: [plans/fixture-plan.plan.md](../plans/fixture-plan.plan.md)
-Review: [reports/fixture-plan.review.md](./fixture-plan.review.md)
 
 ## Plan–Implementation Compatibility
 

@@ -24,6 +24,19 @@ import { isPythiaSyncMarkdownRelPath } from '../lib/refs.js';
 import { nudge } from './workflow-nudge.js';
 
 const CHECKS = resolve(dirname(fileURLToPath(import.meta.url)), '../checks');
+const METADATA_SYNC = resolve(dirname(fileURLToPath(import.meta.url)), '../lib/metadata/sync.js');
+
+const METADATA_SYNC_GLOBS = ['*.plan.md', '*.review.md', '*.implementation.md', '*.audit.md'];
+
+function runMetadataSync(p, root) {
+  const script = existsSync(METADATA_SYNC) ? METADATA_SYNC : null;
+  if (!script) return;
+  const opts = { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] };
+  if (root) opts.cwd = root;
+  const r = spawnSync(process.execPath, [script, p], opts);
+  if (r.stdout?.trim()) warn(r.stdout.trim());
+  if (r.stderr?.trim()) warn(r.stderr.trim());
+}
 
 /** @param {string} name @param {string} pattern */
 export function matchGlob(name, pattern) {
@@ -36,9 +49,11 @@ export function matchGlob(name, pattern) {
   return name === pattern;
 }
 
-function runChecker(name, ...args) {
+function runChecker(name, root, ...args) {
   if (!existsSync(resolve(CHECKS, name))) return;
-  const r = spawnSync(process.execPath, [resolve(CHECKS, name), ...args], { encoding: 'utf8' });
+  const opts = { encoding: 'utf8' };
+  if (root) opts.cwd = root;
+  const r = spawnSync(process.execPath, [resolve(CHECKS, name), ...args], opts);
   if (r.status === 1 && r.stderr) warn(r.stderr.trim());
   // exit 2 (usage error) is silently ignored in hook context
 }
@@ -59,6 +74,11 @@ function main() {
     const base = basename(p);
     const relFromRoot = root ? relative(root, p).replace(/\\/g, '/') : '';
 
+    // metadata-sync first: update derived metadata before inputs/checkers read snapshot
+    if (METADATA_SYNC_GLOBS.some((g) => matchGlob(base, g))) {
+      runMetadataSync(p, root);
+    }
+
     if (root) {
       for (const entry of postCmds) {
         if (
@@ -74,6 +94,7 @@ function main() {
             const r = spawnSync(process.execPath, [script, ...fixedArgs, p], {
               encoding: 'utf8',
               stdio: ['ignore', 'pipe', 'pipe'],
+              cwd: root,
             });
             if (r.stderr) warn(r.stderr.trim());
             break;
@@ -85,15 +106,15 @@ function main() {
     for (const entry of wfDocs) {
       if (matchGlob(base, entry.path) && entry.checker) {
         for (const c of entry.checker.split(',').map((s) => basename(s.trim()))) {
-          runChecker(c, p);
+          runChecker(c, root, p);
         }
       }
     }
 
     // SKILL.md: special-case (not a workflow doc type in paths.md)
     if (base === 'SKILL.md') {
-      runChecker('skill-paths.js', p);
-      runChecker('skill-footers.js', p);
+      runChecker('skill-paths.js', root, p);
+      runChecker('skill-footers.js', root, p);
     }
 
     nudge(p);

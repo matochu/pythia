@@ -21,9 +21,10 @@ function fileExists(target, relpath) {
 
 const RUNTIME_ESSENTIALS = [
   '.pythia/runtime/lib/paths.js',
-  '.pythia/runtime/checks/doc-structure.js',
+  '.pythia/runtime/checks/structure.js',
   '.pythia/runtime/hooks/post.js',
   '.pythia/runtime/package-paths.md',
+  '.pythia/runtime/metadata-contract.json',
   '.pythia/runtime/inputs.js',
   '.pythia/runtime/migrate/apply.js',
 ];

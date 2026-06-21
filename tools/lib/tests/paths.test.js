@@ -35,13 +35,13 @@ const SAMPLE = `
 
 ## Workflow docs
 
-- *.plan.md  checker: links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, doc-structure.js
-- *.review.md  checker: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
-- *.implementation.md  checker: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
-- *.audit.md  checker: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
-- *.context.md  checker: links.js, inputs-fresh.js
-- feat-*.md  checker: links.js
-- *.retro.md  checker: links.js
+- *.plan.md  checker: links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, structure.js, artifact-metadata.js
+- *.review.md  checker: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js
+- *.implementation.md  checker: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js
+- *.audit.md  checker: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js
+- *.context.md  checker: links.js, inputs-fresh.js, artifact-metadata.js
+- feat-*.md  checker: links.js, inputs-fresh.js, artifact-metadata.js
+- *.retro.md  checker: links.js, inputs-fresh.js, artifact-metadata.js
 
 ## Scripts
 
@@ -82,26 +82,26 @@ describe('parseZones', () => {
     const docs = zone(zones, 'Workflow docs');
     expect(docs[0]).toEqual({
       path: '*.plan.md',
-      checker: 'links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, doc-structure.js',
+      checker: 'links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, structure.js, artifact-metadata.js',
     });
     expect(docs[1]).toEqual({
       path: '*.review.md',
-      checker: 'role-boundary.js, links.js, inputs-fresh.js, doc-structure.js',
+      checker: 'role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js',
     });
     expect(docs[2]).toEqual({
       path: '*.implementation.md',
-      checker: 'role-boundary.js, links.js, inputs-fresh.js, doc-structure.js',
+      checker: 'role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js',
     });
     expect(docs[3]).toEqual({
       path: '*.audit.md',
-      checker: 'role-boundary.js, links.js, inputs-fresh.js, doc-structure.js',
+      checker: 'role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js',
     });
     expect(docs[4]).toEqual({
       path: '*.context.md',
-      checker: 'links.js, inputs-fresh.js',
+      checker: 'links.js, inputs-fresh.js, artifact-metadata.js',
     });
-    expect(docs[5]).toEqual({ path: 'feat-*.md', checker: 'links.js' });
-    expect(docs[6]).toEqual({ path: '*.retro.md', checker: 'links.js' });
+    expect(docs[5]).toEqual({ path: 'feat-*.md', checker: 'links.js, inputs-fresh.js, artifact-metadata.js' });
+    expect(docs[6]).toEqual({ path: '*.retro.md', checker: 'links.js, inputs-fresh.js, artifact-metadata.js' });
   });
 
   it('package asset paths.md has workflow doc checker entries', () => {
@@ -144,10 +144,10 @@ describe('parseZones', () => {
     const docs = zone(zones, 'Workflow docs');
     expect(docs[0]).toEqual({
       path: '*.plan.md',
-      checker: 'links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, doc-structure.js',
+      checker: 'links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, structure.js, artifact-metadata.js',
     });
     expect(docs[1].checker).toContain('role-boundary.js');
-    expect(docs[6]).toEqual({ path: '*.retro.md', checker: 'links.js' });
+    expect(docs[6]).toEqual({ path: '*.retro.md', checker: 'links.js, inputs-fresh.js, artifact-metadata.js' });
     expect(zone(zones, 'Generated cache')[0]).toEqual({ path: '.claude/skills', source: 'skills/' });
     expect(protectedPaths(zones)[0]).toBe('.pythia/workflows/**');
     expect(zone(zones, 'Runtime')[0].path).toBe('.pythia/runtime/**');
@@ -158,11 +158,11 @@ describe('parseZones', () => {
 ## Generated cache
 - .claude/skills source: skills/
 ## Workflow docs
-- *.plan.md  checker: doc-structure.js
+- *.plan.md  checker: structure.js
 - *.review.md: role-boundary.js, links.js
 `);
     expect(zone(zones, 'Generated cache')[0].source).toBe('skills/');
-    expect(zone(zones, 'Workflow docs')[0].checker).toBe('doc-structure.js');
+    expect(zone(zones, 'Workflow docs')[0].checker).toBe('structure.js');
     expect(zone(zones, 'Workflow docs')[1].checker).toContain('role-boundary.js');
   });
 
@@ -247,7 +247,8 @@ describe('forEachWorkflowChecker', () => {
     const zones = parseZones(SAMPLE);
     const seen = [];
     forEachWorkflowChecker(zones, (base) => seen.push(base));
-    expect(seen).toContain('doc-structure.js');
+    expect(seen).toContain('structure.js');
+    expect(seen).toContain('artifact-metadata.js');
     expect(seen).toContain('role-boundary.js');
     expect(seen.filter((b) => b === 'links.js').length).toBeGreaterThan(1);
   });
@@ -261,7 +262,7 @@ describe('loadZones', () => {
       cpSync(PKG_PATHS_MD, join(root, '.pythia', 'runtime', 'package-paths.md'));
       const docs = zone(loadZones(root), 'Workflow docs');
       expect(docs.map((d) => d.path)).toContain('*.context.md');
-      expect(docs[0].checker).toContain('doc-structure.js');
+      expect(docs[0].checker).toContain('structure.js');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

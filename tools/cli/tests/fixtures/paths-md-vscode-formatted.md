@@ -26,13 +26,13 @@
 
 ## Workflow docs
 
-- \*.plan.md: links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, doc-structure.js
-- \*.review.md: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
-- \*.implementation.md: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
-- \*.audit.md: role-boundary.js, links.js, inputs-fresh.js, doc-structure.js
-- \*.context.md: links.js, inputs-fresh.js
-- feat-\*.md: links.js
-- \*.retro.md checker: links.js
+- \*.plan.md: links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, structure.js, artifact-metadata.js
+- \*.review.md: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js
+- \*.implementation.md: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js
+- \*.audit.md: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js
+- \*.context.md: links.js, inputs-fresh.js, artifact-metadata.js
+- feat-\*.md: links.js, inputs-fresh.js, artifact-metadata.js
+- \*.retro.md checker: links.js, inputs-fresh.js, artifact-metadata.js
 
 ## Scripts
 

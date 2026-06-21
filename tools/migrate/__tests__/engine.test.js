@@ -317,6 +317,184 @@ See [dep](./dep.md).
   });
 });
 
+describe('ops: merge-checker-basenames', () => {
+  function writePaths(content) {
+    const path = join(tmpDir, '.pythia/config/paths.md');
+    writeFileSync(path, content, 'utf8');
+    return path;
+  }
+
+  const op = {
+    op: 'merge-checker-basenames',
+    path: '.pythia/config/paths.md',
+    section: 'Workflow docs',
+    rules: [
+      {
+        glob: '*.plan.md',
+        replace: { 'doc-structure.js': 'structure.js' },
+        append: ['artifact-metadata.js'],
+      },
+    ],
+  };
+
+  it('renames structure checker and appends metadata checker', async () => {
+    await seedWorkspace(tmpDir);
+    const path = writePaths(`# Paths
+
+## Workflow docs
+
+- *.plan.md  checker: links.js, doc-structure.js
+`);
+    const result = runOp(tmpDir, op, [], false, '9.9.9');
+    expect(result.status).toBe('applied');
+    const out = readFileSync(path, 'utf8');
+    expect(out).toContain('links.js, structure.js, artifact-metadata.js');
+    expect(out).not.toContain('doc-structure.js');
+  });
+
+  it('preserves custom checkers and is idempotent', async () => {
+    await seedWorkspace(tmpDir);
+    const path = writePaths(`# Paths
+
+## Workflow docs
+
+- *.plan.md  checker: custom.js, doc-structure.js
+`);
+    runOp(tmpDir, op, [], false, '9.9.9');
+    const second = runOp(tmpDir, op, [], false, '9.9.9');
+    expect(second.status).toBe('skipped');
+    expect(readFileSync(path, 'utf8')).toContain('custom.js, structure.js, artifact-metadata.js');
+  });
+
+  it('adds missing workflow artifact rows without replacing existing rows', async () => {
+    await seedWorkspace(tmpDir);
+    const path = writePaths(`# Paths
+
+## Workflow docs
+
+- *.plan.md  checker: custom.js, doc-structure.js
+`);
+    const result = runOp(
+      tmpDir,
+      {
+        ...op,
+        rules: [
+          {
+            glob: '*.plan.md',
+            replace: { 'doc-structure.js': 'structure.js' },
+            append: ['artifact-metadata.js'],
+            checkers: ['links.js', 'structure.js', 'artifact-metadata.js'],
+          },
+          {
+            glob: '*.context.md',
+            checkers: ['links.js', 'inputs-fresh.js', 'artifact-metadata.js'],
+          },
+        ],
+      },
+      [],
+      false,
+      '9.9.9',
+    );
+    expect(result.status).toBe('applied');
+    const out = readFileSync(path, 'utf8');
+    expect(out).toContain('links.js, structure.js, artifact-metadata.js, custom.js');
+    expect(out).toContain('- *.context.md  checker: links.js, inputs-fresh.js, artifact-metadata.js');
+  });
+});
+
+describe('ops: migrate-artifact-metadata', () => {
+  it('migrates workflow plans to universal body metadata and is idempotent', async () => {
+    await seedWorkspace(tmpDir);
+    const plans = join(tmpDir, '.pythia/workflows/features/feat-2026-05-test/plans');
+    mkdirSync(plans, { recursive: true });
+    const planPath = join(plans, '1-test.plan.md');
+    writeFileSync(planPath, `# Plan 1-test: Test
+
+## Metadata
+
+- **Plan-Id**: 1-test
+- **Plan-Version**: v1
+- **Status**: Draft
+- **Branch**: main
+- **Last review round**: none
+
+## Plan revision log
+
+| Version | Round | Date |
+| ------- | ----- | ---- |
+| v1 | — | 2026-06-21 |
+`, 'utf8');
+
+    const op = {
+      op: 'migrate-artifact-metadata',
+      root: '.pythia/workflows',
+      patterns: ['*.plan.md'],
+      schema: 'pythia-artifact-v1',
+      strict: true,
+    };
+    const result = runOp(tmpDir, op, [], false, '9.9.9');
+    expect(result.status).toBe('applied');
+    const out = readFileSync(planPath, 'utf8');
+    expect(out).toContain('- **Schema**: pythia-artifact-v1');
+    expect(out).toContain('- **Id**: 1-test');
+    expect(out).toContain('- **Version**: v1');
+    expect(out).not.toContain('Plan-Id');
+    expect(runOp(tmpDir, op, [], false, '9.9.9').status).toBe('skipped');
+  });
+
+  it('migrates modular metadata scopes outside workflow artifacts', async () => {
+    await seedWorkspace(tmpDir);
+    const legacyCtx = join(tmpDir, '.pythia/ctx');
+    const globalCtx = join(tmpDir, '.pythia/contexts/architecture');
+    mkdirSync(legacyCtx, { recursive: true });
+    mkdirSync(globalCtx, { recursive: true });
+    writeFileSync(join(legacyCtx, 'legacy.ctx.md'), `---
+type: ctx
+shape: notes
+status: ready
+tags: context
+---
+# Legacy Global
+
+Body.
+`, 'utf8');
+    writeFileSync(join(globalCtx, 'current.context.md'), `---
+type: context
+shape: notes
+status: ready
+tags: context
+---
+# Current Global
+
+Body.
+`, 'utf8');
+
+    const result = runOp(
+      tmpDir,
+      {
+        op: 'migrate-artifact-metadata',
+        scopes: [
+          { name: 'legacy-global-contexts', root: '.pythia/ctx', patterns: ['*.ctx.md'] },
+          { name: 'global-contexts', root: '.pythia/contexts', patterns: ['*.context.md'] },
+        ],
+        schema: 'pythia-artifact-v1',
+        strict: true,
+      },
+      [],
+      false,
+      '9.9.9',
+    );
+
+    expect(result.status).toBe('applied');
+    expect(result.changedPaths).toEqual(expect.arrayContaining([
+      '.pythia/ctx/legacy.ctx.md',
+      '.pythia/contexts/architecture/current.context.md',
+    ]));
+    expect(readFileSync(join(legacyCtx, 'legacy.ctx.md'), 'utf8')).toContain('- **Schema**: pythia-artifact-v1');
+    expect(readFileSync(join(globalCtx, 'current.context.md'), 'utf8')).toContain('- **Schema**: pythia-artifact-v1');
+  });
+});
+
 // ─── state file ───────────────────────────────────────────────────────────────
 
 describe('state file', () => {
@@ -593,6 +771,149 @@ describe('skill handoff: complete llm step via materialized .pythia/runtime', ()
 // ─── verify: invalid workflow doc fails closed ────────────────────────────────
 
 describe('verify: invalid workflow doc fails closed via materialized runtime', () => {
+  it('schema-tagged .plan.md missing required metadata exits 1', async () => {
+    await doInit(makeWorkspaceOpts(tmpDir));
+    await doUpdate(makeWorkspaceOpts(tmpDir));
+
+    const m = readManifest(tmpDir);
+    const fwVersion = m.frameworkVersion;
+
+    const planDir = join(tmpDir, '.pythia', 'workflows', 'features', 'schema', 'plans');
+    mkdirSync(planDir, { recursive: true });
+    const weakPlan = join(planDir, 'schema-weak.plan.md');
+    writeFileSync(weakPlan, `# Plan schema-weak: Schema Weak
+
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: schema-weak
+- **Title**: Schema Weak
+- **Artifact**: plan
+
+## Plan revision log
+
+| Version | Round | Date |
+| --- | --- | --- |
+| v1 | - | 2026-06-21 |
+
+## Navigation
+
+Plan: [Step 1: x](#step-1-x)
+
+## Context
+
+x
+
+## Goal
+
+x
+
+## Plan
+
+### Step 1: x
+
+- **Change**: x
+- **Where**: x
+- **Validation**: x
+- **Acceptance**: x
+
+## Acceptance Criteria
+
+- [ ] x
+`);
+
+    writeState(tmpDir, {
+      migrationVersion: '0.0.6',
+      frameworkVersion: fwVersion,
+      changedPaths: ['.pythia/workflows/features/schema/plans/schema-weak.plan.md'],
+      appliedSteps: [],
+      llmRemaining: false,
+      backups: [],
+    }, false);
+
+    const result = spawnSync(
+      'npm', ['--prefix', join(tmpDir, '.pythia'), 'run', 'migrate:verify', '--', '0.0.6'],
+      { cwd: tmpDir, encoding: 'utf8' }
+    );
+    expect(result.status).toBe(1);
+    expect(result.stdout + result.stderr).toContain('[FAIL]');
+    expect(result.stdout + result.stderr).toContain('schema metadata missing required field: Status');
+  });
+
+  it('schema-tagged .plan.md with legacy cleanup fields passes migration verify', async () => {
+    await doInit(makeWorkspaceOpts(tmpDir));
+    await doUpdate(makeWorkspaceOpts(tmpDir));
+
+    const m = readManifest(tmpDir);
+    const fwVersion = m.frameworkVersion;
+
+    const planDir = join(tmpDir, '.pythia', 'workflows', 'features', 'schema', 'plans');
+    mkdirSync(planDir, { recursive: true });
+    const plan = join(planDir, 'schema-legacy-fields.plan.md');
+    writeFileSync(plan, `# Plan schema-legacy-fields: Schema Legacy Fields
+
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: schema-legacy-fields
+- **Title**: Schema Legacy Fields
+- **Artifact**: plan
+- **Status**: Draft
+- **Version**: v1
+- **Branch**: main
+- **Round**: none
+- **Created**: 2026-06-21
+- **Updated**: 2026-06-21
+
+## Plan revision log
+
+| Version | Round | Date |
+| --- | --- | --- |
+| v1 | none | 2026-06-21 |
+
+## Navigation
+
+Plan: [Step 1: x](#step-1-x)
+
+## Context
+
+x
+
+## Goal
+
+x
+
+## Plan
+
+### Step 1: x
+
+- **Change**: x
+- **Where**: x
+- **Validation**: x
+- **Acceptance**: x
+
+## Acceptance Criteria
+
+- [ ] x
+`);
+
+    writeState(tmpDir, {
+      migrationVersion: '0.0.6',
+      frameworkVersion: fwVersion,
+      changedPaths: ['.pythia/workflows/features/schema/plans/schema-legacy-fields.plan.md'],
+      appliedSteps: [],
+      llmRemaining: false,
+      backups: [],
+    }, false);
+
+    const result = spawnSync(
+      'npm', ['--prefix', join(tmpDir, '.pythia'), 'run', 'migrate:verify', '--', '0.0.6'],
+      { cwd: tmpDir, encoding: 'utf8' }
+    );
+    expect(result.status).toBe(0);
+    expect(result.stdout + result.stderr).toContain('verify 0.0.6: OK');
+  });
+
   it('marker-bearing malformed .plan.md (has ## Goal but missing required sections) exits 1', async () => {
     await doInit(makeWorkspaceOpts(tmpDir));
     await doUpdate(makeWorkspaceOpts(tmpDir)); // materializes .pythia/runtime/
@@ -766,5 +1087,29 @@ describe('migration parser', () => {
     expect(steps[0].kind).toBe('auto');
     expect(steps[1].kind).toBe('llm');
     expect(migrationHasLlm(steps)).toBe(true);
+  });
+
+  it('parses JSON auto op blocks', () => {
+    const content = `# Migration next
+
+## Step 1
+
+**Target**: \`.pythia/config/paths.md\`
+**Kind**: auto
+**Check**: test
+
+**Op:**
+\`\`\`json
+{
+  "op": "merge-checker-basenames",
+  "path": ".pythia/config/paths.md",
+  "section": "Workflow docs",
+  "rules": [{ "glob": "*.plan.md", "append": ["artifact-metadata.js"] }]
+}
+\`\`\`
+`;
+    const steps = parseMigration(content);
+    expect(steps).toHaveLength(1);
+    expect(steps[0].op.rules[0].append).toEqual(['artifact-metadata.js']);
   });
 });

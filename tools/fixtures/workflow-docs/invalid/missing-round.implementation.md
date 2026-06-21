@@ -1,8 +1,20 @@
 # Implementation Report: x
 
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: missing-round-implementation
+- **Title**: Implementation Report: x
+- **Artifact**: implementation-report
+- **Feature**: fixture
+- **Status**: completed
+- **Plan**: plans/missing-round.plan.md
+- **Plan-Version**: v1
+- **Review**: reports/missing-round.review.md
+- **Round**: I1
+- **Result**: implemented
+
 Date: 2026-01-01
-Plan: [p](../plans/x.plan.md)
-Review: [r](./x.review.md)
 
 ## Plan–Implementation Compatibility
 

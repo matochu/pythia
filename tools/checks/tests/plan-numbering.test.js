@@ -12,7 +12,7 @@ function run(file) {
 }
 
 function minPlan(n, slug) {
-  return `---\n---\n# Plan ${n}-${slug}\n## Metadata\n- **Plan-Id**: ${n}-${slug}\n- **Plan-Version**: v1\n- **Status**: Draft\n- **Branch**: main\n- **Last review round**: none\n## Plan revision log\n| Version | Round | Date | Changed Steps | Summary |\n| --- | --- | --- | --- | --- |\n| v1 | — | 2026-01-01 | all | initial |\n## Navigation\n## Context\n## Goal\n## Plan\n### Step 1: x\n- **Change**: x\n- **Where**: x\n- **Validation**: x\n- **Acceptance**: x\n## Acceptance Criteria\n- [ ] done\n`;
+  return `---\n---\n# Plan ${n}-${slug}\n## Metadata\n- **Schema**: pythia-artifact-v1\n- **Id**: ${n}-${slug}\n- **Title**: ${slug}\n- **Artifact**: plan\n- **Feature**: feat-2026-05-test\n- **Status**: Draft\n- **Version**: v1\n- **Tags**: test\n- **Branch**: main\n- **Round**: none\n## Plan revision log\n| Version | Round | Date | Changed Steps | Summary |\n| --- | --- | --- | --- | --- |\n| v1 | — | 2026-01-01 | all | initial |\n## Navigation\n## Context\n## Goal\n## Plan\n### Step 1: x\n- **Change**: x\n- **Where**: x\n- **Validation**: x\n- **Acceptance**: x\n## Acceptance Criteria\n- [ ] done\n`;
 }
 
 let dir;

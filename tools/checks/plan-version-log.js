@@ -2,8 +2,8 @@
 /**
  * Checker #2: Static plan-version consistency check.
  * On a .plan.md, asserts:
- *   (a) Plan-Version exists
- *   (b) newest Plan revision log row Version == Plan-Version
+ *   (a) Version exists
+ *   (b) newest Plan revision log row Version == metadata Version
  *   (c) Navigation covers all steps
  *   (d) [optional, fail-open] if inside a git repo, warn when body changed vs HEAD but Plan-Version/log not bumped
  *
@@ -14,6 +14,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { extractMetaValue } from '../lib/md.js';
+import { parseArtifactMetadata, getArtifactField } from '../lib/metadata/parse.js';
 
 const [file] = process.argv.slice(2);
 if (!file) { console.error('Usage: node .pythia/runtime/checks/plan-version-log.js <file.plan.md>'); process.exit(2); }
@@ -24,10 +25,12 @@ const lines = content.split('\n');
 
 let failed = false;
 
-// (a) Plan-Version exists
-const planVersion = extractMetaValue(content, 'Plan-Version');
+const parsedMetadata = parseArtifactMetadata(content);
+
+// (a) Version exists
+const planVersion = getArtifactField(parsedMetadata, 'Version') ?? extractMetaValue(content, 'Plan-Version');
 if (!planVersion) {
-  console.error(`${file}:0: [plan-version-log.missing_version] Plan-Version not found in ## Metadata`);
+  console.error(`${file}:0: [plan-version-log.missing_version] Version not found in ## Metadata`);
   failed = true;
 }
 
@@ -49,7 +52,7 @@ if (logHeader !== -1) {
     }
   }
   if (planVersion && lastLogVersion && lastLogVersion !== planVersion) {
-    console.error(`${file}:0: [plan-version-log.version_mismatch] Plan-Version (${planVersion}) does not match newest revision log row (${lastLogVersion})`);
+    console.error(`${file}:0: [plan-version-log.version_mismatch] Version (${planVersion}) does not match newest revision log row (${lastLogVersion})`);
     failed = true;
   }
 }
@@ -72,13 +75,13 @@ try {
   const gitShow = spawnSync('git', ['show', `HEAD:${file}`], { encoding: 'utf8' });
   if (gitShow.status === 0 && gitShow.stdout.trim()) {
     const headContent = gitShow.stdout;
-    const headVersion = extractMetaValue(headContent, 'Plan-Version');
+    const headVersion = getArtifactField(parseArtifactMetadata(headContent), 'Version') ?? extractMetaValue(headContent, 'Plan-Version');
     // Strip frontmatter for body comparison
     const bodyOf = (c) => { const idx = c.indexOf('\n---\n', 4); return idx > 0 ? c.slice(idx) : c; };
     const currentBody = bodyOf(content);
     const headBody = bodyOf(headContent);
     if (headVersion && planVersion && headVersion === planVersion && currentBody !== headBody) {
-      console.error(`${file}:0: [plan-version-log.content_changed_no_bump] Plan content changed vs HEAD but Plan-Version (${planVersion}) was not bumped (best-effort, fail-open)`);
+      console.error(`${file}:0: [plan-version-log.content_changed_no_bump] Plan content changed vs HEAD but Version (${planVersion}) was not bumped (best-effort, fail-open)`);
       // warn only — do not set failed=true; this is the optional fail-open branch
     }
   }

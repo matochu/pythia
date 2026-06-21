@@ -275,6 +275,15 @@ main();
     mkdirSync(runtimeDir, { recursive: true });
     cpSync(packagePathsSrc, join(runtimeDir, 'package-paths.md'), { force: true });
   }
+  const contractRefSrc = join(packageRoot, 'skills', 'workflow', 'references', 'artifact-metadata.md');
+  if (existsSync(contractRefSrc)) {
+    const contractDoc = readFileSync(contractRefSrc, 'utf8');
+    const contractMatch = contractDoc.match(/```json artifact-metadata-contract\n([\s\S]*?)\n```/);
+    if (contractMatch) {
+      mkdirSync(runtimeDir, { recursive: true });
+      writeFileSync(join(runtimeDir, 'metadata-contract.json'), contractMatch[1], 'utf8');
+    }
+  }
   ensurePythiaGitignore(target, dryRun);
   return resolve(join(runtimeDir, 'hooks'));
 }

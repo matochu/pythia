@@ -22,22 +22,18 @@
 ## Metadata
 
 Top-level section at the very beginning of the file. This is the current snapshot of the review artifact, not a history log.
+Metadata follows [artifact-metadata.md](artifact-metadata.md). Use artifact type `review`; do not duplicate or extend metadata fields in this format.
 
 ```markdown
 ## Metadata
 
-- **Plan**: [plans/{plan-slug}.plan.md](../plans/{plan-slug}.plan.md)
-- **Plan Version**: v{plan-version}
-- **Last Status**: {READY | NEEDS_REVISION}
-- **Last Review Round**: R{round}
+{metadata for artifact type `review` from artifact-metadata.md}
 ```
 
 - Create this section if the file is new
 - Update it on every new review round
-- `Plan Version` = the version of the plan reviewed in the current round
-- `Last Status` = the verdict of the most recently appended review round
-- `Last Review Round` = the most recently appended round identifier
 - Keep this section file-level only; do not duplicate it inside round blocks
+- Round blocks still keep historical `Verdict: READY | NEEDS_REVISION` lines.
 
 ---
 
@@ -86,7 +82,7 @@ Each review round appends one block at the end of the file:
 ```markdown
 ## {plan-slug} R{n} — YYYY-MM-DD
 
-Review for: [{Plan-Id} {Plan-Version}](../plans/{plan-slug}.plan.md)
+Review for: [{Id} {Version}](../plans/{plan-slug}.plan.md)
 Verdict: READY | NEEDS_REVISION
 
 ## Executive Summary
@@ -137,9 +133,9 @@ Verdict: READY | NEEDS_REVISION
 ## Key Fields
 
 - **Metadata.Plan**: canonical link to the current plan artifact
-- **Metadata.Plan Version**: latest plan version reviewed by this file
-- **Metadata.Last Status**: current top-level verdict snapshot for the file
-- **Metadata.Last Review Round**: latest review round appended to this file
+- **Metadata.Plan-Version**: latest plan version reviewed by this file
+- **Metadata.Verdict**: current top-level verdict snapshot for the file
+- **Metadata.Round**: latest review round appended to this file
 - **Verdict**: READY | NEEDS_REVISION
 - **Status per step**: OK | CONCERN-LOW | CONCERN-MEDIUM | CONCERN-HIGH | BLOCKED
 - **Evidence**: File paths with line numbers, symbol names, documentation links — concrete, not vague

@@ -17,11 +17,11 @@ let workspaceDir;
 
 beforeAll(async () => {
   workspaceDir = await freshInstalledWorkspace('pythia-ws-health-');
-});
+}, 30000);
 
 afterAll(() => {
   if (workspaceDir) rmSync(workspaceDir, { recursive: true, force: true });
-});
+}, 30000);
 
 describe('checkWorkspaceHealth', () => {
   it('reports OK for fully installed workspace', () => {
@@ -30,6 +30,7 @@ describe('checkWorkspaceHealth', () => {
     expect(result.checks.some((c) => c.level === 'fail')).toBe(false);
     expect(result.checks.find((c) => c.id === 'workspace')?.level).toBe('ok');
     expect(result.checks.find((c) => c.id === '.pythia/runtime/hooks/post.js')?.level).toBe('ok');
+    expect(result.checks.find((c) => c.id === '.pythia/runtime/metadata-contract.json')?.level).toBe('ok');
     expect(result.checks.find((c) => c.id === 'inputs.project-root')?.level).toBe('ok');
     expect(result.checks.find((c) => c.id === 'inputs.cli')?.level).toBe('ok');
   });

@@ -2,11 +2,16 @@
 
 ## Metadata
 
-- **Plan-Id**: fixture-plan
-- **Plan-Version**: v2
+- **Schema**: pythia-artifact-v1
+- **Id**: a-round.valid
+- **Title**: Valid audit-driven replan
+- **Artifact**: plan
+- **Feature**: fixture
 - **Status**: Draft
+- **Version**: v2
+- **Tags**: plan
 - **Branch**: TBD
-- **Last review round**: Initial plan — no review yet
+- **Round**: Initial plan — no review yet
 
 ## Plan revision log
 

@@ -7,15 +7,20 @@
 ```markdown
 # Retrospective: {plan-slug}
 
-**Plan**: {Plan-Id} {Plan-Version}  
-**Plan File**: `plans/{plan-slug}.plan.md`  
-**Status**: Implemented  
-**Retrospective Date**: YYYY-MM-DD
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: {plan-slug}-retro
+- **Title**: {retrospective-title}
+- **Artifact**: retro
+- **Feature**: {feature-id}
+- **Status**: completed
+
+Metadata follows the canonical field matrix in `artifact-metadata.md`. Keep source plan, implementation, review, and audit evidence in body sections below instead of adding ad hoc metadata fields.
 
 ## Plan Summary
 
 - **Plan Title**: {Title from plan}
-- **Plan Version**: v{version}
 - **Creation Date**: {date}
 - **Implementation Date**: {date from implementation report}
 - **Audit Date**: {date from audit report}

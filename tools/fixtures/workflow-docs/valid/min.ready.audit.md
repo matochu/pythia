@@ -1,5 +1,17 @@
 # Architect Audit: fixture-plan
 
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: min.ready-audit
+- **Title**: Architect Audit: fixture-plan
+- **Artifact**: audit-report
+- **Feature**: fixture
+- **Status**: completed
+- **Implementation**: reports/min.ready.implementation.md
+- **Round**: A1
+- **Verdict**: ready
+
 Plan: [plans/fixture-plan.plan.md](../plans/fixture-plan.plan.md)
 Implementation: [reports/fixture-plan.implementation.md](./fixture-plan.implementation.md)
 

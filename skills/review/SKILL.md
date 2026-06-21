@@ -89,7 +89,7 @@ You are the **Reviewer** ([reviewer.md](../../agents/reviewer.md)). **Doc contex
 **Output**:
 
 1. **Review block** for appending to `{feature-dir}/reports/{plan-slug}.review.md` with round header **`## {plan-slug} R{round} — YYYY-MM-DD`** (use date from `date +%Y-%m-%d`). Round = next after existing rounds in that file (count existing `## … R…` headers), or 1 if the file is new. Feature directory is determined from feature context (feat doc path).
-2. **Update `## Metadata`** at the top of the review file: set `Plan`, `Plan Version`, `Last Status`, and `Last Review Round` to match the plan version and verdict of the round you are appending. Create the Metadata section if the file is new.
+2. **Update `## Metadata`** at the top of the review file using [artifact-metadata.md](workflow/references/artifact-metadata.md), artifact type `review`. Set the canonical review metadata to match the plan path, plan version, round, and verdict you are appending. Create the Metadata section if the file is new.
 3. **Update `## Navigation`** at the top of the review file: append new round entry to the Rounds line — `· [R{n} — YYYY-MM-DD — {VERDICT}](#anchor)`. Create the Navigation section if the file is new.
 4. **Structured response** in chat using Reviewer Response Format (plain Markdown) — see [response-formats.md](../workflow/references/response-formats.md) for format specification.
 5. **Link to this round** in your response (full path to file + section header) so Architect or user can copy/reference it for `/replan`.
@@ -205,7 +205,7 @@ Focus on problems: reviews are for improvement and working with errors. For OK s
   - **`/loop` exception**: If the orchestrator already documented successful validation (**exit `0`**) for this revision, skip nested Validator — state that.
   - **Inline fallback**: see terminal **Exception** above; do not skip validation.
 - Verify review includes Verdict (READY | NEEDS_REVISION)
-- Verify `## Metadata` exists and `Plan`, `Plan Version`, `Last Status`, and `Last Review Round` match the latest appended round
+- Verify `## Metadata` exists and the canonical review metadata matches the latest appended round
 - Verify round header format is correct: `## {plan-slug} R{round} — YYYY-MM-DD` (date from `date +%Y-%m-%d`)
 - Verify `## Navigation` is updated with new round entry (verdict included)
 - Verify findings are categorized (gap, risk, ambiguity, infeasible, missing-validation, wrong-assumption)

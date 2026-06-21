@@ -1,5 +1,17 @@
 # Architect Audit: x
 
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: ready-no-commit-audit
+- **Title**: Architect Audit: x
+- **Artifact**: audit-report
+- **Feature**: fixture
+- **Status**: completed
+- **Implementation**: reports/ready-no-commit.implementation.md
+- **Round**: A1
+- **Verdict**: ready
+
 Plan: [p](../plans/x.plan.md)
 Implementation: [i](./x.implementation.md)
 

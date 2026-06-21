@@ -6,6 +6,25 @@ import { fileURLToPath } from 'url';
 import { readState } from './state.js';
 import { readManifest } from './manifest.js';
 import { verifyPathsMdWorkflowDocs } from '../lib/paths-md-invariants.js';
+import { parseArtifactMetadata, getArtifactField, inferArtifactType } from '../lib/metadata/parse.js';
+import {
+  SCHEMA_VERSION,
+  OPTIONAL_FIELDS,
+  UNIVERSAL_FIELDS,
+  artifactTypes,
+  schemaForArtifact,
+} from '../lib/metadata/schema.js';
+
+const MIGRATION_TOLERATED_LEGACY_FIELDS = new Set([
+  'Created',
+  'Updated',
+  'Subject',
+  'Subject-Version',
+  'Plan-Id',
+  'Last review round',
+  'Last Review Round',
+  'Last Status',
+]);
 
 // Target derived from this script's materialized location: .pythia/runtime/migrate/verify.js
 const targetRoot = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../../..'));
@@ -42,9 +61,49 @@ if (!changedPaths || changedPaths.length === 0) {
 // Inline structural validator for workflow documents.
 // Mirrors the section-level checks in scripts/validate-plan.sh and scripts/validators/*.sh.
 // Returns {ok, reason}.
+function validateSchemaMetadata(content, relpath) {
+  const metadata = parseArtifactMetadata(content);
+  if (metadata.duplicate) return { ok: false, reason: 'schema metadata has duplicate ## Metadata sections' };
+
+  const schema = getArtifactField(metadata, 'Schema');
+  if (schema !== SCHEMA_VERSION) {
+    return { ok: false, reason: `schema metadata missing Schema ${SCHEMA_VERSION}` };
+  }
+
+  const metadataArtifact = getArtifactField(metadata, 'Artifact');
+  const artifact = inferArtifactType(relpath, metadataArtifact);
+  const spec = schemaForArtifact(artifact);
+  if (!artifact || !spec) {
+    return { ok: false, reason: `schema metadata Artifact must be one of: ${artifactTypes().join(', ')}` };
+  }
+
+  const allowed = new Set([...UNIVERSAL_FIELDS, ...OPTIONAL_FIELDS]);
+  const unknown = metadata.entries.find((entry) =>
+    !allowed.has(entry.key) && !MIGRATION_TOLERATED_LEGACY_FIELDS.has(entry.key)
+  );
+  if (unknown) return { ok: false, reason: `schema metadata unknown field: ${unknown.key}` };
+
+  const missing = spec.required.find((key) => !getArtifactField(metadata, key));
+  if (missing) return { ok: false, reason: `schema metadata missing required field: ${missing}` };
+
+  for (const [key, values] of Object.entries(spec.enums ?? {})) {
+    const value = getArtifactField(metadata, key);
+    if (value && !values.includes(value)) {
+      return { ok: false, reason: `schema metadata ${key} must be one of: ${values.join(' | ')} (got: ${value})` };
+    }
+  }
+
+  return { ok: true };
+}
+
 function validateWorkflowDoc(content, relpath) {
   if (!content || content.trim().length === 0) {
     return { ok: false, reason: 'file is empty' };
+  }
+
+  const metadata = parseArtifactMetadata(content);
+  if (getArtifactField(metadata, 'Schema') === SCHEMA_VERSION) {
+    return validateSchemaMetadata(content, relpath);
   }
 
   if (relpath.endsWith('.plan.md')) {

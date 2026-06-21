@@ -4,7 +4,15 @@ Pythia installs **PreToolUse**, **PostToolUse**, and **Stop** hooks into the wor
 
 ## PostToolUse warnings ≠ Validator PASS
 
-After **Edit/Write** on workflow `*.md` files, `post.js` runs structural checkers (`doc-structure.js`, `links.js`, …) and emits **warnings to stderr only**. Hooks **never block** saves.
+After **Edit/Write** on workflow `*.md` files, `post.js` runs advisory maintenance and structural checkers, then emits **warnings to stderr only**. Hooks **never block** saves.
+
+Hook order for workflow docs:
+
+1. `metadata/sync.js` updates derived metadata snapshots for plans, reviews, implementation reports, and audits.
+2. Configured post-commands run next, including `inputs.js sync` when enabled by `## Post-commands`.
+3. Workflow checkers from `## Workflow docs` run last (`structure.js`, `links.js`, `inputs-fresh.js`, `artifact-metadata.js`, ...).
+
+This order lets checkers read the current metadata/input snapshot. It is still advisory; only `/validate` exit `0` is a validation pass.
 
 | Signal | Meaning |
 |--------|---------|

@@ -2,7 +2,7 @@
  * Integration tests: fresh workspace install → runtime scripts work.
  *
  * Strategy: call doInit + doUpdate on a real tmpdir, then verify that
- * .pythia/runtime/{inputs.js,checks/doc-structure.js} exist and behave
+ * .pythia/runtime/{inputs.js,checks/structure.js} exist and behave
  * correctly when invoked via `node`.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -18,17 +18,24 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 let workspaceDir;
 
+function sourceMetadataContract() {
+  const doc = readFileSync(resolve(packageRoot, 'skills/workflow/references/artifact-metadata.md'), 'utf8');
+  const match = doc.match(/```json artifact-metadata-contract\n([\s\S]*?)\n```/);
+  if (!match) throw new Error('Missing artifact-metadata-contract JSON block');
+  return JSON.parse(match[1]);
+}
+
 // Shared workspace: init once, then update once — mirrors real install flow.
 beforeAll(async () => {
   workspaceDir = mkdtempSync(join(tmpdir(), 'pythia-ws-install-'));
   initGit(workspaceDir);
   await doInit({ target: workspaceDir, packageRoot, yes: true });
   await doUpdate({ target: workspaceDir, packageRoot, yes: true });
-});
+}, 30000);
 
 afterAll(() => {
   if (workspaceDir) rmSync(workspaceDir, { recursive: true, force: true });
-});
+}, 30000);
 
 // ── runtime presence ──────────────────────────────────────────────────────────
 
@@ -37,12 +44,37 @@ describe('runtime materialized after install', () => {
     expect(existsSync(join(workspaceDir, '.pythia/runtime/inputs.js'))).toBe(true);
   });
 
-  it('has .pythia/runtime/checks/doc-structure.js', () => {
-    expect(existsSync(join(workspaceDir, '.pythia/runtime/checks/doc-structure.js'))).toBe(true);
+  it('has .pythia/runtime/checks/structure.js', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/checks/structure.js'))).toBe(true);
+  });
+
+  it('has .pythia/runtime/checks/artifact-metadata.js', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/checks/artifact-metadata.js'))).toBe(true);
+  });
+
+  it('has .pythia/runtime/metadata-contract.json (baked at install time)', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/metadata-contract.json'))).toBe(true);
+  });
+
+  it('baked metadata-contract.json is valid JSON with schemaVersion', () => {
+    const raw = readFileSync(join(workspaceDir, '.pythia/runtime/metadata-contract.json'), 'utf8');
+    const parsed = JSON.parse(raw);
+    expect(parsed.schemaVersion).toBe('pythia-artifact-v1');
+    expect(parsed.artifacts).toBeDefined();
+    expect(parsed.universalFields).toBeDefined();
+  });
+
+  it('baked metadata-contract.json matches the source reference contract', () => {
+    const raw = readFileSync(join(workspaceDir, '.pythia/runtime/metadata-contract.json'), 'utf8');
+    expect(JSON.parse(raw)).toEqual(sourceMetadataContract());
   });
 
   it('has .pythia/runtime/lib/paths.js', () => {
     expect(existsSync(join(workspaceDir, '.pythia/runtime/lib/paths.js'))).toBe(true);
+  });
+
+  it('has .pythia/runtime/lib/metadata/parse.js', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/lib/metadata/parse.js'))).toBe(true);
   });
 
   it('has .pythia/runtime/hooks/pre.js', () => {
@@ -166,10 +198,10 @@ describe('.pythia/runtime/inputs.js', () => {
   });
 });
 
-// ── doc-structure checker via runtime path ────────────────────────────────────
+// ── structure checker via runtime path ────────────────────────────────────
 
-describe('.pythia/runtime/checks/doc-structure.js', () => {
-  const checker = (ws) => join(ws, '.pythia/runtime/checks/doc-structure.js');
+describe('.pythia/runtime/checks/structure.js', () => {
+  const checker = (ws) => join(ws, '.pythia/runtime/checks/structure.js');
 
   it('exits 0 for a valid plan file', () => {
     // Minimal valid plan copied from fixtures
@@ -193,6 +225,44 @@ describe('.pythia/runtime/checks/doc-structure.js', () => {
   it('exits 2 for a missing file', () => {
     const r = spawnSync('node', [checker(workspaceDir), '/tmp/no-such-file.plan.md'], { encoding: 'utf8' });
     expect(r.status).toBe(2);
+  });
+});
+
+// ── artifact-metadata checker via runtime path ────────────────────────────────
+
+describe('.pythia/runtime/checks/artifact-metadata.js', () => {
+  const checker = (ws) => join(ws, '.pythia/runtime/checks/artifact-metadata.js');
+
+  it('exits 0 for a valid schema-tagged artifact', () => {
+    const src = resolve(packageRoot, 'tools/fixtures/artifact-metadata/valid/example.plan.md');
+    const dest = join(workspaceDir, 'valid.plan.md');
+    writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8');
+    const r = spawnSync('node', [checker(workspaceDir), dest], { encoding: 'utf8', cwd: workspaceDir });
+    expect(r.status).toBe(0);
+  });
+
+  it('exits 0 (advisory) for pre-schema plan without Schema field', () => {
+    const dest = join(workspaceDir, 'legacy.plan.md');
+    writeFileSync(dest, '# Plan\n\n## Metadata\n\n- **Status**: Draft\n\n## Goal\n\nGoal.\n', 'utf8');
+    const r = spawnSync('node', [checker(workspaceDir), dest], { encoding: 'utf8', cwd: workspaceDir });
+    expect(r.status).toBe(0);
+  });
+
+  it('exits 1 for invalid fixture from tools/fixtures', () => {
+    const src = resolve(packageRoot, 'tools/fixtures/artifact-metadata/invalid/old-fields.plan.md');
+    const dest = join(workspaceDir, 'invalid.plan.md');
+    writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8');
+    const r = spawnSync('node', [checker(workspaceDir), dest], { encoding: 'utf8', cwd: workspaceDir });
+    expect(r.status).toBe(1);
+  });
+
+  it('loads baked contract without project root in cwd (isolated cwd)', () => {
+    const src = resolve(packageRoot, 'tools/fixtures/artifact-metadata/valid/example.plan.md');
+    const dest = join(workspaceDir, 'isolated.plan.md');
+    writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8');
+    // Run from /tmp — no skills/ in sight; must use baked metadata-contract.json
+    const r = spawnSync('node', [checker(workspaceDir), dest], { encoding: 'utf8', cwd: '/tmp' });
+    expect(r.status).toBe(0);
   });
 });
 

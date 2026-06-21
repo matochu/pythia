@@ -1,3 +1,16 @@
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: bad-verdict-review
+- **Title**: bad-verdict-review
+- **Artifact**: review
+- **Feature**: fixture
+- **Status**: completed
+- **Plan**: plans/bad-verdict.plan.md
+- **Plan-Version**: v1
+- **Round**: R1
+- **Verdict**: NEEDS_REVISION
+
 ## Navigation
 
 - Rounds: [R1](#x)

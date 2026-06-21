@@ -112,7 +112,7 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
    - Change `Status` from "In Progress" to "Implemented"
    - Add `**Status**: done` to each Step that was completed (based on implementation report)
    - Mark all acceptance criteria checkboxes as `[x]` if they were met
-   - Keep plan metadata (Plan-Version, Last review round) unchanged
+   - Keep plan metadata (`Version`, `Round`) unchanged
 5. **Feature document update** (if decision is "ready"): Update feature document `{feature-dir}/{feature-id}.md`:
    - Find or create `## Plans`
    - Match plan entries by `{plan-slug}`

@@ -20,6 +20,10 @@ import {
   materializeReleasePackage,
   preparePythiaPreRelease,
 } from '../tests/helpers/release-migration.js';
+import {
+  auditArtifactMetadataMigration,
+  formatArtifactMetadataAudit,
+} from '../tests/helpers/artifact-metadata-migration-audit.js';
 import { hasHooksHardeningPaths } from '../tests/helpers/paths-md.js';
 import { parseZones, zone } from '../../lib/paths.js';
 
@@ -53,20 +57,29 @@ for (const f of ['CLAUDE.md', 'AGENTS.md']) {
 preparePythiaPreRelease(ws, { priorVersion });
 
 const pathsBefore = readFileSync(join(ws, '.pythia/config/paths.md'), 'utf8');
-console.log('\nBEFORE: legacy paths=', pathsBefore.includes('tools/checks/doc-structure.js'));
+const metadataBefore = auditArtifactMetadataMigration(ws);
+console.log('\nBEFORE: legacy paths=', pathsBefore.includes('tools/checks/doc-structure.js') || pathsBefore.includes('doc-structure.js'));
+console.log('BEFORE: metadata schema tagged=', `${metadataBefore.schemaTagged}/${metadataBefore.covered}`);
 
 await doUpdate({ target: ws, packageRoot: pkg, yes: true });
 
 const pathsAfter = readFileSync(join(ws, '.pythia/config/paths.md'), 'utf8');
+const metadataAfter = auditArtifactMetadataMigration(ws);
 const m = readManifest(ws);
 const docs = zone(parseZones(pathsAfter), 'Workflow docs');
 const ok =
   m.migratedVersion === releaseVersion &&
   hasHooksHardeningPaths(pathsAfter) &&
   !pathsAfter.includes('tools/checks/doc-structure.js') &&
-  docs.length === 7;
+  !pathsAfter.includes('doc-structure.js') &&
+  pathsAfter.includes('structure.js') &&
+  pathsAfter.includes('artifact-metadata.js') &&
+  docs.length === 7 &&
+  metadataAfter.ok &&
+  metadataAfter.covered === metadataAfter.schemaTagged;
 
 console.log('AFTER: migratedVersion=', m.migratedVersion, 'types=', docs.length);
+console.log(formatArtifactMetadataAudit(metadataAfter, { before: metadataBefore }));
 console.log('VERDICT:', ok ? 'PASS' : 'FAIL');
 console.log('Inspect tmp workspace:', ws);
 process.exit(ok ? 0 : 1);

@@ -28,7 +28,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "test:workflow-doc": "node tools/checks/doc-structure.js tools/fixtures/workflow-docs/valid/*.md",
+    "test:workflow-doc": "node tools/checks/structure.js tools/fixtures/workflow-docs/valid/*.md",
     "release:check-migrations": "node tools/release/check-migrations.js"
   },
   "dependencies": {

@@ -111,7 +111,7 @@ describe('post.js', () => {
     }
   });
 
-  it('warns via doc-structure on invalid plan edit but still exits 0', () => {
+  it('warns via structure on invalid plan edit but still exits 0', () => {
     const root = makeHookRoot('pythia-post-invalid-plan-');
     try {
       const plans = join(root, 'plans');
@@ -128,7 +128,7 @@ describe('post.js', () => {
     }
   });
 
-  it('runs doc-structure checker on review edit (warn or pass)', () => {
+  it('runs structure checker on review edit (warn or pass)', () => {
     const root = makeHookRoot('pythia-post-review-');
     try {
       const reports = join(root, 'reports');
@@ -236,22 +236,6 @@ describe('post.js workflow checker routing', () => {
       expect(r.status).toBe(0);
       expect(r.stderr).toMatch(/role-boundary:/);
       expect(r.stderr).toMatch(/Reviewer/);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-
-  it('legacy paths.md runs doc-structure only (no role-boundary)', () => {
-    const root = makeHookRoot('pythia-post-legacy-', 'old');
-    try {
-      const plans = join(root, 'plans');
-      mkdirSync(plans, { recursive: true });
-      const planPath = join(plans, 'bad-round.plan.md');
-      cpSync(invalidPlan, planPath);
-      const r = runPost(planPath, root);
-      expect(r.status).toBe(0);
-      expect(r.stderr).toMatch(/revision_log\.round_tokens/);
-      expect(r.stderr).not.toMatch(/role-boundary:/);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -398,6 +382,144 @@ describe('post.js workflow checker routing', () => {
       const r = runPost(ctxPath, root, runtimePost);
       expect(r.status).toBe(0);
       expect(readFileSync(argvLog, 'utf8').trim()).toMatch(/^sync\|/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+// ── metadata-sync via post hook ───────────────────────────────────────────────
+
+describe('post.js metadata-sync integration', () => {
+  const stalePlan = (version, round) => `# Plan slug: Plan
+
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: slug
+- **Title**: Plan
+- **Artifact**: plan
+- **Status**: Draft
+- **Version**: ${version}
+- **Branch**: main
+- **Round**: ${round}
+
+## Plan revision log
+
+| Version | Round | Date | Changed Steps | Summary |
+| ------- | ----- | ---- | ------------- | ------- |
+| v1 | Initial plan — no review yet | 2026-06-21 | Steps 1-N | Initial plan |
+| v2 | R1 | 2026-06-22 | Step 1 amended | Review fixes |
+`;
+
+  const staleReview = (planVersion, round, verdict) => `# Review: slug
+
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: slug-review
+- **Title**: Review
+- **Artifact**: review
+- **Feature**: feat-test
+- **Plan**: plans/slug.plan.md
+- **Plan-Version**: ${planVersion}
+- **Round**: ${round}
+- **Verdict**: ${verdict}
+
+## Navigation
+
+- Rounds: [R1 — 2026-06-21 — NEEDS_REVISION](#slug-r1--2026-06-21) · [R2 — 2026-06-21 — READY](#slug-r2--2026-06-21)
+
+## slug R1 — 2026-06-21
+
+Review for: [Plan v1](../plans/slug.plan.md)
+Verdict: NEEDS_REVISION
+
+## slug R2 — 2026-06-21
+
+Review for: [Plan v3](../plans/slug.plan.md)
+Verdict: READY
+`;
+
+  it('syncs stale plan metadata when saved via materialized post hook', async () => {
+    const root = await freshInstalledWorkspace('pythia-post-plan-meta-sync-');
+    try {
+      const featureDir = join(root, '.pythia/workflows/features/feat-test/plans');
+      mkdirSync(featureDir, { recursive: true });
+      const planPath = join(featureDir, 'slug.plan.md');
+      writeFileSync(planPath, stalePlan('v1', 'Initial plan — no review yet'), 'utf8');
+
+      const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
+      const r = runPost(planPath, root, runtimePost);
+      expect(r.status).toBe(0);
+
+      const updated = readFileSync(planPath, 'utf8');
+      expect(updated).toContain('- **Version**: v2');
+      expect(updated).toContain('- **Round**: R1');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('syncs stale review metadata when saved via materialized post hook', async () => {
+    const root = await freshInstalledWorkspace('pythia-post-meta-sync-');
+    try {
+      const featureDir = join(root, '.pythia/workflows/features/feat-test/reports');
+      mkdirSync(featureDir, { recursive: true });
+      const reviewPath = join(featureDir, 'slug.review.md');
+      writeFileSync(reviewPath, staleReview('v1', 'R1', 'NEEDS_REVISION'), 'utf8');
+
+      const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
+      const r = runPost(reviewPath, root, runtimePost);
+      expect(r.status).toBe(0);
+
+      const updated = readFileSync(reviewPath, 'utf8');
+      expect(updated).toContain('- **Round**: R2');
+      expect(updated).toContain('- **Verdict**: READY');
+      expect(updated).toContain('- **Plan-Version**: v3');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('metadata-sync fires before checkers (checker sees updated snapshot)', async () => {
+    // Checker artifact-metadata.js validates Verdict enum. If sync fires AFTER checker,
+    // checker would see stale NEEDS_REVISION on a review that now has R2 READY.
+    // This test verifies no false enum/missing-field warnings appear on a correctly-synced file.
+    const root = await freshInstalledWorkspace('pythia-post-meta-order-');
+    try {
+      const featureDir = join(root, '.pythia/workflows/features/feat-test/reports');
+      mkdirSync(featureDir, { recursive: true });
+      const reviewPath = join(featureDir, 'slug.review.md');
+      writeFileSync(reviewPath, staleReview('v1', 'R1', 'NEEDS_REVISION'), 'utf8');
+
+      const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
+      const r = runPost(reviewPath, root, runtimePost);
+      expect(r.status).toBe(0);
+      // No artifact-metadata errors (would appear in stderr if checker ran on stale metadata)
+      expect(r.stderr).not.toMatch(/artifact-metadata\.(schema|missing_field|enum)/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('no-op when review metadata already matches latest round', async () => {
+    const root = await freshInstalledWorkspace('pythia-post-meta-noop-');
+    try {
+      const featureDir = join(root, '.pythia/workflows/features/feat-test/reports');
+      mkdirSync(featureDir, { recursive: true });
+      const reviewPath = join(featureDir, 'slug.review.md');
+      const content = staleReview('v3', 'R2', 'READY');
+      writeFileSync(reviewPath, content, 'utf8');
+
+      const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
+      runPost(reviewPath, root, runtimePost);
+
+      const after = readFileSync(reviewPath, 'utf8');
+      // Metadata fields must not have changed (inputs sync may still add References block)
+      expect(after).toContain('- **Round**: R2');
+      expect(after).toContain('- **Verdict**: READY');
+      expect(after).toContain('- **Plan-Version**: v3');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

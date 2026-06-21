@@ -4,6 +4,7 @@
  */
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
+import { parseArtifactMetadata, getArtifactField } from '../lib/metadata/parse.js';
 
 export function planSlugFromBasename(base) {
   return base.replace(/\.(plan|review|implementation|audit)\.md$/, '');
@@ -36,11 +37,12 @@ export function extractVerdict(content) {
   return verdict.replace(/\*\*/g, '').trim();
 }
 
-/** Review file Metadata snapshot (review-format.md § Metadata). */
+/** Review file Metadata snapshot. */
 export function extractReviewLastStatus(content) {
+  const verdict = getArtifactField(parseArtifactMetadata(content), 'Verdict');
+  if (verdict) return verdict.replace(/\*\*/g, '').trim();
   const m = content.match(/^- \*\*Last Status\*\*:\s*(.+)$/im);
-  if (!m) return null;
-  return m[1].replace(/\*\*/g, '').trim();
+  return m ? m[1].replace(/\*\*/g, '').trim() : null;
 }
 
 /** Body of the most recently appended review round (or full file if no round headers). */
@@ -50,7 +52,7 @@ export function lastReviewRoundSection(content) {
   return content.slice(matches[matches.length - 1].index);
 }
 
-/** Verdict for nudge routing: Metadata.Last Status, else last round Verdict line. */
+/** Verdict for nudge routing: Metadata.Verdict, else legacy Last Status, else last round Verdict line. */
 export function extractReviewVerdict(content) {
   return extractReviewLastStatus(content) ?? extractVerdict(lastReviewRoundSection(content));
 }

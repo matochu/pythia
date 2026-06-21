@@ -48,7 +48,7 @@ You are the **[Architect (architect.md)](../../agents/architect.md)**. **Doc con
 
 Extract from each artifact and distill into patterns: `[plan]`, `[codebase]`, `[process]`, `[risk]`, `[tooling]`, `[automation]`
 
-**From plans**: Plan title, Plan-Version, status, date created, `## Retrospective` blocks (including `[automation]` entries), `## Decision Log`, revision log, risks, acceptance criteria
+**From plans**: Plan title, metadata Version, status, date created, `## Retrospective` blocks (including `[automation]` entries), `## Decision Log`, revision log, risks, acceptance criteria
 
 **From implementation reports**: Implementation Round blocks, `## Retrospective` sections (including `[automation]` entries), `## Decision Log`, Out-of-Plan Work, BLOCKER/PROBLEM issues, deviations
 

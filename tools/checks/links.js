@@ -14,7 +14,7 @@ if (!file) { console.error('Usage: node .pythia/runtime/checks/links.js <file.md
 if (!existsSync(file)) { console.error(`${file}:0: [io.missing_file] File not found`); process.exit(2); }
 
 const content = readFileSync(file, 'utf8');
-const links = extractRelativeLinks(content);
+const links = extractRelativeLinks(content, { skipFenced: true });
 
 let failed = false;
 for (const { href, line } of links) {

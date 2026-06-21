@@ -1,10 +1,21 @@
 ---
-title: Matt Pocock Skills Project — Full Repository Research
 feature: feat-2026-05-skill-workflow-architecture-improvements
-type: research-context
 ---
 
 # Matt Pocock Skills Project — Full Repository Research
+
+## Metadata
+
+- **Schema**: pythia-artifact-v1
+- **Id**: mattpocock-pre-sync
+- **Title**: Matt Pocock Skills Project — Full Repository Research
+- **Artifact**: context
+- **Feature**: fixture
+- **Status**: ready
+- **Version**: v1
+- **Generator**: ctx
+- **Tags**: context
+- **Shape**: notes
 
 ## Pre-Search Summary
 

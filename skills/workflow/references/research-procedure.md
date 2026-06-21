@@ -79,7 +79,7 @@ Project and feature knowledge is **scattered** across many locations. Before any
   - **Feature**: `{feature-dir}/contexts/{topic}.context.md`
   - **Project**: `.pythia/contexts/{category}/{topic}.context.md` or project-defined category location
 - If no feature is active and no destination was requested, ask the user to choose between feature-scoped research via `/feat` and a global project context before writing. For global context, ask for category and context slug if either is ambiguous.
-- Structure: Problem/scope, Options (with sources), Best practices (with citations), 3rd party solutions (with links), Summary of trade-offs, **Confidence and gaps** (see Output Format). Include metadata (Related Feature, Created, Last Updated).
+- Structure: Problem/scope, Options (with sources), Best practices (with citations), 3rd party solutions (with links), Summary of trade-offs, **Confidence and gaps** (see Output Format). Metadata block follows [artifact-metadata.md](artifact-metadata.md) for artifact type `context`.
 - Update feature’s Related Contexts section if output is feature-scoped.
 - During brainstorm, verify, or update interactions, maintain `## Retrospective` and `## Decision Log` sections automatically when relevant. These sections capture transferable lessons and user research decisions; do not add a chooser action for extracting profile signals.
 

@@ -4,15 +4,16 @@
  * Replaces: validate-plan.sh, validate-workflow-doc.sh, validators/validate-{review,implementation,audit}.sh
  *
  * Usage:
- *   node .pythia/runtime/checks/doc-structure.js <file.md> [--type plan|review|implementation|audit]
+ *   node .pythia/runtime/checks/structure.js <file.md> [--type plan|review|implementation|audit]
  * Exit: 0 = ok, 1 = validation failed, 2 = usage/io error
  */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { basename } from 'node:path';
+import { parseArtifactMetadata, getArtifactField } from '../lib/metadata/parse.js';
 
 function usage() {
-  console.error('Usage: node .pythia/runtime/checks/doc-structure.js <file.md> [--type plan|review|implementation|audit]');
+  console.error('Usage: node .pythia/runtime/checks/structure.js <file.md> [--type plan|review|implementation|audit]');
 }
 
 function die(msg, code = 2) {
@@ -61,7 +62,7 @@ function checkTrailingRefsPlacement(file, lines) {
     const line = lines[i];
     if (line === '## Used by') continue;
     if (/^## /.test(line)) {
-      errors.push(`${file}:${i + 1}: [doc-structure.trailing_refs_not_last] ## References must be the last ## heading (found '${line.slice(3)}' after it)`);
+      errors.push(`${file}:${i + 1}: [structure.trailing_refs_not_last] ## References must be the last ## heading (found '${line.slice(3)}' after it)`);
       break;
     }
   }
@@ -88,9 +89,10 @@ function validatePlan(file, lines) {
   if (!hasLine(lines, /^## Risks/) && !hasLine(lines, /^## Acceptance/))
     errors.push(`${file}:0: [plan.section.required] Missing required section: ## Risks / Unknowns or ## Acceptance Criteria`);
 
+  const parsedMetadata = parseArtifactMetadata(lines.join('\n'));
   const metaSection = sectionLines(lines, '## Metadata');
-  for (const key of ['Plan-Id', 'Plan-Version', 'Status', 'Branch', 'Last review round']) {
-    if (!metaSection.some((l) => l.includes(`**${key}**`)))
+  for (const key of ['Id', 'Version', 'Status', 'Branch', 'Round']) {
+    if (!getArtifactField(parsedMetadata, key))
       errors.push(`${file}:${lineFor(lines, /^## Metadata$/)}: [plan.metadata.keys] Metadata missing: ${key}`);
   }
 
@@ -103,13 +105,13 @@ function validatePlan(file, lines) {
       errors.push(`${file}:${lineFor(lines, /\*\*Status\*\*/)}: [plan.metadata.status_enum] **Status** must be one of: ${valid.join(' | ')} (got: ${val})`);
   }
 
-  // Plan-Version >= v2 requires ## Retrospective
-  const verLine = metaSection.find((l) => /^\s*-\s+\*\*Plan-Version\*\*:/.test(l));
-  if (verLine) {
-    const val = verLine.replace(/^\s*-\s+\*\*Plan-Version\*\*:\s*/, '').trim();
+  // Version >= v2 requires ## Retrospective
+  const versionValue = getArtifactField(parsedMetadata, 'Version');
+  if (versionValue) {
+    const val = versionValue;
     const m = val.match(/^v(\d+)/);
     if (m && parseInt(m[1], 10) >= 2 && !hasLine(lines, /^## Retrospective$/))
-      errors.push(`${file}:0: [plan.retrospective.required] Plan-Version ${val} requires ## Retrospective section`);
+      errors.push(`${file}:0: [plan.retrospective.required] Version ${val} requires ## Retrospective section`);
   }
 
   if (!hasLine(lines, /\| Version \| Round \| Date /))
@@ -234,15 +236,18 @@ function validateReview(file, lines) {
 
 function validateImplementation(file, lines) {
   const errors = checkTrailingRefsPlacement(file, lines);
+  const metadata = parseArtifactMetadata(lines.join('\n'));
+  const planRef = getArtifactField(metadata, 'Plan');
+  const reviewRef = getArtifactField(metadata, 'Review');
 
   if (!hasLine(lines, /^# Implementation Report:/))
     errors.push(`${file}:1: [impl.header.h1] Missing H1 starting with # Implementation Report:`);
 
-  if (!hasLine(lines, /^Plan:.*\.plan\.md/))
-    errors.push(`${file}:${lineFor(lines, /^Plan:/)}: [impl.header.links] Missing Plan: link to .plan.md`);
+  if (!/\.plan\.md$/.test(planRef ?? ''))
+    errors.push(`${file}:${metadata.startLine || 0}: [impl.metadata.plan] Missing metadata Plan ending in .plan.md`);
 
-  if (!hasLine(lines, /^Review:.*\.review\.md/))
-    errors.push(`${file}:${lineFor(lines, /^Review:/)}: [impl.header.links] Missing Review: link to .review.md`);
+  if (!/\.review\.md$/.test(reviewRef ?? ''))
+    errors.push(`${file}:${metadata.startLine || 0}: [impl.metadata.review] Missing metadata Review ending in .review.md`);
 
   if (!hasLine(lines, /^## Plan.{1,5}Implementation Compatibility$/))
     errors.push(`${file}:0: [impl.section.compatibility] Missing ## Plan–Implementation Compatibility (en dash or hyphen between Plan and Implementation)`);

@@ -29,6 +29,11 @@ export function parseMigration(content) {
       // Extract the fenced code block after **Op:**
       const opMatch = block.match(/\*\*Op:\*\*[\s\S]*?```[^\n]*\n([\s\S]*?)```/);
       if (!opMatch) continue;
+      const rawOp = opMatch[1].trim();
+      if (rawOp.startsWith('{')) {
+        steps.push({ stepNum, target, kind: 'auto', check, op: JSON.parse(rawOp) });
+        continue;
+      }
       const opLines = opMatch[1].split('\n');
       const op = {};
       const MULTILINE_KEYS = new Set(['content', 'find', 'replace']);
