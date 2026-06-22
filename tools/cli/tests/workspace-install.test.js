@@ -77,6 +77,13 @@ describe('runtime materialized after install', () => {
     expect(existsSync(join(workspaceDir, '.pythia/runtime/lib/metadata/parse.js'))).toBe(true);
   });
 
+  it('has .pythia/runtime/lib/references modules and compatibility wrappers', () => {
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/lib/references/inputs-core.js'))).toBe(true);
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/lib/references/refs.js'))).toBe(true);
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/lib/inputs-core.js'))).toBe(true);
+    expect(existsSync(join(workspaceDir, '.pythia/runtime/lib/refs.js'))).toBe(true);
+  });
+
   it('has .pythia/runtime/hooks/pre.js', () => {
     expect(existsSync(join(workspaceDir, '.pythia/runtime/hooks/pre.js'))).toBe(true);
   });

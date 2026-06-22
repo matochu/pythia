@@ -19,6 +19,7 @@ function materializeRuntime({ withInputs = true } = {}) {
   const runtimeDir = join(root, '.pythia/runtime');
   mkdirSync(join(runtimeDir, 'checks'), { recursive: true });
   mkdirSync(join(runtimeDir, 'lib'), { recursive: true });
+  cpSync(resolve('tools/lib/references'), join(runtimeDir, 'lib/references'), { recursive: true });
   for (const f of ['refs.js', 'md.js', 'inputs-core.js', 'repo-root.js']) {
     cpSync(resolve(`tools/lib/${f}`), join(runtimeDir, 'lib', f));
   }

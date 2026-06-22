@@ -117,6 +117,9 @@ describe('parseZones', () => {
       '*.retro.md',
     ]);
     expect(docs[1].checker).toContain('role-boundary.js');
+    for (const doc of docs) {
+      expect(doc.checker).toContain('refs-owned.js');
+    }
   });
 
   it('every generated-cache entry has source', () => {

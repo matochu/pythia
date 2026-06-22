@@ -20,7 +20,7 @@ import { resolve, dirname, basename, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { editedPaths, readEvent, repoRoot, warn, isHookEntrypoint, resolveEditedPath } from '../lib/event.js';
 import { loadZones, zone } from '../lib/paths.js';
-import { isPythiaSyncMarkdownRelPath } from '../lib/refs.js';
+import { isPythiaSyncMarkdownRelPath } from '../lib/references/refs.js';
 import { nudge } from './workflow-nudge.js';
 
 const CHECKS = resolve(dirname(fileURLToPath(import.meta.url)), '../checks');

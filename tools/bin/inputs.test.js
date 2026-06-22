@@ -11,8 +11,8 @@ import {
   writeTrailingRefs,
   getBodyContent,
   renderTrailingRegion,
-} from '../lib/refs.js';
-import { deriveDeps, hashFile, isWorkflowConsumerFile, migrateWorkflowInputs } from '../lib/inputs-core.js';
+} from '../lib/references/refs.js';
+import { deriveDeps, hashFile, isWorkflowConsumerFile, migrateWorkflowInputs } from '../lib/references/inputs-core.js';
 import { seedInputsFreshnessMigrationCorpus } from '../cli/tests/helpers/inputs-migration-corpus.js';
 import { TEST_FEATURE_ID, seedPythiaProjectRegistration } from '../cli/tests/helpers/workflow-paths.js';
 
@@ -263,7 +263,7 @@ No links here.
     expect(readFileSync(file, 'utf8')).not.toContain('inputs:');
   });
 
-  it('preserves stored ## References without body link', () => {
+  it('drops stored sync-zone ## References without body link', () => {
     writeDoc(wf('orphan.md'), 'x\n');
     const hash = hashFile(join(root, wf('orphan.md'))).slice(0, 5);
     const file = writeDoc(wf('doc.md'), `# Doc
@@ -276,7 +276,7 @@ Body text only.
 `);
     runInputs(['sync', file]);
     const parsed = parseTrailingRefs(readFileSync(file, 'utf8'));
-    expect(parsed.references.some((r) => r.path.includes('orphan'))).toBe(true);
+    expect(parsed?.references?.some((r) => r.path.includes('orphan'))).not.toBe(true);
   });
 
   it('preserves trailing ## Used by after plan sync then context sync', () => {
@@ -293,6 +293,19 @@ Body text only.
     parsed = parseTrailingRefs(out);
     expect(parsed?.usedBy?.some((u) => u.path.includes('x.plan'))).toBe(true);
     expect(out.indexOf('Body updated')).toBeLessThan(out.indexOf('## Used by'));
+  });
+
+  it('removes stale Used by after consumer stops referencing target without trailing refs', () => {
+    const ctxPath = writeDoc(wf('contexts/ctx.context.md'), '# Context\n\nBody.\n');
+    const plan = writeDoc(wf('plans/x.plan.md'), '# Plan\n\n[ctx](../contexts/ctx.context.md)\n');
+    runInputs(['sync', plan]);
+    let parsed = parseTrailingRefs(readFileSync(ctxPath, 'utf8'));
+    expect(parsed?.usedBy?.some((u) => u.path.includes('x.plan'))).toBe(true);
+
+    writeFileSync(plan, '# Plan\n\nNo links now.\n', 'utf8');
+    runInputs(['sync', plan]);
+    parsed = parseTrailingRefs(readFileSync(ctxPath, 'utf8'));
+    expect(parsed?.usedBy?.some((u) => u.path.includes('x.plan'))).not.toBe(true);
   });
 
   it('--keep-manual is deprecated alias (same as default sync)', () => {
@@ -417,7 +430,7 @@ Uses [ctx](../contexts/x.context.md).
     expect(parsed?.references?.[0]?.path).toBe(ctxRel);
   });
 
-  it('preserves bibliography-only stored ref when target is missing and not cited in body', () => {
+  it('drops bibliography-only internal stored ref when target is missing and not cited in body', () => {
     const plan = writeDoc(wf('plans/plan.plan.md'), `# Plan
 
 No body link to gone.
@@ -429,7 +442,7 @@ No body link to gone.
     const r = runInputs(['sync', plan]);
     expect(r.status).toBe(0);
     const out = readFileSync(plan, 'utf8');
-    expect(out).toMatch(/gone\.md#abc12/);
+    expect(out).not.toMatch(/gone\.md#abc12/);
   });
 
   it('preserves plain bibliography task doc on sync (missing targets + external URLs)', () => {
@@ -468,7 +481,7 @@ Links to related docs.
     const task = writeDoc('.pythia/workflows/tasks/task-knowledge-sharing.md', fixture);
     const r = runInputs(['sync', task, '--verbose']);
     expect(r.status).toBe(0);
-    expect(`${r.stdout}${r.stderr}`).toMatch(/dropped missing target.*confluence-structure/i);
+    expect(`${r.stdout}${r.stderr}`).not.toMatch(/confluence-structure/i);
     const out = readFileSync(task, 'utf8');
     const parsed = parseTrailingRefs(out);
     expect(parsed?.references?.some((ref) => ref.path.includes('documentation-map.md') && ref.hash)).toBe(true);
@@ -699,7 +712,7 @@ Prior work:
     expect(out).toMatch(/\[skill\] \[workflow\]\(skills\/workflow\/SKILL\.md#/);
   });
 
-  it('reclassifies feat-*.retro.md as retro on sync', () => {
+  it('drops mistagged stored sync-zone refs without body links on sync', () => {
     const retroRel = `${WF}/notes/feat-test.retro.md`;
     writeDoc(retroRel, '# Retro\n');
     const plan = writeDoc(wf('plans/p.plan.md'), `# Plan
@@ -710,7 +723,7 @@ Prior work:
 `);
     runInputs(['sync', plan]);
     const out = readFileSync(plan, 'utf8');
-    expect(out).toMatch(/\[retro\] \[feat-test\]/);
+    expect(out).not.toMatch(/feat-test\.retro\.md/);
   });
 
   it('preserves plan ## Contexts bibliography when same deps appear in References', () => {
@@ -832,7 +845,9 @@ Read with [Pythia Workflow Mental Model](pythia-workflow-mental-model.ctx.md).
     expect(out).toMatch(/\[BMAD-METHOD Deep-Dive\]/);
   });
 
-  it('sync refreshes placeholder Used by labels to consumer H1 titles', () => {
+  it('sync drops phantom Used by entries not backed by real rdeps scan', () => {
+    // Old behavior: sync would refresh placeholder labels from cache.
+    // New behavior: sync rebuilds Used by from rdeps scan — entries with no real backlink are dropped.
     writeDoc('.pythia/ctx/target.ctx.md', `# Target Context
 
 ## References
@@ -844,12 +859,13 @@ Read with [Pythia Workflow Mental Model](pythia-workflow-mental-model.ctx.md).
     writeDoc(
       '.pythia/workflows/f/contexts/bmad-method-deep-dive.context.md',
       '# BMAD-METHOD Deep-Dive\n\nBody.\n',
+      // Note: this consumer does NOT have target.ctx.md in its ## References → phantom entry
     );
     const target = join(root, '.pythia/ctx/target.ctx.md');
     expect(runInputs(['sync', target]).status).toBe(0);
     const out = readFileSync(target, 'utf8');
-    expect(out).toMatch(/\[research\] \[BMAD-METHOD Deep-Dive\]/);
-    expect(out).not.toMatch(/\[research\] \[bmad-method-deep-dive\]/);
+    // Phantom entry removed — neither old nor new label appears
+    expect(out).not.toMatch(/bmad-method-deep-dive/);
   });
 
   it('migrateWorkflowInputs does not wipe plain bibliography-only task docs', () => {
@@ -984,5 +1000,55 @@ describe('rdeps', () => {
     runInputs(['sync', user]);
     writeFileSync(join(root, '.pythia/workflows/features/feat-a/target.md'), 'v2\n');
     expect(runInputs(['rdeps', join(root, '.pythia/workflows/features/feat-a/target.md')]).status).toBe(1);
+  });
+});
+
+describe('sync: phantom Used by removal', () => {
+  it('removes phantom Used by entries that have no real ## References backlink on sync', () => {
+    const ctx = writeDoc(wf('contexts/ctx.context.md'), `# Context
+
+Body.
+
+## Used by
+
+- [plan] [Ghost Plan](../plans/ghost.plan.md)
+`);
+    // ghost.plan.md does not exist and has no ## References pointing back
+    runInputs(['sync', ctx]);
+    const out = readFileSync(ctx, 'utf8');
+    const parsed = parseTrailingRefs(out);
+    // phantom entry must be gone after sync
+    expect(parsed?.usedBy?.some((u) => u.path.includes('ghost'))).toBe(false);
+  });
+
+  it('keeps legitimate Used by entry added by real consumer sync', () => {
+    const ctx = writeDoc(wf('contexts/ctx.context.md'), '# Context\n\nBody.\n');
+    const plan = writeDoc(wf('plans/real.plan.md'), '# Plan\n\n[ctx](../contexts/ctx.context.md)\n');
+    // Sync plan first → adds Used by backlink to ctx
+    runInputs(['sync', plan]);
+    const parsed1 = parseTrailingRefs(readFileSync(ctx, 'utf8'));
+    expect(parsed1?.usedBy?.some((u) => u.path.includes('real.plan'))).toBe(true);
+
+    // Now sync ctx itself — the legitimate Used by must survive
+    runInputs(['sync', ctx]);
+    const parsed2 = parseTrailingRefs(readFileSync(ctx, 'utf8'));
+    expect(parsed2?.usedBy?.some((u) => u.path.includes('real.plan'))).toBe(true);
+  });
+
+  it('removes stale Used by entry after consumer stops referencing the file', () => {
+    const ctx = writeDoc(wf('contexts/ctx.context.md'), '# Context\n\nBody.\n');
+    const plan = writeDoc(wf('plans/real.plan.md'), '# Plan\n\n[ctx](../contexts/ctx.context.md)\n');
+    runInputs(['sync', plan]);
+    // Verify backlink exists
+    expect(parseTrailingRefs(readFileSync(ctx, 'utf8'))?.usedBy?.length).toBeGreaterThan(0);
+
+    // Consumer removes the link and re-syncs
+    writeFileSync(plan, '# Plan\n\nNo links now.\n');
+    runInputs(['sync', plan]);
+
+    // Sync ctx — stale Used by must be gone
+    runInputs(['sync', ctx]);
+    const parsed = parseTrailingRefs(readFileSync(ctx, 'utf8'));
+    expect(parsed?.usedBy?.some((u) => u.path.includes('real.plan'))).toBeFalsy();
   });
 });

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { renderTrailingRegion } from '../../lib/refs.js';
+import { renderTrailingRegion } from '../../lib/references/refs.js';
 import { seedPythiaProjectRegistration } from '../../cli/tests/helpers/workflow-paths.js';
 
 const crossRefs = resolve('tools/checks/cross-refs.js');

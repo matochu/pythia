@@ -102,3 +102,7 @@ See [/loop skill](../loop/SKILL.md).
 ## Limitations
 
 Structural / enum checks from format specs only, not semantic quality of review or audit text.
+
+## Trailing Refs — Machine-Owned
+
+Never hand-write or edit `## References` / `## Used by` sections in any `.pythia/**/*.md` file. These sections are machine-owned; `inputs.js sync` builds them from body link scans and rdeps backlink scans. Manual entries create phantom records that `refs-owned.js` flags as errors. Validation (this skill) does not check trailing-refs correctness directly — that is the job of `refs-owned.js`.

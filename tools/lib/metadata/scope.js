@@ -1,4 +1,4 @@
-import { isPythiaSyncMarkdownRelPath } from '../refs.js';
+import { isPythiaSyncMarkdownRelPath } from '../references/refs.js';
 
 export const DEFAULT_ARTIFACT_METADATA_MIGRATION_SCOPES = [
   {

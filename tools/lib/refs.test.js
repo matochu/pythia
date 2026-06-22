@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
-import { kindForPath, isPythiaSyncMarkdownRelPath, usedByLinksToConsumer, resolveDocLink, parseTrailingRefs, isExternalBibliographyHref, normalizeBibliographyPath, defaultRefText, splitBodyAndRegion, extractBibliographyFromTrail } from './refs.js';
+import { kindForPath, isPythiaSyncMarkdownRelPath, usedByLinksToConsumer, resolveDocLink, parseTrailingRefs, isExternalBibliographyHref, normalizeBibliographyPath, defaultRefText, splitBodyAndRegion, extractBibliographyFromTrail } from './references/refs.js';
 import { normalizePath } from './repo-root.js';
 
 let tmpDir;

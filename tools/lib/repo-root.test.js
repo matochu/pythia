@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { projectRoot, pythiaWorkspaceDir, repoRoot, normalizePath } from './repo-root.js';
-import { cmdSync, hashFile, repoRoot as inputsRepoRoot } from './inputs-core.js';
-import { parseTrailingRefs } from './refs.js';
+import { cmdSync, hashFile, repoRoot as inputsRepoRoot } from './references/inputs-core.js';
+import { parseTrailingRefs } from './references/refs.js';
 import { seedPythiaProjectRegistration } from '../cli/tests/helpers/workflow-paths.js';
 
 let project;

@@ -85,7 +85,7 @@ Project and feature knowledge is **scattered** across many locations. Before any
 
 ## Output Format (context document)
 
-- Follow the same structure as other feature contexts: metadata, Links to Related Documents (Related Feature, Related Plans, Related Contexts), main content, Used by (can be empty initially).
+- Follow the same structure as other feature contexts: metadata, Links to Related Documents (Related Feature, Related Plans, Related Contexts), main content. Do not write `## References` or `## Used by` sections — these are machine-owned and populated by `inputs.js sync` after save.
 - Use clear headings: e.g. Problem statement, Solution options, Best practices, 3rd party solutions, Trade-offs summary, **Confidence and gaps**.
 - **Citation discipline**: Every non-obvious claim must have a source (URL or file:line). Aim for 2–3 sources per major claim where possible.
 - **Confidence and gaps**: For important findings, note confidence (high / medium / low) or mark gaps; call out unresolved questions or contradictions and what evidence was checked.

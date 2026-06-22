@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync, cpSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, relative, resolve, dirname, sep } from 'node:path';
 import { extractRelativeLinks } from '../../../lib/md.js';
-import { getBodyContent, parseTrailingRefs, isPythiaSyncMarkdownRelPath, resolveDocLink, repoOrDocRelativePath } from '../../../lib/refs.js';
+import { getBodyContent, parseTrailingRefs, isPythiaSyncMarkdownRelPath, resolveDocLink, repoOrDocRelativePath } from '../../../lib/references/refs.js';
 
 const VALID_KINDS = new Set(['feat', 'review', 'impl', 'audit', 'retro', 'research', 'ctx', 'plan', 'note', 'doc', 'code', 'skill', 'url']);
 

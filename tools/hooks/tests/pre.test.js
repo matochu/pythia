@@ -105,3 +105,31 @@ describe('pre.js — role-boundary warn (not DENY)', () => {
     expect(r.code).toBe(0);
   });
 });
+
+describe('pre.js — machine-owned refs warn', () => {
+  it('warns when an edit adds a References heading in a sync-zone file', () => {
+    const event = {
+      tool_name: 'Edit',
+      tool_input: {
+        file_path: '.pythia/workflows/features/f/plans/1-example.plan.md',
+        new_string: '## References\n\n- [context] [Context](../contexts/x.context.md#abc12)\n',
+      },
+    };
+    const r = run(event);
+    expect(r.code).toBe(0);
+    expect(r.stderr).toMatch(/machine-owned/);
+  });
+
+  it('warns when an edit adds a machine-owned reference item without the heading', () => {
+    const event = {
+      tool_name: 'Edit',
+      tool_input: {
+        file_path: '.pythia/workflows/features/f/plans/1-example.plan.md',
+        new_string: '- [context] [Context](../contexts/x.context.md#abc12)',
+      },
+    };
+    const r = run(event);
+    expect(r.code).toBe(0);
+    expect(r.stderr).toMatch(/machine-owned/);
+  });
+});

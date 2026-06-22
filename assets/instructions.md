@@ -10,6 +10,10 @@ Single source of {tool} instructions for this repository. Roles map to the agent
 - Use formats and templates from `{skillsPath}/workflow/references/`.
 - After editing workflow Markdown under a feature, run validation per `{skillsPath}/validate/SKILL.md` and do not claim format compliance unless it exits `0`.
 
+## Trailing Refs — Machine-Owned (Hard Rule)
+
+`## References` and `## Used by` sections at the end of any `.pythia/**/*.md` file are **machine-owned**. They are written exclusively by `inputs.js sync` (body-link scan + rdeps backlink scan). **Never write, edit, or append to these sections manually.** Place document links only in the body; sync will add/update the trailing region automatically. Violation of this rule creates phantom entries that checkers will flag as errors.
+
 ## Role Selection
 
 - planning/architecture → Architect

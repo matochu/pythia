@@ -8,7 +8,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { getSectionContent } from '../lib/md.js';
-import { parseTrailingRefs, resolveDocLink, usedByLinksToConsumer } from '../lib/refs.js';
+import { parseTrailingRefs, resolveDocLink, usedByLinksToConsumer } from '../lib/references/refs.js';
 import { repoRoot } from '../lib/repo-root.js';
 
 const [file] = process.argv.slice(2);

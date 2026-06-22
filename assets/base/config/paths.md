@@ -36,13 +36,13 @@ A zone section ends at the next `## ` header or EOF.
 
 ## Workflow docs
 
-- *.plan.md  checker: links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, structure.js, artifact-metadata.js
-- *.review.md  checker: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js
-- *.implementation.md  checker: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js
-- *.audit.md  checker: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js
-- *.context.md  checker: links.js, inputs-fresh.js, artifact-metadata.js
-- feat-*.md  checker: links.js, inputs-fresh.js, artifact-metadata.js
-- *.retro.md  checker: links.js, inputs-fresh.js, artifact-metadata.js
+- *.plan.md  checker: links.js, plan-version-log.js, plan-numbering.js, cross-refs.js, plans-index.js, inputs-fresh.js, structure.js, artifact-metadata.js, refs-owned.js
+- *.review.md  checker: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js, refs-owned.js
+- *.implementation.md  checker: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js, refs-owned.js
+- *.audit.md  checker: role-boundary.js, links.js, inputs-fresh.js, structure.js, artifact-metadata.js, refs-owned.js
+- *.context.md  checker: links.js, inputs-fresh.js, artifact-metadata.js, refs-owned.js
+- feat-*.md  checker: links.js, inputs-fresh.js, artifact-metadata.js, refs-owned.js
+- *.retro.md  checker: links.js, inputs-fresh.js, artifact-metadata.js, refs-owned.js
 
 ## Post-commands
 

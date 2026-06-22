@@ -3,7 +3,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, readdirSync, statSync } from 'fs';
 import { join, dirname, relative, resolve, isAbsolute } from 'path';
 import { createHash } from 'crypto';
-import { migrateWorkflowInputs } from '../lib/inputs-core.js';
+import { migrateWorkflowInputs } from '../lib/references/inputs-core.js';
 import { convertArtifactMetadata } from '../lib/metadata/migration.js';
 import { artifactMetadataMigrationScopes, isArtifactMetadataScopeFile } from '../lib/metadata/scope.js';
 

@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync, readdirSync, readFileSync, statSync, cpSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { hashFile } from '../../../lib/inputs-core.js';
+import { hashFile } from '../../../lib/references/inputs-core.js';
 import { featureWorkflowDir, TEST_FEATURE_ID } from './workflow-paths.js';
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');

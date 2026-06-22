@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseTrailingRefs } from '../lib/refs.js';
+import { parseTrailingRefs } from '../lib/references/refs.js';
 import { parseFrontmatter } from '../lib/md.js';
 
 const [file] = process.argv.slice(2);

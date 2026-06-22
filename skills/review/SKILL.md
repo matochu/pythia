@@ -196,6 +196,8 @@ Focus on problems: reviews are for improvement and working with errors. For OK s
 - **Implementation specificity**: When a step lists multiple options (e.g. "fix by (a), (b), or (c)"), assess whether the plan explicitly chooses or prefers one so the implementer does not have to guess. If no option is chosen and the step is non-trivial, report **ambiguity** or **gap** (e.g. "Plan leaves implementation choice open; implementer must guess").
 - **Critical stance**: Do not default to READY when the plan has fix steps or non-trivial changes. Before issuing READY, re-check: (1) all cited file:line references verified against codebase, (2) each step has a single or clearly preferred implementation path, (3) previous round CONCERN-MEDIUM/HIGH/BLOCKED are addressed or explicitly marked still open. If in doubt, prefer NEEDS_REVISION and state what is missing or wrong.
 
+**Trailing refs — forbidden**: Never hand-write or edit `## References` / `## Used by` sections in any `.pythia/**/*.md` file (including the review artifact). These sections are machine-owned; `inputs.js sync` builds them from body link scans and rdeps backlink scans. The Reviewer output ends at the round block — no trailing refs region is authored by the LLM. Manual entries create phantom records that `refs-owned.js` flags as errors.
+
 **Validation** (before completing):
 
 - **Workflow-doc contract vs this review**: The **format** of `.review.md` is checked by the procedure in [/validate skill](../validate/SKILL.md). That check does **not** judge architecture quality — this skill does. Optional **QA Automation** is separate (test coverage).

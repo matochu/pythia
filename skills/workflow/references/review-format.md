@@ -158,3 +158,7 @@ Use in parentheses after concern description:
 - Never write "do X", "use Y", "rewrite Z" — only identify issues, risks, gaps
 - For OK status items: 1 sentence max (e.g., "No issues found")
 - Focus on problems — detailed analysis only for CONCERN-\*/BLOCKED findings
+
+## Forbidden for LLM Authors
+
+**Never hand-write or edit trailing `## References` / `## Used by` sections in any `.pythia/**/*.md` file.** These sections are machine-owned; `inputs.js sync` builds them from body link scans and rdeps backlink scans. A Reviewer artifact ends at the round block — no trailing refs region. Adding or editing these sections manually creates phantom entries that the `refs-owned.js` checker treats as errors.

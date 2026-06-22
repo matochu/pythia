@@ -9,10 +9,11 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { editedPaths, normalizedToolName, toolName, commandText, printClaudeDeny, readEvent, repoRoot, warn, resolveEditedPath, editedPathForZoneMatch } from '../lib/event.js';
+import { editedPaths, normalizedToolName, toolName, toolInput, commandText, printClaudeDeny, readEvent, repoRoot, warn, resolveEditedPath, editedPathForZoneMatch } from '../lib/event.js';
 import { loadZones, generatedCachePaths, protectedPaths, zone } from '../lib/paths.js';
+import { isPythiaSyncMarkdownRelPath } from '../lib/references/refs.js';
 
 const CHECKS = resolve(dirname(fileURLToPath(import.meta.url)), '../checks');
 
@@ -71,6 +72,21 @@ function main() {
 
       // Role-boundary warn
       runChecker('role-boundary.js', abs);
+
+      // Trailing-refs mutation warn: LLM must not write ## References / ## Used by
+      const rel = relative(root, abs).replace(/\\/g, '/');
+      if (isPythiaSyncMarkdownRelPath(rel)) {
+        const input = toolInput(event);
+        const patchText = [
+          input.new_string, input.content, input.new_content,
+          ...(input.edits ?? []).map((e) => e.new_string ?? ''),
+        ].filter(Boolean).join('\n');
+        if (addsMachineOwnedRefs(patchText)) {
+          warn(
+            `pythia-hook: patch to ${rel} adds a "## References" or "## Used by" section — these are machine-owned (inputs.js sync). Remove the section and let sync build it from body links.`,
+          );
+        }
+      }
     }
   }
 
@@ -78,3 +94,10 @@ function main() {
 }
 
 process.exitCode = main();
+
+function addsMachineOwnedRefs(text) {
+  return (
+    /(?:^|\n)## References\s*$|(?:^|\n)## Used by\s*$/m.test(text) ||
+    /(?:^|\n)- \[(?:audit|code|context|doc|external|feat|impl|note|plan|research|retro|review|skill)\] \[[^\]]+\]\([^)]+\)/m.test(text)
+  );
+}

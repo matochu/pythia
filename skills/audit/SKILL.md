@@ -168,6 +168,8 @@ Do not treat arbitrary custom user messages as chooser input. If the user writes
 
 ---
 
+**Trailing refs — forbidden**: Never hand-write or edit `## References` / `## Used by` sections in any `.pythia/**/*.md` file (including the audit artifact). These sections are machine-owned; `inputs.js sync` builds them from body link scans and rdeps backlink scans. Manual entries create phantom records that `refs-owned.js` flags as errors.
+
 ## Validation (before completing)
 
 - **Workflow-doc validation (Validator subagent)**: After `reports/{plan-slug}.audit.md` is written on disk, launch a **Validator subagent** in a **separate context**. Use the **handoff prompt** in [/validate skill](../validate/SKILL.md) § Validator subagent (delegation): **absolute** `{ABS_PATH_TO_VALIDATE_SKILL}` and **absolute** path to the audit file. **Do not** complete until **exit `0`**. **PostToolUse hook warnings ≠ PASS** — see [hook-integration.md](../workflow/references/hook-integration.md).

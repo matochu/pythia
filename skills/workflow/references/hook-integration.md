@@ -9,10 +9,12 @@ After **Edit/Write** on workflow `*.md` files, `post.js` runs advisory maintenan
 Hook order for workflow docs:
 
 1. `metadata/sync.js` updates derived metadata snapshots for plans, reviews, implementation reports, and audits.
-2. Configured post-commands run next, including `inputs.js sync` when enabled by `## Post-commands`.
-3. Workflow checkers from `## Workflow docs` run last (`structure.js`, `links.js`, `inputs-fresh.js`, `artifact-metadata.js`, ...).
+2. Configured post-commands run next, including `inputs.js sync` when enabled by `## Post-commands`. `inputs.js sync` rebuilds `## References` from body link scan and `## Used by` from rdeps scan — phantom entries from prior LLM edits are removed at this step.
+3. Workflow checkers from `## Workflow docs` run last (`structure.js`, `links.js`, `inputs-fresh.js`, `artifact-metadata.js`, `refs-owned.js`, ...).
 
 This order lets checkers read the current metadata/input snapshot. It is still advisory; only `/validate` exit `0` is a validation pass.
+
+**Phantom refs = bug**: if `## Used by` contains an entry not backed by an rdeps scan result, it is a phantom from a manual LLM edit. `refs-owned.js` catches these as `refs-owned.phantom_used_by` / `refs-owned.phantom_reference` errors. `inputs.js sync` removes them on the next save. Root cause: LLMs must never write or edit trailing refs sections.
 
 | Signal | Meaning |
 |--------|---------|
