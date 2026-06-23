@@ -176,12 +176,14 @@ export function normalizeMetadataBlock({ kind, parsed, existing = null }) {
   } else if (kind === 'context') {
     const status = get('Status') ?? get('status');
     if (status) add('status', status);
-    // Map v1 Artifact: research-context to kind: research
+    // Map v1 Artifact: research-context to kind: research; pass through kind: brainstorm
     const artifact = get('Artifact');
+    const existingKind = get('kind');
     const isResearch = artifact === 'research-context'
       || get('Shape') === 'survey'
-      || get('kind') === 'research';
+      || existingKind === 'research';
     if (isResearch) add('kind', 'research');
+    else if (existingKind === 'brainstorm') add('kind', 'brainstorm');
     const updated = get('Updated') ?? get('updated');
     if (updated) add('updated', updated);
   } else {

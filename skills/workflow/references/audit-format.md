@@ -1,4 +1,4 @@
-# Architect Audit Format Specification
+# Audit Format Specification
 
 **File**: `reports/{plan-slug}.audit.md`
 
@@ -7,8 +7,14 @@
 ````markdown
 # Audit: {plan-slug}
 
-Plan: [plans/{plan-slug}.plan.md](../plans/{plan-slug}.plan.md)
-Implementation: [reports/{plan-slug}.implementation.md](./{plan-slug}.implementation.md)
+## Metadata
+
+- status: active
+- round: A{N}
+- verdict: ready | needs-fixes | plan-fix | re-plan
+- plan: [{plan-slug}.plan.md](../plans/{plan-slug}.plan.md)
+- implementation: [{plan-slug}.implementation.md](./{plan-slug}.implementation.md)
+- updated: YYYY-MM-DD
 
 ## Conformance
 

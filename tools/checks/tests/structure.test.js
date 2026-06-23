@@ -53,6 +53,69 @@ describe('structure.js — invalid fixtures', () => {
   });
 });
 
+describe('structure.js — H1 prefix enforcement', () => {
+  it('implementation valid fixture has # Report: and passes H1 check', () => {
+    const r = run(`${fixtures}/valid/min.valid.implementation.md`);
+    expect(r.code).toBe(0);
+  });
+});
+
+describe('structure.js — migration integration: migrated audit passes structure', () => {
+  it('canonical-layout audit (Plan: in body) passes structure after migration', async () => {
+    // Reproduces the canonical audit-format.md layout where Plan:/Implementation: are in the body.
+    const { writeFileSync, unlinkSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const { convertArtifactMetadata } = await import('../../lib/metadata/migration.js');
+    const slug = 'test-plan';
+    const before = [
+      `# Audit: ${slug}`,
+      '',
+      `Plan: [plans/${slug}.plan.md](../plans/${slug}.plan.md)`,
+      `Implementation: [reports/${slug}.implementation.md](./${slug}.implementation.md)`,
+      '',
+      '## Conformance',
+      '',
+      '- Status: done',
+      '- Details: ok.',
+      '',
+      '## Acceptance Criteria Check',
+      '',
+      '- [x] C1 — met',
+      '',
+      '## Implementation quality check',
+      '',
+      '- Status: pass',
+      '- Details: ok.',
+      '',
+      '## Risk Re-evaluation',
+      '',
+      'None.',
+      '',
+      '## Decision',
+      '',
+      '- **Verdict**: ready',
+      '- **Reasoning**: ok.',
+      '- **Next Steps**: ship.',
+      '',
+      '## Suggested git commit (application repository)',
+      '',
+      '```text',
+      'feat: apply plan',
+      '```',
+    ].join('\n');
+    const fakePath = `.pythia/workflows/features/feat/reports/${slug}.audit.md`;
+    const { content: migrated } = convertArtifactMetadata(fakePath, before);
+    const tmp = join(tmpdir(), `${slug}.audit.md`);
+    writeFileSync(tmp, migrated);
+    const r = run(tmp);
+    unlinkSync(tmp);
+    expect(r.stderr).not.toMatch(/plan metadata/);
+    expect(r.stderr).not.toMatch(/implementation metadata/);
+    expect(r.code).toBe(0);
+  });
+});
+
 describe('structure.js — usage errors', () => {
   it('no args exits 2', () => {
     expect(run().code).toBe(2);

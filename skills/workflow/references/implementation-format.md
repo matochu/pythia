@@ -1,4 +1,4 @@
-# Implementation Report Format Specification
+# Implementation (Report) Format Specification
 
 **File**: `reports/{plan-slug}.implementation.md`
 

@@ -394,6 +394,16 @@ status: Draft
     test('decided', 'archived');
   });
 
+  it('basename heuristic: research as slug-token → kind: research; as substring → no kind', () => {
+    const body = `# Context\n\n## Metadata\n\nBody.\n`;
+    // token: "research" surrounded by separators
+    const r1 = convertArtifactMetadata('.pythia/workflows/features/feat/contexts/my-research-notes.context.md', body);
+    expect(r1.content).toContain('- kind: research');
+    // substring: "research" embedded inside another word — should NOT match
+    const r2 = convertArtifactMetadata('.pythia/workflows/features/feat/contexts/nonresearched-approach.context.md', body);
+    expect(r2.content).not.toContain('kind: research');
+  });
+
   it('maps YAML type: research to kind: research (not only type: research-context)', () => {
     const before = `---
 title: BMAD-METHOD Deep-Dive
@@ -564,7 +574,7 @@ Body.
     expect(result.content).toMatch(/^# Artifact Metadata Contract and Checker Review$/m);
   });
 
-  it('strips Plan: and Implementation: from audit metadata section', () => {
+  it('migrates audit Plan:/Implementation: body lines into metadata fields', () => {
     const before = `# Audit: 1-example
 
 ## Metadata
@@ -584,6 +594,8 @@ Body.
       '.pythia/workflows/features/feat/reports/1-example.audit.md',
       before,
     );
+    expect(result.content).toContain('- plan: [plans/1-example.plan.md]');
+    expect(result.content).toContain('- implementation: [reports/1-example.implementation.md]');
     expect(result.content).not.toMatch(/^Plan: /m);
     expect(result.content).not.toMatch(/^Implementation: /m);
     expect(result.content).toContain('- round: A1');

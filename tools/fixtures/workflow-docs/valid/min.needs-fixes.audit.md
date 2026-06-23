@@ -5,10 +5,9 @@
 - status: completed
 - round: A1
 - verdict: needs-fixes
+- plan: [fixture-plan.plan.md](../plans/fixture-plan.plan.md)
+- implementation: [fixture-plan.implementation.md](./fixture-plan.implementation.md)
 - updated: 2026-01-01
-
-Plan: [plans/fixture-plan.plan.md](../plans/fixture-plan.plan.md)
-Implementation: [reports/fixture-plan.implementation.md](./fixture-plan.implementation.md)
 
 ## Conformance
 

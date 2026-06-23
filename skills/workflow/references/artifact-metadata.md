@@ -87,13 +87,15 @@ Optional: `updated`
 ### Audit report
 
 Required: `status`, `round`, `verdict`
-Optional: `updated`
+Optional: `plan`, `implementation`, `updated`
 
 | Key | Values |
 | --- | ------ |
 | `status` | `active` · `completed` |
 | `round` | `A{N}` |
 | `verdict` | `ready` · `needs-fixes` · `plan-fix` · `re-plan` |
+| `plan` | markdown link to `*.plan.md` |
+| `implementation` | markdown link to `*.implementation.md` |
 | `updated` | `YYYY-MM-DD` |
 
 ### Feature doc
@@ -190,7 +192,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
     "audit-report": {
       "patterns": ["*.audit.md"],
       "required": ["status", "round", "verdict"],
-      "optional": ["updated"],
+      "optional": ["plan", "implementation", "updated"],
       "enums": {
         "status": ["active", "completed"],
         "verdict": ["ready", "needs-fixes", "plan-fix", "re-plan"]

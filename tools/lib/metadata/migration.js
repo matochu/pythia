@@ -71,7 +71,13 @@ function removeMetadataSection(body) {
   return [...before, ...after].join('\n').replace(/\n{3,}/g, '\n\n').trimStart();
 }
 
-/** Strip body-level `Plan:` and `Review:` header lines (implementation reports). */
+/** Extract a bare `Key: value` link line from the body (anywhere, not just metadata section). */
+function extractBodyLink(body, key) {
+  const match = body.match(new RegExp(`^${key}:\\s+(.+)$`, 'm'));
+  return match ? match[1].trim() : null;
+}
+
+/** Strip body-level header lines that are migrated into metadata fields. */
 function stripImplementationHeaderLines(content, file) {
   const b = basename(file);
   if (b.endsWith('.implementation.md')) {
@@ -82,6 +88,7 @@ function stripImplementationHeaderLines(content, file) {
       .replace(/\n{3,}/g, '\n\n');
   }
   if (b.endsWith('.audit.md')) {
+    // Plan: and Implementation: move into ## Metadata as fields; remove bare body lines.
     return content
       .split('\n')
       .filter((line) => !/^(Plan|Implementation):\s+/.test(line))
@@ -233,6 +240,10 @@ export function convertArtifactMetadata(file, content) {
 
   let body = ensureH1(stripped, legacyTitle);
   body = normalizeH1(body, kind, slugFromFile(file));
+  // Capture body links BEFORE stripping so extractBodyLink sees them regardless of layout.
+  const preStripLinks = kind === 'audit-report'
+    ? { plan: extractBodyLink(body, 'Plan'), implementation: extractBodyLink(body, 'Implementation') }
+    : null;
   body = stripImplementationHeaderLines(body, file);
 
   const bodyParsed = parseArtifactMetadata(body);
@@ -240,7 +251,7 @@ export function convertArtifactMetadata(file, content) {
     ...legacyPlainMetadataFields(bodyParsed),
     ...existingV2Fields(bodyParsed),
   ]);
-  const fields = buildFields({ kind, get, body, fmValues, base });
+  const fields = buildFields({ kind, get, body, fmValues, base, preStripLinks });
   const finalFields = mergeExistingFields(fields, existing, kind);
 
   const next = insertMetadata(body, finalFields);
@@ -265,7 +276,7 @@ function addUpdated(fields, get) {
   addField(fields, 'updated', get('Updated', 'updated', 'Date', 'date') ?? get('created', 'Created'));
 }
 
-function buildFields({ kind, get, body, fmValues, base }) {
+function buildFields({ kind, get, body, fmValues, base, preStripLinks = null }) {
   if (kind === 'plan') {
     const fields = [
       ['status', get('Status', 'status') ?? 'Draft'],
@@ -305,6 +316,11 @@ function buildFields({ kind, get, body, fmValues, base }) {
       ['round', get('Round', 'round') ?? firstRound(body, 'A')],
       ['verdict', auditVerdict(body) ?? get('Verdict', 'verdict') ?? 'ready'],
     ];
+    // Migrate Plan:/Implementation: links into metadata fields.
+    // preStripLinks captures them from body before stripImplementationHeaderLines runs,
+    // so canonical layout (body, outside ## Metadata) and legacy layout (inside ## Metadata scope) both work.
+    addField(fields, 'plan', preStripLinks?.plan ?? get('Plan', 'plan'));
+    addField(fields, 'implementation', preStripLinks?.implementation ?? get('Implementation', 'implementation'));
     addUpdated(fields, get);
     return fields;
   }
@@ -333,7 +349,9 @@ function inferContextKind({ get, fmValues, base }) {
     || fmType === 'research-context'
     || fmType === 'research'
     || fmValues.get('shape') === 'survey'
-    || /research/i.test(base)
+    // Match "research" as a slug token (surrounded by separator or at boundary),
+    // not as a substring — avoids mis-classifying e.g. non-research-notes.context.md.
+    || /(^|[-_.])research([-_.]|$)/i.test(base)
   ) return 'research';
   if (fmType === 'brainstorm-context' || fmType === 'brainstorm') return 'brainstorm';
   return null;

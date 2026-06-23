@@ -221,8 +221,8 @@ function validateReview(file, lines) {
 function validateImplementation(file, lines) {
   const errors = checkTrailingRefsPlacement(file, lines);
 
-  if (!hasLine(lines, /^# /))
-    errors.push(`${file}:1: [impl.header.h1] Missing H1`);
+  if (!hasLine(lines, /^# Report:/))
+    errors.push(`${file}:1: [impl.header.h1] Missing H1 # Report:`);
 
   if (!hasLine(lines, /^## Plan.{1,5}Implementation Compatibility$/))
     errors.push(`${file}:0: [impl.section.compatibility] Missing ## Plan–Implementation Compatibility (en dash or hyphen between Plan and Implementation)`);
@@ -266,11 +266,11 @@ function validateAudit(file, lines) {
   if (!hasLine(lines, /^# Audit:/))
     errors.push(`${file}:1: [audit.header.h1] Missing H1 # Audit:`);
 
-  if (!hasLine(lines, /^Plan:.*\.plan\.md/))
-    errors.push(`${file}:${lineFor(lines, /^Plan:/)}: [audit.header.links] Missing Plan: link to .plan.md`);
+  if (!hasLine(lines, /^- plan:\s+/) && !hasLine(lines, /^Plan:.*\.plan\.md/))
+    errors.push(`${file}:1: [audit.header.links] Missing plan metadata field or Plan: link to .plan.md`);
 
-  if (!hasLine(lines, /^Implementation:.*\.implementation\.md/))
-    errors.push(`${file}:${lineFor(lines, /^Implementation:/)}: [audit.header.links] Missing Implementation: link to .implementation.md`);
+  if (!hasLine(lines, /^- implementation:\s+/) && !hasLine(lines, /^Implementation:.*\.implementation\.md/))
+    errors.push(`${file}:1: [audit.header.links] Missing implementation metadata field or Implementation: link to .implementation.md`);
 
   if (!hasLine(lines, /^## Conformance$/))
     errors.push(`${file}:0: [audit.section.conformance] Missing ## Conformance`);
@@ -338,6 +338,7 @@ for (let i = 0; i < args.length; i++) {
 
 if (files.length === 0) { usage(); process.exit(2); }
 
+// retro H1 (# Retrospective:) is normalized by migration but not enforced here — retro has no structural section contract yet.
 const validTypes = ['plan', 'review', 'implementation', 'audit'];
 if (typeOverride && !validTypes.includes(typeOverride)) die(`Unknown --type: ${typeOverride}. Valid: ${validTypes.join(', ')}`);
 

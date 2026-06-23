@@ -12,9 +12,6 @@
 - **Round**: A1
 - **Verdict**: ready
 
-Plan: [p](../plans/x.plan.md)
-Implementation: [i](./x.implementation.md)
-
 ## Conformance
 
 - Status: done
