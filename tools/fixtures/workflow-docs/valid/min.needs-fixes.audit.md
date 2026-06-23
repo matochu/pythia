@@ -2,15 +2,10 @@
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: min.needs-fixes-audit
-- **Title**: Architect Audit: fixture-plan
-- **Artifact**: audit-report
-- **Feature**: fixture
-- **Status**: completed
-- **Implementation**: reports/min.needs-fixes.implementation.md
-- **Round**: A1
-- **Verdict**: needs-fixes
+- status: completed
+- round: A1
+- verdict: needs-fixes
+- updated: 2026-01-01
 
 Plan: [plans/fixture-plan.plan.md](../plans/fixture-plan.plan.md)
 Implementation: [reports/fixture-plan.implementation.md](./fixture-plan.implementation.md)

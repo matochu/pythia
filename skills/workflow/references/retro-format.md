@@ -9,14 +9,9 @@
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: {plan-slug}-retro
-- **Title**: {retrospective-title}
-- **Artifact**: retro
-- **Feature**: {feature-id}
-- **Status**: completed
+- status: completed
 
-Metadata follows the canonical field matrix in `artifact-metadata.md`. Keep source plan, implementation, review, and audit evidence in body sections below instead of adding ad hoc metadata fields.
+Metadata follows the canonical field matrix in [artifact-metadata.md](artifact-metadata.md). Kind is inferred from `.retro.md` suffix; no identity fields in metadata. Keep source plan, implementation, review, and audit evidence in body sections below instead of adding ad hoc metadata fields.
 
 ## Plan Summary
 

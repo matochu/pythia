@@ -1,24 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { parseArtifactMetadata, getArtifactField, inferArtifactType } from '../../../lib/metadata/parse.js';
-import { SCHEMA_VERSION } from '../../../lib/metadata/schema.js';
+import { parseArtifactMetadata, inferArtifactType } from '../../../lib/metadata/parse.js';
+import { FORBIDDEN_KEYS } from '../../../lib/metadata/schema.js';
 import {
   defaultArtifactMetadataMigrationScopes,
   isArtifactMetadataScopeFile,
 } from '../../../lib/metadata/scope.js';
-
-const OLD_METADATA_KEYS = new Set([
-  'Plan-Id',
-  'Plan Version',
-  'Last Status',
-  'Last Review Round',
-  'Created',
-  'Updated',
-  'Subject',
-  'Subject-Version',
-]);
-
-const LEGACY_FRONTMATTER_KEYS = /^(feature-id|title|status|type|shape|generator|version|tags|inputs):/;
 
 function walkFiles(dir, acc = []) {
   if (!existsSync(dir)) return acc;
@@ -39,17 +26,35 @@ function relFromRoot(root, abs) {
   return relative(root, abs).replace(/\\/g, '/');
 }
 
-function frontmatter(content) {
-  if (!content.startsWith('---\n')) return null;
-  const end = content.indexOf('\n---\n', 4);
-  if (end === -1) return null;
-  return content.slice(4, end);
+function hasYamlFrontmatter(content) {
+  if (!content.startsWith('---\n')) return false;
+  return content.indexOf('\n---\n', 4) !== -1;
+}
+
+function hasV1BoldBullets(content) {
+  const parsed = parseArtifactMetadata(content);
+  return parsed.entries.some((e) => e.format === 'v1');
+}
+
+function hasForbiddenKeys(content) {
+  const parsed = parseArtifactMetadata(content);
+  // scan raw metadata lines for Title-case forbidden keys
+  const lines = content.split('\n').slice(parsed.startLine, parsed.endLine);
+  for (const line of lines) {
+    const m = line.match(/^([A-Za-z][A-Za-z0-9_-]*):\s*.+$/);
+    if (m && FORBIDDEN_KEYS.includes(m[1])) return true;
+  }
+  return parsed.entries.some((e) => FORBIDDEN_KEYS.includes(e.key));
 }
 
 function coveredScopesFor(rel, scopes) {
   return scopes.filter((scope) => isArtifactMetadataScopeFile(rel, scope));
 }
 
+/**
+ * Audit v2 metadata migration state of a workspace.
+ * v2Converted = file has no YAML frontmatter, no v1 bold-bullet metadata, no forbidden keys.
+ */
 export function auditArtifactMetadataMigration(wsRoot, { scopes = defaultArtifactMetadataMigrationScopes() } = {}) {
   const files = [];
   const issues = [];
@@ -64,31 +69,35 @@ export function auditArtifactMetadataMigration(wsRoot, { scopes = defaultArtifac
 
       const content = readFileSync(abs, 'utf8');
       const parsed = parseArtifactMetadata(content);
-      const schema = getArtifactField(parsed, 'Schema');
-      const artifact = getArtifactField(parsed, 'Artifact') ?? inferArtifactType(abs);
-      const schemaTagged = schema === SCHEMA_VERSION;
-      const oldKeys = parsed.entries.filter((entry) => OLD_METADATA_KEYS.has(entry.key)).map((entry) => entry.key);
-      const legacyFrontmatter = (frontmatter(content) ?? '')
-        .split('\n')
-        .filter((line) => LEGACY_FRONTMATTER_KEYS.test(line))
-        .map((line) => line.split(':', 1)[0]);
+      const artifact = inferArtifactType(abs);
 
-      files.push({ rel, artifact, schemaTagged, oldKeys, legacyFrontmatter, duplicateMetadata: parsed.duplicate });
+      const yamlFrontmatter = hasYamlFrontmatter(content);
+      const v1BoldBullets = hasV1BoldBullets(content);
+      const forbiddenKeys = hasForbiddenKeys(content);
+      const v2Converted = !yamlFrontmatter && !v1BoldBullets && !forbiddenKeys;
+
+      files.push({
+        rel,
+        artifact,
+        v2Converted,
+        yamlFrontmatter,
+        v1BoldBullets,
+        forbiddenKeys,
+        duplicateMetadata: parsed.duplicate,
+      });
       byArtifact[artifact] = (byArtifact[artifact] ?? 0) + 1;
 
-      if (!schemaTagged) issues.push(`${rel}: missing Schema ${SCHEMA_VERSION}`);
-      if (parsed.duplicate) issues.push(`${rel}: duplicate Metadata sections still present`);
-      if (oldKeys.length) issues.push(`${rel}: old metadata keys still present: ${oldKeys.join(', ')}`);
-      if (legacyFrontmatter.length) {
-        issues.push(`${rel}: legacy frontmatter keys still present: ${legacyFrontmatter.join(', ')}`);
-      }
+      if (yamlFrontmatter) issues.push(`${rel}: legacy YAML frontmatter still present`);
+      if (v1BoldBullets) issues.push(`${rel}: v1 bold-bullet metadata still present`);
+      if (forbiddenKeys) issues.push(`${rel}: forbidden v2 metadata keys still present`);
+      if (parsed.duplicate) issues.push(`${rel}: duplicate ## Metadata sections still present`);
     }
   }
 
   return {
     wsRoot,
     covered: files.length,
-    schemaTagged: files.filter((file) => file.schemaTagged).length,
+    v2Converted: files.filter((file) => file.v2Converted).length,
     byArtifact,
     files,
     issues,
@@ -96,16 +105,16 @@ export function auditArtifactMetadataMigration(wsRoot, { scopes = defaultArtifac
   };
 }
 
-export function newlySchemaTaggedFiles(beforeAudit, afterAudit) {
+export function newlyConvertedFiles(beforeAudit, afterAudit) {
   const before = new Map(beforeAudit.files.map((file) => [file.rel, file]));
   return afterAudit.files
-    .filter((file) => file.schemaTagged && !before.get(file.rel)?.schemaTagged)
+    .filter((file) => file.v2Converted && !before.get(file.rel)?.v2Converted)
     .map((file) => file.rel)
     .sort();
 }
 
 export function formatArtifactMetadataAudit(report, { before = null } = {}) {
-  const newlyTagged = before ? newlySchemaTaggedFiles(before, report) : [];
+  const newlyConverted = before ? newlyConvertedFiles(before, report) : [];
   const byArtifact = Object.entries(report.byArtifact)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([artifact, count]) => `  - ${artifact}: ${count}`);
@@ -115,15 +124,15 @@ export function formatArtifactMetadataAudit(report, { before = null } = {}) {
     `workspace: ${report.wsRoot}`,
     `status: ${report.ok ? 'OK' : 'FAIL'}`,
     `covered artifacts: ${report.covered}`,
-    `schema tagged: ${report.schemaTagged}`,
+    `v2 converted: ${report.v2Converted}`,
     '',
     'by artifact:',
     ...(byArtifact.length ? byArtifact : ['  (none)']),
     '',
     ...(before
       ? [
-        `newly schema tagged (${newlyTagged.length}):`,
-        ...(newlyTagged.length ? newlyTagged.map((rel) => `  - ${rel}`) : ['  (none)']),
+        `newly converted (${newlyConverted.length}):`,
+        ...(newlyConverted.length ? newlyConverted.map((rel) => `  - ${rel}`) : ['  (none)']),
         '',
       ]
       : []),

@@ -205,7 +205,7 @@ For standalone fixes, do not use the feature-doc lookup above. Update `.pythia/w
   - **Inline fallback** (only if no subagent): open that validate skill and complete **one** validation run for that path **as defined in that skill**; report exit code + stderr; label **inline fallback**. Fix reported issues before finishing.
 - Confirm the ambiguity checkpoint and user choice where trade-offs matter; revision log uses the table format in plan-format; `## Navigation` links cover all steps; dates are `YYYY-MM-DD`; plan body cites each listed context as a markdown link (backlinks are maintained by `sync`, validated by `cross-refs.js`).
 
-**Migration**: If an existing plan lacks metadata **Version**, add `Version: v1`, set `Round: none`, and add an empty revision-log table as in plan-format.
+**Migration**: If an existing plan lacks metadata `version`, add `- version: v1`, keep plan round data in the revision log, and add an empty revision-log table as in plan-format.
 
 ## Post-save response contract
 

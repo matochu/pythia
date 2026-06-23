@@ -2,17 +2,11 @@
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: min.valid-implementation
-- **Title**: Implementation Report: fixture-plan
-- **Artifact**: implementation-report
-- **Feature**: fixture
-- **Status**: completed
-- **Plan**: plans/min.valid.plan.md
-- **Plan-Version**: v1
-- **Review**: reports/min.valid.review.md
-- **Round**: I1
-- **Result**: implemented
+- status: completed
+- plan_version: v1
+- round: I1
+- result: implemented
+- updated: 2026-01-01
 
 Date: 2026-01-01
 

@@ -1,163 +1,230 @@
 # Artifact Metadata Contract
 
-Workflow artifacts use one body `## Metadata` section. Metadata is parsed only from bullet lines in this exact shape:
+Workflow artifacts use one body `## Metadata` section with plain markdown list items (`- key: value`) — no bold keys, no YAML frontmatter, no `Schema:` tag.
 
 ```md
 ## Metadata
 
-- **Key**: value
+- key: value
 ```
 
-`Schema: pythia-artifact-v1` is the contract id for the current field matrix below. This reference is the runtime source of truth used by skills and validation. Generated `## References` and `## Used by` remain owned by input freshness tooling and are not part of artifact metadata.
+Document identity (`kind`, `id`, `title`, `feature`) is **inferred from file path** — never written in metadata. See [Inferred fields](#inferred-fields) below.
 
-## Universal Fields
+`## References` and `## Used by` are machine-owned by `inputs.js sync` — never part of artifact metadata.
 
-Every schema-tagged document requires only the fields that identify the metadata contract and the document:
+## Inferred fields
 
-- `Schema`
-- `Id`
-- `Title`
-- `Artifact`
+| Field | Source |
+| ----- | ------ |
+| `kind` | File suffix (see [Artifact kinds](#artifact-kinds) below) |
+| `id` | Filename slug (basename without extension suffixes) |
+| `title` | File's H1 line |
+| `feature` | Nearest `feat-*` path segment |
 
-Other fields are artifact-specific and configured by the field matrix. Avoid fields that merely restate runtime evidence or can go stale, such as generated `Created` / `Updated` dates.
+**Suffix classification order** (first match wins):
 
-## Optional Fields
+1. `*.retro.md` → `retro`
+2. `*.plan.md` → `plan`
+3. `*.review.md` → `review`
+4. `*.implementation.md` → `implementation-report`
+5. `*.audit.md` → `audit-report`
+6. `*.context.md` or `*.ctx.md` → `context`
+7. `feat-*.md` → `feature`
+8. `*.md` → `note`
 
-The schema currently recognizes these optional fields:
+This order ensures `feat-*.retro.md` is classified as `retro`, not `feature`.
 
-- `Feature`
-- `Status`
-- `Version`
-- `Generator`
-- `Plan`
-- `Plan-Version`
-- `Review`
-- `Implementation`
-- `Round`
-- `Verdict`
-- `Result`
-- `Branch`
-- `Shape`
-- `Sub-category`
-- `Tags`
+## Forbidden metadata keys
 
-Unknown fields fail for schema-tagged files. This keeps migrations honest: stale legacy keys must be removed, not tolerated.
+These keys must **not** appear in `## Metadata` on any workflow artifact:
 
-## Artifact Matrix
+`Schema`, `Title`, `Artifact`, `Feature`, `Id`, `Plan-Id`
 
-| Artifact | Required fields beyond universal | Common optional fields | Closed enums |
-| -------- | -------------------------------- | ---------------------- | ------------ |
-| `feature` | none | `Status` | `Status`: `draft`, `active`, `completed`, `archived`, `cancelled` |
-| `context` | none | `Feature`, `Shape`, `Status` | `Status`: `draft`, `ready`, `active`, `archived`; `Shape`: `notes`, `survey`, `decision-record`, `source-summary` |
-| `research-context` | none | `Feature`, `Shape`, `Status` | `Status`: `draft`, `ready-for-plan`, `ready`, `archived`; `Shape`: `survey`, `options`, `source-summary`, `decision-support` |
-| `plan` | `Status`, `Version`, `Branch`, `Round` | `Feature` | `Status`: `Draft`, `Ready for implementation`, `In progress`, `Implemented`, `Blocked`, `Archived`, `Cancelled` |
-| `review` | `Plan`, `Plan-Version`, `Round`, `Verdict` | `Feature`, `Status` | `Status`: `active`, `completed`, `archived`; `Verdict`: `READY`, `NEEDS_REVISION` |
-| `implementation-report` | `Plan`, `Plan-Version`, `Review`, `Round`, `Result` | `Feature`, `Status` | `Status`: `active`, `completed`, `blocked`; `Result`: `implemented`, `partial`, `blocked`, `failed` |
-| `audit-report` | `Implementation`, `Round`, `Verdict` | `Feature`, `Status` | `Status`: `active`, `completed`; `Verdict`: `ready`, `needs-fixes`, `plan-fix`, `re-plan` |
-| `retro` | none | `Feature`, `Status` | `Status`: `active`, `completed`, `archived` |
-| `note` | none | `Feature`, `Tags` | none |
+They are either inferred from path (no need to write them) or removed in the v1 → v2 migration.
 
-`Status` is lifecycle state. `Verdict` is a review or audit decision. `Result` is the current implementation outcome snapshot; detailed progress stays in the implementation report body and compatibility table.
+## Artifact kinds
 
-## Machine-Readable Contract
+### Plan
 
-This JSON block is consumed by validators. Keep it aligned with the human table above.
+Required: `status`, `version`
+Optional: `branch`, `updated`
+
+| Key | Values |
+| --- | ------ |
+| `status` | `Draft` · `Ready for implementation` · `In progress` · `Implemented` · `Blocked` · `Archived` · `Cancelled` |
+| `version` | `v{N}` |
+| `branch` | git branch name |
+| `updated` | `YYYY-MM-DD` |
+
+**Note**: `status` and `version` are written; `round` is **not** a plan metadata key. The plan revision log **table column** `Round` is part of the plan body, not plan metadata.
+
+### Review
+
+Required: `status`, `plan_version`, `round`, `verdict`
+Optional: `updated`
+
+| Key | Values |
+| --- | ------ |
+| `status` | `active` · `completed` · `archived` |
+| `plan_version` | `v{N}` — snapshot of plan version at review time |
+| `round` | `R{N}` |
+| `verdict` | `READY` · `NEEDS_REVISION` |
+| `updated` | `YYYY-MM-DD` |
+
+### Implementation report
+
+Required: `status`, `plan_version`, `round`, `result`
+Optional: `updated`
+
+| Key | Values |
+| --- | ------ |
+| `status` | `active` · `completed` · `blocked` |
+| `plan_version` | `v{N}` |
+| `round` | `I{N}` |
+| `result` | `implemented` · `partial` · `blocked` · `failed` |
+| `updated` | `YYYY-MM-DD` |
+
+### Audit report
+
+Required: `status`, `round`, `verdict`
+Optional: `updated`
+
+| Key | Values |
+| --- | ------ |
+| `status` | `active` · `completed` |
+| `round` | `A{N}` |
+| `verdict` | `ready` · `needs-fixes` · `plan-fix` · `re-plan` |
+| `updated` | `YYYY-MM-DD` |
+
+### Feature doc
+
+All optional: `status`, `updated`
+
+| Key | Values |
+| --- | ------ |
+| `status` | `draft` · `active` · `completed` · `archived` · `cancelled` |
+
+### Context
+
+All optional: `status`, `kind`, `updated`
+
+| Key | Values |
+| --- | ------ |
+| `status` | `draft` · `ready` · `active` · `archived` |
+| `kind` | `research` |
+
+`kind: research` replaces the v1 `Artifact: research-context` field.
+
+### Retro
+
+All optional: `status`, `updated`
+
+| Key | Values |
+| --- | ------ |
+| `status` | `active` · `completed` · `archived` |
+
+### Note / task
+
+All optional: `status`, `updated`
+
+## v1 → v2 key mapping
+
+| v1 key | v2 key / action |
+| --- | --- |
+| `Schema` | **drop** (inferred) |
+| `Id` | **drop** (inferred from filename) |
+| `Title` | **drop** (inferred from H1) |
+| `Artifact` | **drop** (inferred from path suffix) |
+| `Feature` | **drop** (inferred from path) |
+| `Plan-Id` | **drop** |
+| `Version` (plan) | → `version` |
+| `Status` (any) | → `status` |
+| `Branch` | → `branch` |
+| `Round` (plan metadata only) | **drop** from plan `## Metadata` (table column stays) |
+| `Round` (review) | → `round` |
+| `Round` (implementation) | → `round` |
+| `Round` (audit) | → `round` |
+| `Plan-Version` | → `plan_version` |
+| `Plan Version` | → `plan_version` |
+| `Verdict` | → `verdict` |
+| `Result` | → `result` |
+| `Artifact: research-context` | → path-inferred `context` kind + `kind: research` |
+
+## Machine-readable contract
+
+This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned with the human tables above.
 
 ```json artifact-metadata-contract
 {
-  "schemaVersion": "pythia-artifact-v1",
-  "universalFields": ["Schema", "Id", "Title", "Artifact"],
-  "optionalFields": [
-    "Feature",
-    "Status",
-    "Version",
-    "Generator",
-    "Plan",
-    "Plan-Version",
-    "Review",
-    "Implementation",
-    "Round",
-    "Verdict",
-    "Result",
-    "Branch",
-    "Shape",
-    "Sub-category",
-    "Tags"
-  ],
+  "schemaVersion": "pythia-artifact-v2",
+  "inferredFromPath": ["kind", "id", "title", "feature"],
+  "forbiddenKeys": ["Schema", "Title", "Artifact", "Feature", "Id", "Plan-Id"],
+  "classificationOrder": ["retro", "plan", "review", "implementation-report", "audit-report", "context", "feature", "note"],
   "artifacts": {
-    "feature": {
-      "patterns": ["feat-*.md"],
-      "required": ["Schema", "Id", "Title", "Artifact"],
-      "generators": ["feat"],
-      "enums": {
-        "Status": ["draft", "active", "completed", "archived", "cancelled"]
-      }
-    },
-    "context": {
-      "patterns": ["*.context.md", "*.ctx.md"],
-      "required": ["Schema", "Id", "Title", "Artifact"],
-      "generators": ["ctx", "research"],
-      "enums": {
-        "Status": ["draft", "ready", "active", "archived"],
-        "Shape": ["notes", "survey", "decision-record", "source-summary"]
-      }
-    },
-    "research-context": {
-      "patterns": ["*.context.md", "*.ctx.md"],
-      "required": ["Schema", "Id", "Title", "Artifact"],
-      "generators": ["research"],
-      "enums": {
-        "Status": ["draft", "ready-for-plan", "ready", "archived"],
-        "Shape": ["survey", "options", "source-summary", "decision-support"]
-      }
-    },
     "plan": {
       "patterns": ["*.plan.md"],
-      "required": ["Schema", "Id", "Title", "Artifact", "Status", "Version", "Branch", "Round"],
-      "generators": ["plan", "replan"],
+      "required": ["status", "version"],
+      "optional": ["branch", "updated"],
       "enums": {
-        "Status": ["Draft", "Ready for implementation", "In progress", "Implemented", "Blocked", "Archived", "Cancelled"]
+        "status": ["Draft", "Ready for implementation", "In progress", "Implemented", "Blocked", "Archived", "Cancelled"]
       }
     },
     "review": {
       "patterns": ["*.review.md"],
-      "required": ["Schema", "Id", "Title", "Artifact", "Plan", "Plan-Version", "Round", "Verdict"],
-      "generators": ["review"],
+      "required": ["status", "plan_version", "round", "verdict"],
+      "optional": ["updated"],
       "enums": {
-        "Status": ["active", "completed", "archived"],
-        "Verdict": ["READY", "NEEDS_REVISION"]
+        "status": ["active", "completed", "archived"],
+        "verdict": ["READY", "NEEDS_REVISION"]
       }
     },
     "implementation-report": {
       "patterns": ["*.implementation.md"],
-      "required": ["Schema", "Id", "Title", "Artifact", "Plan", "Plan-Version", "Review", "Round", "Result"],
-      "generators": ["implement"],
+      "required": ["status", "plan_version", "round", "result"],
+      "optional": ["updated"],
       "enums": {
-        "Status": ["active", "completed", "blocked"],
-        "Result": ["implemented", "partial", "blocked", "failed"]
+        "status": ["active", "completed", "blocked"],
+        "result": ["implemented", "partial", "blocked", "failed"]
       }
     },
     "audit-report": {
       "patterns": ["*.audit.md"],
-      "required": ["Schema", "Id", "Title", "Artifact", "Implementation", "Round", "Verdict"],
-      "generators": ["audit"],
+      "required": ["status", "round", "verdict"],
+      "optional": ["updated"],
       "enums": {
-        "Status": ["active", "completed"],
-        "Verdict": ["ready", "needs-fixes", "plan-fix", "re-plan"]
+        "status": ["active", "completed"],
+        "verdict": ["ready", "needs-fixes", "plan-fix", "re-plan"]
       }
     },
     "retro": {
       "patterns": ["*.retro.md"],
-      "required": ["Schema", "Id", "Title", "Artifact"],
-      "generators": ["retro"],
+      "required": [],
+      "optional": ["status", "updated"],
       "enums": {
-        "Status": ["active", "completed", "archived"]
+        "status": ["active", "completed", "archived"]
+      }
+    },
+    "context": {
+      "patterns": ["*.context.md", "*.ctx.md"],
+      "required": [],
+      "optional": ["status", "kind", "updated"],
+      "enums": {
+        "status": ["draft", "ready", "active", "archived"],
+        "kind": ["research"]
+      }
+    },
+    "feature": {
+      "patterns": ["feat-*.md"],
+      "required": [],
+      "optional": ["status", "updated"],
+      "enums": {
+        "status": ["draft", "active", "completed", "archived", "cancelled"]
       }
     },
     "note": {
       "patterns": ["*.md"],
-      "required": ["Schema", "Id", "Title", "Artifact"],
-      "generators": ["manual", "migration"],
+      "required": [],
+      "optional": ["status", "updated"],
       "enums": {}
     }
   }
@@ -166,52 +233,82 @@ This JSON block is consumed by validators. Keep it aligned with the human table 
 
 ## Examples
 
-### Implementation Report
+### Plan
 
 ```md
+# Plan 9-example: Example Feature Repair
+
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: 1-example-plan-implementation
-- **Title**: Example Plan Implementation
-- **Artifact**: implementation-report
-- **Feature**: feat-2026-05-example
-- **Plan**: plans/1-example-plan.plan.md
-- **Plan-Version**: v1
-- **Review**: reports/1-example-plan.review.md
-- **Round**: I1
-- **Result**: implemented
+- status: Draft
+- version: v1
+- branch: main
+- updated: 2026-06-23
 ```
 
 ### Review
 
 ```md
+# 9-example Review — READY
+
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: 1-example-plan-review
-- **Title**: Example Plan Review
-- **Artifact**: review
-- **Feature**: feat-2026-05-example
-- **Plan**: plans/1-example-plan.plan.md
-- **Plan-Version**: v1
-- **Round**: R1
-- **Verdict**: READY
+- status: completed
+- plan_version: v1
+- round: R1
+- verdict: READY
+- updated: 2026-06-23
 ```
 
-### Generic Data Note
+### Implementation report
 
 ```md
+# 9-example Implementation
+
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: task-2025-07-command-methodology-integration
-- **Title**: Command Methodology Integration
-- **Artifact**: note
+- status: completed
+- plan_version: v1
+- round: I1
+- result: implemented
+- updated: 2026-06-23
+```
+
+### Audit report
+
+```md
+# 9-example Audit
+
+## Metadata
+
+- status: completed
+- round: A1
+- verdict: ready
+- updated: 2026-06-23
+```
+
+### Feature doc
+
+```md
+# Feature: Example Feature
+
+## Metadata
+
+- status: active
+```
+
+### Context (research)
+
+```md
+# Research: Example Options Survey
+
+## Metadata
+
+- status: ready
+- kind: research
+- updated: 2026-06-23
 ```
 
 ## Migration
 
-Metadata migration covers sync-eligible `.pythia/` data markdown: `.pythia/**/*.md` except `.pythia/README.md`, `.pythia/config/**`, `.pythia/runtime/**`, `.pythia/backups/**`, `AGENTS.md`, and `CLAUDE.md`. It converts old metadata carriers into this body metadata contract and removes legacy keys.
-
-Legacy conversion inputs include `Plan-Id`, `Plan-Version`, review `Plan`, review `Plan Version`, review `Last Status`, review `Last Review Round`, implementation header `Plan:` / `Review:`, implementation compatibility `Result`, and feature/context identity frontmatter. Removed field names such as `Created`, `Updated`, `Subject`, and `Subject-Version` are not emitted by the current schema.
+Metadata migration covers sync-eligible `.pythia/` data markdown: `.pythia/**/*.md` except `.pythia/README.md`, `.pythia/config/**`, `.pythia/runtime/**`, `.pythia/backups/**`, `AGENTS.md`, and `CLAUDE.md`. It converts v1 bold-bullet metadata (including `Schema: pythia-artifact-v1` headers) to v2 list `- key: value` format, drops forbidden fields, strips legacy YAML frontmatter, and prepends H1 from legacy `Title` or slug when missing.

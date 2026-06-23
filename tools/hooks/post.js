@@ -106,7 +106,11 @@ function main() {
     for (const entry of wfDocs) {
       if (matchGlob(base, entry.path) && entry.checker) {
         for (const c of entry.checker.split(',').map((s) => basename(s.trim()))) {
-          runChecker(c, root, p);
+          if (c === 'artifact-metadata.js') {
+            runChecker(c, root, '--strict', p);
+          } else {
+            runChecker(c, root, p);
+          }
         }
       }
     }

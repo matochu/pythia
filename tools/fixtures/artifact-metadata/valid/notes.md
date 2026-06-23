@@ -2,12 +2,8 @@
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: notes
-- **Title**: Notes
-- **Artifact**: note
+- status: active
 
 ## Body
 
 Fixture.
-

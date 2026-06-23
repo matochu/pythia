@@ -59,9 +59,9 @@ describe('runtime materialized after install', () => {
   it('baked metadata-contract.json is valid JSON with schemaVersion', () => {
     const raw = readFileSync(join(workspaceDir, '.pythia/runtime/metadata-contract.json'), 'utf8');
     const parsed = JSON.parse(raw);
-    expect(parsed.schemaVersion).toBe('pythia-artifact-v1');
+    expect(parsed.schemaVersion).toBe('pythia-artifact-v2');
     expect(parsed.artifacts).toBeDefined();
-    expect(parsed.universalFields).toBeDefined();
+    expect(parsed.forbiddenKeys).toBeDefined();
   });
 
   it('baked metadata-contract.json matches the source reference contract', () => {

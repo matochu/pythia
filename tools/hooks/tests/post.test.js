@@ -455,7 +455,8 @@ Verdict: READY
 
       const updated = readFileSync(planPath, 'utf8');
       expect(updated).toContain('- **Version**: v2');
-      expect(updated).toContain('- **Round**: R1');
+      // v2: plan metadata Round is no longer synced (round lives in revision log body)
+      expect(updated).not.toContain('- **Round**: R1');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -520,6 +521,78 @@ Verdict: READY
       expect(after).toContain('- **Round**: R2');
       expect(after).toContain('- **Verdict**: READY');
       expect(after).toContain('- **Plan-Version**: v3');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('post-strict-errors-on-forbidden-schema-key: stderr shows artifact-metadata error for Schema: key, save not blocked', () => {
+    const root = makeHookRoot('pythia-post-strict-forbidden-');
+    try {
+      const featureDir = join(root, '.pythia', 'workflows', 'features', 'feat-test', 'plans');
+      mkdirSync(featureDir, { recursive: true });
+      const planPath = join(featureDir, 'bad.plan.md');
+      writeFileSync(planPath, [
+        '# Bad Plan: forbidden key',
+        '',
+        '## Metadata',
+        '',
+        'Schema: pythia-artifact-v1',
+        'status: Draft',
+        'version: v1',
+        '',
+        '## Plan revision log',
+        '',
+        '| Version | Round | Date | Changed Steps | Summary |',
+        '| --- | --- | --- | --- | --- |',
+        '| v1 | — | 2026-01-01 | Step 1 | Init |',
+        '',
+        '## Navigation',
+        '',
+        '- Plan: [Step 1: X](#step-1-x)',
+        '',
+        '## Context',
+        '',
+        'Fixture.',
+        '',
+        '## Goal',
+        '',
+        'Fixture.',
+        '',
+        '## Plan',
+        '',
+        '### Step 1: X',
+        '',
+        '- **Change**: Change file.',
+        '- **Where**: `x.txt`',
+        '- **Validation**: `true`',
+        '- **Acceptance**: Done.',
+        '',
+        '## Risks / Unknowns',
+        '',
+        'None.',
+      ].join('\n'), 'utf8');
+
+      // Use dev post.js (has --strict artifact-metadata wiring)
+      const r = runPost(planPath, root);
+      expect(r.status).toBe(0);
+      expect(r.stderr).toMatch(/artifact-metadata\.forbidden_key/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('post-strict-passes-quiet-on-clean-v2-fixture', () => {
+    const root = makeHookRoot('pythia-post-strict-clean-');
+    try {
+      const featureDir = join(root, '.pythia', 'workflows', 'features', 'feat-test', 'plans');
+      mkdirSync(featureDir, { recursive: true });
+      const planPath = join(featureDir, 'clean.plan.md');
+      cpSync(validPlan, planPath);
+
+      const r = runPost(planPath, root);
+      expect(r.status).toBe(0);
+      expect(r.stderr).not.toMatch(/artifact-metadata\.(forbidden_key|missing_field|enum)/);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

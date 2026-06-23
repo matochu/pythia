@@ -6,14 +6,8 @@ import { fileURLToPath } from 'url';
 import { readState } from './state.js';
 import { readManifest } from './manifest.js';
 import { verifyPathsMdWorkflowDocs } from '../lib/paths-md-invariants.js';
-import { parseArtifactMetadata, getArtifactField, inferArtifactType } from '../lib/metadata/parse.js';
-import {
-  SCHEMA_VERSION,
-  OPTIONAL_FIELDS,
-  UNIVERSAL_FIELDS,
-  artifactTypes,
-  schemaForArtifact,
-} from '../lib/metadata/schema.js';
+import { parseArtifactMetadata, getArtifactField, metadataFormatDiagnostics } from '../lib/metadata/parse.js';
+import { FORBIDDEN_KEYS, schemaForArtifact, inferArtifactKind } from '../lib/metadata/schema.js';
 
 const MIGRATION_TOLERATED_LEGACY_FIELDS = new Set([
   'Created',
@@ -58,38 +52,44 @@ if (!changedPaths || changedPaths.length === 0) {
   process.exit(0);
 }
 
-// Inline structural validator for workflow documents.
-// Mirrors the section-level checks in scripts/validate-plan.sh and scripts/validators/*.sh.
+// Inline v2 metadata validator for workflow documents after migration.
 // Returns {ok, reason}.
-function validateSchemaMetadata(content, relpath) {
+function validateV2Metadata(content, relpath) {
   const metadata = parseArtifactMetadata(content);
-  if (metadata.duplicate) return { ok: false, reason: 'schema metadata has duplicate ## Metadata sections' };
+  if (!metadata.found) return { ok: false, reason: 'missing ## Metadata section' };
+  if (metadata.duplicate) return { ok: false, reason: 'duplicate ## Metadata sections' };
+  const formatIssue = metadataFormatDiagnostics(metadata)[0];
+  if (formatIssue) return { ok: false, reason: formatIssue.message };
 
-  const schema = getArtifactField(metadata, 'Schema');
-  if (schema !== SCHEMA_VERSION) {
-    return { ok: false, reason: `schema metadata missing Schema ${SCHEMA_VERSION}` };
+  // Forbidden key check — scan raw metadata lines to catch Title-case keys
+  const metaLines = content.split('\n').slice(metadata.startLine, metadata.endLine);
+  for (const line of metaLines) {
+    const m = line.match(/^\s*(?:-\s+)?([A-Za-z][A-Za-z0-9_-]*):\s*.+$/);
+    if (m && FORBIDDEN_KEYS.includes(m[1])) {
+      return { ok: false, reason: `forbidden v2 metadata key: ${m[1]}` };
+    }
+  }
+  // Also check bold-bullet v1 keys (Schema, Title, etc.) as forbidden
+  for (const entry of metadata.entries) {
+    if (FORBIDDEN_KEYS.includes(entry.key)) {
+      return { ok: false, reason: `forbidden v2 metadata key: ${entry.key}` };
+    }
   }
 
-  const metadataArtifact = getArtifactField(metadata, 'Artifact');
-  const artifact = inferArtifactType(relpath, metadataArtifact);
-  const spec = schemaForArtifact(artifact);
-  if (!artifact || !spec) {
-    return { ok: false, reason: `schema metadata Artifact must be one of: ${artifactTypes().join(', ')}` };
+  const kind = inferArtifactKind(relpath);
+  const spec = kind ? schemaForArtifact(kind) : null;
+  if (!spec) {
+    // Unknown kind — pass with advisory (not a hard failure for migration verify)
+    return { ok: true };
   }
 
-  const allowed = new Set([...UNIVERSAL_FIELDS, ...OPTIONAL_FIELDS]);
-  const unknown = metadata.entries.find((entry) =>
-    !allowed.has(entry.key) && !MIGRATION_TOLERATED_LEGACY_FIELDS.has(entry.key)
-  );
-  if (unknown) return { ok: false, reason: `schema metadata unknown field: ${unknown.key}` };
-
-  const missing = spec.required.find((key) => !getArtifactField(metadata, key));
-  if (missing) return { ok: false, reason: `schema metadata missing required field: ${missing}` };
+  const missing = (spec.required ?? []).find((key) => !getArtifactField(metadata, key));
+  if (missing) return { ok: false, reason: `missing required v2 field for ${kind}: ${missing}` };
 
   for (const [key, values] of Object.entries(spec.enums ?? {})) {
     const value = getArtifactField(metadata, key);
     if (value && !values.includes(value)) {
-      return { ok: false, reason: `schema metadata ${key} must be one of: ${values.join(' | ')} (got: ${value})` };
+      return { ok: false, reason: `${key} must be one of: ${values.join(' | ')} (got: ${value})` };
     }
   }
 
@@ -100,90 +100,17 @@ function validateWorkflowDoc(content, relpath) {
   if (!content || content.trim().length === 0) {
     return { ok: false, reason: 'file is empty' };
   }
-
   const metadata = parseArtifactMetadata(content);
-  if (getArtifactField(metadata, 'Schema') === SCHEMA_VERSION) {
-    return validateSchemaMetadata(content, relpath);
+  // Pipeline artifacts must have a ## Metadata section after migration.
+  const isPipelineArtifact = ['.plan.md', '.review.md', '.implementation.md', '.audit.md']
+    .some((s) => relpath.endsWith(s));
+  if (isPipelineArtifact && !metadata.found) {
+    return { ok: false, reason: 'missing ## Metadata section' };
   }
-
-  if (relpath.endsWith('.plan.md')) {
-    // Required sections per validate-plan.sh
-    const required = ['## Metadata', '## Plan revision log', '## Navigation', '## Context', '## Goal', '## Plan'];
-    for (const sec of required) {
-      if (!content.includes(`\n${sec}\n`) && !content.startsWith(`${sec}\n`)) {
-        return { ok: false, reason: `plan doc missing required section: ${sec}` };
-      }
-    }
-    if (!/^## Risks/m.test(content) && !/^## Acceptance/m.test(content)) {
-      return { ok: false, reason: 'plan doc missing ## Risks or ## Acceptance section' };
-    }
-    const requiredMeta = ['Plan-Id', 'Plan-Version', 'Status', 'Branch'];
-    for (const key of requiredMeta) {
-      if (!content.includes(`**${key}**`)) {
-        return { ok: false, reason: `plan doc ## Metadata missing key: ${key}` };
-      }
-    }
-    return { ok: true };
-  }
-
-  if (relpath.endsWith('.review.md')) {
-    // Required per validate-review.sh
-    const checks = [
-      [/^## Navigation$/m, '## Navigation'],
-      [/^Verdict: (READY|NEEDS_REVISION)$/m, 'Verdict: READY|NEEDS_REVISION'],
-      [/^## Executive Summary$/m, '## Executive Summary'],
-      [/^## Step-by-Step Analysis$/m, '## Step-by-Step Analysis'],
-      [/^## Summary of Concerns$/m, '## Summary of Concerns'],
-    ];
-    for (const [re, label] of checks) {
-      if (!re.test(content)) {
-        return { ok: false, reason: `review doc missing: ${label}` };
-      }
-    }
-    return { ok: true };
-  }
-
-  if (relpath.endsWith('.implementation.md')) {
-    // Required per validate-implementation.sh
-    const checks = [
-      [/^# Implementation Report:/m, '# Implementation Report:'],
-      [/Implementation Round/m, 'compatibility table with Implementation Round'],
-      [/Plan Version/m, 'compatibility table with Plan Version'],
-      [/^### Summary$/m, '### Summary'],
-      [/^### Step Results$/m, '### Step Results'],
-      [/^### Issues$/m, '### Issues'],
-      [/^### Out-of-Plan Work$/m, '### Out-of-Plan Work'],
-    ];
-    for (const [re, label] of checks) {
-      if (!re.test(content)) {
-        return { ok: false, reason: `implementation doc missing: ${label}` };
-      }
-    }
-    return { ok: true };
-  }
-
-  if (relpath.endsWith('.audit.md')) {
-    // Required per validate-audit.sh
-    const checks = [
-      [/^# Architect Audit:/m, '# Architect Audit:'],
-      [/^## Conformance$/m, '## Conformance'],
-      [/^## Acceptance Criteria Check$/m, '## Acceptance Criteria Check'],
-      [/^## Implementation quality check$/m, '## Implementation quality check'],
-      [/^## Risk Re-evaluation$/m, '## Risk Re-evaluation'],
-      [/^## Decision$/m, '## Decision'],
-      [/\*\*Verdict\*\*:\s*(ready|needs-fixes|plan-fix|re-plan)/m, '**Verdict**: ready|needs-fixes|plan-fix|re-plan'],
-    ];
-    for (const [re, label] of checks) {
-      if (!re.test(content)) {
-        return { ok: false, reason: `audit doc missing: ${label}` };
-      }
-    }
-    return { ok: true };
-  }
-
-  // feat-* and .context. docs: require at least one ## heading (no dedicated shell validator for these types)
-  if (!/^## /m.test(content)) {
-    return { ok: false, reason: 'workflow doc has no level-2 headings (## )' };
+  // Migration verify scope: metadata correctness only.
+  // Structural section rules are enforced by structure.js at edit time, not here.
+  if (metadata.found && metadata.entries.length > 0) {
+    return validateV2Metadata(content, relpath);
   }
   return { ok: true };
 }

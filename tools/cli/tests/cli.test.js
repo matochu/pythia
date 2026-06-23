@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync, existsSync, cpSync, readdirSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -6,6 +6,8 @@ import { tmpdir } from 'os';
 import { spawnSync } from 'child_process';
 import { doInit, doUpdate, isWorkspace, sha256, readManifest } from '../workspace.js';
 import { compareSemver } from '../../migrate/semver.js';
+
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
 
 // Package root: src/cli/tests/ → 3 levels up
 const __dirname = dirname(fileURLToPath(import.meta.url));

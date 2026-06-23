@@ -10,7 +10,7 @@ Hook order for workflow docs:
 
 1. `metadata/sync.js` updates derived metadata snapshots for plans, reviews, implementation reports, and audits.
 2. Configured post-commands run next, including `inputs.js sync` when enabled by `## Post-commands`. `inputs.js sync` rebuilds `## References` from body link scan and `## Used by` from rdeps scan — phantom entries from prior LLM edits are removed at this step.
-3. Workflow checkers from `## Workflow docs` run last (`structure.js`, `links.js`, `inputs-fresh.js`, `artifact-metadata.js`, `refs-owned.js`, ...).
+3. Workflow checkers from `## Workflow docs` run last (`structure.js`, `links.js`, `inputs-fresh.js`, `artifact-metadata.js --strict`, `refs-owned.js`, ...). `artifact-metadata.js` runs with `--strict`, emitting stderr errors on forbidden keys, invalid enums, or missing required v2 fields — save is not blocked.
 
 This order lets checkers read the current metadata/input snapshot. It is still advisory; only `/validate` exit `0` is a validation pass.
 

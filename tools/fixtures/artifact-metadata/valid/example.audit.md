@@ -2,16 +2,11 @@
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: example-audit
-- **Title**: Example Audit
-- **Artifact**: audit-report
-- **Feature**: feat-2026-05-example
-- **Implementation**: reports/example.implementation.md
-- **Round**: A1
-- **Verdict**: ready
+- status: completed
+- round: A1
+- verdict: ready
+- updated: 2026-06-21
 
 ## Decision
 
 - **Verdict**: ready
-

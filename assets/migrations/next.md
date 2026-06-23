@@ -66,7 +66,7 @@ Applied by `pythia-workspace update` when `migratedVersion < <version>`.
 
 **Target**: `.pythia/`
 **Kind**: auto
-**Check**: Sync-eligible `.pythia/` data markdown contains `Schema: pythia-artifact-v1` body metadata.
+**Check**: Sync-eligible `.pythia/` data markdown uses v2 list `- key: value` metadata (no YAML frontmatter, no forbidden keys such as `Schema`, `Title`, `Artifact`, `Feature`, `Id`).
 
 **Op:**
 ```json
@@ -82,12 +82,11 @@ Applied by `pythia-workspace update` when `migratedVersion < <version>`.
       "dataOnly": true
     }
   ],
-  "schema": "pythia-artifact-v1",
   "strict": true
 }
 ```
 
-**Success condition**: Existing sync-eligible `.pythia/` data markdown uses the universal body metadata contract and no legacy metadata/frontmatter carriers remain. README, config, runtime, backups, and generated instruction files are not migrated.
+**Success condition**: Sync-eligible `.pythia/` data markdown has v2 list metadata — no YAML frontmatter, no forbidden keys (`Schema`, `Title`, `Artifact`, `Feature`, `Id`), kind inferred from path suffix. README, config, runtime, backups, and generated instruction files are not migrated.
 
 ## Step 3
 

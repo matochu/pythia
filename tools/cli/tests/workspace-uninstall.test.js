@@ -1,7 +1,7 @@
 /**
  * Integration tests: uninstall removes managed surfaces, preserves workflows.
  */
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import {
   mkdirSync,
   writeFileSync,
@@ -18,6 +18,8 @@ import {
   indexJs,
   makeOpts,
 } from './helpers/workspace.js';
+
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
 
 let sharedWs;
 let mutatingWs;

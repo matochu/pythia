@@ -147,7 +147,7 @@ Done when:
 
 ## Plan document status
 
-**Where**: `## Metadata` → line `- **Status**: …` (exactly one; spelling and casing as below).
+**Where**: `## Metadata` → line `- status: …` (exactly one; value spelling and casing as below).
 
 **Allowed values** (canonical strings for `.pythia/runtime/checks/structure.js --type plan`):
 

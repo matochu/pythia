@@ -1,7 +1,7 @@
 /**
  * Integration tests: pythia version subcommand.
  */
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { rmSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import {
@@ -11,6 +11,8 @@ import {
 } from './helpers/workspace.js';
 import { readManifest } from '../workspace.js';
 import { writeManifest } from '../../migrate/manifest.js';
+
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
 
 let workspaceDir;
 

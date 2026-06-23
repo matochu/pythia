@@ -2,16 +2,10 @@
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: min.valid
-- **Title**: Minimal valid plan
-- **Artifact**: plan
-- **Feature**: fixture
-- **Status**: Draft
-- **Version**: v1
-- **Tags**: plan
-- **Branch**: TBD
-- **Round**: Initial plan — no review yet
+- status: Draft
+- version: v1
+- branch: TBD
+- updated: 2026-01-01
 
 ## Plan revision log
 

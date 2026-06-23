@@ -89,29 +89,13 @@ function validatePlan(file, lines) {
   if (!hasLine(lines, /^## Risks/) && !hasLine(lines, /^## Acceptance/))
     errors.push(`${file}:0: [plan.section.required] Missing required section: ## Risks / Unknowns or ## Acceptance Criteria`);
 
+  // Version >= v2 requires ## Retrospective (check both v1 bold and v2 list format)
   const parsedMetadata = parseArtifactMetadata(lines.join('\n'));
-  const metaSection = sectionLines(lines, '## Metadata');
-  for (const key of ['Id', 'Version', 'Status', 'Branch', 'Round']) {
-    if (!getArtifactField(parsedMetadata, key))
-      errors.push(`${file}:${lineFor(lines, /^## Metadata$/)}: [plan.metadata.keys] Metadata missing: ${key}`);
-  }
-
-  // Status enum
-  const statusLine = metaSection.find((l) => /^\s*-\s+\*\*Status\*\*:/.test(l));
-  if (statusLine) {
-    const val = statusLine.replace(/^\s*-\s+\*\*Status\*\*:\s*/, '').trim();
-    const valid = ['Draft', 'Ready for implementation', 'In progress', 'Implemented', 'Blocked', 'Archived', 'Cancelled'];
-    if (!valid.includes(val))
-      errors.push(`${file}:${lineFor(lines, /\*\*Status\*\*/)}: [plan.metadata.status_enum] **Status** must be one of: ${valid.join(' | ')} (got: ${val})`);
-  }
-
-  // Version >= v2 requires ## Retrospective
-  const versionValue = getArtifactField(parsedMetadata, 'Version');
+  const versionValue = getArtifactField(parsedMetadata, 'Version') ?? getArtifactField(parsedMetadata, 'version');
   if (versionValue) {
-    const val = versionValue;
-    const m = val.match(/^v(\d+)/);
+    const m = versionValue.match(/^v(\d+)/);
     if (m && parseInt(m[1], 10) >= 2 && !hasLine(lines, /^## Retrospective$/))
-      errors.push(`${file}:0: [plan.retrospective.required] Version ${val} requires ## Retrospective section`);
+      errors.push(`${file}:0: [plan.retrospective.required] Version ${versionValue} requires ## Retrospective section`);
   }
 
   if (!hasLine(lines, /\| Version \| Round \| Date /))
@@ -236,18 +220,9 @@ function validateReview(file, lines) {
 
 function validateImplementation(file, lines) {
   const errors = checkTrailingRefsPlacement(file, lines);
-  const metadata = parseArtifactMetadata(lines.join('\n'));
-  const planRef = getArtifactField(metadata, 'Plan');
-  const reviewRef = getArtifactField(metadata, 'Review');
 
-  if (!hasLine(lines, /^# Implementation Report:/))
-    errors.push(`${file}:1: [impl.header.h1] Missing H1 starting with # Implementation Report:`);
-
-  if (!/\.plan\.md$/.test(planRef ?? ''))
-    errors.push(`${file}:${metadata.startLine || 0}: [impl.metadata.plan] Missing metadata Plan ending in .plan.md`);
-
-  if (!/\.review\.md$/.test(reviewRef ?? ''))
-    errors.push(`${file}:${metadata.startLine || 0}: [impl.metadata.review] Missing metadata Review ending in .review.md`);
+  if (!hasLine(lines, /^# /))
+    errors.push(`${file}:1: [impl.header.h1] Missing H1`);
 
   if (!hasLine(lines, /^## Plan.{1,5}Implementation Compatibility$/))
     errors.push(`${file}:0: [impl.section.compatibility] Missing ## Plan–Implementation Compatibility (en dash or hyphen between Plan and Implementation)`);

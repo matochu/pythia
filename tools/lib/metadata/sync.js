@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import { parseArtifactMetadata, serializeMetadata, getArtifactField, inferArtifactType } from './parse.js';
+import { parseArtifactMetadata, getArtifactField } from './parse.js';
+import { inferArtifactKind } from './schema.js';
 
 // ── Review round parsing ────────────────────────────────────────────────────
 
@@ -85,13 +86,6 @@ function normalizeImplementationResult(value) {
   return null;
 }
 
-function planRoundMatches(current, next) {
-  if (!current || !next) return false;
-  if (current === next) return true;
-  if (/^R\d+$/.test(next)) return new RegExp(`\\b${next}\\b`).test(current);
-  return false;
-}
-
 // ── Audit round parsing ─────────────────────────────────────────────────────
 
 function parseAuditRounds(content) {
@@ -128,40 +122,62 @@ function parseAuditRounds(content) {
   return [];
 }
 
+// ── Helper: get field from parsed (supports both v1 and v2 key names) ───────
+
+function getField(parsed, ...keys) {
+  for (const k of keys) {
+    const v = getArtifactField(parsed, k);
+    if (v) return v;
+  }
+  return null;
+}
+
 // ── Core sync ───────────────────────────────────────────────────────────────
 
 export function computeMetadataSync(file, content) {
   const parsed = parseArtifactMetadata(content);
   if (!parsed.found) return null;
 
-  const artifact = inferArtifactType(file, getArtifactField(parsed, 'Artifact'));
+  // Use suffix-first kind inference (fixes retro regression)
+  const artifact = inferArtifactKind(file);
   const updates = {};
 
   if (artifact === 'plan') {
     const row = parsePlanRevisionLog(content);
     if (!row) return null;
-    updates.Version = row.version;
-    const currentRound = getArtifactField(parsed, 'Round');
-    if (row.round && !planRoundMatches(currentRound, row.round)) updates.Round = row.round;
+    // v2: sync 'version' (lowercase), NOT 'Version'
+    // v2: no 'round' in plan metadata — plan round lives only in revision log body
+    const versionKey = parsed.fields.has('version') ? 'version' : 'Version';
+    const currentVersion = getField(parsed, 'version', 'Version');
+    if (row.version && currentVersion !== row.version) updates[versionKey] = row.version;
   } else if (artifact === 'review') {
     const rounds = parseReviewRounds(content);
     if (!rounds.length) return null;
     const latest = rounds.reduce((a, b) => (b.n > a.n ? b : a));
-    updates.Round = latest.round;
-    updates.Verdict = latest.verdict;
-    if (latest.planVersion) updates['Plan-Version'] = latest.planVersion;
+    // v2: lowercase keys
+    const roundKey = parsed.fields.has('round') ? 'round' : 'Round';
+    const verdictKey = parsed.fields.has('verdict') ? 'verdict' : 'Verdict';
+    const pvKey = parsed.fields.has('plan_version') ? 'plan_version' : 'Plan-Version';
+    updates[roundKey] = latest.round;
+    updates[verdictKey] = latest.verdict;
+    if (latest.planVersion) updates[pvKey] = latest.planVersion;
   } else if (artifact === 'implementation-report') {
     const row = parseImplTable(content);
     if (!row) return null;
-    updates.Round = row.round;
-    if (row.planVersion) updates['Plan-Version'] = row.planVersion;
-    if (row.result) updates.Result = row.result;
+    const roundKey = parsed.fields.has('round') ? 'round' : 'Round';
+    const pvKey = parsed.fields.has('plan_version') ? 'plan_version' : 'Plan-Version';
+    const resultKey = parsed.fields.has('result') ? 'result' : 'Result';
+    updates[roundKey] = row.round;
+    if (row.planVersion) updates[pvKey] = row.planVersion;
+    if (row.result) updates[resultKey] = row.result;
   } else if (artifact === 'audit-report') {
     const rounds = parseAuditRounds(content);
     if (!rounds.length) return null;
     const latest = rounds.reduce((a, b) => (b.n > a.n ? b : a));
-    updates.Round = latest.round;
-    updates.Verdict = latest.verdict;
+    const roundKey = parsed.fields.has('round') ? 'round' : 'Round';
+    const verdictKey = parsed.fields.has('verdict') ? 'verdict' : 'Verdict';
+    updates[roundKey] = latest.round;
+    updates[verdictKey] = latest.verdict;
   } else {
     return null;
   }
@@ -180,16 +196,31 @@ export function applyMetadataSync(content, updates) {
   const lines = content.split('\n');
   const result = [...lines];
 
+  // Separate in-place replacements (stable indices) from insertions.
+  const inserts = [];
   for (const [key, newValue] of Object.entries(updates)) {
     const existing = parsed.fields.get(key);
     if (existing) {
-      // Replace existing line in-place (0-indexed)
-      result[existing.line - 1] = `- **${key}**: ${newValue}`;
+      if (existing.format === 'v2') {
+        result[existing.line - 1] = `- ${key}: ${newValue}`;
+      } else {
+        result[existing.line - 1] = `- **${key}**: ${newValue}`;
+      }
     } else {
-      // Insert after last known metadata field
-      const lastField = parsed.entries.at(-1);
-      const insertAt = lastField ? lastField.line : parsed.startLine;
-      result.splice(insertAt, 0, `- **${key}**: ${newValue}`);
+      inserts.push([key, newValue]);
+    }
+  }
+
+  // Apply insertions in reverse index order so earlier splices don't shift later positions.
+  if (inserts.length) {
+    const lastField = parsed.entries.at(-1);
+    const insertAt = lastField ? lastField.line : parsed.startLine;
+    const formatField = parsed.format === 'v1'
+      ? ([key, value]) => `- **${key}**: ${value}`
+      : ([key, value]) => `- ${key}: ${value}`;
+    // All new fields go to the same position; insert in reverse to preserve order.
+    for (let i = inserts.length - 1; i >= 0; i--) {
+      result.splice(insertAt, 0, formatField(inserts[i]));
     }
   }
 

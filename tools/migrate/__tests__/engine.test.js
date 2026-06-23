@@ -429,16 +429,17 @@ describe('ops: migrate-artifact-metadata', () => {
       op: 'migrate-artifact-metadata',
       root: '.pythia/workflows',
       patterns: ['*.plan.md'],
-      schema: 'pythia-artifact-v1',
       strict: true,
     };
     const result = runOp(tmpDir, op, [], false, '9.9.9');
     expect(result.status).toBe('applied');
     const out = readFileSync(planPath, 'utf8');
-    expect(out).toContain('- **Schema**: pythia-artifact-v1');
-    expect(out).toContain('- **Id**: 1-test');
-    expect(out).toContain('- **Version**: v1');
+    // v2: list key:value, no Schema/Id/Title/Artifact/Feature
+    expect(out).not.toContain('Schema');
     expect(out).not.toContain('Plan-Id');
+    expect(out).not.toContain('- **');
+    expect(out).toContain('- status: Draft');
+    expect(out).toContain('- version: v1');
     expect(runOp(tmpDir, op, [], false, '9.9.9').status).toBe('skipped');
   });
 
@@ -477,7 +478,6 @@ Body.
           { name: 'legacy-global-contexts', root: '.pythia/ctx', patterns: ['*.ctx.md'] },
           { name: 'global-contexts', root: '.pythia/contexts', patterns: ['*.context.md'] },
         ],
-        schema: 'pythia-artifact-v1',
         strict: true,
       },
       [],
@@ -490,8 +490,13 @@ Body.
       '.pythia/ctx/legacy.ctx.md',
       '.pythia/contexts/architecture/current.context.md',
     ]));
-    expect(readFileSync(join(legacyCtx, 'legacy.ctx.md'), 'utf8')).toContain('- **Schema**: pythia-artifact-v1');
-    expect(readFileSync(join(globalCtx, 'current.context.md'), 'utf8')).toContain('- **Schema**: pythia-artifact-v1');
+    // v2: no Schema field, list metadata, no YAML frontmatter
+    const legacyOut = readFileSync(join(legacyCtx, 'legacy.ctx.md'), 'utf8');
+    const globalOut = readFileSync(join(globalCtx, 'current.context.md'), 'utf8');
+    expect(legacyOut).not.toContain('Schema');
+    expect(legacyOut).not.toMatch(/^---/m);
+    expect(globalOut).not.toContain('Schema');
+    expect(globalOut).not.toMatch(/^---/m);
   });
 });
 
@@ -837,10 +842,11 @@ x
     );
     expect(result.status).toBe(1);
     expect(result.stdout + result.stderr).toContain('[FAIL]');
-    expect(result.stdout + result.stderr).toContain('schema metadata missing required field: Status');
+    // v2: Schema is a forbidden key — verify rejects it regardless of other fields
+    expect(result.stdout + result.stderr).toMatch(/forbidden v2 metadata key: Schema/);
   });
 
-  it('schema-tagged .plan.md with legacy cleanup fields passes migration verify', async () => {
+  it('v2-shaped .plan.md with all required fields passes migration verify', async () => {
     await doInit(makeWorkspaceOpts(tmpDir));
     await doUpdate(makeWorkspaceOpts(tmpDir));
 
@@ -854,16 +860,10 @@ x
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: schema-legacy-fields
-- **Title**: Schema Legacy Fields
-- **Artifact**: plan
-- **Status**: Draft
-- **Version**: v1
-- **Branch**: main
-- **Round**: none
-- **Created**: 2026-06-21
-- **Updated**: 2026-06-21
+- status: Draft
+- version: v1
+- branch: main
+- updated: 2026-06-21
 
 ## Plan revision log
 

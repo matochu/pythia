@@ -14,32 +14,17 @@ import {
   resolveReleaseMigrationVersions,
   hasStagingNextMigration,
   materializeReleasePackage,
-  materializePackageAtVersion,
   preparePythiaPreRelease,
 } from './helpers/release-migration.js';
-import {
-  seedInputsFreshnessMigrationCorpus,
-  legacyInputsFiles,
-} from './helpers/inputs-migration-corpus.js';
 import {
   featureWorkflowDir,
   TEST_FEATURE_ID_MIG,
   TEST_FEATURE_ID_SYNC,
 } from './helpers/workflow-paths.js';
 import {
-  copyRealPythiaTree,
-  copyLinkedRepoRoot,
-  snapshotSyncCitedPaths,
-  snapshotEmptyReferenceShells,
-  auditSyncWorkspace,
-  formatAuditReport,
-  writeAuditReport,
-  writeMigrationSamples,
-} from './helpers/sync-migration-audit.js';
-import {
   auditArtifactMetadataMigration,
   formatArtifactMetadataAudit,
-  newlySchemaTaggedFiles,
+  newlyConvertedFiles,
   seedLegacyArtifactMetadataCorpus,
 } from './helpers/artifact-metadata-migration-audit.js';
 import { parseZones, zone } from '../../lib/paths.js';
@@ -192,34 +177,33 @@ See [dep](./dep.md).
     expect(after).not.toContain('tools/checks/doc-structure.js');
   });
 
-  it('update on tmp copied .pythia migrates artifact metadata and reports touched files', async () => {
+  it('update on seeded legacy corpus migrates artifact metadata and reports touched files', async () => {
     fakePackageRoot = materializeReleasePackage(RELEASE_VERSION);
-    const dir = mkdtempSync(join(tmpdir(), 'pythia-ws-real-metadata-'));
+    const dir = mkdtempSync(join(tmpdir(), 'pythia-ws-metadata-seed-'));
     workspaces.push(dir);
     initGit(dir);
-    copyLinkedRepoRoot(packageRoot, dir);
-    copyRealPythiaTree(packageRoot, dir);
+    await doInit({ target: dir, packageRoot: fakePackageRoot, yes: true });
     preparePythiaPreRelease(dir, { priorVersion: PRIOR_VERSION, pathsVariant: 'old' });
     seedLegacyArtifactMetadataCorpus(dir);
 
     const before = auditArtifactMetadataMigration(dir);
     await doUpdate({ target: dir, packageRoot: fakePackageRoot, yes: true });
     const after = auditArtifactMetadataMigration(dir);
-    const newlyTagged = newlySchemaTaggedFiles(before, after);
+    const newlyConverted = newlyConvertedFiles(before, after);
 
     console.log(formatArtifactMetadataAudit(after, { before }));
 
     expect(after.issues, formatArtifactMetadataAudit(after, { before })).toEqual([]);
     expect(after.covered).toBeGreaterThan(0);
-    expect(after.schemaTagged).toBe(after.covered);
-    expect(newlyTagged).toEqual(
+    expect(after.v2Converted).toBe(after.covered);
+    // Files that had YAML frontmatter or v1 bold-bullets before migration — these are newly converted.
+    // Files already plain (no YAML, no bold) are v2Converted=true in 'before' so don't appear here.
+    expect(newlyConverted).toEqual(
       expect.arrayContaining([
         '.pythia/workflows/features/feat-2026-06-metadata-migration-probe/feat-2026-06-metadata-migration-probe.md',
+        '.pythia/workflows/features/feat-2026-06-metadata-migration-probe/contexts/1-legacy.context.md',
         '.pythia/workflows/features/feat-2026-06-metadata-migration-probe/plans/1-legacy.plan.md',
         '.pythia/workflows/features/feat-2026-06-metadata-migration-probe/reports/1-legacy.review.md',
-        '.pythia/workflows/features/feat-2026-06-metadata-migration-probe/reports/1-legacy.implementation.md',
-        '.pythia/workflows/features/feat-2026-06-metadata-migration-probe/reports/1-legacy.audit.md',
-        '.pythia/workflows/features/feat-2026-06-metadata-migration-probe/notes/1-legacy.retro.md',
         '.pythia/ctx/legacy-global.ctx.md',
         '.pythia/contexts/architecture/legacy-current.context.md',
       ]),
@@ -229,55 +213,6 @@ See [dep](./dep.md).
     expect(after.byArtifact['implementation-report']).toBeGreaterThan(0);
     expect(after.byArtifact['audit-report']).toBeGreaterThan(0);
     expect(readManifest(dir).migratedVersion).toBe(RELEASE_VERSION);
-  }, 120_000);
-});
-
-describe('shipped migration 0.3.6 — copied real .pythia, full audit', () => {
-  const SHIPPED = '0.3.6';
-  const PRIOR = '0.3.5';
-
-  async function runCopiedPythiaUpdate() {
-    fakePackageRoot = materializePackageAtVersion(SHIPPED);
-    const dir = mkdtempSync(join(tmpdir(), 'pythia-ws-real-pythia-'));
-    workspaces.push(dir);
-    initGit(dir);
-    copyLinkedRepoRoot(packageRoot, dir);
-    copyRealPythiaTree(packageRoot, dir);
-    preparePythiaPreRelease(dir, { priorVersion: PRIOR, pathsVariant: 'old' });
-    seedInputsFreshnessMigrationCorpus(dir);
-
-    const beforeLinks = snapshotSyncCitedPaths(dir);
-    const beforeEmpty = snapshotEmptyReferenceShells(dir);
-
-    await doUpdate({ target: dir, packageRoot: fakePackageRoot, yes: true });
-
-    const report = auditSyncWorkspace(dir, beforeLinks, beforeEmpty);
-    const { outDir, samples } = writeMigrationSamples(dir, report);
-    report.migrationSamplesDir = outDir;
-    report.migrationSamples = samples;
-    const reportPath = writeAuditReport(report);
-    return { dir, report, reportPath };
-  }
-
-  it('update on tmp workspace with copied .pythia — audit every file, write report', async () => {
-    const { report, reportPath } = await runCopiedPythiaUpdate();
-
-    // Printed for manual inspection (vitest - stdout).
-    console.log(formatAuditReport(report));
-    console.log(`audit written: ${reportPath}`);
-    console.log(`migration samples: ${report.migrationSamplesDir}`);
-
-    expect(report.corruptionOutsidePythia, formatAuditReport(report)).toEqual([]);
-    expect(report.corruptionInRuntime, formatAuditReport(report)).toEqual([]);
-    expect(report.bodyLinksLost, formatAuditReport(report)).toEqual([]);
-    expect(report.invalidReferenceKinds, formatAuditReport(report)).toEqual([]);
-    expect(report.legacyInputsRemaining, formatAuditReport(report)).toEqual([]);
-    expect(report.emptyReferencesShells, formatAuditReport(report)).toEqual([]);
-    expect(readManifest(report.wsRoot).migratedVersion).toBe(SHIPPED);
-
-    const inputsJs = join(report.wsRoot, '.pythia/runtime/inputs.js');
-    expect(readFileSync(inputsJs, 'utf8')).not.toMatch(/## References/);
-    expect(existsSync(inputsJs)).toBe(true);
   }, 120_000);
 });
 

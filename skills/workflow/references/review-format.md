@@ -132,10 +132,10 @@ Verdict: READY | NEEDS_REVISION
 
 ## Key Fields
 
-- **Metadata.Plan**: canonical link to the current plan artifact
-- **Metadata.Plan-Version**: latest plan version reviewed by this file
-- **Metadata.Verdict**: current top-level verdict snapshot for the file
-- **Metadata.Round**: latest review round appended to this file
+- **Metadata `plan_version`**: latest plan version reviewed by this file
+- **Metadata `verdict`**: current top-level verdict snapshot for the file
+- **Metadata `round`**: latest review round appended to this file
+- **Plan-Path**: canonical link to the current plan artifact in each review round body
 - **Verdict**: READY | NEEDS_REVISION
 - **Status per step**: OK | CONCERN-LOW | CONCERN-MEDIUM | CONCERN-HIGH | BLOCKED
 - **Evidence**: File paths with line numbers, symbol names, documentation links — concrete, not vague

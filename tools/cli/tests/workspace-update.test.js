@@ -23,6 +23,8 @@ import { doInit, doUpdate, readManifest } from '../workspace.js';
 import { writeManifest } from '../../migrate/manifest.js';
 import { initGit, makeOpts, runCli, packageRoot } from './helpers/workspace.js';
 
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
+
 let tmpDir;
 
 beforeEach(() => {

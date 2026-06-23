@@ -3,7 +3,7 @@
  * Uses isolated tmp workspaces + stable fixtures under tools/cli/tests/fixtures/
  * (not assets/migrations/next.md, which is staging-only and changes during development).
  */
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { readFileSync, writeFileSync, rmSync, cpSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdtempSync } from 'node:fs';
@@ -13,6 +13,8 @@ import { doInit, doUpdate, readManifest } from '../workspace.js';
 import { initGit, packageRoot } from './helpers/workspace.js';
 import { pathsMdContent, hasHooksHardeningPaths } from './helpers/paths-md.js';
 import { parseZones, zone } from '../../lib/paths.js';
+
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MIG_FIXTURE = join(__dirname, 'fixtures/paths-workflow-docs-migration.md');

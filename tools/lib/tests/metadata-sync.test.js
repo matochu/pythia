@@ -126,7 +126,7 @@ describe('computeMetadataSync: plan', () => {
     expect(computeMetadataSync('slug.plan.md', content)).toBeNull();
   });
 
-  it('updates Version and Round from last revision row', () => {
+  it('updates Version from last revision row (v2: no Round sync for plans)', () => {
     const content = makePlan({
       version: 'v1',
       round: 'Initial plan — no review yet',
@@ -137,13 +137,14 @@ describe('computeMetadataSync: plan', () => {
     });
     const sync = computeMetadataSync('slug.plan.md', content);
     expect(sync?.updates.Version).toBe('v2');
-    expect(sync?.updates.Round).toBe('R1');
+    // v2: plan metadata Round is NOT synced (round lives in revision log body only)
+    expect(sync?.updates.Round).toBeUndefined();
   });
 
-  it('preserves plan Round markdown link when it points at latest revision round', () => {
+  it('no-op when plan version already matches latest revision row', () => {
     const content = makePlan({
       version: 'v2',
-      round: '[reports/slug.review.md → ## slug R1 — 2026-06-21](../reports/slug.review.md#slug-r1--2026-06-21)',
+      round: 'R1',
       rows: [
         { version: 'v1', round: 'Initial plan — no review yet' },
         { version: 'v2', round: 'R1' },
@@ -190,8 +191,11 @@ describe('computeMetadataSync: review', () => {
     expect(computeMetadataSync('slug.review.md', '# Just a heading\n\nsome text')).toBeNull();
   });
 
-  it('returns null for unknown artifact type', () => {
+  it('uses path-inferred kind regardless of metadata Artifact field', () => {
+    // v2: kind inferred from .review.md suffix, not from Artifact metadata field
     const content = makeReview().replace('**Artifact**: review', '**Artifact**: note');
+    // File is slug.review.md → kind is review → review sync runs
+    // makeReview() has R1 round and NEEDS_REVISION verdict which already matches metadata → null
     expect(computeMetadataSync('slug.review.md', content)).toBeNull();
   });
 });
@@ -352,9 +356,26 @@ describe('applyMetadataSync: insert missing field', () => {
 
 ## Body
 `;
-    // Verdict field is missing — applyMetadataSync should insert it
+    // Verdict field is missing — v1 sync preserves bold-bullet metadata.
     const updated = applyMetadataSync(content, { Verdict: 'READY' });
     expect(updated).toContain('- **Verdict**: READY');
+    expect(updated).toContain('## Metadata');
+  });
+
+  it('inserts a new field as a v2 list item for v2 metadata', () => {
+    const content = `# Review
+
+## Metadata
+
+- status: active
+- plan_version: v1
+- round: R1
+
+## Body
+`;
+    const updated = applyMetadataSync(content, { verdict: 'READY' });
+    expect(updated).toContain('- verdict: READY');
+    expect(updated).not.toContain('\nverdict: READY');
   });
 });
 

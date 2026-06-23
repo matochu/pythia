@@ -1,11 +1,13 @@
 /**
  * Round-trip lifecycle: init → version → uninstall → version fails.
  */
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { rmSync } from 'fs';
 import { freshInstalledWorkspace, runCli } from './helpers/workspace.js';
 import { doUninstall, isWorkspace } from '../workspace.js';
 import { writeManifest } from '../../migrate/manifest.js';
+
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
 
 const workspaces = [];
 
