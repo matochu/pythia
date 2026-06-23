@@ -5,7 +5,7 @@
 ## Required Structure
 
 ````markdown
-# Architect Audit: {plan-slug}
+# Audit: {plan-slug}
 
 Plan: [plans/{plan-slug}.plan.md](../plans/{plan-slug}.plan.md)
 Implementation: [reports/{plan-slug}.implementation.md](./{plan-slug}.implementation.md)

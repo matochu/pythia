@@ -210,7 +210,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
       "optional": ["status", "kind", "updated"],
       "enums": {
         "status": ["draft", "ready", "active", "archived"],
-        "kind": ["research"]
+        "kind": ["research", "brainstorm"]
       }
     },
     "feature": {

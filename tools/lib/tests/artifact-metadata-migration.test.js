@@ -393,4 +393,200 @@ status: Draft
     test('ready-for-plan', 'ready');
     test('decided', 'archived');
   });
+
+  it('maps YAML type: research to kind: research (not only type: research-context)', () => {
+    const before = `---
+title: BMAD-METHOD Deep-Dive
+feature: feat-2026-04-llm-wiki-integration
+type: research
+created: 2026-04-29
+---
+
+# BMAD-METHOD Deep-Dive
+
+## Metadata
+
+Body.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat-2026-04/contexts/bmad-method-deep-dive.context.md',
+      before,
+    );
+    expect(result.content).toContain('- kind: research');
+    expect(result.content).not.toMatch(/^---/m);
+  });
+
+  it('maps YAML type: brainstorm-context to kind: brainstorm', () => {
+    const before = `---
+title: Quick Dev — Pythia Analog (Brainstorm)
+feature: feat-2026-05-bmad-adaptations
+type: brainstorm-context
+created: 2026-05-08
+tags: [bmad, quick-dev]
+---
+
+# Quick Dev — Pythia Analog (Brainstorm)
+
+## Metadata
+
+Body.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat-2026-05/contexts/quick-dev-pythia-analog.context.md',
+      before,
+    );
+    expect(result.content).toContain('- kind: brainstorm');
+    expect(result.content).not.toMatch(/^---/m);
+  });
+
+  it('falls back to created when updated is missing', () => {
+    const before = `---
+title: Example Research
+feature: feat-2026-04-example
+type: research
+created: 2026-04-29
+---
+
+# Example Research
+
+## Metadata
+
+Body.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat-2026-04/contexts/example-research.context.md',
+      before,
+    );
+    expect(result.content).toContain('- updated: 2026-04-29');
+    expect(result.content).not.toMatch(/^---/m);
+  });
+
+  it('prefers updated over created when both present', () => {
+    const before = `---
+title: Example
+type: research
+created: 2026-04-01
+updated: 2026-05-15
+---
+
+# Example
+
+## Metadata
+
+Body.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat/contexts/example.context.md',
+      before,
+    );
+    expect(result.content).toContain('- updated: 2026-05-15');
+    expect(result.content).not.toContain('2026-04-01');
+  });
+
+  it('captures Date: from implementation metadata section as updated', () => {
+    const before = `# Implementation Report: 1-example
+
+## Metadata
+
+- status: active
+- plan_version: v6
+- round: I1
+- result: partial
+
+Date: 2026-05-06
+
+## Plan–Implementation Compatibility
+
+| Implementation Round | Plan Version | Date | Result |
+| ---- | ---- | ---- | ---- |
+| I1 | v6 | 2026-05-06 | done |
+
+## Implementation Round I1
+
+Date: 2026-05-06
+
+Body content.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat/reports/1-example.implementation.md',
+      before,
+    );
+    expect(result.content).toContain('- updated: 2026-05-06');
+    // Date: in round body must not be stripped
+    expect(result.content).toContain('\nDate: 2026-05-06\n');
+  });
+
+  it('normalizes legacy H1 prefixes to canonical form', () => {
+    const impl = `# Implementation Report: 1-example\n\n## Metadata\n\n- status: active\n- plan_version: v1\n- round: I1\n- result: implemented\n\n## Summary\n\n## Steps Executed\n\n## Files Changed\n\n## Commands Executed\n\n## Validation\n\n## Results\n\n## Deviations\n\n## Open Issues\n\n## Retrospective\n\n## Implementation Round I1\n\n### Summary\n\nPlan version: v1\nDate: 2026-01-01\n\n### Step Results\n\n### Issues\n\n### Out-of-Plan Work\n\nnone\n`;
+    const r1 = convertArtifactMetadata('.pythia/workflows/features/feat/reports/1-example.implementation.md', impl);
+    expect(r1.content).toMatch(/^# Report: 1-example$/m);
+
+    const audit = `# Architect Audit: 1-example\n\n## Metadata\n\n- status: active\n- round: A1\n- verdict: ready\n\n## Conformance\n`;
+    const r2 = convertArtifactMetadata('.pythia/workflows/features/feat/reports/1-example.audit.md', audit);
+    expect(r2.content).toMatch(/^# Audit: 1-example$/m);
+  });
+
+  it('normalizes bare-slug H1 to prefixed form for review files', () => {
+    const before = `# 9-artifact-metadata-v2-repair
+
+## Metadata
+
+- status: active
+- plan_version: v4
+- round: R1
+- verdict: READY
+
+Body.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat/reports/9-artifact-metadata-v2-repair.review.md',
+      before,
+    );
+    expect(result.content).toMatch(/^# Review: 9-artifact-metadata-v2-repair$/m);
+  });
+
+  it('leaves custom H1 unchanged for review files', () => {
+    const before = `# Artifact Metadata Contract and Checker Review
+
+## Metadata
+
+- status: active
+- plan_version: v1
+- round: R1
+- verdict: READY
+
+Body.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat/reports/8-artifact-metadata-contract-and-checker.review.md',
+      before,
+    );
+    expect(result.content).toMatch(/^# Artifact Metadata Contract and Checker Review$/m);
+  });
+
+  it('strips Plan: and Implementation: from audit metadata section', () => {
+    const before = `# Audit: 1-example
+
+## Metadata
+
+- status: active
+- round: A1
+- verdict: ready
+
+Plan: [plans/1-example.plan.md](../plans/1-example.plan.md)
+Implementation: [reports/1-example.implementation.md](./1-example.implementation.md)
+
+## Conformance
+
+Body.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat/reports/1-example.audit.md',
+      before,
+    );
+    expect(result.content).not.toMatch(/^Plan: /m);
+    expect(result.content).not.toMatch(/^Implementation: /m);
+    expect(result.content).toContain('- round: A1');
+    expect(result.content).toContain('- verdict: ready');
+  });
 });

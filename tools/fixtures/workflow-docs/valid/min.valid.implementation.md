@@ -1,4 +1,4 @@
-# Implementation Report: fixture-plan
+# Report: fixture-plan
 
 ## Metadata
 

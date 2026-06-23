@@ -263,8 +263,8 @@ function validateImplementation(file, lines) {
 function validateAudit(file, lines) {
   const errors = checkTrailingRefsPlacement(file, lines);
 
-  if (!hasLine(lines, /^# Architect Audit:/))
-    errors.push(`${file}:1: [audit.header.h1] Missing H1 # Architect Audit:`);
+  if (!hasLine(lines, /^# Audit:/))
+    errors.push(`${file}:1: [audit.header.h1] Missing H1 # Audit:`);
 
   if (!hasLine(lines, /^Plan:.*\.plan\.md/))
     errors.push(`${file}:${lineFor(lines, /^Plan:/)}: [audit.header.links] Missing Plan: link to .plan.md`);

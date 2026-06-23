@@ -309,7 +309,7 @@ Revised plan saved: `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 ### B. Audit Response
 
 ```markdown
-# Architect Audit: {plan-slug}
+# Audit: {plan-slug}
 
 **Plan**: {plan-slug} v{version}  
 **Implementation File**: `{feature-dir}/reports/{plan-slug}.implementation.md`  

@@ -32,9 +32,7 @@
 Metadata follows [artifact-metadata.md](artifact-metadata.md). Use artifact type `implementation-report`; do not duplicate or extend metadata fields in this format.
 
 ```markdown
-# Implementation Report: {plan-slug}
-
-Date: {YYYY-MM-DD}
+# Report: {plan-slug}
 
 ## Metadata
 

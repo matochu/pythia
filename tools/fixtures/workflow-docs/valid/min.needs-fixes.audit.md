@@ -1,4 +1,4 @@
-# Architect Audit: fixture-plan
+# Audit: fixture-plan
 
 ## Metadata
 

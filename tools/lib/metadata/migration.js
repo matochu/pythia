@@ -73,12 +73,22 @@ function removeMetadataSection(body) {
 
 /** Strip body-level `Plan:` and `Review:` header lines (implementation reports). */
 function stripImplementationHeaderLines(content, file) {
-  if (!basename(file).endsWith('.implementation.md')) return content;
-  return content
-    .split('\n')
-    .filter((line) => !/^(Plan|Review):\s+/.test(line))
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n');
+  const b = basename(file);
+  if (b.endsWith('.implementation.md')) {
+    return content
+      .split('\n')
+      .filter((line) => !/^(Plan|Review):\s+/.test(line))
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n');
+  }
+  if (b.endsWith('.audit.md')) {
+    return content
+      .split('\n')
+      .filter((line) => !/^(Plan|Implementation):\s+/.test(line))
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n');
+  }
+  return content;
 }
 
 /** Ensure content has an H1. If missing, prepend from title or slug. */
@@ -86,6 +96,42 @@ function ensureH1(content, title) {
   if (/^#\s+/m.test(content)) return content;
   const h1 = `# ${title}`;
   return `${h1}\n\n${content.trimStart()}`;
+}
+
+/**
+ * Canonical H1 prefixes per artifact kind.
+ * OLD_PREFIX lists legacy prefixes that should be replaced with the canonical one.
+ */
+const H1_PREFIX = {
+  'plan': 'Plan',
+  'review': 'Review',
+  'implementation-report': 'Report',
+  'audit-report': 'Audit',
+  'retro': 'Retrospective',
+};
+const H1_OLD_PREFIX = {
+  'implementation-report': ['Implementation Report'],
+  'audit-report': ['Architect Audit'],
+  'retro': ['Feature Retrospective'],
+};
+
+function normalizeH1(content, kind, slug) {
+  const prefix = H1_PREFIX[kind];
+  if (!prefix) return content;
+  return content.replace(/^(# )(.+)$/m, (match, hash, rawTitle) => {
+    const title = rawTitle.trim();
+    // Already canonical
+    if (title.toLowerCase().startsWith(prefix.toLowerCase() + ':')) return match;
+    // Migrate old prefix → canonical
+    for (const old of H1_OLD_PREFIX[kind] ?? []) {
+      if (title.toLowerCase().startsWith(old.toLowerCase() + ':')) {
+        return `${hash}${prefix}:${title.slice(old.length + 1)}`;
+      }
+    }
+    // Bare slug → add prefix
+    if (title === slug) return `${hash}${prefix}: ${slug}`;
+    return match;
+  });
 }
 
 /** Insert metadata block after H1 (or at top if no H1). */
@@ -116,11 +162,11 @@ function existingV2Fields(parsed) {
   return m;
 }
 
-/** Read legacy bare v2 key:value metadata for migration input only. */
+/** Read legacy bare key:value metadata for migration input only. Accepts both lowercase and Title-case keys (e.g. Date:, Updated:). */
 function legacyPlainMetadataFields(parsed) {
   const m = new Map();
   for (const entry of parsed.metadataLines ?? []) {
-    const match = entry.text.match(/^([a-z][a-z0-9_]*):\s*(.+)\s*$/);
+    const match = entry.text.match(/^([A-Za-z][a-zA-Z0-9_-]*):\s*(.+)\s*$/);
     if (match) m.set(match[1].trim(), match[2].trim());
   }
   return m;
@@ -186,6 +232,7 @@ export function convertArtifactMetadata(file, content) {
   const legacyTitle = get('Title') ?? (existingH1Match ? existingH1Match[1] : null) ?? slugFromFile(file);
 
   let body = ensureH1(stripped, legacyTitle);
+  body = normalizeH1(body, kind, slugFromFile(file));
   body = stripImplementationHeaderLines(body, file);
 
   const bodyParsed = parseArtifactMetadata(body);
@@ -215,7 +262,7 @@ function addField(fields, key, value) {
 }
 
 function addUpdated(fields, get) {
-  addField(fields, 'updated', get('Updated', 'updated'));
+  addField(fields, 'updated', get('Updated', 'updated', 'Date', 'date') ?? get('created', 'Created'));
 }
 
 function buildFields({ kind, get, body, fmValues, base }) {
@@ -267,21 +314,29 @@ function buildFields({ kind, get, body, fmValues, base }) {
   const status = normalizeStatus(rawStatus, kind);
   addField(fields, 'status', status);
 
-  if (kind === 'context' && isResearchContext({ get, fmValues, base })) {
-    addField(fields, 'kind', 'research');
+  if (kind === 'context') {
+    const ctxKind = inferContextKind({ get, fmValues, base });
+    addField(fields, 'kind', ctxKind);
   }
 
   addUpdated(fields, get);
   return fields;
 }
 
-function isResearchContext({ get, fmValues, base }) {
-  return get('Artifact') === 'research-context'
+function inferContextKind({ get, fmValues, base }) {
+  const existingKind = get('kind');
+  if (existingKind) return existingKind;
+  const fmType = fmValues.get('type') ?? '';
+  if (
+    get('Artifact') === 'research-context'
     || get('Shape') === 'survey'
-    || get('kind') === 'research'
-    || fmValues.get('type') === 'research-context'
+    || fmType === 'research-context'
+    || fmType === 'research'
     || fmValues.get('shape') === 'survey'
-    || /research/i.test(base);
+    || /research/i.test(base)
+  ) return 'research';
+  if (fmType === 'brainstorm-context' || fmType === 'brainstorm') return 'brainstorm';
+  return null;
 }
 
 function mergeExistingFields(fields, existing, kind) {
