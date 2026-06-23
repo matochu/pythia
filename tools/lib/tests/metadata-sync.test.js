@@ -3,6 +3,7 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { computeMetadataSync, applyMetadataSync, syncMetadataFile } from '../metadata/sync.js';
+import { normalizeMetadataBlock, parseArtifactMetadata } from '../metadata/parse.js';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -412,5 +413,31 @@ Review for: [Plan v2](../plans/slug.plan.md)
 `;
     // No Verdict line → round not counted → no sync update
     expect(computeMetadataSync('slug.review.md', content)).toBeNull();
+  });
+});
+
+describe('normalizeMetadataBlock — kind precedence', () => {
+  it('explicit kind: brainstorm is not overwritten by Artifact: research-context', () => {
+    const content = `# My Context\n\n## Metadata\n\n- **Artifact**: research-context\n- kind: brainstorm\n\nBody.\n`;
+    const parsed = parseArtifactMetadata(content);
+    const fields = normalizeMetadataBlock({ kind: 'context', parsed });
+    const kindField = fields.find(([k]) => k === 'kind');
+    expect(kindField?.[1]).toBe('brainstorm');
+  });
+
+  it('Artifact: research-context sets kind: research when no explicit kind', () => {
+    const content = `# My Context\n\n## Metadata\n\n- **Artifact**: research-context\n\nBody.\n`;
+    const parsed = parseArtifactMetadata(content);
+    const fields = normalizeMetadataBlock({ kind: 'context', parsed });
+    const kindField = fields.find(([k]) => k === 'kind');
+    expect(kindField?.[1]).toBe('research');
+  });
+
+  it('explicit kind: research is preserved over Shape: survey', () => {
+    const content = `# My Context\n\n## Metadata\n\n- **Shape**: survey\n- kind: brainstorm\n\nBody.\n`;
+    const parsed = parseArtifactMetadata(content);
+    const fields = normalizeMetadataBlock({ kind: 'context', parsed });
+    const kindField = fields.find(([k]) => k === 'kind');
+    expect(kindField?.[1]).toBe('brainstorm');
   });
 });

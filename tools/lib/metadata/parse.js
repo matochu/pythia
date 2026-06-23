@@ -176,14 +176,16 @@ export function normalizeMetadataBlock({ kind, parsed, existing = null }) {
   } else if (kind === 'context') {
     const status = get('Status') ?? get('status');
     if (status) add('status', status);
-    // Map v1 Artifact: research-context to kind: research; pass through kind: brainstorm
-    const artifact = get('Artifact');
+    // Explicit kind takes priority over legacy Artifact/Shape signals to avoid overwriting user preference.
     const existingKind = get('kind');
-    const isResearch = artifact === 'research-context'
-      || get('Shape') === 'survey'
-      || existingKind === 'research';
-    if (isResearch) add('kind', 'research');
-    else if (existingKind === 'brainstorm') add('kind', 'brainstorm');
+    if (existingKind === 'brainstorm' || existingKind === 'research') {
+      add('kind', existingKind);
+    } else {
+      const artifact = get('Artifact');
+      const isResearch = artifact === 'research-context'
+        || get('Shape') === 'survey';
+      if (isResearch) add('kind', 'research');
+    }
     const updated = get('Updated') ?? get('updated');
     if (updated) add('updated', updated);
   } else {

@@ -426,6 +426,26 @@ Body.
     expect(result.content).not.toMatch(/^---/m);
   });
 
+  it('migrates YAML tags to v2 metadata for context and feature', () => {
+    const ctx = `---
+title: LLM Comparison Criteria
+type: global-context
+created: 2026-04-29
+updated: 2026-04-29
+tags: [llm-agents, sdd, comparison]
+---
+
+# LLM Comparison Criteria
+
+## Metadata
+
+Body.
+`;
+    const r = convertArtifactMetadata('.pythia/ctx/llm-agent-and-sdd-comparison-criteria.ctx.md', ctx);
+    expect(r.content).toContain('- tags: [llm-agents, sdd, comparison]');
+    expect(r.content).not.toMatch(/^---/m);
+  });
+
   it('maps YAML type: brainstorm-context to kind: brainstorm', () => {
     const before = `---
 title: Quick Dev — Pythia Analog (Brainstorm)

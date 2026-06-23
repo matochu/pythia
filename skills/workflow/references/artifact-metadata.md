@@ -108,14 +108,15 @@ All optional: `status`, `updated`
 
 ### Context
 
-All optional: `status`, `kind`, `updated`
+All optional: `status`, `kind`, `tags`, `updated`
 
 | Key | Values |
 | --- | ------ |
 | `status` | `draft` · `ready` · `active` · `archived` |
-| `kind` | `research` |
+| `kind` | `research` · `brainstorm` |
+| `tags` | inline list, e.g. `[llm-agents, sdd]` |
 
-`kind: research` replaces the v1 `Artifact: research-context` field.
+`kind: research` replaces the v1 `Artifact: research-context` field. `tags` migrated from YAML frontmatter.
 
 ### Retro
 
@@ -209,7 +210,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
     "context": {
       "patterns": ["*.context.md", "*.ctx.md"],
       "required": [],
-      "optional": ["status", "kind", "updated"],
+      "optional": ["status", "kind", "tags", "updated"],
       "enums": {
         "status": ["draft", "ready", "active", "archived"],
         "kind": ["research", "brainstorm"]
@@ -218,7 +219,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
     "feature": {
       "patterns": ["feat-*.md"],
       "required": [],
-      "optional": ["status", "updated"],
+      "optional": ["status", "tags", "updated"],
       "enums": {
         "status": ["draft", "active", "completed", "archived", "cancelled"]
       }

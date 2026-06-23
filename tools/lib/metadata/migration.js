@@ -335,6 +335,12 @@ function buildFields({ kind, get, body, fmValues, base, preStripLinks = null }) 
     addField(fields, 'kind', ctxKind);
   }
 
+  // Migrate YAML tags to v2 metadata for context and feature artifacts.
+  if (kind === 'context' || kind === 'feature') {
+    const tags = fmValues.get('tags') ?? get('tags', 'Tags');
+    addField(fields, 'tags', tags);
+  }
+
   addUpdated(fields, get);
   return fields;
 }
