@@ -1,13 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { computeMetadataSync, applyMetadataSync, syncMetadataFile } from '../metadata/sync.js';
 import { normalizeMetadataBlock, parseArtifactMetadata } from '../metadata/parse.js';
+import { cmdSync } from '../references/inputs-core.js';
+import { seedPythiaProjectRegistration } from '../../cli/tests/helpers/workflow-paths.js';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-function makeReview({ round = 'R1', verdict = 'NEEDS_REVISION', planVersion = 'v1', rounds = [] } = {}) {
+function makeReview({ round = 'R1', verdict = 'needs-revision', planVersion = 'v1', rounds = [] } = {}) {
   const extraRounds = rounds.map(
     (r) => `\n## slug ${r.round} — 2026-06-21\n\nReview for: [Plan ${r.planVersion}](../plans/slug.plan.md)\nVerdict: ${r.verdict}\n`,
   ).join('');
@@ -15,21 +17,17 @@ function makeReview({ round = 'R1', verdict = 'NEEDS_REVISION', planVersion = 'v
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: slug-review
-- **Title**: Review
-- **Artifact**: review
-- **Plan**: plans/slug.plan.md
-- **Plan-Version**: ${planVersion}
-- **Round**: ${round}
-- **Verdict**: ${verdict}
+- plan: plans/slug.plan.md
+- plan_version: ${planVersion}
+- round: ${round}
+- verdict: ${verdict}
 
 ## Navigation
 
 ## slug R1 — 2026-06-21
 
 Review for: [Plan v1](../plans/slug.plan.md)
-Verdict: NEEDS_REVISION
+Verdict: needs-revision
 ${extraRounds}`;
 }
 
@@ -66,15 +64,10 @@ function makeImpl({ round = 'I1', planVersion = 'v1', tableRows = [] } = {}) {
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: slug-impl
-- **Title**: Impl
-- **Artifact**: implementation-report
-- **Plan**: plans/slug.plan.md
-- **Plan-Version**: ${planVersion}
-- **Review**: reports/slug.review.md
-- **Round**: ${round}
-- **Result**: implemented
+- plan: plans/slug.plan.md
+- plan_version: ${planVersion}
+- round: ${round}
+- result: implemented
 
 ## Plan-Implementation Compatibility
 
@@ -89,13 +82,9 @@ function makeAudit({ round = 'A1', verdict = 'ready', multiRound = false } = {})
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: slug-audit
-- **Title**: Audit
-- **Artifact**: audit-report
-- **Implementation**: reports/slug.implementation.md
-- **Round**: ${round}
-- **Verdict**: ${verdict}
+- implementation: reports/slug.implementation.md
+- round: ${round}
+- verdict: ${verdict}
 `;
   if (multiRound) {
     return `${meta}
@@ -139,7 +128,7 @@ describe('computeMetadataSync: plan', () => {
     const sync = computeMetadataSync('slug.plan.md', content);
     expect(sync?.updates.Version).toBe('v2');
     // v2: plan metadata Round is NOT synced (round lives in revision log body only)
-    expect(sync?.updates.Round).toBeUndefined();
+    expect(sync?.updates.round).toBeUndefined();
   });
 
   it('no-op when plan version already matches latest revision row', () => {
@@ -159,33 +148,33 @@ describe('computeMetadataSync: plan', () => {
 
 describe('computeMetadataSync: review', () => {
   it('no-op when metadata already matches latest round', () => {
-    const content = makeReview({ round: 'R1', verdict: 'NEEDS_REVISION', planVersion: 'v1' });
+    const content = makeReview({ round: 'R1', verdict: 'needs-revision', planVersion: 'v1' });
     expect(computeMetadataSync('slug.review.md', content)).toBeNull();
   });
 
   it('detects stale round when new round added', () => {
     const content = makeReview({
-      round: 'R1', verdict: 'NEEDS_REVISION', planVersion: 'v1',
-      rounds: [{ round: 'R2', verdict: 'READY', planVersion: 'v3' }],
+      round: 'R1', verdict: 'needs-revision', planVersion: 'v1',
+      rounds: [{ round: 'R2', verdict: 'ready', planVersion: 'v3' }],
     });
     const sync = computeMetadataSync('slug.review.md', content);
     expect(sync).not.toBeNull();
-    expect(sync.updates.Round).toBe('R2');
-    expect(sync.updates.Verdict).toBe('READY');
-    expect(sync.updates['Plan-Version']).toBe('v3');
+    expect(sync.updates.round).toBe('R2');
+    expect(sync.updates.verdict).toBe('ready');
+    expect(sync.updates['plan_version']).toBe('v3');
   });
 
   it('picks highest round number not highest index', () => {
     const content = makeReview({
-      round: 'R1', verdict: 'NEEDS_REVISION', planVersion: 'v1',
+      round: 'R1', verdict: 'needs-revision', planVersion: 'v1',
       rounds: [
-        { round: 'R3', verdict: 'READY', planVersion: 'v5' },
-        { round: 'R2', verdict: 'NEEDS_REVISION', planVersion: 'v4' },
+        { round: 'R3', verdict: 'ready', planVersion: 'v5' },
+        { round: 'R2', verdict: 'needs-revision', planVersion: 'v4' },
       ],
     });
     const sync = computeMetadataSync('slug.review.md', content);
-    expect(sync?.updates.Round).toBe('R3');
-    expect(sync?.updates.Verdict).toBe('READY');
+    expect(sync?.updates.round).toBe('R3');
+    expect(sync?.updates.verdict).toBe('ready');
   });
 
   it('returns null when no metadata section', () => {
@@ -205,19 +194,19 @@ describe('computeMetadataSync: review', () => {
 
 describe('applyMetadataSync', () => {
   it('updates existing fields in-place', () => {
-    const content = makeReview({ round: 'R1', verdict: 'NEEDS_REVISION', planVersion: 'v1' });
-    const updated = applyMetadataSync(content, { Round: 'R2', Verdict: 'READY', 'Plan-Version': 'v3' });
-    expect(updated).toContain('- **Round**: R2');
-    expect(updated).toContain('- **Verdict**: READY');
-    expect(updated).toContain('- **Plan-Version**: v3');
-    expect(updated).not.toContain('- **Round**: R1');
-    expect(updated).not.toContain('- **Verdict**: NEEDS_REVISION');
+    const content = makeReview({ round: 'R1', verdict: 'needs-revision', planVersion: 'v1' });
+    const updated = applyMetadataSync(content, { round: 'R2', verdict: 'ready', plan_version: 'v3' });
+    expect(updated).toContain('- round: R2');
+    expect(updated).toContain('- verdict: ready');
+    expect(updated).toContain('- plan_version: v3');
+    expect(updated).not.toContain('- round: R1');
+    expect(updated).not.toContain('- verdict: needs-revision');
   });
 
   it('is idempotent', () => {
-    const content = makeReview({ round: 'R1', verdict: 'NEEDS_REVISION', planVersion: 'v1' });
-    const once = applyMetadataSync(content, { Round: 'R2', Verdict: 'READY' });
-    const twice = applyMetadataSync(once, { Round: 'R2', Verdict: 'READY' });
+    const content = makeReview({ round: 'R1', verdict: 'needs-revision', planVersion: 'v1' });
+    const once = applyMetadataSync(content, { round: 'R2', verdict: 'ready' });
+    const twice = applyMetadataSync(once, { round: 'R2', verdict: 'ready' });
     expect(once).toBe(twice);
   });
 });
@@ -236,11 +225,11 @@ describe('computeMetadataSync: implementation-report', () => {
       tableRows: [{ round: 'I1', pv: 'v1' }, { round: 'I2', pv: 'v4' }],
     });
     const sync = computeMetadataSync('slug.implementation.md', content);
-    expect(sync?.updates.Round).toBe('I2');
-    expect(sync?.updates['Plan-Version']).toBe('v4');
+    expect(sync?.updates.round).toBe('I2');
+    expect(sync?.updates['plan_version']).toBe('v4');
   });
 
-  it('updates Result from last table row', () => {
+  it('does not derive result from table — result field is manual-only', () => {
     const content = makeImpl({
       round: 'I1',
       planVersion: 'v1',
@@ -248,21 +237,21 @@ describe('computeMetadataSync: implementation-report', () => {
         { round: 'I1', pv: 'v1', result: 'done' },
         { round: 'I2', pv: 'v2', result: '3 failed' },
       ],
-    }).replace('- **Result**: implemented', '- **Result**: partial');
+    }).replace('- **Result**: implemented', '- result: partial');
     const sync = computeMetadataSync('slug.implementation.md', content);
-    expect(sync?.updates.Result).toBe('failed');
+    expect(sync?.updates.result).toBeUndefined();
   });
 
-  it('does not mark implementation failed from error-handling prose in table result', () => {
+  it('does not auto-set result from table text — result is always written manually', () => {
     const content = makeImpl({
       round: 'I1',
       planVersion: 'v1',
       tableRows: [
         { round: 'I1', pv: 'v1', result: 'Added error handling coverage' },
       ],
-    }).replace('- **Result**: implemented', '- **Result**: partial');
+    }).replace('- **Result**: implemented', '- result: partial');
     const sync = computeMetadataSync('slug.implementation.md', content);
-    expect(sync?.updates.Result).toBe('implemented');
+    expect(sync?.updates.result).toBeUndefined();
   });
 });
 
@@ -276,16 +265,17 @@ describe('computeMetadataSync: audit-report', () => {
 
   it('syncs verdict from ## Decision for single-round audit', () => {
     const content = makeAudit({ round: 'A1', verdict: 'needs-fixes' });
-    const stale = content.replace('**Verdict**: needs-fixes\n\n## Decision', '**Verdict**: ready\n\n## Decision');
+    // Corrupt the metadata verdict to be stale; body (## Decision) still says needs-fixes
+    const stale = content.replace('- verdict: needs-fixes', '- verdict: ready');
     const sync = computeMetadataSync('slug.audit.md', stale);
-    expect(sync?.updates.Verdict).toBe('needs-fixes');
+    expect(sync?.updates.verdict).toBe('needs-fixes');
   });
 
   it('picks latest round from multi-round audit', () => {
     const content = makeAudit({ round: 'A1', verdict: 'needs-fixes', multiRound: true });
     const sync = computeMetadataSync('slug.audit.md', content);
-    expect(sync?.updates.Round).toBe('A2');
-    expect(sync?.updates.Verdict).toBe('ready');
+    expect(sync?.updates.round).toBe('A2');
+    expect(sync?.updates.verdict).toBe('ready');
   });
 });
 
@@ -298,25 +288,25 @@ describe('syncMetadataFile: file I/O', () => {
 
   it('writes updated metadata back to file', () => {
     const content = makeReview({
-      round: 'R1', verdict: 'NEEDS_REVISION', planVersion: 'v1',
-      rounds: [{ round: 'R2', verdict: 'READY', planVersion: 'v3' }],
+      round: 'R1', verdict: 'needs-revision', planVersion: 'v1',
+      rounds: [{ round: 'R2', verdict: 'ready', planVersion: 'v3' }],
     });
     const file = join(tmpDir, 'slug.review.md');
     writeFileSync(file, content, 'utf8');
 
     const result = syncMetadataFile(file);
     expect(result.changed).toBe(true);
-    expect(result.fields).toContain('Round');
-    expect(result.fields).toContain('Verdict');
+    expect(result.fields).toContain('round');
+    expect(result.fields).toContain('verdict');
 
     const updated = readFileSync(file, 'utf8');
-    expect(updated).toContain('- **Round**: R2');
-    expect(updated).toContain('- **Verdict**: READY');
-    expect(updated).toContain('- **Plan-Version**: v3');
+    expect(updated).toContain('- round: R2');
+    expect(updated).toContain('- verdict: ready');
+    expect(updated).toContain('- plan_version: v3');
   });
 
   it('returns changed: false and leaves file unchanged when already current', () => {
-    const content = makeReview({ round: 'R1', verdict: 'NEEDS_REVISION', planVersion: 'v1' });
+    const content = makeReview({ round: 'R1', verdict: 'needs-revision', planVersion: 'v1' });
     const file = join(tmpDir, 'slug.review.md');
     writeFileSync(file, content, 'utf8');
 
@@ -327,8 +317,8 @@ describe('syncMetadataFile: file I/O', () => {
 
   it('is idempotent when called twice', () => {
     const content = makeReview({
-      round: 'R1', verdict: 'NEEDS_REVISION', planVersion: 'v1',
-      rounds: [{ round: 'R2', verdict: 'READY', planVersion: 'v3' }],
+      round: 'R1', verdict: 'needs-revision', planVersion: 'v1',
+      rounds: [{ round: 'R2', verdict: 'ready', planVersion: 'v3' }],
     });
     const file = join(tmpDir, 'slug.review.md');
     writeFileSync(file, content, 'utf8');
@@ -340,43 +330,38 @@ describe('syncMetadataFile: file I/O', () => {
 });
 
 
-// ── applyMetadataSync: insert missing field ───────────────────────────────────
+// ── applyMetadataSync: only updates existing fields ──────────────────────────
 
-describe('applyMetadataSync: insert missing field', () => {
-  it('inserts a new field when it does not exist in metadata section', () => {
+describe('applyMetadataSync: existing-field-only updates', () => {
+  it('does not insert a new field when it does not exist in metadata', () => {
     const content = `# Review
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: slug-review
-- **Artifact**: review
-- **Plan**: plans/slug.plan.md
-- **Plan-Version**: v1
-- **Round**: R1
+- round: R1
+- plan_version: v1
 
 ## Body
 `;
-    // Verdict field is missing — v1 sync preserves bold-bullet metadata.
-    const updated = applyMetadataSync(content, { Verdict: 'READY' });
-    expect(updated).toContain('- **Verdict**: READY');
-    expect(updated).toContain('## Metadata');
+    // verdict is missing — applyMetadataSync must NOT add it
+    const updated = applyMetadataSync(content, { verdict: 'ready' });
+    expect(updated).not.toContain('verdict:');
+    expect(updated).toBe(content);
   });
 
-  it('inserts a new field as a v2 list item for v2 metadata', () => {
+  it('updates an existing v2 field in-place', () => {
     const content = `# Review
 
 ## Metadata
 
-- status: active
-- plan_version: v1
 - round: R1
+- verdict: needs-revision
 
 ## Body
 `;
-    const updated = applyMetadataSync(content, { verdict: 'READY' });
-    expect(updated).toContain('- verdict: READY');
-    expect(updated).not.toContain('\nverdict: READY');
+    const updated = applyMetadataSync(content, { verdict: 'ready' });
+    expect(updated).toContain('- verdict: ready');
+    expect(updated).not.toContain('needs-revision');
   });
 });
 
@@ -385,12 +370,12 @@ describe('applyMetadataSync: insert missing field', () => {
 describe('computeMetadataSync: heading format variants', () => {
   it('handles review round with em dash (—) in heading', () => {
     const content = makeReview({
-      round: 'R1', verdict: 'NEEDS_REVISION', planVersion: 'v1',
-      rounds: [{ round: 'R2', verdict: 'READY', planVersion: 'v2' }],
+      round: 'R1', verdict: 'needs-revision', planVersion: 'v1',
+      rounds: [{ round: 'R2', verdict: 'ready', planVersion: 'v2' }],
     });
     // makeReview already uses em dash (—); ensure it parses
     const sync = computeMetadataSync('slug.review.md', content);
-    expect(sync?.updates.Round).toBe('R2');
+    expect(sync?.updates.round).toBe('R2');
   });
 
   it('returns null when round block has no Verdict line', () => {
@@ -413,6 +398,90 @@ Review for: [Plan v2](../plans/slug.plan.md)
 `;
     // No Verdict line → round not counted → no sync update
     expect(computeMetadataSync('slug.review.md', content)).toBeNull();
+  });
+});
+
+// ── cmdSync typed-relation integration ───────────────────────────────────────
+
+describe('cmdSync: typed relation integration', () => {
+  let tmpRoot;
+  beforeEach(() => {
+    tmpRoot = mkdtempSync(join(tmpdir(), 'pythia-typed-sync-'));
+    seedPythiaProjectRegistration(tmpRoot);
+  });
+  afterEach(() => rmSync(tmpRoot, { recursive: true, force: true }));
+
+  function wf(rel, content) {
+    const abs = join(tmpRoot, rel);
+    mkdirSync(dirname(abs), { recursive: true });
+    writeFileSync(abs, content, 'utf8');
+    return abs;
+  }
+
+  it('typed body link renders [kind:based-on] tag in References', () => {
+    wf('.pythia/workflows/features/feat-test/contexts/target.context.md', '# Target\n\nBody.\n');
+    const consumer = wf(
+      '.pythia/workflows/features/feat-test/contexts/consumer.context.md',
+      '# Consumer\n\nSee [Target](target.context.md#@based-on).\n',
+    );
+    cmdSync(consumer, { root: tmpRoot });
+    const after = readFileSync(consumer, 'utf8');
+    expect(after).toMatch(/## References/);
+    // kind varies by platform (symlink resolution) — check relType tag is present
+    expect(after).toMatch(/based-on/);
+    expect(after).toContain('target.context.md');
+  });
+
+  it('typed sync is idempotent — second run produces no change', () => {
+    wf('.pythia/workflows/features/feat-test/contexts/target.context.md', '# Target\n\nBody.\n');
+    const consumer = wf(
+      '.pythia/workflows/features/feat-test/contexts/consumer.context.md',
+      '# Consumer\n\nSee [Target](target.context.md#@based-on).\n',
+    );
+    cmdSync(consumer, { root: tmpRoot });
+    const after1 = readFileSync(consumer, 'utf8');
+    cmdSync(consumer, { root: tmpRoot });
+    expect(readFileSync(consumer, 'utf8')).toBe(after1);
+  });
+
+  it('typed forward link writes reverse basis-for entry in target ## Used by', () => {
+    const target = wf(
+      '.pythia/workflows/features/feat-test/contexts/target.context.md',
+      '# Target\n\nBody.\n',
+    );
+    const consumer = wf(
+      '.pythia/workflows/features/feat-test/contexts/consumer.context.md',
+      '# Consumer\n\nSee [Target](target.context.md#@based-on).\n',
+    );
+    cmdSync(consumer, { root: tmpRoot });
+    const targetContent = readFileSync(target, 'utf8');
+    expect(targetContent).toMatch(/## Used by/);
+    expect(targetContent).toMatch(/basis-for/);
+    expect(targetContent).toContain('consumer.context.md');
+  });
+
+  it('backtick path resolving to existing file appears in References on sync', () => {
+    wf('.pythia/workflows/features/feat-test/contexts/other.context.md', '# Other\n\nBody.\n');
+    const doc = wf(
+      '.pythia/workflows/features/feat-test/contexts/doc.context.md',
+      '# Doc\n\nSee `other.context.md`.\n',
+    );
+    cmdSync(doc, { root: tmpRoot });
+    const after = readFileSync(doc, 'utf8');
+    expect(after).toMatch(/## References/);
+    expect(after).toContain('other.context.md');
+  });
+
+  it('links in any h2 section now sync — bibliography skip-list is empty', () => {
+    wf('.pythia/workflows/features/feat-test/contexts/src.context.md', '# Src\n\nBody.\n');
+    const doc = wf(
+      '.pythia/workflows/features/feat-test/contexts/doc.context.md',
+      '# Doc\n\n## Links\n\n- [Src](src.context.md)\n',
+    );
+    cmdSync(doc, { root: tmpRoot });
+    const after = readFileSync(doc, 'utf8');
+    expect(after).toMatch(/## References/);
+    expect(after).toContain('src.context.md');
   });
 });
 

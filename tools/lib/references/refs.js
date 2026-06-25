@@ -31,14 +31,21 @@ export function normalizeBibliographyPath(path) {
   return trimmed;
 }
 
+function splitKindTag(tag) {
+  const idx = tag.indexOf(':');
+  if (idx === -1) return { kind: tag, relType: undefined };
+  return { kind: tag.slice(0, idx), relType: tag.slice(idx + 1) || undefined };
+}
+
 function parseRefLine(line, mode) {
   const typed = line.match(TYPED_REF_LINE);
   if (typed) {
     const { path, hash } = splitHashFragment(normalizeBibliographyPath(typed[3]));
+    const { kind, relType } = splitKindTag(typed[1]);
     if (mode === 'refs') {
-      return { kind: typed[1], text: typed[2], path, hash };
+      return { kind, relType, text: typed[2], path, hash };
     }
-    return { kind: typed[1], text: typed[2], path };
+    return { kind, relType, text: typed[2], path };
   }
   const plain = line.match(PLAIN_REF_LINE);
   if (plain) {
@@ -318,13 +325,15 @@ export function parseTrailingRefs(content) {
   return { references, usedBy, regionTrail };
 }
 
-function formatRefEntry({ kind, text, path, hash }) {
+function formatRefEntry({ kind, relType, text, path, hash }) {
   const href = hash ? `${path}#${hash}` : path;
-  return `- [${kind}] [${text}](${href})`;
+  const tag = relType ? `${kind}:${relType}` : kind;
+  return `- [${tag}] [${text}](${href})`;
 }
 
-function formatUsedByEntry({ kind, text, path }) {
-  return `- [${kind}] [${text}](${path})`;
+function formatUsedByEntry({ kind, relType, text, path }) {
+  const tag = relType ? `${kind}:${relType}` : kind;
+  return `- [${tag}] [${text}](${path})`;
 }
 
 /** @param {{ references: object[], usedBy: object[], regionTrail?: string[] }} region */

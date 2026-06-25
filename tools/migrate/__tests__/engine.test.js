@@ -438,7 +438,7 @@ describe('ops: migrate-artifact-metadata', () => {
     expect(out).not.toContain('Schema');
     expect(out).not.toContain('Plan-Id');
     expect(out).not.toContain('- **');
-    expect(out).toContain('- status: Draft');
+    expect(out).toContain('- status: draft');
     expect(out).toContain('- version: v1');
     expect(runOp(tmpDir, op, [], false, '9.9.9').status).toBe('skipped');
   });
@@ -860,7 +860,7 @@ x
 
 ## Metadata
 
-- status: Draft
+- status: draft
 - version: v1
 - branch: main
 - updated: 2026-06-21

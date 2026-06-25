@@ -12,8 +12,11 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { resolve, relative } from 'node:path';
+import { resolve, relative, dirname } from 'node:path';
 import { parseTrailingRefs, isPythiaSyncMarkdownRelPath } from '../lib/references/refs.js';
+import { BODY_BIBLIOGRAPHY_SECTIONS } from '../lib/references/inputs-core.js';
+import { extractBacktickPaths } from '../lib/md.js';
+import { isKnownRelation } from '../lib/references/relation-types.js';
 import { normalizePath, repoRoot } from '../lib/repo-root.js';
 
 const [file] = process.argv.slice(2);
@@ -74,6 +77,24 @@ for (const u of usedBy) {
   }
 }
 
+// ── 2. relation label validation ─────────────────────────────────────────────
+for (const ref of references) {
+  if (!ref.relType) continue;
+  if (!isKnownRelation(ref.relType, root)) {
+    errors.push(
+      `${file}:0: [refs-owned.relation.unknown] Unknown relation label '${ref.relType}' in ## References "${ref.text}" (${ref.path}) — not in configured vocabulary`,
+    );
+  }
+}
+for (const u of usedBy) {
+  if (!u.relType) continue;
+  if (!isKnownRelation(u.relType, root)) {
+    errors.push(
+      `${file}:0: [refs-owned.relation.unknown] Unknown relation label '${u.relType}' in ## Used by "${u.text}" (${u.path}) — not in configured vocabulary`,
+    );
+  }
+}
+
 // ── 3. phantom_reference ────────────────────────────────────────────────────
 const bodyTargets = buildBodyTargets(content, absFile, root);
 
@@ -112,16 +133,15 @@ function isExternalHref(href) {
   return /^https?:\/\//.test(href) || href.startsWith('//');
 }
 
-// Sections whose list links are human bibliography, not sync deps — mirrors
-// BODY_BIBLIOGRAPHY_SECTIONS in inputs-core.js so checker and sync agree.
-const BIBLIOGRAPHY_SECTIONS = new Set(['Related Documents', 'Посилання', 'Links', 'Sources']);
+// Shared from inputs-core.js — single source of truth; checker and sync always agree.
 
-function buildBodyTargets(content, fromFile, repoRoot) {
+function buildBodyTargets(content, fromFile, root) {
   const targets = new Set();
   const lines = content.split('\n');
   let inTrailingRegion = false;
   let inBibliographySection = false;
   let inFenced = false;
+  const bodyLines = [];
   for (const line of lines) {
     if (/^```/.test(line)) { inFenced = !inFenced; continue; }
     if (inFenced) continue;
@@ -129,9 +149,10 @@ function buildBodyTargets(content, fromFile, repoRoot) {
       inTrailingRegion = true;
     }
     if (inTrailingRegion) continue;
+    bodyLines.push(line);
     const h2 = line.match(/^## (.+)$/);
     if (h2) {
-      inBibliographySection = BIBLIOGRAPHY_SECTIONS.has(h2[1].trim());
+      inBibliographySection = BODY_BIBLIOGRAPHY_SECTIONS.has(h2[1].trim());
       continue;
     }
     if (inBibliographySection) continue;
@@ -141,6 +162,13 @@ function buildBodyTargets(content, fromFile, repoRoot) {
       const abs = resolveFileLink(fromFile, m[1]);
       if (abs) targets.add(normalizePath(abs));
     }
+  }
+  // Backtick-path parity with collectSyncDeps
+  for (const candidate of extractBacktickPaths(bodyLines.join('\n'))) {
+    const docRel = resolve(dirname(fromFile), candidate);
+    const rootRel = resolve(root, candidate);
+    const abs = existsSync(docRel) ? docRel : existsSync(rootRel) ? rootRel : null;
+    if (abs) targets.add(normalizePath(abs));
   }
   return targets;
 }

@@ -122,3 +122,28 @@ export function readMarkdownTitle(absPath) {
   if (!existsSync(absPath)) return null;
   return markdownTitleFromContent(readFileSync(absPath, 'utf8'));
 }
+
+/**
+ * Extract backtick-quoted strings that look like relative .md file paths.
+ * Skips content inside fenced code blocks.
+ * Returns candidate path strings (resolution against disk is caller's responsibility).
+ * @param {string} content
+ * @returns {string[]}
+ */
+export function extractBacktickPaths(content) {
+  const candidates = [];
+  const lines = content.split('\n');
+  let inFence = false;
+  const PATH_RE = /`([a-zA-Z0-9_.][a-zA-Z0-9_./\-]*\.md)`/g;
+  for (const line of lines) {
+    if (/^```/.test(line)) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    let m;
+    while ((m = PATH_RE.exec(line)) !== null) {
+      const p = m[1];
+      if (/^https?:\/\//.test(p)) continue;
+      candidates.push(p);
+    }
+  }
+  return [...new Set(candidates)];
+}

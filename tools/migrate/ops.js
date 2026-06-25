@@ -4,7 +4,8 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, readdir
 import { join, dirname, relative, resolve, isAbsolute } from 'path';
 import { createHash } from 'crypto';
 import { migrateWorkflowInputs } from '../lib/references/inputs-core.js';
-import { convertArtifactMetadata } from '../lib/metadata/migration.js';
+import { isPythiaSyncMarkdownRelPath } from '../lib/references/refs.js';
+import { convertArtifactMetadata, convertLegacyRelations } from '../lib/metadata/migration.js';
 import { artifactMetadataMigrationScopes, isArtifactMetadataScopeFile } from '../lib/metadata/scope.js';
 
 function sha256(content) {
@@ -430,6 +431,28 @@ export function migrateArtifactMetadata(targetRoot, op, backups, dryRun, migrati
   return { status: 'applied', changedPaths: changed };
 }
 
+// Op: migrate-legacy-relations
+export function migrateLegacyRelations(targetRoot, op, backups, dryRun, migrationVersion) {
+  const root = op.root ?? '.pythia/workflows';
+  assertInProtectedZone(targetRoot, root);
+  const absRoot = join(targetRoot, root);
+  const changed = [];
+  const warnings = [];
+  for (const abs of walkFiles(absRoot)) {
+    const rel = relative(targetRoot, abs).replace(/\\/g, '/');
+    if (!isPythiaSyncMarkdownRelPath(rel)) continue;
+    const before = readFileSync(abs, 'utf8');
+    const result = convertLegacyRelations(rel, before);
+    warnings.push(...result.warnings);
+    if (!result.changed) continue;
+    backup(targetRoot, rel, backups, dryRun, migrationVersion);
+    if (!dryRun) writeFileSync(abs, result.content, 'utf8');
+    changed.push(rel);
+  }
+  if (changed.length === 0) return { status: 'skipped', reason: 'no legacy relations found' };
+  return { status: 'applied', changedPaths: changed, warnings };
+}
+
 const OP_MAP = {
   'ensure-dir': ensureDir,
   'write-if-missing': writeIfMissing,
@@ -442,6 +465,7 @@ const OP_MAP = {
   'sync-legacy-inputs': syncLegacyInputs,
   'merge-checker-basenames': mergeCheckerBasenames,
   'migrate-artifact-metadata': migrateArtifactMetadata,
+  'migrate-legacy-relations': migrateLegacyRelations,
 };
 
 export function runOp(targetRoot, op, backups, dryRun, migrationVersion) {

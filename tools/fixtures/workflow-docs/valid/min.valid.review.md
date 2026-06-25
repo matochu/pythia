@@ -5,7 +5,7 @@
 - status: completed
 - plan_version: v1
 - round: R1
-- verdict: NEEDS_REVISION
+- verdict: needs-revision
 - updated: 2026-01-01
 
 ## Navigation
@@ -20,7 +20,7 @@
 ## fixture R1 — 2026-01-01
 
 Review for: [fixture v1](../plans/fixture.plan.md)
-Verdict: NEEDS_REVISION
+Verdict: needs-revision
 
 ## Executive Summary
 

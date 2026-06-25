@@ -51,7 +51,7 @@ Optional: `branch`, `updated`
 
 | Key | Values |
 | --- | ------ |
-| `status` | `Draft` · `Ready for implementation` · `In progress` · `Implemented` · `Blocked` · `Archived` · `Cancelled` |
+| `status` | `draft` · `active` · `implemented` · `blocked` · `archived` · `cancelled` |
 | `version` | `v{N}` |
 | `branch` | git branch name |
 | `updated` | `YYYY-MM-DD` |
@@ -68,7 +68,7 @@ Optional: `updated`
 | `status` | `active` · `completed` · `archived` |
 | `plan_version` | `v{N}` — snapshot of plan version at review time |
 | `round` | `R{N}` |
-| `verdict` | `READY` · `NEEDS_REVISION` |
+| `verdict` | `ready` · `needs-revision` |
 | `updated` | `YYYY-MM-DD` |
 
 ### Implementation report
@@ -116,7 +116,21 @@ All optional: `status`, `kind`, `tags`, `updated`
 | `kind` | `research` · `brainstorm` |
 | `tags` | inline list, e.g. `[llm-agents, sdd]` |
 
-`kind: research` replaces the v1 `Artifact: research-context` field. `tags` migrated from YAML frontmatter.
+`kind: research` replaces the v1 `Artifact: research-context` field. `tags` migrated from YAML frontmatter. `builds_on` is **deprecated** — use a typed `## Related` body item with `#@based-on` instead (migration converts existing `builds_on` fields automatically).
+
+### Body Relations — `## Related` section
+
+Cross-document relations go in a `## Related` body section using typed `#@label` fragments. The vocabulary is defined in `.pythia/config/relation.md`.
+
+```markdown
+## Related
+
+- [Source doc](path/to/source.context.md#@based-on) — this doc derives from / extends the target
+- [Lateral doc](path/to/related.context.md#@related) — see-also
+- [External source](https://example.com#@source) — primary citation
+```
+
+Fragment syntax: `path#anchor@label` (anchor is optional). Machine-owned `## References` / `## Used by` trailing regions are updated automatically by sync — never edit them manually.
 
 ### Retro
 
@@ -169,7 +183,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
       "required": ["status", "version"],
       "optional": ["branch", "updated"],
       "enums": {
-        "status": ["Draft", "Ready for implementation", "In progress", "Implemented", "Blocked", "Archived", "Cancelled"]
+        "status": ["draft", "active", "implemented", "blocked", "archived", "cancelled"]
       }
     },
     "review": {
@@ -178,7 +192,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
       "optional": ["updated"],
       "enums": {
         "status": ["active", "completed", "archived"],
-        "verdict": ["READY", "NEEDS_REVISION"]
+        "verdict": ["ready", "needs-revision"]
       }
     },
     "implementation-report": {

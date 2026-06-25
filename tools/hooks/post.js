@@ -24,19 +24,6 @@ import { isPythiaSyncMarkdownRelPath } from '../lib/references/refs.js';
 import { nudge } from './workflow-nudge.js';
 
 const CHECKS = resolve(dirname(fileURLToPath(import.meta.url)), '../checks');
-const METADATA_SYNC = resolve(dirname(fileURLToPath(import.meta.url)), '../lib/metadata/sync.js');
-
-const METADATA_SYNC_GLOBS = ['*.plan.md', '*.review.md', '*.implementation.md', '*.audit.md'];
-
-function runMetadataSync(p, root) {
-  const script = existsSync(METADATA_SYNC) ? METADATA_SYNC : null;
-  if (!script) return;
-  const opts = { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] };
-  if (root) opts.cwd = root;
-  const r = spawnSync(process.execPath, [script, p], opts);
-  if (r.stdout?.trim()) warn(r.stdout.trim());
-  if (r.stderr?.trim()) warn(r.stderr.trim());
-}
 
 /** @param {string} name @param {string} pattern */
 export function matchGlob(name, pattern) {
@@ -73,11 +60,6 @@ function main() {
     if (!existsSync(p)) continue;
     const base = basename(p);
     const relFromRoot = root ? relative(root, p).replace(/\\/g, '/') : '';
-
-    // metadata-sync first: update derived metadata before inputs/checkers read snapshot
-    if (METADATA_SYNC_GLOBS.some((g) => matchGlob(base, g))) {
-      runMetadataSync(p, root);
-    }
 
     if (root) {
       for (const entry of postCmds) {

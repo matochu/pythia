@@ -193,11 +193,11 @@ High-level breakdown of implementation phases within this feature document:
 **Creating New Plans:**
 Use [@create-feature-plan.md](mdc:commands/create-feature-plan.md) command to create detailed implementation plans for specific phases.
 
-## Related Contexts
+## Related
 
-Link to context documents providing background and analysis:
+Link cross-document relations here using typed `#@label` fragments (labels from `.pythia/config/relation.md`):
 
-- [Context: Topic Name](contexts/topic-name.context.md) - Brief description
+- [Context: Topic Name](contexts/topic-name.context.md#@related) — Brief description
 
 ### Context Documentation
 
@@ -391,11 +391,10 @@ If this feature should never be archived, add the `no-archive` tag in the Overvi
 - [Manage Task](mdc:commands/manage-task.md) - Task management workflow
 - [Feature Template](mdc:templates/feature-template.md) - This template
 
-### Related Documentation
+## Related
 
-- [Related Feature 1](mdc:path-to-feature.md)
-- [Related Task 1](mdc:path-to-task.md)
-- [External Resource 1](#)
+- [Related Feature 1](path-to-feature.md#@related)
+- [External Resource 1](https://example.com#@source)
 
 ---
 

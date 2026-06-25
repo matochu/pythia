@@ -13,7 +13,9 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { relative, resolve, join, sep, dirname, basename } from 'node:path';
-import { extractRelativeLinks, resolveLink, markdownTitleFromContent } from '../md.js';
+import { extractRelativeLinks, resolveLink, markdownTitleFromContent, extractBacktickPaths } from '../md.js';
+import { parseLinkFragment } from './fragment.js';
+import { loadRelations } from './relation-types.js';
 import { projectRoot as findProjectRoot, normalizePath } from '../repo-root.js';
 import {
   parseTrailingRefs,
@@ -261,7 +263,7 @@ function removeBodyDuplicateListItems(file, bodyContent, refPaths, root) {
   return out.join('\n');
 }
 
-function addUsedByBacklink(targetFile, sourceFile) {
+function addUsedByBacklink(targetFile, sourceFile, { relType } = {}) {
   if (!existsSync(targetFile)) return;
   const root = repoRoot(targetFile);
   if (!isPythiaSyncMarkdownFile(targetFile, root)) return;
@@ -269,6 +271,7 @@ function addUsedByBacklink(targetFile, sourceFile) {
   const rel = repoOrDocRelativePath(targetFile, sourceFile, root);
   const kind = kindForPath(rel, { targetAbs: sourceFile, root });
   const text = consumerDisplayName(sourceFile, root);
+  const reverseRelType = relType ? (loadRelations(root).reverseOf[relType] ?? relType) : undefined;
 
   const parsed = parseTrailingRefs(content);
   const usedBy = parsed?.usedBy ?? [];
@@ -277,14 +280,21 @@ function addUsedByBacklink(targetFile, sourceFile) {
     usedByLinksToConsumer([u], targetFile, sourceFile, root),
   );
   if (existingIdx >= 0) {
-    if (isAutoPlaceholderRefText(usedBy[existingIdx].text, usedBy[existingIdx].path)) {
-      usedBy[existingIdx] = { ...usedBy[existingIdx], text };
+    const existing = usedBy[existingIdx];
+    const textNeedsUpdate = isAutoPlaceholderRefText(existing.text, existing.path);
+    const relTypeChanged = existing.relType !== reverseRelType;
+    if (textNeedsUpdate || relTypeChanged) {
+      usedBy[existingIdx] = {
+        ...existing,
+        ...(textNeedsUpdate ? { text } : {}),
+        relType: reverseRelType,
+      };
     }
     writeTrailingRefs(targetFile, { references: parsed?.references ?? [], usedBy, regionTrail });
     return;
   }
 
-  usedBy.push({ kind, text, path: rel });
+  usedBy.push({ kind, relType: reverseRelType, text, path: rel });
   const refs = parsed?.references ?? [];
   writeTrailingRefs(targetFile, { references: refs, usedBy, regionTrail });
 }
@@ -307,12 +317,7 @@ function collectMarkdownFiles(dir, acc = [], { skipDirs = PYTHIA_SYNC_SKIP_DIRS 
 }
 
 /** H2 sections whose list links are human bibliography, not freshness deps. */
-const BODY_BIBLIOGRAPHY_SECTIONS = new Set([
-  'Related Documents',
-  'Посилання',
-  'Links',
-  'Sources',
-]);
+export const BODY_BIBLIOGRAPHY_SECTIONS = new Set([]);
 
 function extractBodySyncLinks(content, { skipFenced = true } = {}) {
   const body = getBodyContent(content);
@@ -338,9 +343,24 @@ function extractBodySyncLinks(content, { skipFenced = true } = {}) {
     const re = /\[([^\]]*)\]\(([^)]+)\)/g;
     let m;
     while ((m = re.exec(line)) !== null) {
-      const href = m[2].split('#')[0].trim();
-      if (!href || /^https?:\/\//.test(href) || /^mailto:/.test(href)) continue;
-      links.push({ text: m[1], href, line: i + 1 });
+      const rawHref = m[2].trim();
+      if (/^mailto:/.test(rawHref)) continue;
+
+      const hashIdx = rawHref.indexOf('#');
+      const hrefPath = hashIdx === -1 ? rawHref : rawHref.slice(0, hashIdx).trim();
+      const fragment = hashIdx === -1 ? '' : rawHref.slice(hashIdx + 1);
+      const { anchor, relType } = parseLinkFragment(fragment);
+
+      if (/^https?:\/\//.test(rawHref)) {
+        // External links: only capture when they carry a #@label fragment
+        if (relType) {
+          links.push({ text: m[1], href: hrefPath, line: i + 1, anchor, relType, external: true });
+        }
+        continue;
+      }
+
+      if (!hrefPath) continue;
+      links.push({ text: m[1], href: hrefPath, line: i + 1, anchor, relType: relType || '' });
     }
   }
   return links;
@@ -414,6 +434,27 @@ function buildBodyLinkLabels(file, content, root, oldRefs) {
     }
   }
   return labels;
+}
+
+/** Map from canonicalDepKey → relType for internal body links that carry #@label. */
+function buildBodyRelTypeMap(file, content, root) {
+  const map = new Map();
+  for (const link of extractBodySyncLinks(content)) {
+    if (!link.relType || link.external) continue;
+    const key = canonicalDepKey(file, link.href, root);
+    if (!map.has(key)) map.set(key, link.relType);
+  }
+  return map;
+}
+
+/** External typed links from body: [text](https://...#@label). */
+function collectExternalTypedDeps(content) {
+  const deps = [];
+  for (const link of extractBodySyncLinks(content)) {
+    if (!link.external || !link.relType) continue;
+    deps.push({ text: link.text, path: link.href, relType: link.relType });
+  }
+  return deps;
 }
 
 function isAutoPlaceholderRefText(text, depPath) {
@@ -508,7 +549,12 @@ function buildUsedByFromScan(targetFile, oldUsedBy, root, rdepsIndex = null) {
     const text = (old && !isAutoPlaceholderRefText(old.text, old.path))
       ? old.text
       : consumerDisplayName(docAbs, root);
-    result.push({ kind, text, path: rel });
+    // Carry reverse relType from the forward reference entry
+    const forwardRelType = backlinkRef.relType;
+    const reverseRelType = forwardRelType
+      ? (loadRelations(root).reverseOf[forwardRelType] ?? forwardRelType)
+      : undefined;
+    result.push({ kind, relType: reverseRelType, text, path: rel });
   }
   return result;
 }
@@ -614,6 +660,16 @@ function collectSyncDeps(file, root, { oldRefs, manualEntries }) {
     if (!looksLikeFileHref(link.href)) continue;
     addSyncDepCandidate(map, file, link.href, root, { includeMissing: includeMissingBody });
   }
+
+  // Backtick-quoted .md paths: resolve doc-relative then root-relative; add when file exists
+  const body = getBodyContent(content);
+  for (const candidate of extractBacktickPaths(body)) {
+    const docRel = resolve(dirname(file), candidate);
+    const rootRel = resolve(root, candidate);
+    const abs = existsSync(docRel) ? docRel : existsSync(rootRel) ? rootRel : null;
+    if (!abs) continue;
+    addSyncDepCandidate(map, file, candidate, root, { includeMissing: false });
+  }
   for (const ref of oldRefs?.references ?? []) {
     if (isWorkflowConsumerFile(file, root) && isPythiaSyncDepPath(file, ref.path, root)) continue;
     addSyncDepCandidate(map, file, ref.path, root, { includeMissing: true });
@@ -698,6 +754,8 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
   const allDeps = collectSyncDeps(file, root, { oldRefs, manualEntries });
   const bodyDepKeys = buildBodyDepKeys(file, content, root);
   const bodyLinkLabels = buildBodyLinkLabels(file, content, root, oldRefs);
+  const bodyRelTypes = buildBodyRelTypeMap(file, content, root);
+  const externalTypedDeps = collectExternalTypedDeps(content);
 
   let bodyContent = removeBodyDuplicateListItems(file, getBodyContent(content), allDeps, root);
   bodyContent = bodyContent.replace(/\n+$/, '');
@@ -706,7 +764,10 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
 
   for (const dep of allDeps) {
     const targetAbs = resolveDocLink(file, dep, root);
-    if (targetAbs) addUsedByBacklink(targetAbs, file);
+    if (targetAbs) {
+      const depRelType = bodyRelTypes.get(canonicalDepKey(file, dep, root));
+      addUsedByBacklink(targetAbs, file, { relType: depRelType });
+    }
   }
 
   const references = [];
@@ -719,15 +780,17 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
     const kind = kindForPath(dep, { targetAbs: kindTarget ?? undefined, root });
     const oldRef = findOldRef(oldRefs, file, dep, root);
     const text = refDisplayText(file, dep, root, { oldRef, bodyLinkLabels });
+    const relType = bodyRelTypes.get(canonicalDepKey(file, dep, root)) || undefined;
     if (!abs || !existsSync(abs)) {
       const storedPath = oldRef?.path ?? dep;
       if (isExternalBibliographyHref(storedPath)) {
-        references.push({ kind: EXTERNAL_REF_KIND, text, path: storedPath, hash: null });
+        references.push({ kind: EXTERNAL_REF_KIND, relType, text, path: storedPath, hash: null });
         continue;
       }
       if (shouldPreserveMissingWorkflowRef(file, dep, root, { oldRefs, bodyDepKeys, manualEntries })) {
         references.push({
           kind,
+          relType,
           text,
           path: storedPath,
           hash: oldRef?.hash ?? oldHashByPath.get(canonicalDepKey(file, dep, root)) ?? findManualHash(manualEntries, file, dep, root) ?? null,
@@ -746,7 +809,7 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
       changed++;
       changedPaths.push(dep);
     }
-    references.push({ kind, text, path: dep, hash });
+    references.push({ kind, relType, text, path: dep, hash });
   }
 
   const emittedKeys = new Set(references.map((r) => canonicalDepKey(file, r.path, root)));
@@ -762,6 +825,13 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
     const key = canonicalDepKey(file, ext.path, root);
     if (emittedKeys.has(key)) continue;
     references.push({ kind: EXTERNAL_REF_KIND, text: ext.text, path: ext.path, hash: null });
+    emittedKeys.add(key);
+  }
+  // External typed deps from body (#@label on https links)
+  for (const ext of externalTypedDeps) {
+    const key = canonicalDepKey(file, ext.path, root);
+    if (emittedKeys.has(key)) continue;
+    references.push({ kind: EXTERNAL_REF_KIND, relType: ext.relType, text: ext.text, path: ext.path, hash: null });
     emittedKeys.add(key);
   }
 

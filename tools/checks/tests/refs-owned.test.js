@@ -174,6 +174,74 @@ See [Context](../contexts/ctx.context.md) for details.
   });
 
 
+  it('fails with relation.unknown when References entry has unknown label', () => {
+    setup();
+    // Target exists; body cites it so it is not phantom; label is bogus
+    writeDoc(
+      '.pythia/workflows/features/feat-test/contexts/target.context.md',
+      '# Target\n\nBody.\n',
+    );
+    const doc = writeDoc(
+      '.pythia/workflows/features/feat-test/contexts/doc.context.md',
+      `# Doc
+
+See [Target](../contexts/target.context.md#@bogus).
+
+## References
+
+- [research:bogus] [Target](../contexts/target.context.md#abc123)
+`,
+    );
+    const r = runChecker(doc);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toMatch(/relation\.unknown/);
+    expect(r.stderr).toContain('bogus');
+  });
+
+  it('passes when References entry has configured relation label', () => {
+    setup();
+    writeDoc(
+      '.pythia/workflows/features/feat-test/contexts/target.context.md',
+      '# Target\n\nBody.\n',
+    );
+    const doc = writeDoc(
+      '.pythia/workflows/features/feat-test/contexts/doc.context.md',
+      `# Doc
+
+See [Target](../contexts/target.context.md#@based-on).
+
+## References
+
+- [research:based-on] [Target](../contexts/target.context.md#abc123)
+`,
+    );
+    const r = runChecker(doc);
+    expect(r.status).toBe(0);
+  });
+
+  it('links in any h2 section count as body citations — bibliography skip-list is empty', () => {
+    setup();
+    writeDoc(
+      '.pythia/workflows/features/feat-test/contexts/src.context.md',
+      '# Src\n\nBody.\n',
+    );
+    const doc = writeDoc(
+      '.pythia/workflows/features/feat-test/contexts/doc.context.md',
+      `# Doc
+
+## Links
+
+- [Src](src.context.md)
+
+## References
+
+- [research] [Src](src.context.md#abc123)
+`,
+    );
+    const r = runChecker(doc);
+    expect(r.stderr).not.toMatch(/phantom_reference/);
+  });
+
   it('exits 0 for non-sync-zone file', () => {
     setup();
     // File outside .pythia is not a sync-zone file

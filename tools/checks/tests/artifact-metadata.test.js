@@ -55,14 +55,14 @@ describe('parseArtifactMetadata', () => {
   it('parses v2 list key:value metadata fields and line numbers', () => {
     const parsed = parseArtifactMetadata(readFileSync(join(fixturesRoot, 'valid/example.plan.md'), 'utf8'));
     expect(parsed.found).toBe(true);
-    expect(parsed.fields.get('status').value).toBe('Draft');
+    expect(parsed.fields.get('status').value).toBe('draft');
     expect(parsed.fields.get('status').line).toBeGreaterThan(0);
     expect(parsed.format).toBe('v2');
     expect(metadataFormatDiagnostics(parsed)).toEqual([]);
   });
 
   it('reports legacy bare v2 fields without accepting them as parsed fields', () => {
-    const content = '# Fixture\n\n## Metadata\n\nstatus: Draft\nversion: v1\n';
+    const content = '# Fixture\n\n## Metadata\n\nstatus: draft\nversion: v1\n';
     const parsed = parseArtifactMetadata(content);
     expect(parsed.fields.has('status')).toBe(false);
     expect(parsed.entries).toEqual([]);
@@ -82,7 +82,7 @@ describe('parseArtifactMetadata', () => {
   });
 
   it('detects duplicate metadata sections', () => {
-    const content = readFileSync(join(fixturesRoot, 'valid/example.plan.md'), 'utf8') + '\n## Metadata\n\n- status: Draft\n';
+    const content = readFileSync(join(fixturesRoot, 'valid/example.plan.md'), 'utf8') + '\n## Metadata\n\n- status: draft\n';
     const parsed = parseArtifactMetadata(content);
     expect(parsed.duplicate).toBe(true);
   });
@@ -116,13 +116,13 @@ describe('artifact-metadata.js', () => {
   // ── v2 validation ──────────────────────────────────────────────────────
 
   it('accepts v2 plan with required fields', () => {
-    withTempFile('ok.plan.md', metadataV2({ status: 'Draft', version: 'v1', branch: 'main' }), (file) => {
+    withTempFile('ok.plan.md', metadataV2({ status: 'draft', version: 'v1', branch: 'main' }), (file) => {
       expect(run([file]).code).toBe(0);
     });
   });
 
   it('accepts v2 review with required fields', () => {
-    withTempFile('ok.review.md', metadataV2({ status: 'active', plan_version: 'v1', round: 'R1', verdict: 'READY' }), (file) => {
+    withTempFile('ok.review.md', metadataV2({ status: 'active', plan_version: 'v1', round: 'R1', verdict: 'ready' }), (file) => {
       expect(run([file]).code).toBe(0);
     });
   });
@@ -156,7 +156,7 @@ describe('artifact-metadata.js', () => {
   });
 
   it('warns on legacy bare v2 metadata and errors in strict mode', () => {
-    withTempFile('bare.plan.md', '# Fixture\n\n## Metadata\n\nstatus: Draft\nversion: v1\n\n## Body\n', (file) => {
+    withTempFile('bare.plan.md', '# Fixture\n\n## Metadata\n\nstatus: draft\nversion: v1\n\n## Body\n', (file) => {
       const nonStrict = run([file]);
       expect(nonStrict.code).toBe(0);
       expect(nonStrict.stderr).toMatch(/non_canonical_format/);
@@ -192,7 +192,7 @@ describe('artifact-metadata.js', () => {
   });
 
   it('errors on forbidden key Schema in v2 file (non-strict)', () => {
-    withTempFile('forbidden.plan.md', `# Fixture\n\n## Metadata\n\n- status: Draft\n- version: v1\n- Schema: pythia-artifact-v1\n\n## Body\n`, (file) => {
+    withTempFile('forbidden.plan.md', `# Fixture\n\n## Metadata\n\n- status: draft\n- version: v1\n- Schema: pythia-artifact-v1\n\n## Body\n`, (file) => {
       const r = run([file]);
       expect(r.code).toBe(1);
       expect(r.stderr).toMatch(/forbidden_key/);
@@ -200,7 +200,7 @@ describe('artifact-metadata.js', () => {
   });
 
   it('errors on forbidden key Id in v2 file', () => {
-    withTempFile('forbidden-id.review.md', `# Fixture\n\n## Metadata\n\n- status: active\n- plan_version: v1\n- round: R1\n- verdict: READY\n- Id: slug\n\n## Body\n`, (file) => {
+    withTempFile('forbidden-id.review.md', `# Fixture\n\n## Metadata\n\n- status: active\n- plan_version: v1\n- round: R1\n- verdict: ready\n- Id: slug\n\n## Body\n`, (file) => {
       const r = run([file]);
       expect(r.code).toBe(1);
       expect(r.stderr).toMatch(/forbidden_key/);
@@ -215,7 +215,7 @@ describe('artifact-metadata.js', () => {
 
   it('fails duplicate metadata sections', () => {
     const base = readFileSync(join(fixturesRoot, 'valid/example.plan.md'), 'utf8');
-    withTempFile('example.plan.md', `${base}\n## Metadata\n\n- status: Draft\n`, (file) => {
+    withTempFile('example.plan.md', `${base}\n## Metadata\n\n- status: draft\n`, (file) => {
       const result = run([file]);
       expect(result.code).toBe(1);
       expect(result.stderr).toMatch(/duplicate_section/);
@@ -228,56 +228,14 @@ describe('artifact-metadata.js', () => {
     });
   });
 
-  // ── v1 compat (backward compat for files not yet migrated) ─────────────
-
-  it('warns but passes v1 file with Schema field in non-strict mode', () => {
+  it('flags Schema as forbidden_key (v1 files must be migrated)', () => {
     withTempFile('v1-compat.plan.md', metadataV1({
       Schema: 'pythia-artifact-v1', Id: 'slug', Title: 'T', Artifact: 'plan',
       Status: 'Draft', Version: 'v1', Branch: 'main', Round: 'none',
     }), (file) => {
       const r = run([file]);
-      expect(r.code).toBe(0); // warns but passes
       expect(r.stderr).toMatch(/forbidden_key/);
     });
-  });
-
-  it('fails v1 review missing Verdict (v1 compat required field check)', () => {
-    withTempFile('missing-verdict.review.md', metadataV1({
-      Schema: 'pythia-artifact-v1', Id: 'slug-review', Title: 'T', Artifact: 'review',
-      Plan: 'plans/slug.plan.md', 'Plan-Version': 'v1', Round: 'R1',
-    }), (file) => {
-      const result = run([file]);
-      expect(result.code).toBe(1);
-      expect(result.stderr).toMatch(/Missing required metadata field: Verdict/);
-    });
-  });
-
-  it('fails v1 file with unknown field Created', () => {
-    withTempFile('unknown-field.plan.md', metadataV1({
-      Schema: 'pythia-artifact-v1', Id: 'slug', Title: 'T', Artifact: 'plan',
-      Status: 'Draft', Version: 'v1', Branch: 'main', Round: 'none', Created: '2026-01-01',
-    }), (file) => {
-      const result = run([file]);
-      expect(result.code).toBe(1);
-      expect(result.stderr).toMatch(/Unknown metadata field.*Created/);
-    });
-  });
-
-  it('fails stale-rich.implementation.md (v1 unknown fields + missing Plan/Review)', () => {
-    const result = run([join(fixturesRoot, 'invalid/stale-rich.implementation.md')]);
-    expect(result.code).toBe(1);
-    expect(result.stderr).toMatch(/Unknown metadata field.*Created/);
-    expect(result.stderr).toMatch(/Unknown metadata field.*Subject/);
-    expect(result.stderr).toMatch(/Missing required metadata field: Plan/);
-    expect(result.stderr).toMatch(/Missing required metadata field: Review/);
-  });
-
-  it('fails old-fields.plan.md (v1 Plan-Id unknown + missing v1 required)', () => {
-    const result = run([join(fixturesRoot, 'invalid/old-fields.plan.md')]);
-    expect(result.code).toBe(1);
-    expect(result.stderr).toMatch(/Unknown metadata field.*Plan-Id/);
-    expect(result.stderr).toMatch(/Missing required metadata field: Id/);
-    expect(result.stderr).toMatch(/Missing required metadata field: Version/);
   });
 });
 
@@ -300,8 +258,8 @@ describe('artifact-metadata.js: v2 enum validation', () => {
     });
   });
 
-  it('accepts v2 plan with valid status (Draft)', () => {
-    withTempFile('ok-status.plan.md', metadataV2({ status: 'Draft', version: 'v1' }), (file) => {
+  it('accepts v2 plan with valid status (draft)', () => {
+    withTempFile('ok-status.plan.md', metadataV2({ status: 'draft', version: 'v1' }), (file) => {
       expect(run([file]).code).toBe(0);
     });
   });
@@ -321,52 +279,20 @@ describe('artifact-metadata.js: v2 enum validation', () => {
   });
 });
 
-// ── v1 compat: artifact_mismatch ──────────────────────────────────────────
+// ── (v1 artifact_mismatch and Generator tests removed — v1 branch dropped) ──
+// v1 files should be migrated; checker treats them as v2 and flags Schema as forbidden_key.
 
-describe('artifact-metadata.js: v1 artifact_mismatch', () => {
-  it('fails when v1 Artifact field disagrees with filename (.plan.md declares review)', () => {
-    withTempFile('slug.plan.md', metadataV1({
-      Schema: 'pythia-artifact-v1', Id: 'slug-review', Title: 'T', Artifact: 'review',
-      Plan: 'plans/slug.plan.md', 'Plan-Version': 'v1', Round: 'R1', Verdict: 'READY',
-    }), (file) => {
-      const r = run([file]);
-      expect(r.code).toBe(1);
-      expect(r.stderr).toMatch(/artifact_mismatch/);
-    });
-  });
-
-  it('allows v1 context file declaring research-context (allowedContextPair)', () => {
-    withTempFile('research.context.md', metadataV1({
-      Schema: 'pythia-artifact-v1', Id: 'research-context', Title: 'T', Artifact: 'research-context',
-      Feature: 'feat-test', Shape: 'survey',
-    }), (file) => {
-      // exits 0 in non-strict even with forbidden_key warning for Schema
-      expect(run([file]).code).toBe(0);
-    });
-  });
-});
-
-// ── v1 compat: Generator field ────────────────────────────────────────────
-
-describe('artifact-metadata.js: v1 Generator field validation', () => {
-  it('fails v1 plan with invalid Generator value', () => {
-    withTempFile('bad-gen.plan.md', metadataV1({
-      Schema: 'pythia-artifact-v1', Id: 'slug', Title: 'T', Artifact: 'plan',
-      Status: 'Draft', Version: 'v1', Branch: 'main', Round: 'none', Generator: 'unknown-tool',
-    }), (file) => {
-      const r = run([file]);
-      expect(r.code).toBe(1);
-      expect(r.stderr).toMatch(/artifact-metadata\.generator/);
-    });
-  });
-
-  it('passes v1 plan with valid Generator value', () => {
+describe('artifact-metadata.js: legacy v1 file gets forbidden_key only', () => {
+  it('exits 1 with exactly one forbidden_key error mentioning migration — no v2 noise', () => {
     withTempFile('ok-gen.plan.md', metadataV1({
       Schema: 'pythia-artifact-v1', Id: 'slug', Title: 'T', Artifact: 'plan',
       Status: 'Draft', Version: 'v1', Branch: 'main', Round: 'none', Generator: 'plan',
     }), (file) => {
-      // exits 0 in non-strict despite forbidden_key warning for Schema
-      expect(run([file]).code).toBe(0);
+      const r = run([file]);
+      expect(r.code).toBe(1);
+      expect(r.stderr).toMatch(/forbidden_key/);
+      expect(r.stderr).toMatch(/migration/);
+      expect(r.stderr.trim().split('\n')).toHaveLength(1);
     });
   });
 });

@@ -471,7 +471,7 @@ Links to related docs.
     expect(out).toContain('**Last Updated**: 2025-07-01');
   });
 
-  it('task knowledge-sharing: typed refs only for resolvable paths; missing dropped', () => {
+  it('task knowledge-sharing: body links and ## Related Documents links all sync after bibliography skip-list removal', () => {
     writeDoc('navigation/documentation-map.md', '# Documentation Map\n');
     writeDoc('rules/llm-confluence-guidelines.md', '# Confluence Guidelines for LLM\n');
     const fixture = readFileSync(
@@ -481,15 +481,15 @@ Links to related docs.
     const task = writeDoc('.pythia/workflows/tasks/task-knowledge-sharing.md', fixture);
     const r = runInputs(['sync', task, '--verbose']);
     expect(r.status).toBe(0);
-    expect(`${r.stdout}${r.stderr}`).not.toMatch(/confluence-structure/i);
     const out = readFileSync(task, 'utf8');
     const parsed = parseTrailingRefs(out);
+    // Existing body links with resolvable targets get hashes
     expect(parsed?.references?.some((ref) => ref.path.includes('documentation-map.md') && ref.hash)).toBe(true);
     expect(parsed?.references?.some((ref) => ref.path.includes('llm-confluence-guidelines.md') && ref.hash)).toBe(true);
-    expect(parsed?.references?.some((ref) => ref.path.includes('confluence-structure'))).toBe(false);
+    // ## Related Documents links now sync (skip-list removed); body section preserved
     expect(out).toContain('## Related Documents');
+    expect(out).toContain('## References');
     expect(out).toContain('documentation-standards.md');
-    expect(out).not.toMatch(/## References[\s\S]*documentation-standards\.md#?/);
   });
 
   it('preserves stored hash for missing target on task doc under .pythia/workflows/tasks', () => {
@@ -506,7 +506,7 @@ Body cites [gone](../navigation/gone.md).
     expect(out).toMatch(/navigation\/gone\.md#abc12/);
   });
 
-  it('Related Documents bibliography does not become typed References footer', () => {
+  it('## Related Documents links sync into typed References footer (skip-list removed)', () => {
     writeDoc('navigation/documentation-standards.md', '# Documentation Standards\n');
     const task = writeDoc('.pythia/workflows/tasks/task-wiped-footer.md', `# Task
 
@@ -516,8 +516,11 @@ Body cites [gone](../navigation/gone.md).
 `);
     expect(runInputs(['sync', task]).status).toBe(0);
     const out = readFileSync(task, 'utf8');
+    // Body section preserved
     expect(out).toContain('[Documentation Standards](../navigation/documentation-standards.md)');
-    expect(out).not.toContain('## References');
+    // ## Related Documents links now sync — References footer is added
+    expect(out).toContain('## References');
+    expect(out).toContain('documentation-standards.md');
   });
 
   it('preserves legacy frontmatter hash for missing script target on sync', () => {

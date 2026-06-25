@@ -289,11 +289,11 @@ Link to all implementation plans for this feature:
 
 Use [@create-feature-plan.md](mdc:commands/create-feature-plan.md) command to create detailed implementation plans.
 
-## Related Contexts
+## Related
 
-Link to context documents providing background and analysis:
+Link cross-document relations using typed `#@label` fragments (vocabulary in `.pythia/config/relation.md`):
 
-- [Context: Topic Name](contexts/topic-name.context.md)
+- [Context: Topic Name](contexts/topic-name.context.md#@related)
 
 ### Context Documentation
 
@@ -388,9 +388,9 @@ Any additional information, caveats, or considerations:
 - [Create Feature Plan](mdc:commands/create-feature-plan.md) - Plan creation
 - [Feature Template](mdc:templates/feature-template.md) - Template reference
 
-### Related Documentation
+## Related
 
-- [Related Feature/Task](mdc:path-to-document.md)
+- [Related Feature/Task](path-to-document.md#@related)
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- status: Draft
+- status: draft
 - version: v1
 - branch: main
 - updated: 2026-06-21

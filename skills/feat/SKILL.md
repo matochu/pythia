@@ -112,6 +112,8 @@ After receiving PM-enriched content and the Architect decision about draft plans
 - Cite dependencies as markdown links in the feature doc body. Never hand-write or edit trailing `## References` / `## Used by`.
 - The feature doc auto-syncs on save. If `sync` or `check` returns an error, show that raw failure to the user.
 
+**Cross-document relations**: when citing other docs inline, use `#@label` fragments: `[text](path#@label)`. Vocabulary: `.pythia/config/relation.md`.
+
 **Output**: Feature document in `.pythia/workflows/features/feat-YYYY-MM-{slug}/feat-YYYY-MM-{slug}.md`
 
 **See also**: [/plan skill](../plan/SKILL.md), [/ctx skill](../ctx/SKILL.md), [/research skill](../research/SKILL.md), [/retro skill](../retro/SKILL.md)

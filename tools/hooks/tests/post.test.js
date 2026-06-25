@@ -395,14 +395,9 @@ describe('post.js metadata-sync integration', () => {
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: slug
-- **Title**: Plan
-- **Artifact**: plan
-- **Status**: Draft
-- **Version**: ${version}
-- **Branch**: main
-- **Round**: ${round}
+- status: Draft
+- version: ${version}
+- branch: main
 
 ## Plan revision log
 
@@ -416,15 +411,11 @@ describe('post.js metadata-sync integration', () => {
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: slug-review
-- **Title**: Review
-- **Artifact**: review
-- **Feature**: feat-test
-- **Plan**: plans/slug.plan.md
-- **Plan-Version**: ${planVersion}
-- **Round**: ${round}
-- **Verdict**: ${verdict}
+- status: active
+- plan: plans/slug.plan.md
+- plan_version: ${planVersion}
+- round: ${round}
+- verdict: ${verdict}
 
 ## Navigation
 
@@ -433,71 +424,70 @@ describe('post.js metadata-sync integration', () => {
 ## slug R1 — 2026-06-21
 
 Review for: [Plan v1](../plans/slug.plan.md)
-Verdict: NEEDS_REVISION
+Verdict: needs-revision
 
 ## slug R2 — 2026-06-21
 
 Review for: [Plan v3](../plans/slug.plan.md)
-Verdict: READY
+Verdict: ready
 `;
 
-  it('syncs stale plan metadata when saved via materialized post hook', async () => {
+  it('post hook runs cleanly on plan file — does not mutate metadata (metadata-sync removed from hook)', async () => {
     const root = await freshInstalledWorkspace('pythia-post-plan-meta-sync-');
     try {
       const featureDir = join(root, '.pythia/workflows/features/feat-test/plans');
       mkdirSync(featureDir, { recursive: true });
       const planPath = join(featureDir, 'slug.plan.md');
-      writeFileSync(planPath, stalePlan('v1', 'Initial plan — no review yet'), 'utf8');
+      const content = stalePlan('v1', 'Initial plan — no review yet');
+      writeFileSync(planPath, content, 'utf8');
 
       const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
       const r = runPost(planPath, root, runtimePost);
       expect(r.status).toBe(0);
 
+      // Hook is read-only for metadata — version field NOT updated by hook
       const updated = readFileSync(planPath, 'utf8');
-      expect(updated).toContain('- **Version**: v2');
-      // v2: plan metadata Round is no longer synced (round lives in revision log body)
-      expect(updated).not.toContain('- **Round**: R1');
+      expect(updated).toContain('- version: v1');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
   });
 
-  it('syncs stale review metadata when saved via materialized post hook', async () => {
+  it('post hook runs cleanly on review file — does not mutate metadata (metadata-sync removed from hook)', async () => {
     const root = await freshInstalledWorkspace('pythia-post-meta-sync-');
     try {
       const featureDir = join(root, '.pythia/workflows/features/feat-test/reports');
       mkdirSync(featureDir, { recursive: true });
       const reviewPath = join(featureDir, 'slug.review.md');
-      writeFileSync(reviewPath, staleReview('v1', 'R1', 'NEEDS_REVISION'), 'utf8');
+      const content = staleReview('v1', 'R1', 'needs-revision');
+      writeFileSync(reviewPath, content, 'utf8');
 
       const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
       const r = runPost(reviewPath, root, runtimePost);
       expect(r.status).toBe(0);
 
+      // Hook is read-only for metadata — round/verdict NOT updated by hook
       const updated = readFileSync(reviewPath, 'utf8');
-      expect(updated).toContain('- **Round**: R2');
-      expect(updated).toContain('- **Verdict**: READY');
-      expect(updated).toContain('- **Plan-Version**: v3');
+      expect(updated).toContain('- round: R1');
+      expect(updated).toContain('- verdict: needs-revision');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
   });
 
-  it('metadata-sync fires before checkers (checker sees updated snapshot)', async () => {
-    // Checker artifact-metadata.js validates Verdict enum. If sync fires AFTER checker,
-    // checker would see stale NEEDS_REVISION on a review that now has R2 READY.
-    // This test verifies no false enum/missing-field warnings appear on a correctly-synced file.
+  it('post hook checker runs on v2 review without field errors', async () => {
+    // metadata-sync no longer fires from hook (hook = read-only for metadata).
+    // Checker runs on the file as-is; v2 format should produce no schema/field errors.
     const root = await freshInstalledWorkspace('pythia-post-meta-order-');
     try {
       const featureDir = join(root, '.pythia/workflows/features/feat-test/reports');
       mkdirSync(featureDir, { recursive: true });
       const reviewPath = join(featureDir, 'slug.review.md');
-      writeFileSync(reviewPath, staleReview('v1', 'R1', 'NEEDS_REVISION'), 'utf8');
+      writeFileSync(reviewPath, staleReview('v1', 'R1', 'needs-revision'), 'utf8');
 
       const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
       const r = runPost(reviewPath, root, runtimePost);
       expect(r.status).toBe(0);
-      // No artifact-metadata errors (would appear in stderr if checker ran on stale metadata)
       expect(r.stderr).not.toMatch(/artifact-metadata\.(schema|missing_field|enum)/);
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -510,17 +500,17 @@ Verdict: READY
       const featureDir = join(root, '.pythia/workflows/features/feat-test/reports');
       mkdirSync(featureDir, { recursive: true });
       const reviewPath = join(featureDir, 'slug.review.md');
-      const content = staleReview('v3', 'R2', 'READY');
+      const content = staleReview('v3', 'R2', 'ready');
       writeFileSync(reviewPath, content, 'utf8');
 
       const runtimePost = join(root, '.pythia/runtime/hooks/post.js');
       runPost(reviewPath, root, runtimePost);
 
       const after = readFileSync(reviewPath, 'utf8');
-      // Metadata fields must not have changed (inputs sync may still add References block)
-      expect(after).toContain('- **Round**: R2');
-      expect(after).toContain('- **Verdict**: READY');
-      expect(after).toContain('- **Plan-Version**: v3');
+      // Metadata fields must not have changed — hook is read-only for metadata
+      expect(after).toContain('- round: R2');
+      expect(after).toContain('- verdict: ready');
+      expect(after).toContain('- plan_version: v3');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

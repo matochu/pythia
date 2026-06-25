@@ -173,8 +173,8 @@ function validateReview(file, lines) {
   if (!hasLine(lines, /\.plan\.md/))
     errors.push(`${file}:0: [review.round.review_for] Missing link to .plan.md`);
 
-  if (!hasLine(lines, /^Verdict: (READY|NEEDS_REVISION)$/))
-    errors.push(`${file}:${lineFor(lines, /Verdict:/)}: [review.round.verdict] Missing or invalid Verdict: READY | NEEDS_REVISION`);
+  if (!hasLine(lines, /^Verdict: (ready|needs-revision|READY|NEEDS_REVISION)$/))
+    errors.push(`${file}:${lineFor(lines, /Verdict:/)}: [review.round.verdict] Missing or invalid Verdict: ready | needs-revision`);
 
   if (!hasLine(lines, /^## Executive Summary$/))
     errors.push(`${file}:0: [review.round.executive_summary] Missing ## Executive Summary`);

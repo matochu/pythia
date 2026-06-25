@@ -17,8 +17,11 @@ function parseReviewRounds(content) {
     let planVersion = null;
     for (let j = i + 1; j < lines.length && j < i + 6; j++) {
       if (/^## /.test(lines[j])) break;
-      const vm = lines[j].match(/^Verdict:\s*(READY|NEEDS_REVISION)\s*$/);
-      if (vm) verdict = vm[1];
+      const vm = lines[j].match(/^Verdict:\s*(ready|needs-revision|READY|NEEDS_REVISION)\s*$/);
+      if (vm) {
+        const v = vm[1];
+        verdict = v === 'READY' ? 'ready' : v === 'NEEDS_REVISION' ? 'needs-revision' : v;
+      }
       // Review for: [Id Version](../plans/...)  OR  Review for: [Id v3](...)
       const pm = lines[j].match(/^Review for:.*\]\(.*\)\s*$/) || lines[j].match(/^Review for:/);
       if (pm) {
@@ -154,30 +157,20 @@ export function computeMetadataSync(file, content) {
     const rounds = parseReviewRounds(content);
     if (!rounds.length) return null;
     const latest = rounds.reduce((a, b) => (b.n > a.n ? b : a));
-    // v2: lowercase keys
-    const roundKey = parsed.fields.has('round') ? 'round' : 'Round';
-    const verdictKey = parsed.fields.has('verdict') ? 'verdict' : 'Verdict';
-    const pvKey = parsed.fields.has('plan_version') ? 'plan_version' : 'Plan-Version';
-    updates[roundKey] = latest.round;
-    updates[verdictKey] = latest.verdict;
-    if (latest.planVersion) updates[pvKey] = latest.planVersion;
+    updates['round'] = latest.round;
+    updates['verdict'] = latest.verdict;
+    if (latest.planVersion) updates['plan_version'] = latest.planVersion;
   } else if (artifact === 'implementation-report') {
     const row = parseImplTable(content);
     if (!row) return null;
-    const roundKey = parsed.fields.has('round') ? 'round' : 'Round';
-    const pvKey = parsed.fields.has('plan_version') ? 'plan_version' : 'Plan-Version';
-    const resultKey = parsed.fields.has('result') ? 'result' : 'Result';
-    updates[roundKey] = row.round;
-    if (row.planVersion) updates[pvKey] = row.planVersion;
-    if (row.result) updates[resultKey] = row.result;
+    updates['round'] = row.round;
+    if (row.planVersion) updates['plan_version'] = row.planVersion;
   } else if (artifact === 'audit-report') {
     const rounds = parseAuditRounds(content);
     if (!rounds.length) return null;
     const latest = rounds.reduce((a, b) => (b.n > a.n ? b : a));
-    const roundKey = parsed.fields.has('round') ? 'round' : 'Round';
-    const verdictKey = parsed.fields.has('verdict') ? 'verdict' : 'Verdict';
-    updates[roundKey] = latest.round;
-    updates[verdictKey] = latest.verdict;
+    updates['round'] = latest.round;
+    updates['verdict'] = latest.verdict;
   } else {
     return null;
   }
@@ -196,32 +189,13 @@ export function applyMetadataSync(content, updates) {
   const lines = content.split('\n');
   const result = [...lines];
 
-  // Separate in-place replacements (stable indices) from insertions.
-  const inserts = [];
+  // Only update fields that already exist — never insert new ones.
   for (const [key, newValue] of Object.entries(updates)) {
     const existing = parsed.fields.get(key);
-    if (existing) {
-      if (existing.format === 'v2') {
-        result[existing.line - 1] = `- ${key}: ${newValue}`;
-      } else {
-        result[existing.line - 1] = `- **${key}**: ${newValue}`;
-      }
-    } else {
-      inserts.push([key, newValue]);
-    }
-  }
-
-  // Apply insertions in reverse index order so earlier splices don't shift later positions.
-  if (inserts.length) {
-    const lastField = parsed.entries.at(-1);
-    const insertAt = lastField ? lastField.line : parsed.startLine;
-    const formatField = parsed.format === 'v1'
-      ? ([key, value]) => `- **${key}**: ${value}`
-      : ([key, value]) => `- ${key}: ${value}`;
-    // All new fields go to the same position; insert in reverse to preserve order.
-    for (let i = inserts.length - 1; i >= 0; i--) {
-      result.splice(insertAt, 0, formatField(inserts[i]));
-    }
+    if (!existing) continue;
+    result[existing.line - 1] = existing.format === 'v2'
+      ? `- ${key}: ${newValue}`
+      : `- **${key}**: ${newValue}`;
   }
 
   return result.join('\n');

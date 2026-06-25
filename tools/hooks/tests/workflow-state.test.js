@@ -48,7 +48,7 @@ describe('workflow-state helpers', () => {
   });
 
   it('extractVerdict reads review and audit lines', () => {
-    expect(extractVerdict('Verdict: READY\n')).toBe('READY');
+    expect(extractVerdict('Verdict: ready\n')).toBe('ready');
     expect(extractVerdict('- **Verdict**: needs-fixes\n')).toBe('needs-fixes');
   });
 
@@ -59,10 +59,10 @@ describe('workflow-state helpers', () => {
 - **Verdict**: READY
 
 ## feat R1 — 2026-01-01
-Verdict: NEEDS_REVISION
+Verdict: needs-revision
 `;
-    expect(extractReviewLastStatus(md)).toBe('READY');
-    expect(extractReviewVerdict(md)).toBe('READY');
+    expect(extractReviewLastStatus(md)).toBe('ready');
+    expect(extractReviewVerdict(md)).toBe('ready');
   });
 
   it('normalizeAuditVerdict normalizes spacing', () => {
@@ -87,7 +87,7 @@ describe('computeWorkflowNudges — plan', () => {
   it('nudges review when plan is newer than review', () => {
     const plan = join(root, 'plans', 'feat.plan.md');
     const review = join(root, 'reports', 'feat.review.md');
-    touch(review, 'Verdict: READY\n', Date.now() - 10_000);
+    touch(review, 'Verdict: ready\n', Date.now() - 10_000);
     touch(plan, '# Plan v2\n', Date.now());
     const nudges = computeWorkflowNudges(plan);
     expect(nudges.some((n) => n.includes('Plan updated'))).toBe(true);
@@ -95,21 +95,21 @@ describe('computeWorkflowNudges — plan', () => {
 });
 
 describe('computeWorkflowNudges — review', () => {
-  it('nudges replan on NEEDS_REVISION with high impact', () => {
+  it('nudges replan on needs-revision with high impact', () => {
     const review = join(root, 'reports', 'feat.review.md');
     touch(
       review,
-      '## feat R1 — 2026-01-01\nVerdict: NEEDS_REVISION\nCONCERN-HIGH: x\n',
+      '## feat R1 — 2026-01-01\nVerdict: needs-revision\nCONCERN-HIGH: x\n',
     );
     const nudges = computeWorkflowNudges(review);
     expect(nudges.some((n) => n.includes('/replan'))).toBe(true);
   });
 
-  it('escalates when NEEDS_REVISION after 2 rounds', () => {
+  it('escalates when needs-revision after 2 rounds', () => {
     const review = join(root, 'reports', 'feat.review.md');
     touch(
       review,
-      '## feat R1 — 2026-01-01\n\n## feat R2 — 2026-02-01\nVerdict: NEEDS_REVISION\nCONCERN-HIGH\n',
+      '## feat R1 — 2026-01-01\n\n## feat R2 — 2026-02-01\nVerdict: needs-revision\nCONCERN-HIGH\n',
     );
     const nudges = computeWorkflowNudges(review);
     expect(nudges.some((n) => n.includes('escalate'))).toBe(true);
@@ -129,23 +129,23 @@ describe('computeWorkflowNudges — review', () => {
 - [process] prior CONCERN-HIGH mentioned in narrative
 
 ## feat R1 — 2026-01-01
-Verdict: NEEDS_REVISION
+Verdict: needs-revision
 **Status**: CONCERN-HIGH
 
 ## feat R2 — 2026-02-01
-Verdict: NEEDS_REVISION
+Verdict: needs-revision
 **Status**: CONCERN-LOW
 `,
     );
     const nudges = computeWorkflowNudges(review);
     expect(nudges.some((n) => n.includes('Run /replan (Plan revision log)'))).toBe(false);
-    expect(nudges.some((n) => n.includes('NEEDS_REVISION'))).toBe(true);
+    expect(nudges.some((n) => n.includes('needs-revision'))).toBe(true);
     expect(highImpactInLastReviewRound(readFileSync(review, 'utf8'))).toBe(0);
   });
 
-  it('nudges implement when READY and no implementation', () => {
+  it('nudges implement when ready and no implementation', () => {
     const review = join(root, 'reports', 'feat.review.md');
-    touch(review, '## feat R1 — 2026-01-01\nVerdict: READY\n');
+    touch(review, '## feat R1 — 2026-01-01\nVerdict: ready\n');
     const nudges = computeWorkflowNudges(review);
     expect(nudges.some((n) => n.includes('/implement'))).toBe(true);
   });
@@ -153,7 +153,7 @@ Verdict: NEEDS_REVISION
   it('nudges re-review when plan newer than review', () => {
     const plan = join(root, 'plans', 'feat.plan.md');
     const review = join(root, 'reports', 'feat.review.md');
-    touch(review, 'Verdict: READY\n', Date.now() - 10_000);
+    touch(review, 'Verdict: ready\n', Date.now() - 10_000);
     touch(plan, '# newer\n', Date.now());
     const nudges = computeWorkflowNudges(review);
     expect(nudges.some((n) => n.includes('Plan newer than review'))).toBe(true);
@@ -164,19 +164,19 @@ describe('computeWorkflowNudges — implementation', () => {
   it('nudges audit when implementation newer than audit', () => {
     const impl = join(root, 'reports', 'feat.implementation.md');
     const review = join(root, 'reports', 'feat.review.md');
-    touch(review, 'Verdict: READY\n');
+    touch(review, 'Verdict: ready\n');
     touch(impl, '# Impl\n', Date.now());
     const nudges = computeWorkflowNudges(impl);
     expect(nudges.some((n) => n.includes('/audit'))).toBe(true);
   });
 
-  it('warns when review is not READY', () => {
+  it('warns when review is not ready', () => {
     const impl = join(root, 'reports', 'feat.implementation.md');
     const review = join(root, 'reports', 'feat.review.md');
-    touch(review, 'Verdict: NEEDS_REVISION\n');
+    touch(review, 'Verdict: needs-revision\n');
     touch(impl, '# Impl\n');
     const nudges = computeWorkflowNudges(impl);
-    expect(nudges.some((n) => n.includes('not READY'))).toBe(true);
+    expect(nudges.some((n) => n.includes('not ready'))).toBe(true);
   });
 });
 

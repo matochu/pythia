@@ -613,6 +613,7 @@ async function finalizeWorkspaceLifecycle(opts) {
   seedIfMissing(target, '.pythia/config/settings.md', readFileSync(join(baseDir, 'config/settings.md'), 'utf8'), dryRun);
   seedIfMissing(target, '.pythia/README.md', readFileSync(join(baseDir, 'README.md'), 'utf8'), dryRun);
   seedIfMissing(target, '.pythia/config/paths.md', readFileSync(join(baseDir, 'config/paths.md'), 'utf8'), dryRun);
+  seedIfMissing(target, '.pythia/config/relation.md', readFileSync(join(baseDir, 'config/relation.md'), 'utf8'), dryRun);
   seedIfMissing(target, '.pythia/workflows/.gitkeep', '', dryRun);
 
   const manifest = {};

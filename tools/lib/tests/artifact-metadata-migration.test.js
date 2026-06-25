@@ -23,7 +23,7 @@ describe('convertArtifactMetadata', () => {
     const result = convertArtifactMetadata('.pythia/workflows/features/feat-2026-05-example/plans/1-example.plan.md', before);
     expect(result.changed).toBe(true);
     // v2: list key:value, no bold bullets
-    expect(result.content).toContain('- status: Draft');
+    expect(result.content).toContain('- status: draft');
     expect(result.content).toContain('- version: v2');
     expect(result.content).toContain('- branch: main');
     // v2: forbidden keys dropped
@@ -48,15 +48,15 @@ describe('convertArtifactMetadata', () => {
 
 ## 1-example R2 — 2026-06-21
 
-Verdict: READY
+Verdict: ready
 `;
     const result = convertArtifactMetadata('.pythia/workflows/features/feat-2026-05-example/reports/1-example.review.md', before);
     // v2 list format
     expect(result.content).toContain('- plan_version: v1');
     expect(result.content).toContain('- round: R2');
-    expect(result.content).toContain('- verdict: READY');
+    expect(result.content).toContain('- verdict: ready');
     // Body round heading preserved
-    expect(result.content).toContain('Verdict: READY');
+    expect(result.content).toContain('Verdict: ready');
     // No v1 keys
     expect(result.content).not.toContain('- **Plan-Version**');
     expect(result.content).not.toContain('- **Round**');
@@ -546,6 +546,16 @@ Body content.
     expect(result.content).toContain('\nDate: 2026-05-06\n');
   });
 
+  it('fixes wrong-casing canonical prefix (e.g. # report: → # Report:)', () => {
+    const impl = `# report: 1-example\n\n## Metadata\n\n- status: active\n- plan_version: v1\n- round: I1\n- result: implemented\n\n## Summary\n\n## Steps Executed\n\n## Files Changed\n\n## Commands Executed\n\n## Validation\n\n## Results\n\n## Deviations\n\n## Open Issues\n\n## Retrospective\n\n## Implementation Round I1\n\n### Summary\n\nPlan version: v1\nDate: 2026-01-01\n\n### Step Results\n\n### Issues\n\n### Out-of-Plan Work\n\nnone\n`;
+    const r = convertArtifactMetadata('.pythia/workflows/features/feat/reports/1-example.implementation.md', impl);
+    expect(r.content).toMatch(/^# Report: 1-example$/m);
+
+    const audit = `# audit: 1-example\n\n## Metadata\n\n- status: active\n- round: A1\n- verdict: ready\n\n## Conformance\n`;
+    const r2 = convertArtifactMetadata('.pythia/workflows/features/feat/reports/1-example.audit.md', audit);
+    expect(r2.content).toMatch(/^# Audit: 1-example$/m);
+  });
+
   it('normalizes legacy H1 prefixes to canonical form', () => {
     const impl = `# Implementation Report: 1-example\n\n## Metadata\n\n- status: active\n- plan_version: v1\n- round: I1\n- result: implemented\n\n## Summary\n\n## Steps Executed\n\n## Files Changed\n\n## Commands Executed\n\n## Validation\n\n## Results\n\n## Deviations\n\n## Open Issues\n\n## Retrospective\n\n## Implementation Round I1\n\n### Summary\n\nPlan version: v1\nDate: 2026-01-01\n\n### Step Results\n\n### Issues\n\n### Out-of-Plan Work\n\nnone\n`;
     const r1 = convertArtifactMetadata('.pythia/workflows/features/feat/reports/1-example.implementation.md', impl);
@@ -564,7 +574,7 @@ Body content.
 - status: active
 - plan_version: v4
 - round: R1
-- verdict: READY
+- verdict: ready
 
 Body.
 `;
@@ -583,7 +593,7 @@ Body.
 - status: active
 - plan_version: v1
 - round: R1
-- verdict: READY
+- verdict: ready
 
 Body.
 `;

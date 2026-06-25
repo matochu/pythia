@@ -266,12 +266,10 @@ FEATURE_FILE="$FEATURE_DIR/$FEATURE_ID.md"
 **Example:**
 
 ```markdown
-## Related Contexts
+## Related
 
-Link to context documents providing background and analysis:
-
-- [Technical Analysis](contexts/technical-analysis.context.md) - Communication protocol analysis
-- [Architecture Decisions](contexts/architecture-decisions.context.md) - Analysis of implementation approaches
+- [Technical Analysis](contexts/technical-analysis.context.md#@related) — Communication protocol analysis
+- [Architecture Decisions](contexts/architecture-decisions.context.md#@related) — Analysis of implementation approaches
 ```
 
 ## Step 6: Add Cross-References
@@ -299,9 +297,9 @@ Tags: #technical #domain #topic
 ### In Feature Document
 
 ```markdown
-## Related Contexts
+## Related
 
-- [Technical Analysis](contexts/technical-analysis.context.md) - Analysis of implementation approaches
+- [Technical Analysis](contexts/technical-analysis.context.md#@related) — Analysis of implementation approaches
 ```
 
 ## Step 7: Validation and Verification

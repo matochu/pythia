@@ -34,15 +34,22 @@ export function extractVerdict(content) {
     }
   }
   if (!verdict) return null;
-  return verdict.replace(/\*\*/g, '').trim();
+  const v = verdict.replace(/\*\*/g, '').trim().toLowerCase();
+  return v === 'needs_revision' ? 'needs-revision' : v;
 }
 
 /** Review file Metadata snapshot. */
 export function extractReviewLastStatus(content) {
-  const verdict = getArtifactField(parseArtifactMetadata(content), 'Verdict');
-  if (verdict) return verdict.replace(/\*\*/g, '').trim();
+  const verdict = getArtifactField(parseArtifactMetadata(content), 'Verdict')
+    ?? getArtifactField(parseArtifactMetadata(content), 'verdict');
+  if (verdict) {
+    const v = verdict.replace(/\*\*/g, '').trim().toLowerCase();
+    return v === 'needs_revision' ? 'needs-revision' : v;
+  }
   const m = content.match(/^- \*\*Last Status\*\*:\s*(.+)$/im);
-  return m ? m[1].replace(/\*\*/g, '').trim() : null;
+  if (!m) return null;
+  const v = m[1].replace(/\*\*/g, '').trim().toLowerCase();
+  return v === 'needs_revision' ? 'needs-revision' : v;
 }
 
 /** Body of the most recently appended review round (or full file if no round headers). */
@@ -108,7 +115,7 @@ export function computeWorkflowNudges(filePath) {
 
   if (base.endsWith('.review.md')) {
     const content = readFileSync(filePath, 'utf8');
-    const verdict = extractReviewVerdict(content)?.toUpperCase();
+    const verdict = extractReviewVerdict(content)?.toLowerCase();
     const highImpact = highImpactInLastReviewRound(content);
     const roundCount = reviewRoundCount(content);
 
@@ -117,10 +124,10 @@ export function computeWorkflowNudges(filePath) {
       nudges.push(`pythia-nudge: Plan newer than review for ${slug} — re-run /review`);
     }
 
-    if (verdict === 'NEEDS_REVISION') {
+    if (verdict === 'needs-revision') {
       if (roundCount >= 2) {
         nudges.push(
-          'pythia-nudge: Review still NEEDS_REVISION after 2 rounds — escalate to user; do not auto-replan without decision',
+          'pythia-nudge: Review still needs-revision after 2 rounds — escalate to user; do not auto-replan without decision',
         );
       } else if (highImpact > 0) {
         nudges.push(
@@ -128,14 +135,14 @@ export function computeWorkflowNudges(filePath) {
         );
       } else {
         nudges.push(
-          `pythia-nudge: Review verdict NEEDS_REVISION for ${slug} — run /replan or /review per findings`,
+          `pythia-nudge: Review verdict needs-revision for ${slug} — run /replan or /review per findings`,
         );
       }
-    } else if (verdict === 'READY') {
+    } else if (verdict === 'ready') {
       const implFile = join(reportsDir, `${slug}.implementation.md`);
       if (!existsSync(implFile)) {
         nudges.push(
-          `pythia-nudge: Review READY for ${slug}. Run /implement or /loop to delegate Developer subagent`,
+          `pythia-nudge: Review ready for ${slug}. Run /implement or /loop to delegate Developer subagent`,
         );
       }
     }
@@ -145,10 +152,10 @@ export function computeWorkflowNudges(filePath) {
   if (base.endsWith('.implementation.md')) {
     const reviewFile = join(reportsDir, `${slug}.review.md`);
     if (existsSync(reviewFile)) {
-      const reviewVerdict = extractReviewVerdict(readFileSync(reviewFile, 'utf8'))?.toUpperCase();
-      if (reviewVerdict !== 'READY') {
+      const reviewVerdict = extractReviewVerdict(readFileSync(reviewFile, 'utf8'))?.toLowerCase();
+      if (reviewVerdict !== 'ready') {
         nudges.push(
-          `pythia-nudge: Review for ${slug} is not READY — do not treat implementation as approved`,
+          `pythia-nudge: Review for ${slug} is not ready — do not treat implementation as approved`,
         );
       }
     }

@@ -103,12 +103,9 @@ Description of the current situation, existing implementations, or baseline stat
 - [Specifications]
 - [Research papers]
 
-## Related Documents
+## Related
 
-- **Related Contexts**: [mdc:.pythia/contexts/...]
-- **Related Tasks**: [mdc:.pythia/workflows/tasks/...]
-- **Related Proposals**: [mdc:.pythia/workflows/proposals/...]
-- **Related Decisions**: [mdc:.pythia/workflows/decisions/...]
+- [Related context](../.pythia/contexts/related.context.md#@related) — brief description
 
 ## Change History
 
@@ -185,11 +182,11 @@ Link to supporting materials:
 - External documentation and specifications
 - Research papers and references
 
-### Related Documents
+## Related
 
-Maintain bidirectional links:
+Maintain typed cross-document relations (labels from `.pythia/config/relation.md`):
 
-- Other context documents on related topics
+- [Related context](related.context.md#@related) — brief description
 - Tasks that depend on this context
 - Proposals that reference this context
 - Decisions that relate to this context

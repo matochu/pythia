@@ -214,7 +214,7 @@ Context body.
 
 ## Review R2 - 2026-06-04
 
-Verdict: READY
+Verdict: ready
 `,
     'utf8',
   );

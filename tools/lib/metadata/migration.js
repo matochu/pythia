@@ -127,8 +127,10 @@ function normalizeH1(content, kind, slug) {
   if (!prefix) return content;
   return content.replace(/^(# )(.+)$/m, (match, hash, rawTitle) => {
     const title = rawTitle.trim();
-    // Already canonical
-    if (title.toLowerCase().startsWith(prefix.toLowerCase() + ':')) return match;
+    // Has canonical prefix — enforce correct casing
+    if (title.toLowerCase().startsWith(prefix.toLowerCase() + ':')) {
+      return `${hash}${prefix}:${title.slice(prefix.length + 1)}`;
+    }
     // Migrate old prefix → canonical
     for (const old of H1_OLD_PREFIX[kind] ?? []) {
       if (title.toLowerCase().startsWith(old.toLowerCase() + ':')) {
@@ -279,7 +281,7 @@ function addUpdated(fields, get) {
 function buildFields({ kind, get, body, fmValues, base, preStripLinks = null }) {
   if (kind === 'plan') {
     const fields = [
-      ['status', get('Status', 'status') ?? 'Draft'],
+      ['status', normalizeStatus(get('Status', 'status') ?? 'Draft', 'plan')],
       ['version', get('Plan-Version', 'Version', 'version') ?? versionFromLog(body) ?? 'v1'],
     ];
     addField(fields, 'branch', get('Branch', 'branch'));
@@ -293,7 +295,7 @@ function buildFields({ kind, get, body, fmValues, base, preStripLinks = null }) 
       ['status', get('Status', 'status') ?? 'active'],
       ['plan_version', get('Plan-Version', 'Plan Version', 'plan_version') ?? 'v1'],
       ['round', extractRoundId(rawRound)],
-      ['verdict', latestReviewVerdict(body) ?? get('Verdict', 'verdict', 'Last Status') ?? 'NEEDS_REVISION'],
+      ['verdict', latestReviewVerdict(body) ?? get('Verdict', 'verdict', 'Last Status') ?? 'needs-revision'],
     ];
     addUpdated(fields, get);
     return fields;
@@ -374,8 +376,13 @@ function mergeExistingFields(fields, existing, kind) {
 }
 
 function latestReviewVerdict(content) {
-  const matches = [...content.matchAll(/^Verdict:\s*(READY|NEEDS_REVISION)$/gm)];
-  if (matches.length) return matches[matches.length - 1][1];
+  const matches = [...content.matchAll(/^Verdict:\s*(ready|needs-revision|READY|NEEDS_REVISION)$/gm)];
+  if (matches.length) {
+    const v = matches[matches.length - 1][1];
+    if (v === 'READY') return 'ready';
+    if (v === 'NEEDS_REVISION') return 'needs-revision';
+    return v;
+  }
   const parsed = parseArtifactMetadata(content);
   return getField(parsed, 'Verdict', 'verdict', 'Last Status') ?? null;
 }
@@ -387,11 +394,21 @@ function auditVerdict(content) {
 }
 
 // Legacy status values not valid in v2 → canonical v2 mapping, per kind where values differ.
-// Cross-kind fallbacks: 'Implemented'→'completed', capitalization errors, etc.
+const LEGACY_STATUS_MAP_PLAN = {
+  // v1 Title-case plan statuses → v2 lowercase
+  'Draft': 'draft',
+  'Ready for implementation': 'active',
+  'In progress': 'active', 'In Progress': 'active',
+  'Implemented': 'implemented',
+  'Blocked': 'blocked',
+  'Archived': 'archived',
+  'Cancelled': 'cancelled',
+};
+// Cross-kind fallbacks for feature/generic/misc artifacts
 const LEGACY_STATUS_MAP = {
-  // Feature / generic
   'In Research': 'active', 'In Progress': 'active', 'in-progress': 'active',
   'Implemented': 'completed',
+  'Completed': 'completed',
   'New': 'active', 'new': 'active',
   'done': 'completed', 'Done': 'completed',
 };
@@ -413,19 +430,23 @@ function normalizeStatus(status, kind) {
   if (!status) return status;
   const spec = kind ? schemaForArtifact(kind) : null;
   const validValues = spec?.enums?.status ?? [];
+  const hasEnum = validValues.length > 0;
   // Already valid — pass through
-  if (validValues.includes(status)) return status;
+  if (hasEnum && validValues.includes(status)) return status;
   // Kind-specific legacy map takes priority
-  const kindMap = kind === 'context' ? LEGACY_STATUS_MAP_CONTEXT : LEGACY_STATUS_MAP;
+  const kindMap = kind === 'plan' ? LEGACY_STATUS_MAP_PLAN
+    : kind === 'context' ? LEGACY_STATUS_MAP_CONTEXT
+    : LEGACY_STATUS_MAP;
   const mapped = kindMap[status];
-  if (mapped && validValues.includes(mapped)) return mapped;
+  if (mapped && (!hasEnum || validValues.includes(mapped))) return mapped;
   // Cross-kind fallback (context didn't have it, try the generic map)
   if (kind === 'context') {
     const generic = LEGACY_STATUS_MAP[status];
-    if (generic && validValues.includes(generic)) return generic;
+    if (generic && (!hasEnum || validValues.includes(generic))) return generic;
   }
   // Case-fold (e.g. 'Draft' → 'draft')
   const lower = status.toLowerCase();
+  if (!hasEnum) return lower;
   return validValues.includes(lower) ? lower : status;
 }
 
@@ -436,4 +457,216 @@ function higherVersion(a, b) {
   if (isNaN(na)) return b;
   if (isNaN(nb)) return a;
   return na >= nb ? a : b;
+}
+
+// ── Legacy relation migration ─────────────────────────────────────────────────
+
+// Sections and their target relation label (h2 and h3 forms)
+const LEGACY_RELATION_SECTIONS = [
+  { pattern: /^#{2,3} Sources\s*$/, label: 'source' },
+  { pattern: /^## Related Contexts\s*$/, label: 'related' },
+  { pattern: /^## Related Documents\s*$/, label: 'related' },
+  { pattern: /^#{2,3} Related Documentation\s*$/, label: 'related' },
+  { pattern: /^## Related Pythia Skills\s*$/, label: 'related' },
+];
+
+// Preamble bold-label lines and their target relation label
+const LEGACY_PREAMBLE_MAP = [
+  { pattern: /^\*\*Builds on\*\*:/, label: 'based-on' },
+  { pattern: /^\*\*Canonical Criteria\*\*:/, label: 'source' },
+  { pattern: /^\*\*Related Criteria\*\*:/, label: 'source' },
+  { pattern: /^\*\*Pythia Mental Model\*\*:/, label: 'source' },
+  { pattern: /^\*\*Mental Model\*\*:/, label: 'source' },
+  { pattern: /^\*\*Sources\*\*:/, label: 'source' },
+  { pattern: /^\*\*Related Feature\*\*:/, label: 'related' },
+  { pattern: /^\*\*Related\*\*:/, label: 'related' },
+  { pattern: /^\*\*Related Context Documents\*\*:/, label: 'related' },
+  { pattern: /^\*\*Related plans\*\*:/, label: 'related' },
+  { pattern: /^\*\*Related Global Context\(s\)\*\*:/, label: 'related' },
+];
+
+// Dropped without migration
+const DROPPED_PREAMBLES = [];
+
+/** Extract markdown links from a line or block of text.
+ * Returns [{text, href, description}] — description is anything after ` — ` or ` – ` on the same item line. */
+function extractLinksFromText(text) {
+  const results = [];
+  const re = /\[([^\]]*)\]\(([^)]+)\)/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const linkText = m[1].trim();
+    const href = m[2].trim();
+    // Capture trailing description after em dash on the same segment
+    const after = text.slice(m.index + m[0].length).match(/^\s*[—–]\s*(.+?)(?:\n|$)/);
+    const description = after ? after[1].trim() : '';
+    results.push({ text: linkText, href, description });
+  }
+  return results;
+}
+
+/** Attach @label to an href (handles external URLs and relative paths). */
+function typedHref(href, label) {
+  const raw = href.split('#')[0].trim();
+  return `${raw}#@${label}`;
+}
+
+/** Format a single ## Related item. */
+function relatedItem(text, href, label, description) {
+  const h = typedHref(href, label);
+  const desc = description ? ` — ${description}` : '';
+  return `- [${text}](${h})${desc}`;
+}
+
+/**
+ * Convert legacy relation expressions in a document to a canonical `## Related` body section.
+ *
+ * - Sections: Sources, Related*, Related Documentation merged with labels
+ * - Preamble bold-label lines merged
+ * - `builds_on` metadata field removed → typed item
+ * - Idempotent: existing ## Related items untouched, new items merged (dedupe by href base)
+ * - ## Contexts / ### Contexts never touched
+ *
+ * @param {string} _file unused, kept for op consistency
+ * @param {string} content
+ * @returns {{ changed: boolean, content: string, warnings: string[] }}
+ */
+export function convertLegacyRelations(_file, content) {
+  const warnings = [];
+  const newItems = []; // { text, href, label, description }
+  const seenHrefs = new Set();
+
+  function addItem(text, href, label, description = '') {
+    const base = href.split('#')[0].trim();
+    if (!base || seenHrefs.has(base)) return;
+    seenHrefs.add(base);
+    newItems.push({ text, href: base, label, description });
+  }
+
+  // ── 1. Strip builds_on from ## Metadata and collect as item ────────────────
+  const BUILDS_ON_RE = /^- builds_on:\s*(.+)$/m;
+  let bodyContent = content;
+  const buildsOnMatch = bodyContent.match(BUILDS_ON_RE);
+  if (buildsOnMatch) {
+    const linkParts = buildsOnMatch[1].trim().match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+    if (linkParts) {
+      addItem(linkParts[1].trim(), linkParts[2].trim(), 'based-on');
+    } else {
+      warnings.push(`builds_on: value is not a markdown link: ${buildsOnMatch[1].trim()}`);
+    }
+    bodyContent = bodyContent.replace(BUILDS_ON_RE, '').replace(/\n{3,}/g, '\n\n');
+  }
+
+  // ── 2. Process sections and preambles line-by-line ──────────────────────────
+  const lines = bodyContent.split('\n');
+  const outputLines = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Check for legacy section header
+    const sectionDef = LEGACY_RELATION_SECTIONS.find((s) => s.pattern.test(line));
+    if (sectionDef) {
+      // Collect lines until next heading at h2 or above (## or #)
+      i++;
+      while (i < lines.length && !/^## /.test(lines[i]) && !/^# /.test(lines[i])) {
+        const sectionLine = lines[i];
+        const links = extractLinksFromText(sectionLine);
+        for (const { text, href, description } of links) {
+          // Folder paths (trailing /) — keep untyped: we can't add @label to them meaningfully, but we still include
+          // External URLs from Sources get typed
+          addItem(text, href, sectionDef.label, description);
+        }
+        if (!links.length && sectionLine.trim() && !/^[-*] *$/.test(sectionLine)) {
+          // Pure prose with no links — warn but don't drop if non-empty
+          warnings.push(`Unparsed line in legacy section: ${sectionLine.trim()}`);
+        }
+        i++;
+      }
+      continue; // section header and content consumed, don't push to output
+    }
+
+    // Check for dropped preambles (e.g. **Related Feature**: ...)
+    if (DROPPED_PREAMBLES.some((p) => p.test(line))) {
+      i++;
+      continue;
+    }
+
+    // Check for legacy preamble bold-label line
+    const preambleDef = LEGACY_PREAMBLE_MAP.find((p) => p.pattern.test(line));
+    if (preambleDef) {
+      const links = extractLinksFromText(line);
+      for (const { text, href, description } of links) {
+        addItem(text, href, preambleDef.label, description);
+      }
+      if (!links.length) {
+        warnings.push(`Preamble line had no links: ${line.trim()}`);
+      }
+      i++;
+      continue;
+    }
+
+    outputLines.push(line);
+    i++;
+  }
+
+  const bodyChanged = outputLines.join('\n') !== bodyContent.split('\n').join('\n');
+  if (!newItems.length && !buildsOnMatch && !bodyChanged) {
+    return { changed: false, content, warnings };
+  }
+
+  // ── 3. Merge into ## Related section (only when there are new items) ────────
+  if (!newItems.length) {
+    const result = outputLines.join('\n').replace(/\n{4,}/g, '\n\n\n');
+    if (result === content) return { changed: false, content, warnings };
+    return { changed: true, content: result, warnings };
+  }
+  const finalLines = outputLines;
+  const existingRelIdx = finalLines.findIndex((l) => l === '## Related');
+
+  if (existingRelIdx !== -1) {
+    // Merge: collect existing item hrefs to dedupe
+    let end = finalLines.findIndex((l, idx) => idx > existingRelIdx && /^## /.test(l));
+    if (end === -1) end = finalLines.length;
+    // Mark existing hrefs as seen so we don't duplicate
+    for (let j = existingRelIdx + 1; j < end; j++) {
+      const em = finalLines[j].match(/\]\(([^)]+)\)/);
+      if (em) seenHrefs.add(em[1].split('#')[0].trim());
+    }
+    // Insert new items before the next section (end)
+    const toInsert = newItems
+      .filter((it) => !seenHrefs.has(it.href) || !finalLines.slice(existingRelIdx, end).some((l) => l.includes(`(${it.href}`) || l.includes(`(${it.href}#`)))
+      .map((it) => relatedItem(it.text, it.href, it.label, it.description));
+    // Re-check dedup against existing content
+    const existingBlock = finalLines.slice(existingRelIdx + 1, end).join('\n');
+    const toAdd = toInsert.filter((item) => {
+      const hrefMatch = item.match(/\]\(([^)#]+)/);
+      if (!hrefMatch) return true;
+      return !existingBlock.includes(hrefMatch[1]);
+    });
+    if (toAdd.length) {
+      finalLines.splice(end, 0, ...toAdd);
+    }
+  } else {
+    // Insert ## Related before the trailing ## References region (or at end of body)
+    // Trim trailing blank lines from body before inserting ## Related
+    while (finalLines.length > 0 && !finalLines[finalLines.length - 1].trim()) {
+      finalLines.pop();
+    }
+    const insertAt = finalLines.findIndex((l) => l === '## References');
+    const insertIdx = insertAt !== -1 ? insertAt : finalLines.length;
+    const block = [
+      '',
+      '## Related',
+      '',
+      ...newItems.map((it) => relatedItem(it.text, it.href, it.label, it.description)),
+      '',
+    ];
+    finalLines.splice(insertIdx, 0, ...block);
+  }
+
+  const result = finalLines.join('\n').replace(/\n{4,}/g, '\n\n\n');
+  if (result === content) return { changed: false, content, warnings };
+  return { changed: true, content: result, warnings };
 }

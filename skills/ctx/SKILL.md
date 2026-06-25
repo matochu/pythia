@@ -53,8 +53,8 @@ Choose any of the following:
 
 **Linking:**
 
-- Context must reference feature: `**Related Feature**: [Feature Name](../feat-YYYY-MM-name.md)`
-- Feature should list contexts: In "Related Contexts" section
+- When citing other docs inline, use `#@label` fragments: `[text](path#@label)`. Vocabulary: `.pythia/config/relation.md`.
+- Never edit the trailing `## References` / `## Used by` region — machine-owned.
 
 ### Research-type context
 

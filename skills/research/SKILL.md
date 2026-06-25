@@ -115,7 +115,7 @@ Omit `[u] Update context` when no context file exists yet, or mark it unavailabl
 
 1. **Pre-search pythia first**: Search **all** relevant pythia/project documents (`.pythia/workflows/features/`, `.pythia/contexts/`, `.pythia/notes/`, feature dirs — contexts, plans, reports, notes). Documents are scattered; use semantic search and/or grep for the topic and related terms. Use findings to avoid duplicate work and to ground the research.
 2. Then follow the full research procedure: frame and decompose, multi-source search (web, codebase, 3rd party, skill-search when relevant), evaluate and score sources, resolve contradictions, synthesize.
-3. Produce a context document in `{feature-dir}/contexts/{topic}.context.md` using `/context-feature` structure when a feature is active; update the feature's Related Contexts. If no feature is active, offer to create a feature with `/feat` or save to `.pythia/contexts/{category}/`; do not silently choose a destination or category.
+3. Produce a context document in `{feature-dir}/contexts/{topic}.context.md` using `/context-feature` structure when a feature is active. If no feature is active, offer to create a feature with `/feat` or save to `.pythia/contexts/{category}/`; do not silently choose a destination or category.
 4. Every new research context should include, when applicable:
    - **Architectural analysis / option variants**
    - **One recommended option/architecture** (do not leave only a neutral list when a recommendation is possible)
