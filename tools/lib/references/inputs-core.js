@@ -593,14 +593,18 @@ function isTemplateOrPlaceholderPath(hrefOrPath) {
 
 function looksLikeFileHref(href) {
   const raw = normalizeBibliographyPath(href.split('#')[0].trim());
-  if (!raw || isExternalBibliographyHref(raw) || raw.startsWith('/')) return false;
+  if (!raw || isExternalBibliographyHref(raw)) return false;
   if (isTemplateOrPlaceholderPath(raw)) return false;
+  // /-absolute project paths are valid file hrefs
+  if (raw.startsWith('/')) return true;
   if (
     raw.startsWith('.pythia/')
     || raw.startsWith('skills/')
     || raw.startsWith('.claude/')
     || raw.startsWith('tools/')
     || raw.startsWith('assets/')
+    || raw.startsWith('commands/')
+    || raw.startsWith('templates/')
   ) {
     return true;
   }
@@ -614,7 +618,7 @@ function tryAddSyncDep(map, file, depPath, root) {
 
 function addSyncDepCandidate(map, file, depPath, root, { includeMissing = false } = {}) {
   const raw = normalizeBibliographyPath(depPath.split('#')[0].trim());
-  if (!raw || isExternalBibliographyHref(raw) || raw.startsWith('/')) return;
+  if (!raw || isExternalBibliographyHref(raw)) return;
   if (isTemplateOrPlaceholderPath(raw)) return;
 
   const key = canonicalDepKey(file, raw, root);
@@ -642,7 +646,7 @@ function addSyncDepCandidate(map, file, depPath, root, { includeMissing = false 
 
 function isPythiaSyncDepPath(file, depPath, root) {
   const raw = normalizeBibliographyPath(depPath.split('#')[0].trim());
-  if (!raw || isExternalBibliographyHref(raw) || raw.startsWith('/')) return false;
+  if (!raw || isExternalBibliographyHref(raw)) return false;
   const abs = resolveDocLink(file, raw, root) ?? (existsSync(resolve(root, raw)) ? resolve(root, raw) : null);
   if (abs) {
     const rel = relative(resolve(root), resolve(abs)).replace(/\\/g, '/');
@@ -1162,13 +1166,13 @@ export function migrateWorkflowInputs(targetRoot, { dryRun = false, globRoot = '
       const legacyInputs = fm ? parseInputs(fm) : null;
       const hasLegacy = Boolean(legacyInputs?.length);
       const parsed = parseTrailingRefs(content);
-      const bodyLinks = extractRelativeLinks(getBodyContent(content), { skipFenced: true });
       const emptyShell =
         parsed
         && parsed.references.length === 0
         && parsed.usedBy.length === 0
         && !(parsed.regionTrail?.length)
         && content.includes('## References');
+      const bodyLinks = extractRelativeLinks(getBodyContent(content), { skipFenced: true });
       const hasRefs = Boolean(parsed?.references?.length);
       const hasBodyLinks = bodyLinks.length > 0;
 

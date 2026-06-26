@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve, relative, dirname } from 'node:path';
-import { parseTrailingRefs, isPythiaSyncMarkdownRelPath } from '../lib/references/refs.js';
+import { parseTrailingRefs, isPythiaSyncMarkdownRelPath, resolveDocLink } from '../lib/references/refs.js';
 import { BODY_BIBLIOGRAPHY_SECTIONS } from '../lib/references/inputs-core.js';
 import { extractBacktickPaths } from '../lib/md.js';
 import { isKnownRelation } from '../lib/references/relation-types.js';
@@ -123,6 +123,8 @@ function resolveFileLink(fromFile, href) {
   const path = href.split('#')[0];
   if (!path || /^https?:\/\//.test(path)) return null;
   try {
+    const resolved = resolveDocLink(fromFile, href, root);
+    if (resolved) return normalizePath(resolved);
     return normalizePath(resolve(fromFile, '..', path));
   } catch {
     return null;

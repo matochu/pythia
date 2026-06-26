@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
-import { kindForPath, isPythiaSyncMarkdownRelPath, usedByLinksToConsumer, resolveDocLink, parseTrailingRefs, isExternalBibliographyHref, normalizeBibliographyPath, defaultRefText, splitBodyAndRegion, extractBibliographyFromTrail } from './references/refs.js';
+import { kindForPath, isPythiaSyncMarkdownRelPath, usedByLinksToConsumer, resolveDocLink, parseTrailingRefs, isExternalBibliographyHref, normalizeBibliographyPath, defaultRefText, splitBodyAndRegion, extractBibliographyFromTrail, repoOrDocRelativePath, docRelativePath } from './references/refs.js';
 import { normalizePath } from './repo-root.js';
 
 let tmpDir;
@@ -237,5 +237,93 @@ Links to related docs.
     expect(internal).toHaveLength(1);
     expect(internal[0].text).toBe('criteria.context.md');
     expect(internal[0].path).toBe('llm-agent-systems-comparison-criteria.context.md');
+  });
+});
+
+describe('repoOrDocRelativePath — path format rules', () => {
+  it('intra-.pythia: both source and target inside .pythia/ → doc-relative', () => {
+    const root = tmpDir;
+    mkdirSync(join(root, '.pythia', 'workflows', 'f', 'plans'), { recursive: true });
+    mkdirSync(join(root, '.pythia', 'config'), { recursive: true });
+    // Both files must exist on disk so normalizeAbsPath (realpathSync) resolves correctly
+    writeFileSync(join(root, '.pythia', 'config', 'relation.md'), '', 'utf8');
+    writeFileSync(join(root, '.pythia', 'workflows', 'f', 'plans', 'x.plan.md'), '', 'utf8');
+    const fromFile = join(root, '.pythia', 'workflows', 'f', 'plans', 'x.plan.md');
+    const absTarget = join(root, '.pythia', 'config', 'relation.md');
+    const result = repoOrDocRelativePath(fromFile, absTarget, root);
+    // Must be relative (starts with ../)
+    expect(result).toMatch(/^\.\.\//);
+    // Must not be bare repo-root-relative
+    expect(result).not.toMatch(/^\.pythia\//);
+  });
+
+  it('target outside .pythia/ → /-absolute', () => {
+    const root = tmpDir;
+    mkdirSync(join(root, '.pythia', 'workflows', 'f', 'plans'), { recursive: true });
+    mkdirSync(join(root, 'tools', 'lib'), { recursive: true });
+    writeFileSync(join(root, 'tools', 'lib', 'foo.js'), '', 'utf8');
+    const fromFile = join(root, '.pythia', 'workflows', 'f', 'plans', 'x.plan.md');
+    const absTarget = join(root, 'tools', 'lib', 'foo.js');
+    const result = repoOrDocRelativePath(fromFile, absTarget, root);
+    expect(result).toBe('/tools/lib/foo.js');
+  });
+});
+
+describe('resolveDocLink — /-absolute paths', () => {
+  it('resolves /-absolute path from workspace root', () => {
+    const root = tmpDir;
+    mkdirSync(join(root, 'tools', 'lib'), { recursive: true });
+    writeFileSync(join(root, 'tools', 'lib', 'foo.js'), '', 'utf8');
+    const fromFile = join(root, '.pythia', 'workflows', 'f', 'plans', 'x.plan.md');
+    const resolved = resolveDocLink(fromFile, '/tools/lib/foo.js', root);
+    expect(resolved).not.toBeNull();
+    expect(normalizePath(resolved)).toBe(normalizePath(join(root, 'tools', 'lib', 'foo.js')));
+  });
+
+  it('round-trip: /-absolute stored path resolves back to abs', () => {
+    const root = tmpDir;
+    mkdirSync(join(root, 'assets', 'base', 'config'), { recursive: true });
+    writeFileSync(join(root, 'assets', 'base', 'config', 'relation.md'), '', 'utf8');
+    const fromFile = join(root, '.pythia', 'workflows', 'f', 'plans', 'x.plan.md');
+    const stored = '/assets/base/config/relation.md';
+    const resolved = resolveDocLink(fromFile, stored, root);
+    expect(normalizePath(resolved)).toBe(normalizePath(join(root, 'assets', 'base', 'config', 'relation.md')));
+  });
+});
+
+describe('formatRefEntry / formatUsedByEntry — related implicit', () => {
+  it('omits :related when relType is related (default lateral relation)', () => {
+    const content = `# Doc
+
+Body.
+
+## References
+
+- [research:related] [Foo](foo.md#abc12)
+- [ctx:source] [Bar](bar.md#def34)
+- [feat] [Baz](baz.md#ghi56)
+`;
+    const parsed = parseTrailingRefs(content);
+    // After round-trip through renderTrailingRegion, :related should be dropped
+    // This verifies the stored format — parseRefLine reads relType, formatRefEntry omits it
+    expect(parsed?.references[0]?.relType).toBe('related');
+    expect(parsed?.references[1]?.relType).toBe('source');
+    expect(parsed?.references[2]?.relType).toBeUndefined();
+  });
+
+  it('formatRefEntry: related relType produces [kind] not [kind:related]', async () => {
+    const { renderTrailingRegion } = await import('./references/refs.js');
+    const region = renderTrailingRegion({
+      references: [
+        { kind: 'research', relType: 'related', text: 'Foo', path: 'foo.md', hash: 'abc12' },
+        { kind: 'ctx', relType: 'source', text: 'Bar', path: 'bar.md', hash: 'def34' },
+        { kind: 'feat', relType: undefined, text: 'Baz', path: 'baz.md', hash: 'ghi56' },
+      ],
+      usedBy: [],
+    });
+    expect(region).toContain('- [research] [Foo](foo.md#abc12)');
+    expect(region).toContain('- [ctx:source] [Bar](bar.md#def34)');
+    expect(region).toContain('- [feat] [Baz](baz.md#ghi56)');
+    expect(region).not.toContain(':related');
   });
 });

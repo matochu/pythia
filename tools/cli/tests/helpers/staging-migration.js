@@ -1,12 +1,21 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { packageRoot } from './workspace.js';
 
-const NEXT_MD = join(packageRoot, 'assets/migrations/next.md');
+/** Find the staging migration file: next.md if present, else the current shipped version. */
+export function stagingMigrationPath(version, root = packageRoot) {
+  const nextPath = join(root, 'assets/migrations/next.md');
+  if (existsSync(nextPath)) return nextPath;
+  const shippedPath = join(root, `assets/migrations/${version}.md`);
+  if (existsSync(shippedPath)) return shippedPath;
+  return null;
+}
 
-/** Staging next.md → versioned migration body (e.g. 0.3.3.md at release). */
-export function versionedMigrationFromStaging(version) {
-  const raw = readFileSync(NEXT_MD, 'utf8');
+/** Staging next.md (or shipped version) → versioned migration body. */
+export function versionedMigrationFromStaging(version, root = packageRoot) {
+  const path = stagingMigrationPath(version, root);
+  if (!path) throw new Error(`No staging or shipped migration found for ${version}`);
+  const raw = readFileSync(path, 'utf8');
   return raw
     .replace(/^# Migration next/m, `# Migration ${version}`)
     .replace(/migratedVersion < <version>/, `migratedVersion < ${version}`)

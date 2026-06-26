@@ -95,4 +95,20 @@ describe('isKnownRelation', () => {
 `);
     expect(isKnownRelation('bogus', root)).toBe(false);
   });
+
+  it('returns true for reverse labels (written by sync into ## Used by)', () => {
+    const root = makeTmpRoot(`| label    | description | reverse    |
+| -------- | ----------- | ---------- |
+| based-on | derives     | basis-for  |
+| source   | citation    | sourced-by |
+| related  | lateral     | related    |
+`);
+    expect(isKnownRelation('basis-for', root)).toBe(true);
+    expect(isKnownRelation('sourced-by', root)).toBe(true);
+    expect(isKnownRelation('related', root)).toBe(true);
+    // forward labels still work
+    expect(isKnownRelation('based-on', root)).toBe(true);
+    // unknown still false
+    expect(isKnownRelation('bogus', root)).toBe(false);
+  });
 });

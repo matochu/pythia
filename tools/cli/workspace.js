@@ -11,7 +11,6 @@ import {
 import { printUpdateHealthReport } from './health.js';
 import { isPythiaManagedHook, isPythiaManagedHookEntry } from '../lib/hook-detect.js';
 import { mergeHooksJson } from '../lib/merge-hooks-json.js';
-import { restoreFromBackups } from '../migrate/backups.js';
 export { readManifest, writeManifest } from '../migrate/manifest.js';
 import { readManifest, writeManifest } from '../migrate/manifest.js';
 
@@ -531,13 +530,6 @@ function writePythiaPackageJson(target, projectName, frameworkVersion, dryRun) {
   }
 }
 
-function pythiaGitHasCommits(target) {
-  const pythiaDir = join(target, '.pythia');
-  if (!existsSync(join(pythiaDir, '.git'))) return false;
-  const r = spawnSync('git', ['-C', pythiaDir, 'rev-parse', '--verify', 'HEAD'], { encoding: 'utf8' });
-  return r.status === 0;
-}
-
 const MANAGED_PRE_UPDATE_BACKUP = [
   'AGENTS.md',
   'CLAUDE.md',
@@ -545,6 +537,7 @@ const MANAGED_PRE_UPDATE_BACKUP = [
   '.claude',
   '.agents',
   '.codex',
+  '.cursor',
 ];
 
 function createPreUpdateBackup(target, dryRun, reason) {
@@ -558,6 +551,16 @@ function createPreUpdateBackup(target, dryRun, reason) {
   if (dryRun) {
     console.log(`  [backup] ${relBackupDir} (${reason})`);
     return relBackupDir;
+  }
+
+  // Keep only the latest pre-update snapshot — remove older ones (gitignored, regenerated each update).
+  const backupsRoot = join(pythiaDir, 'backups');
+  if (existsSync(backupsRoot)) {
+    for (const entry of readdirSync(backupsRoot)) {
+      if (entry.startsWith('pre-update-')) {
+        rmSync(join(backupsRoot, entry), { recursive: true, force: true });
+      }
+    }
   }
 
   const snapshotDir = join(backupDir, '.pythia');
@@ -596,6 +599,7 @@ async function finalizeWorkspaceLifecycle(opts) {
     label = 'update',
     previousInstalled = [],
     existingGenerated = {},
+    preUpdateBackup = null,
   } = opts;
 
   const assetsDir = join(packageRoot, 'assets');
@@ -662,7 +666,8 @@ async function finalizeWorkspaceLifecycle(opts) {
     { ...manifestData, migratedVersion: migrationBaseline },
     dryRun,
     noMigrate,
-    label
+    label,
+    preUpdateBackup
   );
 
   if (!dryRun && (label === 'update' || label === 'init')) {
@@ -679,7 +684,22 @@ async function finalizeWorkspaceLifecycle(opts) {
   }
 }
 
-async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate, label = 'update') {
+/** Print a rollback offer after a migration did not complete. Does NOT auto-roll back. */
+function offerMigrationRollback(target, version, label, preUpdateBackup, reason) {
+  console.error('');
+  console.error(`[${label}] migration ${version} did not complete: ${reason}`);
+  console.error(`[${label}] Changes were NOT rolled back automatically — migrated files are kept as-is, version not bumped.`);
+  if (preUpdateBackup) {
+    console.error(`[${label}] To roll back to the pre-update state, run:`);
+    console.error(`    npm --prefix .pythia run migrate:restore -- ${version}`);
+    console.error(`[${label}] (restores .pythia data + surfaces from ${preUpdateBackup}; runtime regenerates on next update)`);
+  } else {
+    console.error(`[${label}] No pre-update backup available — fix the reported files and re-run update, or restore from git.`);
+  }
+  process.exitCode = 1;
+}
+
+async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate, label = 'update', preUpdateBackup = null) {
   const { inPendingRange, sortVersions } = await import('../migrate/semver.js').catch(() => ({}));
   const { findUnresolvedMixedStates, writeState, readState } = await import('../migrate/state.js').catch(() => ({}));
   const { parseMigration, migrationHasLlm } = await import('../migrate/parse.js').catch(() => ({}));
@@ -722,14 +742,13 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
 
     console.log(`[${label}] applying migration ${v}${llmRemaining ? ' (mixed: auto part only)' : ''}...`);
 
-    const backups = [];
     const changedPaths = [];
     const appliedSteps = [];
-    let failed = false;
+    let opError = null;
 
     for (const step of autoSteps) {
       try {
-        const result = runOp(target, step.op, backups, dryRun, v);
+        const result = runOp(target, step.op, null, dryRun, v);
         if (result.changedPaths?.length) {
           changedPaths.push(...result.changedPaths);
         } else if (result.changedPath) {
@@ -739,7 +758,7 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
         console.log(`  step ${step.stepNum}: ${result.status}`);
       } catch (err) {
         console.error(`  step ${step.stepNum} FAILED: ${err.message}`);
-        failed = true;
+        opError = err.message;
         break;
       }
     }
@@ -750,17 +769,16 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
       changedPaths,
       appliedSteps,
       llmRemaining,
-      backups,
+      preUpdateBackup,
     };
 
     if (!dryRun) writeState(target, state, dryRun);
 
-    if (failed) {
-      console.error(`[${label}] migration ${v} failed — restoring...`);
-      if (!dryRun) {
-        restoreFromBackups(target, backups);
-      }
-      throw new Error(`Migration ${v} failed — restored from backup. No version bump.`);
+    // Migration did not complete: report + offer rollback (user-decided). No auto-rollback, no throw.
+    if (opError) {
+      offerMigrationRollback(target, v, label, preUpdateBackup, `step failed: ${opError}`);
+      completedAllPending = false;
+      break;
     }
 
     if (!llmRemaining) {
@@ -771,15 +789,16 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
           if (verifyResult.stdout) process.stdout.write(verifyResult.stdout);
           if (verifyResult.stderr) process.stderr.write(verifyResult.stderr);
           if (verifyResult.status !== 0) {
-            console.error(`[${label}] migration ${v} verify failed — restoring...`);
-            if (!dryRun) restoreFromBackups(target, backups);
-            throw new Error(`Migration ${v} verify failed. Restored. No version bump.`);
+            offerMigrationRollback(target, v, label, preUpdateBackup, 'verification failed (see report above)');
+            completedAllPending = false;
+            break;
           }
         } else {
-          for (const p of changedPaths) {
-            if (!existsSync(join(target, p))) {
-              throw new Error(`Migration ${v} verify: ${p} does not exist`);
-            }
+          const missing = changedPaths.filter((p) => !existsSync(join(target, p)));
+          if (missing.length) {
+            offerMigrationRollback(target, v, label, preUpdateBackup, `missing files: ${missing.join(', ')}`);
+            completedAllPending = false;
+            break;
           }
         }
         if (commitMigrationVersion) {
@@ -896,7 +915,6 @@ export async function doUpdate(opts) {
 
   const existing = readManifest(target);
   const existingGenerated = existing?.generated ?? {};
-  const adopted = hasProtectedArtifacts(target);
   const frameworkVersion = readPackageVersion(packageRoot);
   const migrationBaseline = existing?.migratedVersion ?? '0.0.0';
   const { surfaces: activeSurfaces, gitStrategy } = await resolveSurfacesAndGit(existing, opts);
@@ -904,9 +922,10 @@ export async function doUpdate(opts) {
 
   console.log(`[update] target: ${target}`);
 
-  if (adopted && !pythiaGitHasCommits(target)) {
-    createPreUpdateBackup(target, dryRun, 'adopted workspace without committed .pythia git history');
-  }
+  // Always snapshot pre-update state (data + surfaces, excluding regenerable runtime) so a
+  // failed migration can be rolled back. Surfaces (.claude/.agents/.cursor) live outside
+  // .pythia/.git, so git alone cannot restore them — this single snapshot is the rollback source.
+  const preUpdateBackup = createPreUpdateBackup(target, dryRun, 'pre-update snapshot for rollback');
 
   await finalizeWorkspaceLifecycle({
     target,
@@ -921,6 +940,7 @@ export async function doUpdate(opts) {
     label: 'update',
     previousInstalled,
     existingGenerated,
+    preUpdateBackup,
   });
 
   console.log(`[update] done${dryRun ? ' (dry-run)' : ''}`);

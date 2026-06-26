@@ -327,12 +327,13 @@ export function parseTrailingRefs(content) {
 
 function formatRefEntry({ kind, relType, text, path, hash }) {
   const href = hash ? `${path}#${hash}` : path;
-  const tag = relType ? `${kind}:${relType}` : kind;
+  // 'related' is the implicit default lateral relation — omit the suffix to reduce noise
+  const tag = (relType && relType !== 'related') ? `${kind}:${relType}` : kind;
   return `- [${tag}] [${text}](${href})`;
 }
 
 function formatUsedByEntry({ kind, relType, text, path }) {
-  const tag = relType ? `${kind}:${relType}` : kind;
+  const tag = (relType && relType !== 'related') ? `${kind}:${relType}` : kind;
   return `- [${tag}] [${text}](${path})`;
 }
 
@@ -391,11 +392,26 @@ export function docRelativePath(fromFile, absTarget) {
   return rel.split('\\').join('/');
 }
 
-/** Prefer repo-root-relative path when target is inside the workspace. */
+/** Prefer the correct path format based on source/target location:
+ *  - Both source and target inside .pythia/ → doc-relative (markdown-resolvable)
+ *  - Target inside project but outside .pythia/ → /-absolute (e.g. /tools/lib/foo.js)
+ *  - Target outside project → doc-relative (existing behaviour)
+ */
 export function repoOrDocRelativePath(fromFile, absTarget, root) {
   const fromRoot = relative(normalizeAbsPath(root), normalizeAbsPath(absTarget)).replace(/\\/g, '/');
-  if (!fromRoot.startsWith('..') && !fromRoot.startsWith('/')) return fromRoot;
-  return docRelativePath(fromFile, absTarget);
+  // Target outside workspace: fall back to doc-relative
+  if (fromRoot.startsWith('..') || fromRoot.startsWith('/')) return docRelativePath(fromFile, absTarget);
+  // Intra-.pythia: both source and target inside .pythia/ — use doc-relative so editors can resolve
+  const fromFileRel = relative(normalizeAbsPath(root), normalizeAbsPath(fromFile)).replace(/\\/g, '/');
+  if (fromFileRel.startsWith('.pythia/') && fromRoot.startsWith('.pythia/')) {
+    return docRelativePath(fromFile, absTarget);
+  }
+  // Target outside .pythia/ (tools/, assets/, templates/, etc.) → /-absolute
+  if (!fromRoot.startsWith('.pythia/')) {
+    return '/' + fromRoot;
+  }
+  // Target inside .pythia/, source outside (e.g. root doc referencing .pythia file) — repo-root-relative
+  return fromRoot;
 }
 
 /** Resolve a stored doc-relative or repo-root-relative path against a base file. */
@@ -403,21 +419,31 @@ export function resolveDocLink(baseFile, href, root) {
   const { path: hrefPath } = splitHashFragment(href);
   if (!hrefPath) return null;
 
+  const isProjectAbsolute = hrefPath.startsWith('/');
   const isExplicitRelative = hrefPath.startsWith('./') || hrefPath.startsWith('../');
   const workspaceRooted =
     hrefPath.startsWith('.pythia/')
     || hrefPath.startsWith('skills/')
     || hrefPath.startsWith('.claude/')
     || hrefPath.startsWith('tools/')
-    || hrefPath.startsWith('assets/');
+    || hrefPath.startsWith('assets/')
+    || hrefPath.startsWith('commands/')
+    || hrefPath.startsWith('templates/');
 
   const candidates = [];
-  // Repo-root-relative and allowlisted paths: workspace root before doc-relative
-  // (matches repoOrDocRelativePath storage; avoids local README.md shadowing root).
-  if (root && (workspaceRooted || !isExplicitRelative)) {
-    candidates.push(resolve(normalizeAbsPath(root), hrefPath));
+  // /-absolute project paths: resolve from workspace root (strip leading /)
+  if (isProjectAbsolute) {
+    const stripped = hrefPath.slice(1);
+    if (root) candidates.push(resolve(normalizeAbsPath(root), stripped));
+    candidates.push(resolve(dirname(normalizeAbsPath(baseFile)), stripped));
+  } else {
+    // Repo-root-relative and allowlisted paths: workspace root before doc-relative
+    // (matches repoOrDocRelativePath storage; avoids local README.md shadowing root).
+    if (root && (workspaceRooted || !isExplicitRelative)) {
+      candidates.push(resolve(normalizeAbsPath(root), hrefPath));
+    }
+    candidates.push(resolve(dirname(normalizeAbsPath(baseFile)), hrefPath));
   }
-  candidates.push(resolve(dirname(normalizeAbsPath(baseFile)), hrefPath));
   // Legacy task/idea docs: `../navigation/foo.md` from `.pythia/workflows/tasks/` → `{projectRoot}/navigation/foo.md`
   if (root && isExplicitRelative) {
     const stripped = hrefPath.replace(/^(\.\.\/)+/, '');

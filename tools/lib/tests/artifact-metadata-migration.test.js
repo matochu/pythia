@@ -62,6 +62,60 @@ Verdict: ready
     expect(result.content).not.toContain('- **Round**');
   });
 
+  it('normalizes verdict READY→ready and NEEDS_REVISION→needs-revision in already-v2 review', () => {
+    const stale = `# Review: slug
+
+## Metadata
+
+- status: active
+- plan: plans/slug.plan.md
+- plan_version: v3
+- round: R2
+- verdict: READY
+
+## slug R2 — 2026-06-21
+
+Verdict: READY
+`;
+    const r = convertArtifactMetadata('.pythia/workflows/features/feat/reports/slug.review.md', stale);
+    expect(r.changed).toBe(true);
+    expect(r.content).toContain('- verdict: ready');
+    expect(r.content).not.toContain('- verdict: READY');
+
+    const stale2 = stale.replace(/READY/g, 'NEEDS_REVISION');
+    const r2 = convertArtifactMetadata('.pythia/workflows/features/feat/reports/slug.review.md', stale2);
+    expect(r2.changed).toBe(true);
+    expect(r2.content).toContain('- verdict: needs-revision');
+    expect(r2.content).not.toContain('- verdict: NEEDS_REVISION');
+  });
+
+  it('normalizes impl-report status: implemented → completed (implemented is a result value, not status)', () => {
+    const stale = `# Report: x
+
+## Metadata
+
+- status: implemented
+- plan_version: v6
+- round: I2
+- result: implemented
+
+## Plan–Implementation Compatibility
+
+| Implementation Round | Plan Version | Date | Result |
+| I1 | v6 | 2026-06-25 | 1 passed |
+
+## Summary
+
+x
+`;
+    const r = convertArtifactMetadata('.pythia/workflows/features/f/reports/x.implementation.md', stale);
+    expect(r.changed).toBe(true);
+    expect(r.content).toContain('- status: completed');
+    expect(r.content).not.toContain('- status: implemented');
+    // result field keeps 'implemented' (valid result value)
+    expect(r.content).toContain('- result: implemented');
+  });
+
   it('moves implementation Plan and Review headers into v2 metadata with result (lowercase)', () => {
     const before = `# Implementation Report: 1-example
 

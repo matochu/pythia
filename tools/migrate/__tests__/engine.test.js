@@ -141,7 +141,6 @@ describe('ops: set-frontmatter', () => {
     setFrontmatter(tmpDir, { op: 'set-frontmatter', path: '.pythia/workflows/file.md', key: 'status', value: 'active' }, backups, false);
     const content = readFileSync(join(tmpDir, '.pythia/workflows/file.md'), 'utf8');
     expect(content).toContain('status: active');
-    expect(backups).toHaveLength(1);
   });
   it('skips when already set (idempotent)', async () => {
     await seedWorkspace(tmpDir);
@@ -150,7 +149,6 @@ describe('ops: set-frontmatter', () => {
     const backups = [];
     const result = setFrontmatter(tmpDir, { op: 'set-frontmatter', path: '.pythia/workflows/file.md', key: 'status', value: 'active' }, backups, false);
     expect(result.status).toBe('skipped');
-    expect(backups).toHaveLength(0);
   });
 });
 
@@ -162,7 +160,6 @@ describe('ops: replace-once', () => {
     const backups = [];
     replaceOnce(tmpDir, { op: 'replace-once', path: '.pythia/workflows/file.md', find: 'foo', replace: 'baz' }, backups, false);
     expect(readFileSync(join(tmpDir, '.pythia/workflows/file.md'), 'utf8')).toBe('baz bar foo');
-    expect(backups).toHaveLength(1);
   });
   it('throws when pattern not found and replacement absent', async () => {
     await seedWorkspace(tmpDir);

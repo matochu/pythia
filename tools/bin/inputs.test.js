@@ -712,7 +712,7 @@ Prior work:
     const plan = writeDoc(wf('plans/p.plan.md'), '# Plan\n\nSee [workflow](../../../../../skills/workflow/SKILL.md).\n');
     runInputs(['sync', plan]);
     const out = readFileSync(plan, 'utf8');
-    expect(out).toMatch(/\[skill\] \[workflow\]\(skills\/workflow\/SKILL\.md#/);
+    expect(out).toMatch(/\[skill\] \[workflow\]\(\/skills\/workflow\/SKILL\.md#/);
   });
 
   it('drops mistagged stored sync-zone refs without body links on sync', () => {

@@ -100,7 +100,11 @@ export function loadRelations(root) {
 }
 
 export function isKnownRelation(label, root) {
-  return loadRelations(root).labels.includes(label);
+  const { labels, reverseOf } = loadRelations(root);
+  if (labels.includes(label)) return true;
+  // Also accept reverse labels (e.g. basis-for, sourced-by) — written by sync into ## Used by
+  const reverseValues = Object.values(reverseOf);
+  return reverseValues.includes(label);
 }
 
 export function _resetCache() {

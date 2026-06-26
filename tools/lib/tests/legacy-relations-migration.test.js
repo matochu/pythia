@@ -97,12 +97,12 @@ describe('convertLegacyRelations', () => {
     expect(result.content).toContain('[X](x.md#@related)');
   });
 
-  it('converts **Related Feature** preamble to #@related', () => {
+  it('drops **Related Feature** preamble (folder structure implies the feat relationship)', () => {
     const content = '# Doc\n\n**Related Feature**: [Feat](feat.md)\n\nProse.\n';
     const result = convertLegacyRelations('x.md', content);
     expect(result.changed).toBe(true);
     expect(result.content).not.toContain('**Related Feature**');
-    expect(result.content).toContain('feat.md#@related');
+    expect(result.content).not.toContain('feat.md#@');
   });
 
   it('removes builds_on metadata field and adds based-on item', () => {
@@ -144,6 +144,39 @@ describe('convertLegacyRelations', () => {
     expect(result.changed).toBe(true);
     const matches = result.content.match(/a\.md#@/g) ?? [];
     expect(matches.length).toBe(1);
+  });
+
+  it('converts **Related Global Context** (without s) preamble', () => {
+    const content = '# Doc\n\n**Related Global Context**: [Mental Model](ctx/model.md)\n\nProse.\n';
+    const result = convertLegacyRelations('x.md', content);
+    expect(result.changed).toBe(true);
+    expect(result.content).not.toContain('**Related Global Context**');
+    expect(result.content).toContain('ctx/model.md#@related');
+  });
+
+  it('converts **Related Global Contexts** (plural without parens) preamble', () => {
+    const content = '# Doc\n\n**Related Global Contexts**: [A](a.md) · [B](b.md)\n\nProse.\n';
+    const result = convertLegacyRelations('x.md', content);
+    expect(result.changed).toBe(true);
+    expect(result.content).not.toContain('**Related Global Contexts**');
+  });
+
+  it('does not convert bare URLs in ## Sources to ## Related (only markdown links)', () => {
+    const content = `# Doc
+
+## Sources
+
+- Every. "Compound Engineering." https://every.to/compound
+- LangGraph. Workflows. https://docs.langchain.com/oss/python/langgraph
+
+Body.
+`;
+    const result = convertLegacyRelations('x.md', content);
+    // ## Sources consumed but bare URL lines produce no ## Related items
+    expect(result.content).not.toContain('## Sources');
+    expect(result.content).not.toContain('every.to/compound#@source');
+    // No ## Related should be created from bare URLs only
+    expect(result.content).not.toContain('## Related');
   });
 
   it('is idempotent on second run', () => {

@@ -257,7 +257,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
 
 ## Metadata
 
-- status: Draft
+- status: draft
 - version: v1
 - branch: main
 - updated: 2026-06-23
@@ -273,7 +273,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
 - status: completed
 - plan_version: v1
 - round: R1
-- verdict: READY
+- verdict: ready
 - updated: 2026-06-23
 ```
 

@@ -352,7 +352,7 @@ describe('update', () => {
     expect(existsSync(join(backupRoot, backupDir, '.pythia', 'config', 'settings.md'))).toBe(false);
   });
 
-  it('does not create fallback pre-update backup when .pythia git already has committed history', async () => {
+  it('always creates a pre-update backup, even with committed .pythia git history (surfaces live outside .pythia/.git)', async () => {
     mkdirSync(join(tmpDir, '.pythia', 'workflows'), { recursive: true });
     writeFileSync(join(tmpDir, '.pythia', 'workflows', 'old.md'), 'pre-existing', 'utf8');
     spawnSync('git', ['init', join(tmpDir, '.pythia')], { encoding: 'utf8' });
@@ -362,10 +362,9 @@ describe('update', () => {
     await doUpdate(makeOpts(tmpDir));
 
     const backupRoot = join(tmpDir, '.pythia', 'backups');
-    const preUpdateBackups = existsSync(backupRoot)
-      ? readdirSync(backupRoot).filter((entry) => entry.startsWith('pre-update-'))
-      : [];
-    expect(preUpdateBackups).toHaveLength(0);
+    const preUpdateBackups = readdirSync(backupRoot).filter((entry) => entry.startsWith('pre-update-'));
+    // Single snapshot is the rollback source for gitignored surfaces; only the latest is kept.
+    expect(preUpdateBackups).toHaveLength(1);
   });
 
   it('update renames version.json to manifest.json (one-time legacy migration)', async () => {

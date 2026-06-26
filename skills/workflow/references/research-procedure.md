@@ -80,12 +80,12 @@ Project and feature knowledge is **scattered** across many locations. Before any
   - **Project**: `.pythia/contexts/{category}/{topic}.context.md` or project-defined category location
 - If no feature is active and no destination was requested, ask the user to choose between feature-scoped research via `/feat` and a global project context before writing. For global context, ask for category and context slug if either is ambiguous.
 - Structure: Problem/scope, Options (with sources), Best practices (with citations), 3rd party solutions (with links), Summary of trade-offs, **Confidence and gaps** (see Output Format). Metadata block follows [artifact-metadata.md](artifact-metadata.md) for artifact type `context`.
-- Update feature’s Related Contexts section if output is feature-scoped.
+- If output is feature-scoped, link it from the feature doc body using a typed `#@related` fragment: `[Context Name](contexts/{slug}.context.md#@related)`.
 - During brainstorm, verify, or update interactions, maintain `## Retrospective` and `## Decision Log` sections automatically when relevant. These sections capture transferable lessons and user research decisions; do not add a chooser action for extracting profile signals.
 
 ## Output Format (context document)
 
-- Follow the same structure as other feature contexts: metadata, Links to Related Documents (Related Feature, Related Plans, Related Contexts), main content. Do not write `## References` or `## Used by` sections — these are machine-owned and populated by `inputs.js sync` after save.
+- Follow the same structure as other feature contexts: metadata, body content. Use inline `#@label` fragments when citing other docs (vocabulary in `.pythia/config/relation.md`). Do not write `## References` or `## Used by` sections — these are machine-owned and populated by `inputs.js sync` after save.
 - Use clear headings: e.g. Problem statement, Solution options, Best practices, 3rd party solutions, Trade-offs summary, **Confidence and gaps**.
 - **Citation discipline**: Every non-obvious claim must have a source (URL or file:line). Aim for 2–3 sources per major claim where possible.
 - **Confidence and gaps**: For important findings, note confidence (high / medium / low) or mark gaps; call out unresolved questions or contradictions and what evidence was checked.

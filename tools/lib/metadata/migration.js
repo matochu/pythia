@@ -371,6 +371,11 @@ function mergeExistingFields(fields, existing, kind) {
     if (!existingValue) return [key, value];
     if (key === 'version' || key === 'plan_version') return [key, higherVersion(existingValue, value)];
     if (key === 'status') return [key, normalizeStatus(existingValue, kind)];
+    if (key === 'verdict') {
+      const v = existingValue.toLowerCase();
+      const normalized = v === 'needs_revision' ? 'needs-revision' : v;
+      return [key, normalized];
+    }
     return [key, existingValue];
   }).filter(([, value]) => value !== null && value !== undefined && value !== '');
 }
@@ -407,8 +412,8 @@ const LEGACY_STATUS_MAP_PLAN = {
 // Cross-kind fallbacks for feature/generic/misc artifacts
 const LEGACY_STATUS_MAP = {
   'In Research': 'active', 'In Progress': 'active', 'in-progress': 'active',
-  'Implemented': 'completed',
-  'Completed': 'completed',
+  'Implemented': 'completed', 'implemented': 'completed',
+  'Completed': 'completed', 'completed': 'completed',
   'New': 'active', 'new': 'active',
   'done': 'completed', 'Done': 'completed',
 };
@@ -478,29 +483,48 @@ const LEGACY_PREAMBLE_MAP = [
   { pattern: /^\*\*Pythia Mental Model\*\*:/, label: 'source' },
   { pattern: /^\*\*Mental Model\*\*:/, label: 'source' },
   { pattern: /^\*\*Sources\*\*:/, label: 'source' },
-  { pattern: /^\*\*Related Feature\*\*:/, label: 'related' },
   { pattern: /^\*\*Related\*\*:/, label: 'related' },
   { pattern: /^\*\*Related Context Documents\*\*:/, label: 'related' },
   { pattern: /^\*\*Related plans\*\*:/, label: 'related' },
   { pattern: /^\*\*Related Global Context\(s\)\*\*:/, label: 'related' },
+  { pattern: /^\*\*Related Global Contexts\*\*:/, label: 'related' },
+  { pattern: /^\*\*Related Global Context\*\*:/, label: 'related' },
+  { pattern: /^\*\*Related Pythia Skills\*\*:/, label: 'related' },
 ];
 
-// Dropped without migration
-const DROPPED_PREAMBLES = [];
+// Dropped without migration (folder structure already implies the relationship)
+const DROPPED_PREAMBLES = [/^\*\*Related Feature\*\*:/];
 
-/** Extract markdown links from a line or block of text.
- * Returns [{text, href, description}] — description is anything after ` — ` or ` – ` on the same item line. */
-function extractLinksFromText(text) {
+/** Extract markdown links (and optionally bare URLs) from a line or block of text.
+ * Returns [{text, href, description}].
+ * `includeBareUrls`: also extract bare https:// URLs from prose (for preamble lines only).
+ */
+function extractLinksFromText(text, { includeBareUrls = false } = {}) {
   const results = [];
-  const re = /\[([^\]]*)\]\(([^)]+)\)/g;
+  const mdRe = /\[([^\]]*)\]\(([^)]+)\)/g;
   let m;
-  while ((m = re.exec(text)) !== null) {
+  // Track positions of markdown links so we don't double-extract
+  const mdRanges = [];
+  while ((m = mdRe.exec(text)) !== null) {
     const linkText = m[1].trim();
     const href = m[2].trim();
-    // Capture trailing description after em dash on the same segment
     const after = text.slice(m.index + m[0].length).match(/^\s*[—–]\s*(.+?)(?:\n|$)/);
     const description = after ? after[1].trim() : '';
     results.push({ text: linkText, href, description });
+    mdRanges.push([m.index, m.index + m[0].length]);
+  }
+  // Extract bare URLs (https://...) not inside markdown links — only for preamble lines
+  if (!includeBareUrls) return results;
+  const urlRe = /https?:\/\/\S+/g;
+  while ((m = urlRe.exec(text)) !== null) {
+    const inMd = mdRanges.some(([s, e]) => m.index >= s && m.index < e);
+    if (inMd) continue;
+    const href = m[0].replace(/[.,;)\]]+$/, ''); // strip trailing punctuation
+    // Use the text before the URL on the same line as the label (strip markdown/punctuation)
+    const lineStart = text.lastIndexOf('\n', m.index - 1) + 1;
+    const before = text.slice(lineStart, m.index).replace(/^[-*\s]+/, '').replace(/["`*[\]]+/g, '').trim();
+    const linkText = before || href;
+    results.push({ text: linkText, href, description: '' });
   }
   return results;
 }
@@ -596,7 +620,7 @@ export function convertLegacyRelations(_file, content) {
     // Check for legacy preamble bold-label line
     const preambleDef = LEGACY_PREAMBLE_MAP.find((p) => p.pattern.test(line));
     if (preambleDef) {
-      const links = extractLinksFromText(line);
+      const links = extractLinksFromText(line, { includeBareUrls: true });
       for (const { text, href, description } of links) {
         addItem(text, href, preambleDef.label, description);
       }

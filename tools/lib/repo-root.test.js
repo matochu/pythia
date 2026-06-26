@@ -62,7 +62,7 @@ describe('inputs sync — project root without project git', () => {
 
     expect(cmdSync(plan)).toBe(0);
     const parsed = parseTrailingRefs(readFileSync(plan, 'utf8'));
-    expect(parsed?.references?.[0]?.path).toBe('skills/plan/SKILL.md');
+    expect(parsed?.references?.[0]?.path).toBe('/skills/plan/SKILL.md');
     expect(parsed?.references?.[0]?.hash).toBe(hashFile(join(project, 'skills/plan/SKILL.md')));
   });
 });

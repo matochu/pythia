@@ -4,7 +4,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, readdir
 import { join, dirname, relative, resolve, isAbsolute } from 'path';
 import { createHash } from 'crypto';
 import { migrateWorkflowInputs } from '../lib/references/inputs-core.js';
-import { isPythiaSyncMarkdownRelPath } from '../lib/references/refs.js';
+import { isPythiaSyncMarkdownRelPath, splitBodyAndRegion, renderTrailingRegion } from '../lib/references/refs.js';
 import { convertArtifactMetadata, convertLegacyRelations } from '../lib/metadata/migration.js';
 import { artifactMetadataMigrationScopes, isArtifactMetadataScopeFile } from '../lib/metadata/scope.js';
 
@@ -20,24 +20,6 @@ function assertInProtectedZone(targetRoot, relpath) {
   if (rel.startsWith('..') || isAbsolute(rel)) {
     throw new Error(`Op target must be inside .pythia/: ${relpath}`);
   }
-}
-
-function backup(targetRoot, relpath, backups, dryRun, migrationVersion) {
-  const src = join(targetRoot, relpath);
-  if (!existsSync(src)) return null;
-  const content = readFileSync(src, 'utf8');
-  const backupBase = migrationVersion
-    ? join('.pythia', 'backups', migrationVersion)
-    : join('.pythia', 'backups', '_op-level');
-  const backupRel = join(backupBase, relpath);
-  const backupAbs = join(targetRoot, backupRel);
-  if (!dryRun) {
-    mkdirSync(dirname(backupAbs), { recursive: true });
-    writeFileSync(backupAbs, content, 'utf8');
-  }
-  const entry = { path: relpath, backupPath: backupRel, sha256: sha256(content) };
-  backups.push(entry);
-  return entry;
 }
 
 // Parse simple YAML frontmatter (--- ... ---)
@@ -95,7 +77,6 @@ export function setFrontmatter(targetRoot, op, backups, dryRun, migrationVersion
   const content = readFileSync(abs, 'utf8');
   const { fm, body, raw } = parseFrontmatter(content);
   if (fm && fm[key] === String(value)) return { status: 'skipped', reason: 'already set' };
-  backup(targetRoot, path, backups, dryRun, migrationVersion);
   const newFm = fm ? { ...fm, [key]: String(value) } : { [key]: String(value) };
   const newContent = fm ? serializeFrontmatter(newFm, body) : `---\n${key}: ${value}\n---\n${raw}`;
   if (!dryRun) writeFileSync(abs, newContent, 'utf8');
@@ -112,7 +93,6 @@ export function renameFrontmatterKey(targetRoot, op, backups, dryRun, migrationV
   const { fm, body } = parseFrontmatter(content);
   if (!fm || !(from in fm)) return { status: 'skipped', reason: 'key not found or already renamed' };
   if (to in fm && !(from in fm)) return { status: 'skipped', reason: 'already renamed' };
-  backup(targetRoot, path, backups, dryRun, migrationVersion);
   const newFm = Object.fromEntries(Object.entries(fm).map(([k, v]) => [k === from ? to : k, v]));
   const newContent = serializeFrontmatter(newFm, body);
   if (!dryRun) writeFileSync(abs, newContent, 'utf8');
@@ -130,7 +110,6 @@ export function renameFile(targetRoot, op, backups, dryRun, migrationVersion) {
     if (existsSync(absTo)) return { status: 'skipped', reason: 'already renamed' };
     throw new Error(`rename-file: source not found: ${from}`);
   }
-  backup(targetRoot, from, backups, dryRun, migrationVersion);
   if (!dryRun) {
     mkdirSync(dirname(absTo), { recursive: true });
     renameSync(absFrom, absTo);
@@ -160,7 +139,6 @@ export function appendToSection(targetRoot, op, backups, dryRun, migrationVersio
   }
   const sectionBody = lines.slice(sectionIdx, nextSectionIdx).join('\n');
   if (sectionBody.includes(content.trim())) return { status: 'skipped', reason: 'content already present' };
-  backup(targetRoot, path, backups, dryRun, migrationVersion);
   // Insert before next section, stripping trailing blanks first
   let insertIdx = nextSectionIdx;
   while (insertIdx > sectionIdx + 1 && lines[insertIdx - 1].trim() === '') insertIdx--;
@@ -223,7 +201,6 @@ export function replaceOnce(targetRoot, op, backups, dryRun, migrationVersion) {
     }
     throw new Error(`replace-once: pattern not found and replacement content absent: ${path}`);
   }
-  backup(targetRoot, path, backups, dryRun, migrationVersion);
   const escaped = escapeRegex(findStr);
   const newContent = content.replace(new RegExp(escaped), replaceStr);
   if (!dryRun) writeFileSync(abs, newContent, 'utf8');
@@ -252,7 +229,6 @@ export function replaceSection(targetRoot, op, backups, dryRun, migrationVersion
     if (currentBlock === desiredBlock) {
       return { status: 'skipped', reason: 'section already canonical' };
     }
-    backup(targetRoot, path, backups, dryRun, migrationVersion);
     const desiredLines = desiredBlock.split('\n');
     const newLines = [
       ...lines.slice(0, range.sectionIdx),
@@ -263,7 +239,6 @@ export function replaceSection(targetRoot, op, backups, dryRun, migrationVersion
     return { status: 'applied', changedPath: path };
   }
 
-  backup(targetRoot, path, backups, dryRun, migrationVersion);
   let prefix = fileContent.trimEnd();
   if (afterSection) {
     const afterRange = findSectionRange(lines, afterSection);
@@ -383,7 +358,6 @@ export function mergeCheckerBasenames(targetRoot, op, backups, dryRun, migration
   }
 
   if (!changed) return { status: 'skipped', reason: 'checker basenames already merged' };
-  backup(targetRoot, path, backups, dryRun, migrationVersion);
   if (!dryRun) writeFileSync(abs, nextLines.join('\n'), 'utf8');
   return { status: 'applied', changedPath: path };
 }
@@ -421,7 +395,6 @@ export function migrateArtifactMetadata(targetRoot, op, backups, dryRun, migrati
       const result = convertArtifactMetadata(rel, before);
       warnings.push(...result.warnings);
       if (!result.changed) continue;
-      backup(targetRoot, rel, backups, dryRun, migrationVersion);
       if (!dryRun) writeFileSync(abs, result.content, 'utf8');
       changed.push(rel);
     }
@@ -445,12 +418,88 @@ export function migrateLegacyRelations(targetRoot, op, backups, dryRun, migratio
     const result = convertLegacyRelations(rel, before);
     warnings.push(...result.warnings);
     if (!result.changed) continue;
-    backup(targetRoot, rel, backups, dryRun, migrationVersion);
     if (!dryRun) writeFileSync(abs, result.content, 'utf8');
     changed.push(rel);
   }
   if (changed.length === 0) return { status: 'skipped', reason: 'no legacy relations found' };
   return { status: 'applied', changedPaths: changed, warnings };
+}
+
+/** Rewrite bare repo-root paths in ## References / ## Used by to the canonical format:
+ *  - intra-.pythia targets → doc-relative (e.g. ../../../../config/relation.md)
+ *  - project-root targets  → /-absolute  (e.g. /tools/lib/foo.js)
+ * Idempotent: already-correct entries are skipped.
+ */
+export function migrateReferencePaths(targetRoot, op, backups, dryRun, migrationVersion) {
+  const root = op.root ?? '.pythia';
+  assertInProtectedZone(targetRoot, root);
+  const absRoot = join(targetRoot, root);
+  const changed = [];
+
+  // Regex matching a typed or plain ## References / ## Used by entry line
+  const ENTRY_RE = /^- \[([^\]]+)\] \[([^\]]*)\]\(([^)]+)\)\s*$/;
+
+  function rewritePath(entryPath, absSourceFile) {
+    const { path: bare, hash } = splitHash(entryPath);
+    // Already /-absolute or explicitly relative — nothing to do
+    if (bare.startsWith('/') || bare.startsWith('./') || bare.startsWith('../')) return null;
+    // External URLs — skip
+    if (/^https?:\/\//.test(bare)) return null;
+    const absTarget = resolve(targetRoot, bare);
+    if (!existsSync(absTarget)) return null; // can't fix missing targets
+    const targetRel = relative(targetRoot, absTarget).replace(/\\/g, '/');
+    let newBare;
+    const sourceRel = relative(targetRoot, absSourceFile).replace(/\\/g, '/');
+    if (sourceRel.startsWith('.pythia/') && targetRel.startsWith('.pythia/')) {
+      // intra-.pythia → doc-relative
+      newBare = relative(dirname(absSourceFile), absTarget).replace(/\\/g, '/');
+    } else if (!targetRel.startsWith('.pythia/')) {
+      // project-root target → /-absolute
+      newBare = '/' + targetRel;
+    } else {
+      return null; // source outside .pythia, target inside — leave as-is
+    }
+    if (newBare === bare) return null; // already correct
+    return hash ? `${newBare}#${hash}` : newBare;
+  }
+
+  function splitHash(href) {
+    const idx = href.lastIndexOf('#');
+    if (idx === -1) return { path: href, hash: '' };
+    return { path: href.slice(0, idx), hash: href.slice(idx + 1) };
+  }
+
+  for (const abs of walkFiles(absRoot)) {
+    const rel = relative(targetRoot, abs).replace(/\\/g, '/');
+    if (!isPythiaSyncMarkdownRelPath(rel)) continue;
+    const before = readFileSync(abs, 'utf8');
+    const { bodyLines, references, usedBy, regionTrail, hadRegion } = splitBodyAndRegion(before);
+    if (!hadRegion) continue;
+
+    let dirty = false;
+    const newRefs = references.map((r) => {
+      const newPath = rewritePath(r.path, abs);
+      if (!newPath) return r;
+      dirty = true;
+      return { ...r, path: newPath.split('#')[0], hash: newPath.includes('#') ? newPath.split('#')[1] : r.hash };
+    });
+    const newUsed = usedBy.map((u) => {
+      const newPath = rewritePath(u.path, abs);
+      if (!newPath) return u;
+      dirty = true;
+      return { ...u, path: newPath.split('#')[0] };
+    });
+
+    if (!dirty) continue;
+    const bodyStr = bodyLines.join('\n').replace(/\n+$/, '');
+    const regionStr = renderTrailingRegion({ references: newRefs, usedBy: newUsed, regionTrail });
+    const newContent = bodyStr ? `${bodyStr}\n\n${regionStr}` : regionStr;
+    if (!dryRun) writeFileSync(abs, newContent, 'utf8');
+    changed.push(rel);
+  }
+
+  if (changed.length === 0) return { status: 'skipped', reason: 'reference paths already canonical' };
+  return { status: 'applied', changedPaths: changed };
 }
 
 const OP_MAP = {
@@ -466,6 +515,7 @@ const OP_MAP = {
   'merge-checker-basenames': mergeCheckerBasenames,
   'migrate-artifact-metadata': migrateArtifactMetadata,
   'migrate-legacy-relations': migrateLegacyRelations,
+  'migrate-reference-paths': migrateReferencePaths,
 };
 
 export function runOp(targetRoot, op, backups, dryRun, migrationVersion) {

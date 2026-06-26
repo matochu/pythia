@@ -1,10 +1,10 @@
-import { readFileSync, writeFileSync, cpSync, mkdirSync, existsSync, mkdtempSync } from 'node:fs';
+import { readFileSync, writeFileSync, cpSync, mkdirSync, existsSync, mkdtempSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { parseSemver } from '../../../migrate/semver.js';
+import { parseSemver, sortVersions } from '../../../migrate/semver.js';
 import { packageRoot } from './workspace.js';
 import { pathsMdContent } from './paths-md.js';
-import { versionedMigrationFromStaging } from './staging-migration.js';
+import { versionedMigrationFromStaging, stagingMigrationPath } from './staging-migration.js';
 
 /** Strip npm pre-release suffix (0.3.2-dev → 0.3.2) for migration semver. */
 export function baseSemver(version) {
@@ -12,20 +12,45 @@ export function baseSemver(version) {
 }
 
 /**
- * Release under test = next patch after current package.json.
- * Prior = current package base semver (last shipped / dev baseline).
+ * Release under test:
+ * - If next.md exists: release = current + 0.0.1, prior = current package version
+ * - If shipped {version}.md exists: release = current package version,
+ *   prior = highest migration version strictly below current in assets/migrations/
  */
 export function resolveReleaseMigrationVersions(root = packageRoot) {
   const raw = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
-  const priorVersion = baseSemver(raw);
-  const { major, minor, patch } = parseSemver(priorVersion);
-  const releaseVersion = `${major}.${minor}.${patch + 1}`;
-  return { priorVersion, releaseVersion, packageVersion: raw };
+  const currentVersion = baseSemver(raw);
+
+  // next.md present → in-progress release
+  if (existsSync(join(root, 'assets/migrations/next.md'))) {
+    const { major, minor, patch } = parseSemver(currentVersion);
+    const releaseVersion = `${major}.${minor}.${patch + 1}`;
+    return { priorVersion: currentVersion, releaseVersion, packageVersion: raw };
+  }
+
+  // Shipped migration exists — find prior from migration files
+  const migrDir = join(root, 'assets/migrations');
+  const versions = existsSync(migrDir)
+    ? sortVersions(readdirSync(migrDir)
+        .filter((f) => /^\d+\.\d+\.\d+\.md$/.test(f))
+        .map((f) => f.replace('.md', '')))
+    : [];
+  const below = versions.filter((v) => {
+    const { major, minor, patch } = parseSemver(v);
+    const { major: cm, minor: cn, patch: cp } = parseSemver(currentVersion);
+    return major < cm || (major === cm && minor < cn) || (major === cm && minor === cn && patch < cp);
+  });
+  const priorVersion = below.length ? below[below.length - 1] : currentVersion;
+  return { priorVersion, releaseVersion: currentVersion, packageVersion: raw };
 }
 
+/** Returns true when there is a staging (next.md) or shipped migration to test. */
 export function hasStagingNextMigration(root = packageRoot) {
-  const path = join(root, 'assets/migrations/next.md');
-  if (!existsSync(path)) return false;
+  const path = stagingMigrationPath(
+    baseSemver(JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version),
+    root,
+  );
+  if (!path) return false;
   const content = readFileSync(path, 'utf8');
   return /^## Step \d/m.test(content);
 }

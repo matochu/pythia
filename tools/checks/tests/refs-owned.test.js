@@ -242,6 +242,38 @@ See [Target](../contexts/target.context.md#@based-on).
     expect(r.stderr).not.toMatch(/phantom_reference/);
   });
 
+  it('reverse relation labels in ## Used by (basis-for, sourced-by) pass validation', () => {
+    setup();
+    // Consumer references target with #@based-on; sync writes basis-for into target ## Used by
+    writeDoc(
+      '.pythia/workflows/features/feat-test/contexts/consumer.context.md',
+      `# Consumer
+
+See [Target](../contexts/target.context.md).
+
+## References
+
+- [research:based-on] [Target](../contexts/target.context.md#abc123)
+`,
+    );
+    const target = writeDoc(
+      '.pythia/workflows/features/feat-test/contexts/target.context.md',
+      `# Target
+
+Body.
+
+## References
+
+## Used by
+
+- [research:basis-for] [Consumer](consumer.context.md)
+`,
+    );
+    const r = runChecker(target);
+    expect(r.status).toBe(0);
+    expect(r.stderr).not.toMatch(/relation\.unknown/);
+  });
+
   it('exits 0 for non-sync-zone file', () => {
     setup();
     // File outside .pythia is not a sync-zone file

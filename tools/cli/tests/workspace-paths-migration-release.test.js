@@ -217,15 +217,20 @@ See [dep](./dep.md).
 });
 
 describe('release migration version resolver', () => {
-  it('derives prior from package.json and release as next patch', () => {
+  it('derives prior and release versions — prior < release, release >= package version', () => {
     const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'));
+    const base = pkg.version.replace(/-.*$/, '');
     const { priorVersion, releaseVersion } = resolveReleaseMigrationVersions();
     expect(priorVersion).toMatch(/^\d+\.\d+\.\d+$/);
     expect(releaseVersion).toMatch(/^\d+\.\d+\.\d+$/);
-    if (!pkg.version.includes('-')) {
-      expect(priorVersion).toBe(pkg.version);
-    }
+    // releaseVersion is always >= package base version
+    const [rm, rn, rp] = releaseVersion.split('.').map(Number);
+    const [bm, bn, bp] = base.split('.').map(Number);
+    const releaseGteBase = rm > bm || (rm === bm && rn > bn) || (rm === bm && rn === bn && rp >= bp);
+    expect(releaseGteBase).toBe(true);
+    // priorVersion is always strictly less than releaseVersion
     const [pm, pn, pp] = priorVersion.split('.').map(Number);
-    expect(releaseVersion).toBe(`${pm}.${pn}.${pp + 1}`);
+    const priorLtRelease = pm < rm || (pm === rm && pn < rn) || (pm === rm && pn === rn && pp < rp);
+    expect(priorLtRelease).toBe(true);
   });
 });

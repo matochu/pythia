@@ -146,7 +146,7 @@ export function normalizeMetadataBlock({ kind, parsed, existing = null }) {
   }
 
   if (kind === 'plan') {
-    add('status', get('Status') ?? get('status') ?? 'Draft');
+    add('status', get('Status') ?? get('status') ?? 'draft');
     const ver = get('Version') ?? get('version') ?? get('Plan-Version') ?? 'v1';
     add('version', ver);
     const branch = get('Branch') ?? get('branch');
@@ -157,7 +157,7 @@ export function normalizeMetadataBlock({ kind, parsed, existing = null }) {
     add('status', get('Status') ?? get('status') ?? 'active');
     add('plan_version', get('Plan-Version') ?? get('plan_version') ?? get('Plan Version') ?? 'v1');
     add('round', extractRoundId(get('Round') ?? get('round') ?? 'R1'));
-    add('verdict', get('Verdict') ?? get('verdict') ?? 'NEEDS_REVISION');
+    add('verdict', get('Verdict') ?? get('verdict') ?? 'needs-revision');
     const updated = get('Updated') ?? get('updated');
     if (updated) add('updated', updated);
   } else if (kind === 'implementation-report') {
