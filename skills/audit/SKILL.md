@@ -109,14 +109,14 @@ You are the **Architect** ([architect.md](../../agents/architect.md)). **Doc con
 2. **`problems.md`** (if verdict ≠ `ready`): write `{feature-dir}/notes/{plan-slug}.problems.md` per the `problems.md` format in [audit-format.md](../workflow/references/audit-format.md). This is the primary handoff document to the next agent (fixer / replanner). Include one AC block per non-passing criterion.
 3. **Structured response** in chat using Architect Audit Response Format — see [response-formats.md](../workflow/references/response-formats.md).
 4. **Plan update** (if decision is "ready"): Update plan file `plans/{plan-slug}.plan.md`:
-   - Change `Status` from "In Progress" to "Implemented"
+   - Change `status` from `active` to `implemented`
    - Add `**Status**: done` to each Step that was completed (based on implementation report)
    - Mark all acceptance criteria checkboxes as `[x]` if they were met
-   - Keep plan metadata (`Version`, `Round`) unchanged
+   - Keep plan metadata (`version`, `round`) unchanged
 5. **Feature document update** (if decision is "ready"): Update feature document `{feature-dir}/{feature-id}.md`:
    - Find or create `## Plans`
    - Match plan entries by `{plan-slug}`
-   - If plan NOT listed: add new entry with format: `- [{plan-slug}](plans/{plan-slug}.plan.md) — {title} · Status: Implemented`
+   - If plan NOT listed: add new entry with format: `- [{plan-slug}](plans/{plan-slug}.plan.md) — {title} · status: implemented`
    - If plan IS listed: replace/update existing slug entry with the same format
    - Do not mutate unrelated feature sections or frontmatter
 6. **Suggested git commit message** (if decision is "ready"): Output a message suitable for the **application repository** (the code repo), not for workflow/docs that live outside git.
@@ -168,7 +168,7 @@ Do not treat arbitrary custom user messages as chooser input. If the user writes
 
 ---
 
-**Trailing refs — forbidden**: Never hand-write or edit `## References` / `## Used by` sections in any `.pythia/**/*.md` file (including the audit artifact). These sections are machine-owned; `inputs.js sync` builds them from body link scans and rdeps backlink scans. Manual entries create phantom records that `refs-owned.js` flags as errors.
+**Cross-document links and trailing refs**: see [cross-document-links.md](../workflow/references/cross-document-links.md).
 
 ## Validation (before completing)
 
@@ -185,12 +185,12 @@ Do not treat arbitrary custom user messages as chooser input. If the user writes
 - **If decision ≠ `ready`**: Verify `problems.md` is written to `{feature-dir}/notes/{plan-slug}.problems.md`
 - **If decision is `plan-fix`**: Verify only `plan-fix` conditions are met (≤ 2 steps, implementation faithfully followed wrong spec)
 - **If decision is "ready"**: Verify plan file is updated:
-  - Status changed to "Implemented"
+  - `status` changed to `implemented`
   - Steps have status markers (`**Status**: done`)
   - Acceptance criteria checkboxes marked as `[x]` for met criteria
 - **If decision is "ready"**: Verify feature document is updated:
   - Plan added/updated in `## Plans` by slug
-  - Plan entry includes `Status: Implemented`
+  - Plan entry includes `status: implemented`
 - **If decision is "ready"**: Verify suggested commit message is present in structured response:
   - Subject line starts with `feat:` and is ≤ 72 chars
   - Body describes repo changes (imperative bullets); aligned with implementation where applicable

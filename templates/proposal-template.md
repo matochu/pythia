@@ -1,14 +1,10 @@
 # Proposal: {Title}
 
-## Overview
+## Metadata
 
-**Proposal ID**: proposal-descriptive-name  
-**Date Created**: YYYY-MM-DD  
-**Status**: Draft / In Review / Approved / Implemented  
-**Priority**: High / Medium / Low  
-**Impact**: High / Medium / Low  
-**Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
-**Author**: {Name}
+- status: draft
+- category: architecture
+- updated: YYYY-MM-DD
 
 <!-- Add comment tags here if needed -->
 
@@ -36,10 +32,6 @@ This proposal presents a comprehensive strategy for {brief one-sentence descript
 ## Summary
 
 Brief overview of what is being proposed and why. This should provide enough context for readers to understand the general direction without reading the entire document (2-3 paragraphs).
-
-## Related Idea
-
-Link to the original idea document that led to this proposal: [Idea Document](../ideas/idea-YYYY-MM-topic.md)
 
 ## Current State
 

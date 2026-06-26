@@ -101,10 +101,10 @@ The Reviewer response may offer **`[r] Replan`**, **`[i] Implement`**, **`[q] QA
 
 When the next user input is exactly one of the offered chooser keys:
 
-- **`[r]` / `r`** (only when verdict is `NEEDS_REVISION`): launch an **Architect** subagent ([architect.md](../../agents/architect.md)) with `/replan {feature-dir}/plans/{plan-slug}.plan.md R{round}`. Pass the review report path and section for `R{round}` as context. If subagent launch is unavailable, print only the copyable `/replan` command from the response template and stop.
-- **`[i]` / `i`** (only when verdict is `READY`): launch a **Developer** subagent ([developer.md](../../agents/developer.md)) with `/implement {feature-dir}/plans/{plan-slug}.plan.md v{version}`. Pass the review verdict and review report path as context. If subagent launch is unavailable, print only the copyable `/implement` command from the response template and stop.
+- **`[r]` / `r`** (only when verdict is `needs-revision`): launch an **Architect** subagent ([architect.md](../../agents/architect.md)) with `/replan {feature-dir}/plans/{plan-slug}.plan.md R{round}`. Pass the review report path and section for `R{round}` as context. If subagent launch is unavailable, print only the copyable `/replan` command from the response template and stop.
+- **`[i]` / `i`** (only when verdict is `ready`): launch a **Developer** subagent ([developer.md](../../agents/developer.md)) with `/implement {feature-dir}/plans/{plan-slug}.plan.md v{version}`. Pass the review verdict and review report path as context. If subagent launch is unavailable, print only the copyable `/implement` command from the response template and stop.
 - **`[q]` / `q`**: run the QA follow-up flow below.
-- **`[v]` / `v`** (only when verdict is `NEEDS_REVISION`): restart `/review` as a skill invocation on the same plan path after external changes. Do not continue with free-form Reviewer analysis in place. Append a new review round; do not overwrite the existing round. If the host cannot execute `/review` inline, print only the copyable `/review` command from the response template and stop.
+- **`[v]` / `v`** (only when verdict is `needs-revision`): restart `/review` as a skill invocation on the same plan path after external changes. Do not continue with free-form Reviewer analysis in place. Append a new review round; do not overwrite the existing round. If the host cannot execute `/review` inline, print only the copyable `/review` command from the response template and stop.
 - Any key not offered for the current verdict: reprint the valid chooser keys for that verdict and stop.
 
 Do not treat arbitrary custom user messages as chooser input. If the user writes a normal instruction instead of a chooser key, handle it as normal chat context and do not auto-launch workflow agents.
@@ -133,7 +133,7 @@ When the user chooses `[q]` after a review round:
 6. Do not paste raw QA output verbatim into the review report. Convert accepted QA concerns into Reviewer-owned review language and keep the no-solutioning rule.
 7. Re-run workflow-doc validation for the review report after appending the QA follow-up.
 
-**Review format**: Follow [review-format.md](../workflow/references/review-format.md): top-level `Metadata`, `Navigation`, optional `Retrospective`, then round blocks with Verdict (READY | NEEDS_REVISION), Plan-Path; Executive Summary; Step-by-Step Analysis (Status, Evidence, Impact, optional Revision hint; no solutioning); Summary of Concerns.
+**Review format**: Follow [review-format.md](../workflow/references/review-format.md): top-level `Metadata`, `Navigation`, optional `Retrospective`, then round blocks with Verdict (ready | needs-revision), Plan-Path; Executive Summary; Step-by-Step Analysis (Status, Evidence, Impact, optional Revision hint; no solutioning); Summary of Concerns.
 
 **Review depth baseline (mandatory every round)**:
 
@@ -194,9 +194,9 @@ Focus on problems: reviews are for improvement and working with errors. For OK s
 
 - **Verify plan references**: When the plan cites file paths and line numbers (e.g. "Where: file.ts line 45"), you MUST open those files and verify the cited lines exist and match the described behaviour. If the plan says "line 145" but the relevant code is at line 138, report **wrong-assumption** or **gap** with Evidence (plan says X, codebase shows Y at file:line).
 - **Implementation specificity**: When a step lists multiple options (e.g. "fix by (a), (b), or (c)"), assess whether the plan explicitly chooses or prefers one so the implementer does not have to guess. If no option is chosen and the step is non-trivial, report **ambiguity** or **gap** (e.g. "Plan leaves implementation choice open; implementer must guess").
-- **Critical stance**: Do not default to READY when the plan has fix steps or non-trivial changes. Before issuing READY, re-check: (1) all cited file:line references verified against codebase, (2) each step has a single or clearly preferred implementation path, (3) previous round CONCERN-MEDIUM/HIGH/BLOCKED are addressed or explicitly marked still open. If in doubt, prefer NEEDS_REVISION and state what is missing or wrong.
+- **Critical stance**: Do not default to ready when the plan has fix steps or non-trivial changes. Before issuing ready, re-check: (1) all cited file:line references verified against codebase, (2) each step has a single or clearly preferred implementation path, (3) previous round CONCERN-MEDIUM/HIGH/BLOCKED are addressed or explicitly marked still open. If in doubt, prefer needs-revision and state what is missing or wrong.
 
-**Trailing refs — forbidden**: Never hand-write or edit `## References` / `## Used by` sections in any `.pythia/**/*.md` file (including the review artifact). These sections are machine-owned; `inputs.js sync` builds them from body link scans and rdeps backlink scans. The Reviewer output ends at the round block — no trailing refs region is authored by the LLM. Manual entries create phantom records that `refs-owned.js` flags as errors.
+**Cross-document links and trailing refs**: see [cross-document-links.md](../workflow/references/cross-document-links.md). The Reviewer output ends at the round block — no trailing refs region is authored by the LLM.
 
 **Validation** (before completing):
 
@@ -206,7 +206,7 @@ Focus on problems: reviews are for improvement and working with errors. For OK s
   - **Wait** for the subagent; on failure fix `.review.md` and re-run until **exit `0`**.
   - **`/loop` exception**: If the orchestrator already documented successful validation (**exit `0`**) for this revision, skip nested Validator — state that.
   - **Inline fallback**: see terminal **Exception** above; do not skip validation.
-- Verify review includes Verdict (READY | NEEDS_REVISION)
+- Verify review includes Verdict (ready | needs-revision)
 - Verify `## Metadata` exists and the canonical review metadata matches the latest appended round
 - Verify round header format is correct: `## {plan-slug} R{round} — YYYY-MM-DD` (date from `date +%Y-%m-%d`)
 - Verify `## Navigation` is updated with new round entry (verdict included)
@@ -217,6 +217,6 @@ Focus on problems: reviews are for improvement and working with errors. For OK s
 - In **Deep mode**, verify the review explicitly considered plausible alternatives, relevant toolchains, and existing solutions where the plan proposes custom infrastructure or significant new architecture
 - Verify **test coverage of changes** was assessed (plan steps/acceptance criteria vs validation and test expectations); if QA Automation was used, verify findings were incorporated into the review without solutioning
 - Verify high-impact technical claims include at least one external source URL in `Evidence`
-- Verify structured chat response contains ALL mandatory sections from `response-formats.md` Reviewer format: `## Summary`, `## Verdict`, `## Critical Findings`, `## High Priority Concerns`, `## Review Artifact`, `## Next Steps` — **`## Next Steps` is REQUIRED even when verdict is READY**
+- Verify structured chat response contains ALL mandatory sections from `response-formats.md` Reviewer format: `## Summary`, `## Verdict`, `## Critical Findings`, `## High Priority Concerns`, `## Review Artifact`, `## Next Steps` — **`## Next Steps` is REQUIRED even when verdict is ready**
 
 **See also**: Request [/replan skill](../replan/SKILL.md) if plan needs revision after review.

@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { seedPythiaProjectRegistration } from '../../cli/tests/helpers/workflow-paths.js';
 
 const refsOwnedSrc = resolve('tools/checks/refs-owned.js');
+const inputsSrc = resolve('tools/bin/inputs.js');
 
 let root;
 
@@ -272,6 +273,28 @@ Body.
     const r = runChecker(target);
     expect(r.status).toBe(0);
     expect(r.stderr).not.toMatch(/relation\.unknown/);
+  });
+
+  it('E2E: inputs sync typed link → refs-owned passes on target', () => {
+    setup();
+    writeDoc(
+      '.pythia/workflows/features/feat-e2e/contexts/target.context.md',
+      '# Target\n\nBody.\n',
+    );
+    const consumer = writeDoc(
+      '.pythia/workflows/features/feat-e2e/contexts/consumer.context.md',
+      '# Consumer\n\nSee [Target](target.context.md#@based-on).\n',
+    );
+    const syncResult = spawnSync(process.execPath, [inputsSrc, 'sync', consumer], {
+      encoding: 'utf8',
+      cwd: root,
+    });
+    expect(syncResult.status).toBe(0);
+
+    const target = join(root, '.pythia/workflows/features/feat-e2e/contexts/target.context.md');
+    const r = runChecker(target);
+    expect(r.status).toBe(0);
+    expect(r.stderr).toBe('');
   });
 
   it('exits 0 for non-sync-zone file', () => {

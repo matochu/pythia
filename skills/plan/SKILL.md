@@ -50,7 +50,7 @@ The standard `## Plans Index update` section below is feature-specific. For the 
 - match entries by plan slug in `## Plans`
 - if the slug exists, update that line
 - if the slug does not exist, append a new line
-- use format `- [{slug}](plans/{slug}.plan.md) — {Title} · Status: {status}`
+- use format `- [{slug}](plans/{slug}.plan.md) — {Title} · status: {status}`
 
 ## Instructions for model
 
@@ -158,7 +158,7 @@ Check if sufficient data is available to write a concrete, reviewable plan.
 - If the file already exists, ask whether to overwrite it or create a new revision before writing
 - After writing, respond with a short summary instead of echoing the full markdown unless the user explicitly asks for it
 
-The document is defined end-to-end in [plan-format.md](../workflow/references/plan-format.md): section order, `## Metadata` fields (including document **Status** per **Plan document status** — **Draft** for every new `/plan` output), **Plan revision log**, **Navigation**, Context / Goal / Plan body, Risks or Acceptance, and step field requirements. Treat that file as the single specification; your output must conform to it. Steps must be **concrete and reviewable** (Developer knows scope, Reviewer can verify): each `### Step N` uses the required fields from plan-format (**Change**, **Where**, **Validation**, **Acceptance**, plus optional fields there). Do **not** add per-step `**Status**:` in `/plan` output — `/audit` adds step status after implementation. When the plan **changes observable behavior of a system** (generator output, validator rules, plugin response, contract shape, CLI output), include `## Before / After: System Behavior` after Acceptance Criteria (see plan-format.md § Before / After: System Behavior for guidance and template).
+The document is defined end-to-end in [plan-format.md](../workflow/references/plan-format.md): section order, `## Metadata` fields (including document `status` per **Plan document status** — `draft` for every new `/plan` output), **Plan revision log**, **Navigation**, Context / Goal / Plan body, Risks or Acceptance, and step field requirements. Treat that file as the single specification; your output must conform to it. Steps must be **concrete and reviewable** (Developer knows scope, Reviewer can verify): each `### Step N` uses the required fields from plan-format (**Change**, **Where**, **Validation**, **Acceptance**, plus optional fields there). Do **not** add per-step `**Status**:` in `/plan` output — `/audit` adds step status after implementation. When the plan **changes observable behavior of a system** (generator output, validator rules, plugin response, contract shape, CLI output), include `## Before / After: System Behavior` after Acceptance Criteria (see plan-format.md § Before / After: System Behavior for guidance and template).
 
 **Reusable findings**: While analyzing the codebase for planning, put transferable lessons in `## Retrospective`. A good retrospective entry is reusable outside this artifact, evidence-backed, and useful for future planning, implementation, review, audit, or automation. Put only explicit user choices/corrections in `## Decision Log`.
 
@@ -185,7 +185,7 @@ After writing the plan file in Scenario B:
 - match entries by plan slug only
 - if the slug already exists, replace/update that line
 - if the slug does not exist, append a new line
-- use this format: `- [{slug}](plans/{slug}.plan.md) — {Title} · Status: {status}`
+- use this format: `- [{slug}](plans/{slug}.plan.md) — {Title} · status: {status}`
 
 If the parent feature doc is missing, skip silently.
 
@@ -195,7 +195,7 @@ For standalone fixes, do not use the feature-doc lookup above. Update `.pythia/w
 
 **Inputs integration**:
 
-- List consulted contexts in `## Contexts`; cite other dependencies as markdown links in the body. Never hand-write or edit trailing `## References` / `## Used by`.
+- List consulted contexts in `## Contexts`; cite other dependencies inline in the body text — see [cross-document-links.md](../workflow/references/cross-document-links.md) for inline link rules, label vocabulary, and trailing-refs prohibition.
 - The plan auto-syncs on save. Before trusting a context, run `.pythia/runtime/inputs.js check <context-file>` when it has `## References`; surface `STALE`, `MISSING`, or `INVALID` raw output.
 
 **Validation** (before completing):

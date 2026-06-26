@@ -135,7 +135,7 @@ Omit `[u] Update context` when no context file exists yet, or mark it unavailabl
 
 **Inputs integration**:
 
-- Cite dependencies as markdown links in the context body. Never hand-write or edit trailing `## References` / `## Used by`.
+- Cite dependencies inline — see [cross-document-links.md](../workflow/references/cross-document-links.md) for inline link rules, label vocabulary, and trailing-refs prohibition.
 - The context file auto-syncs on save. If `sync` or `check` returns an error, show that raw failure to the user.
 
 If Researcher cannot be launched, tell the user to run `/research` with the same feature and topic, or retry when the agent is available.
@@ -166,6 +166,8 @@ Use `## Decision Log` to record explicit user choices and corrections that chang
 ```
 
 The section itself means "user"; do not prefix entries with `User:`. Do not require type/status/durability/effect fields.
+
+**Feature backlink**: When the context file is written to a feature-scoped path (`feat-XXX/contexts/`), add a `[{context-title}](contexts/{filename}#@related)` inline link in the feature document body (under `## Contexts` or the nearest prose section) so the feature doc knows about the context and `sync` can build the backlink.
 
 **Output**: For new research — context file in `feat-XXX/contexts/` or confirmed global category path, related indexes updated when applicable, short chat summary. For existing context path — **verification report in chat** plus Research Brainstorm Mode continuation (no file change until user decides).
 

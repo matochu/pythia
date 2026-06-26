@@ -100,7 +100,7 @@ _(Omit entire **Suggested git commit** section when Verdict is `needs fixes` or 
 After creating audit report, if Verdict is "ready", Architect MUST also update the plan file:
 
 1. **Update plan metadata**:
-   - Change `Status` from "In Progress" to "Implemented"
+   - Change `status` from `active` to `implemented`
 
 2. **Add status to Steps**:
    - For each Step in plan, add `**Status**: done` (or `partial`/`skipped` if applicable)
@@ -124,7 +124,7 @@ After creating audit report, if Verdict is "ready", Architect MUST also update t
 4. **Update feature document**:
    - Find or create `## Plans`
    - Match entries by plan slug
-   - If plan NOT listed: add `- [{plan-slug}](plans/{plan-slug}.plan.md) — {Title} · Status: Implemented`
+   - If plan NOT listed: add `- [{plan-slug}](plans/{plan-slug}.plan.md) — {Title} · status: implemented`
    - If plan IS listed: replace/update the existing slug line with that format
    - Do not mutate unrelated feature doc sections or frontmatter
 
@@ -133,10 +133,10 @@ After creating audit report, if Verdict is "ready", Architect MUST also update t
 ```markdown
 ## Plans
 
-- [1-agents-commands-data-exchange](plans/1-agents-commands-data-exchange.plan.md) — Agents and Commands — Creation and Data Exchange · Status: Planned
-- [2-skill-search-and-fit](plans/2-skill-search-and-fit.plan.md) — Skill Search and Fit — Agent Skill Discovery and Adaptation · Status: Planned
-- [3-cursor-architecture-rules-skills-subagents-hooks](plans/3-cursor-architecture-rules-skills-subagents-hooks.plan.md) — Cursor Architecture — Rules, Skills, Subagents, and Hooks Integration · Status: Planned
-- [4-sync-cursor-to-claude](plans/4-sync-cursor-to-claude.plan.md) — Sync Cursor to Claude — Agent and Skill Synchronization · Status: Implemented
+- [1-agents-commands-data-exchange](plans/1-agents-commands-data-exchange.plan.md) — Agents and Commands — Creation and Data Exchange · status: active
+- [2-skill-search-and-fit](plans/2-skill-search-and-fit.plan.md) — Skill Search and Fit — Agent Skill Discovery and Adaptation · status: active
+- [3-cursor-architecture-rules-skills-subagents-hooks](plans/3-cursor-architecture-rules-skills-subagents-hooks.plan.md) — Cursor Architecture — Rules, Skills, Subagents, and Hooks Integration · status: active
+- [4-sync-cursor-to-claude](plans/4-sync-cursor-to-claude.plan.md) — Sync Cursor to Claude — Agent and Skill Synchronization · status: implemented
 ```
 
 **Note**: Plan and feature document updates are ONLY performed if Verdict is "ready". If Verdict is "needs fixes" or "re-plan", plan and feature document remain unchanged.

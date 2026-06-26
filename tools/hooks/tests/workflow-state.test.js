@@ -54,9 +54,10 @@ describe('workflow-state helpers', () => {
 
   it('extractReviewVerdict prefers metadata Verdict', () => {
     const md = `## Metadata
-- **Schema**: pythia-artifact-v1
-- **Artifact**: review
-- **Verdict**: READY
+- status: active
+- plan_version: v1
+- round: R1
+- verdict: ready
 
 ## feat R1 — 2026-01-01
 Verdict: needs-revision

@@ -33,7 +33,9 @@ function hasYamlFrontmatter(content) {
 
 function hasV1BoldBullets(content) {
   const parsed = parseArtifactMetadata(content);
-  return parsed.entries.some((e) => e.format === 'v1');
+  if (!parsed.found) return false;
+  const lines = content.split('\n').slice(parsed.startLine, parsed.endLine);
+  return lines.some((line) => /^\s*-\s+\*\*[^*]+\*\*:\s*.+$/.test(line));
 }
 
 function hasForbiddenKeys(content) {

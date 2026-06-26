@@ -76,7 +76,7 @@ Read artifact files to determine lifecycle position:
 1. Does plans/{plan-slug}.plan.md exist?
    NO  → EXIT: "Plan not found. Use /plan skill first."
 
-2. Does reports/{plan-slug}.review.md exist with Verdict: READY?
+2. Does reports/{plan-slug}.review.md exist with Verdict: ready?
    NO  → ENTRY: review
 
 3. Does reports/{plan-slug}.implementation.md exist?
@@ -107,7 +107,7 @@ Read artifact files to determine lifecycle position:
 **ENTRY: review** → Spawn Reviewer subagent (full procedure: `### ENTRY: review` below)
 
 - Subagent reads plan + contexts, appends review round to `review.md`
-- Route: READY → implement | NEEDS_REVISION → replan (see review loop limits)
+- Route: ready → implement | needs-revision → replan (see review loop limits)
 
 **ENTRY: implement** → Spawn Developer subagent
 
@@ -172,7 +172,7 @@ Read artifact files to determine lifecycle position:
    - Related contexts under contexts/ as mandatory per [/review skill](../review/SKILL.md)
    Write/update:
    - reports/{plan-slug}.review.md (Navigation + Retrospective + new round; follow review-format.md)
-   Produce Verdict: READY or NEEDS_REVISION in the new round (per review-format.md).
+   Produce Verdict: ready or needs-revision in the new round (per review-format.md).
    Follow [/review skill](../review/SKILL.md) and [reviewer.md](../../agents/reviewer.md) in full.
    Do NOT implement code, do NOT patch the plan, do NOT run later loop steps (implement/audit)."
 
@@ -181,9 +181,9 @@ Read artifact files to determine lifecycle position:
 3b. Workflow-doc validation: Validator subagent (or inline fallback per [/validate skill](../validate/SKILL.md)) for `reports/{plan-slug}.review.md`. Exit `0` required.
 
 4. Verify reports/{plan-slug}.review.md exists and the latest round contains an explicit verdict
-   line the orchestrator can parse (Verdict: READY | NEEDS_REVISION).
+   line the orchestrator can parse (Verdict: ready | needs-revision).
 
-5. Route: READY → ENTRY: implement | NEEDS_REVISION → if review rounds < max: [/replan](../replan/SKILL.md)
+5. Route: ready → ENTRY: implement | needs-revision → if review rounds < max: [/replan](../replan/SKILL.md)
    path per workflow (user or authorized replan) then re-enter ENTRY: review; if at max rounds → DEADLOCKED exit.
 ```
 
@@ -317,7 +317,7 @@ Exception: if user explicitly said \"loop with re-plan authority\" or \"auto ful
 | `needs-fixes` ≥ 2                  | **STUCK** — report last problems.md path + "Manual fix needed"                   |
 | `plan-fix` → second audit ≠ ready  | **ESCALATING** — auto-route to re-plan (if authorized) or report                 |
 | `re-plan` from audit               | **BLOCKED** — report, require user input                                         |
-| Review ≥ 2 rounds + NEEDS_REVISION | **DEADLOCKED** — report, require user input                                      |
+| Review ≥ 2 rounds + needs-revision | **DEADLOCKED** — report, require user input                                      |
 
 ---
 

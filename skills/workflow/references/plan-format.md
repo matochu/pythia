@@ -136,7 +136,7 @@ Done when:
 
 - **Id**: Plan identifier (typically plan-slug)
 - **Version**: v1 (initial), v2, v3... (incremented on each revision)
-- **Status** (document lifecycle, required in `## Metadata`): Must be exactly one of the allowed values in **Plan document status** below. New plans from `/plan` start as **Draft**. This is **not** the same as per-step `**Status**` inside `### Step N` (see **Step Status**).
+- **Status** (document lifecycle, required in `## Metadata`): Must be exactly one of the lowercase values in **Plan document status** below. New plans from `/plan` start as `draft`. This is **not** the same as per-step `**Status**` inside `### Step N` (see **Step Status**).
 - **Branch**: Git branch name for this plan's implementation
 - **Round**: Link to latest review round (or "Initial plan — no review yet")
 - **Contexts**: Links to context documents consulted when writing the plan (omit if none)
@@ -151,17 +151,16 @@ Done when:
 
 **Allowed values** (canonical strings for `.pythia/runtime/checks/structure.js --type plan`):
 
-| Status | When to use |
-| ------ | ----------- |
-| **Draft** | New plan from `/plan`, or after `/replan`, until review is **READY** (includes **NEEDS_REVISION** / not yet approved for implementation). |
-| **Ready for implementation** | Latest review round verdict is **READY**; work has not started or is not yet tracked as in-flight. |
-| **In progress** | Implementation is underway (per implementation report / team state). |
-| **Implemented** | Implementation audit verdict is **ready** (or equivalent closure); plan outcomes accepted. |
-| **Blocked** | External or technical blocker stops implementation; resume with **In progress** or **Draft** when unblocked. |
-| **Archived** | Not on the active execution queue: kept for history, reference, or because work moved to another plan/approach (redirect/replace). Distinct from **Cancelled** (see below). |
-| **Cancelled** | Deliberately abandoned; no intention to implement. Use **Archived** when the doc stays useful as context or may be revived. |
+| `status` value | When to use |
+| -------------- | ----------- |
+| `draft` | New plan from `/plan`, or after `/replan`, until review is **ready** (includes **needs-revision** / not yet approved for implementation). |
+| `active` | Latest review round verdict is **ready** (approved for implementation) or implementation is underway. Covers both "ready for implementation" and "in progress" sub-states. |
+| `implemented` | Implementation audit verdict is **ready** (or equivalent closure); plan outcomes accepted. |
+| `blocked` | External or technical blocker stops implementation; resume with `active` or `draft` when unblocked. |
+| `archived` | Not on the active execution queue: kept for history, reference, or because work moved to another plan/approach (redirect/replace). Distinct from `cancelled` (see below). |
+| `cancelled` | Deliberately abandoned; no intention to implement. Use `archived` when the doc stays useful as context or may be revived. |
 
-**Workflow hints**: `/plan` and review-driven `/replan` outputs should use **Draft** unless a prior **Ready for implementation** state still applies (e.g. minor doc-only replan). Update **Status** when review or audit milestones change.
+**Workflow hints**: `/plan` and review-driven `/replan` outputs should use `draft` unless a prior `active` state still applies (e.g. minor doc-only replan). Update `status` when review or audit milestones change.
 
 ## Step Status
 

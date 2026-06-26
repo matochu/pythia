@@ -37,8 +37,8 @@ Master skill for feature development workflow. All steps below have dedicated sk
 1. /feat                → Create feature document (PM + Architect)
 2. /plan                → Create first plan (Architect)
 3. /review              → Review plan (Reviewer)
-   - If READY           → proceed
-   - If NEEDS_REVISION  → /replan
+   - If ready           → proceed
+   - If needs-revision  → /replan
 4. /implement           → Execute plan (Developer)
 5. /audit               → Verify implementation (Architect)
    - If ready           → DONE
@@ -144,7 +144,7 @@ See [references/](./references/) for full documentation.
 
 ### Implementation
 
-- Gate: Check review file exists and Verdict is READY
+- Gate: Check review file exists and Verdict is ready
 - Input: Feature context + plan slug (after review pass)
 - Output: Implementation report
 - Format: See `references/implementation-format.md`
@@ -156,12 +156,12 @@ See [references/](./references/) for full documentation.
 - Output: Architect audit report + plan update + feature document update (if verdict is "ready")
 - Format: See `references/audit-format.md`
 - **Plan Update**: If verdict is "ready", update plan:
-  - Change Status to "Implemented"
+  - Change `status` to `implemented`
   - Add `**Status**: done` to completed Steps
   - Mark acceptance criteria checkboxes as `[x]` for met criteria
 - **Feature Document Update**: If verdict is "ready", update feature document:
   - Add/update plan entry in `## Plans` by slug
-  - Add `Status: Implemented` to plan entry
+  - Add `status: implemented` to plan entry
 
 ### Feature Retrospective
 
@@ -189,8 +189,8 @@ flowchart TD
 
     C --> D([/review\nR1])
 
-    D -->|Verdict: READY| E{Gate:\nReview passed?}
-    D -->|Verdict: NEEDS_REVISION| F([/replan\nTrigger 1: Review\nvN+1])
+    D -->|Verdict: ready| E{Gate:\nReview passed?}
+    D -->|Verdict: needs-revision| F([/replan\nTrigger 1: Review\nvN+1])
     F --> D
 
     E -->|yes| G([/implement\nI1])
@@ -199,7 +199,7 @@ flowchart TD
     G -->|all pass| H([/audit])
     G -->|blockers / failures| I([/replan\nTrigger 2: Implementation\nvN+1])
     I --> D2([/review\nR_next])
-    D2 -->|READY| G2([/implement\nI_next])
+    D2 -->|ready| G2([/implement\nI_next])
     G2 --> H
 
     H -->|Verdict: ready| J([/retro\nall plans in feature\nnotes/retro.md])

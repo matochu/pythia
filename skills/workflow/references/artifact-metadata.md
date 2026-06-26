@@ -108,29 +108,40 @@ All optional: `status`, `updated`
 
 ### Context
 
-All optional: `status`, `kind`, `tags`, `updated`
+All optional: `status`, `kind`, `category`, `tags`, `updated`
 
 | Key | Values |
 | --- | ------ |
 | `status` | `draft` · `ready` · `active` · `archived` |
 | `kind` | `research` · `brainstorm` |
+| `category` | free string — domain classifier (e.g. `technical`, `domain-knowledge`, `architecture`, `process`) |
 | `tags` | inline list, e.g. `[llm-agents, sdd]` |
 
-`kind: research` replaces the v1 `Artifact: research-context` field. `tags` migrated from YAML frontmatter. `builds_on` is **deprecated** — use a typed `## Related` body item with `#@based-on` instead (migration converts existing `builds_on` fields automatically).
+`kind: research` replaces the v1 `Artifact: research-context` field. `tags` migrated from YAML frontmatter. `builds_on` is **deprecated** — cite the source document inline in the body text with a `#@based-on` fragment instead.
 
-### Body Relations — `## Related` section
+### Cross-document links — inline first
 
-Cross-document relations go in a `## Related` body section using typed `#@label` fragments. The vocabulary is defined in `.pythia/config/relation.md`.
+Cite related documents inline in the body text where they naturally fit:
+
+- `[text](path)` — plain reference, no semantic tag needed
+- `[text](path#@label)` — use when the relation type matters; labels from `.pythia/config/relation.md`: `source`, `based-on`, `related`
+- `[text](path#anchor@label)` — combine heading anchor with relation label
 
 ```markdown
-## Related
+<!-- Good: inline citation with relation type -->
+This builds on the [Bidirectional Links context](../contexts/bidirectional-links.context.md#@based-on)
+which established the two-layer model.
 
-- [Source doc](path/to/source.context.md#@based-on) — this doc derives from / extends the target
-- [Lateral doc](path/to/related.context.md#@related) — see-also
-- [External source](https://example.com#@source) — primary citation
+<!-- Good: plain link when type doesn't matter -->
+See [plan format reference](../../workflow/references/plan-format.md) for the full spec.
+
+<!-- Good: external source -->
+Based on [Karpathy's LLM Wiki](https://gist.github.com/karpathy/xyz#@source).
+
+<!-- Avoid: ## Related section — only when truly no prose context (migration artifact) -->
 ```
 
-Fragment syntax: `path#anchor@label` (anchor is optional). Machine-owned `## References` / `## Used by` trailing regions are updated automatically by sync — never edit them manually.
+Machine-owned `## References` / `## Used by` trailing regions are updated automatically by sync — **never edit them manually**.
 
 ### Retro
 
@@ -140,9 +151,14 @@ All optional: `status`, `updated`
 | --- | ------ |
 | `status` | `active` · `completed` · `archived` |
 
-### Note / task
+### Note / task / idea
 
-All optional: `status`, `updated`
+All optional: `status`, `category`, `branch`, `updated`
+
+| Key | Values |
+| --- | ------ |
+| `category` | free string — topic classifier (e.g. `architecture`, `UI`, `performance`) |
+| `branch` | git branch slug associated with this task (e.g. `feat/my-feature`) |
 
 ## v1 → v2 key mapping
 
@@ -224,7 +240,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
     "context": {
       "patterns": ["*.context.md", "*.ctx.md"],
       "required": [],
-      "optional": ["status", "kind", "tags", "updated"],
+      "optional": ["status", "kind", "category", "tags", "updated"],
       "enums": {
         "status": ["draft", "ready", "active", "archived"],
         "kind": ["research", "brainstorm"]
@@ -241,7 +257,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
     "note": {
       "patterns": ["*.md"],
       "required": [],
-      "optional": ["status", "updated"],
+      "optional": ["status", "category", "branch", "updated"],
       "enums": {}
     }
   }
@@ -266,7 +282,7 @@ This JSON block is consumed by `tools/lib/metadata/schema.js`. Keep it aligned w
 ### Review
 
 ```md
-# 9-example Review — READY
+# 9-example Review — ready
 
 ## Metadata
 

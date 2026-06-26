@@ -33,7 +33,7 @@ Metadata follows [artifact-metadata.md](artifact-metadata.md). Use artifact type
 - Create this section if the file is new
 - Update it on every new review round
 - Keep this section file-level only; do not duplicate it inside round blocks
-- Round blocks still keep historical `Verdict: READY | NEEDS_REVISION` lines.
+- Round blocks still keep historical `Verdict: ready | needs-revision` lines.
 
 ---
 
@@ -45,7 +45,7 @@ Top-level section at the very beginning of the file. Updated after each round by
 ## Navigation
 
 - [Retrospective](#retrospective)
-- Rounds: [R1 — YYYY-MM-DD — NEEDS_REVISION](#plan-slug-r1--yyyy-mm-dd) · [R2 — YYYY-MM-DD — READY](#plan-slug-r2--yyyy-mm-dd) · ...
+- Rounds: [R1 — YYYY-MM-DD — needs-revision](#plan-slug-r1--yyyy-mm-dd) · [R2 — YYYY-MM-DD — ready](#plan-slug-r2--yyyy-mm-dd) · ...
 ```
 
 - One line per category; Rounds line grows with each new round
@@ -83,7 +83,7 @@ Each review round appends one block at the end of the file:
 ## {plan-slug} R{n} — YYYY-MM-DD
 
 Review for: [{Id} {Version}](../plans/{plan-slug}.plan.md)
-Verdict: READY | NEEDS_REVISION
+Verdict: ready | needs-revision
 
 ## Executive Summary
 
@@ -136,7 +136,7 @@ Verdict: READY | NEEDS_REVISION
 - **Metadata `verdict`**: current top-level verdict snapshot for the file
 - **Metadata `round`**: latest review round appended to this file
 - **Plan-Path**: canonical link to the current plan artifact in each review round body
-- **Verdict**: READY | NEEDS_REVISION
+- **Verdict**: ready | needs-revision
 - **Status per step**: OK | CONCERN-LOW | CONCERN-MEDIUM | CONCERN-HIGH | BLOCKED
 - **Evidence**: File paths with line numbers, symbol names, documentation links — concrete, not vague
 - **Impact**: Why the finding matters for implementation or correctness

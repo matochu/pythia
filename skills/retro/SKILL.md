@@ -150,7 +150,7 @@ Every `/retro` response must end with:
 
 ### Validation
 
-**Trailing refs — forbidden**: Never hand-write or edit `## References` / `## Used by` sections in any `.pythia/**/*.md` file (including the retro artifact). These sections are machine-owned; `inputs.js sync` builds them from body link scans and rdeps backlink scans. Manual entries create phantom records that `refs-owned.js` flags as errors.
+**Cross-document links and trailing refs**: see [cross-document-links.md](../workflow/references/cross-document-links.md).
 
 - After writing `{feature-dir}/notes/{feature-slug}.retro.md`, run workflow-doc validation per [/validate skill](../validate/SKILL.md) if the validator supports retrospective documents.
 - If validation support is unavailable for retro documents, state that explicitly in the response and still verify manually that required retro sections, evidence entries, preserved manual sections, `## Next Steps`, and active context footer are present.

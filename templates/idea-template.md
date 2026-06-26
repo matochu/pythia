@@ -1,16 +1,10 @@
-# Idea: {Idea Name}
+# Idea: {Title}
 
-## Overview
+## Metadata
 
-**Idea ID**: idea-YYYY-MM-descriptive-name  
-**Date Created**: YYYY-MM-DD  
-**Last Updated**: YYYY-MM-DD  
-**Status**: New / In Analysis / Ready for Proposal / Rejected  
-**Category**: UI / UX / Performance / Architecture / Workflow / Other  
-**Priority**: ⭐⭐⭐ High / ⭐⭐ Medium / ⭐ Low  
-**Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
-**Impact/Effort**: High Impact-Low Effort / High Impact-High Effort / Low Impact-Low Effort / Low Impact-High Effort  
-**Author**: {Name}
+- status: draft
+- category: architecture
+- updated: YYYY-MM-DD
 
 ## Brief Description
 
@@ -70,11 +64,6 @@ Description of the second alternative.
 - [ ] Research 1
 - [ ] Research 2
 - [ ] Research 3
-
-## Related Documents
-
-- [Document 1](path/to/document.md)
-- [Document 2](path/to/document.md)
 
 ## Stakeholders
 

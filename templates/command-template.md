@@ -97,11 +97,6 @@ DOCS_PATH=$(jq -r '.docs_path' $CONFIG_PATH)
 | {{Issue 2}} | {{Solution 2}} |
 | {{Issue 3}} | {{Solution 3}} |
 
-## Related Documents
-
-- [{{Related document name}}]({{path_to_document}})
-- [{{Related document name}}]({{path_to_document}})
-
 ---
 
 **Last Updated**: {{YYYY-MM-DD}}

@@ -109,10 +109,8 @@ After receiving PM-enriched content and the Architect decision about draft plans
 
 **Inputs integration**:
 
-- Cite dependencies as markdown links in the feature doc body. Never hand-write or edit trailing `## References` / `## Used by`.
+- Cite dependencies as markdown links in the feature doc body — see [cross-document-links.md](../workflow/references/cross-document-links.md) for inline link rules, label vocabulary, and trailing-refs prohibition.
 - The feature doc auto-syncs on save. If `sync` or `check` returns an error, show that raw failure to the user.
-
-**Cross-document relations**: when citing other docs inline, use `#@label` fragments: `[text](path#@label)`. Vocabulary: `.pythia/config/relation.md`.
 
 **Output**: Feature document in `.pythia/workflows/features/feat-YYYY-MM-{slug}/feat-YYYY-MM-{slug}.md`
 
@@ -128,7 +126,7 @@ Behavior:
 2. Read all `plans/*.plan.md` files in the feature directory
 3. Extract each plan title from `# Plan {slug}: {Title}` and status from `## Metadata`
 4. Update `## Plans` in the feature doc:
-   - replace matching checklist items with `- [{slug}](plans/{slug}.plan.md) — {Title} · Status: {status}`
+   - replace matching checklist items with `- [{slug}](plans/{slug}.plan.md) — {Title} · status: {status}`
    - keep unmatched checklist items unchanged
    - remove the hint only when all entries were converted to links
 5. Write the updated feature doc

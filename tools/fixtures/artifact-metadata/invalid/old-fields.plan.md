@@ -2,8 +2,7 @@
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Plan-Id**: old
-- **Plan-Version**: v1
-- **Artifact**: plan
-
+- status: draft
+- version: v1
+- Schema: pythia-artifact-v1
+- Id: old

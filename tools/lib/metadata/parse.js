@@ -34,21 +34,11 @@ export function parseArtifactMetadata(content) {
   const entries = [];
   const fields = new Map();
   const metadataLines = [];
-  let hasV1Bold = false;
   let hasV2 = false;
 
   for (let i = start + 1; i < sectionEnd; i++) {
     if (/^```/.test(lines[i])) break;
     metadataLines.push({ line: i + 1, text: lines[i] });
-    // v1: bold bullet  - **Key**: value
-    const boldMatch = lines[i].match(/^\s*-\s+\*\*([^*]+)\*\*:\s*(.*)$/);
-    if (boldMatch) {
-      hasV1Bold = true;
-      const entry = { key: boldMatch[1].trim(), value: boldMatch[2].trim(), line: i + 1, format: 'v1' };
-      entries.push(entry);
-      if (!fields.has(entry.key)) fields.set(entry.key, entry);
-      continue;
-    }
     // v2: markdown list item  - key: value
     const listMatch = lines[i].match(/^\s*-\s+([a-z][a-z0-9_]*):\s*(.+)\s*$/);
     if (listMatch) {
@@ -60,7 +50,7 @@ export function parseArtifactMetadata(content) {
     }
   }
 
-  const format = hasV2 && !hasV1Bold ? 'v2' : hasV1Bold ? 'v1' : null;
+  const format = hasV2 ? 'v2' : null;
 
   return {
     found: true,
@@ -93,11 +83,6 @@ export function metadataFormatDiagnostics(parsed) {
   return diagnostics;
 }
 
-/**
- * @deprecated Use inferArtifactKind from schema.js instead.
- * Kept for v1 compat callers that pass a metadataArtifact fallback.
- * Delegates to inferArtifactKind; falls back to metadataArtifact only for 'note'-ambiguous paths.
- */
 export function inferArtifactType(file, metadataArtifact = null) {
   const kind = inferArtifactKind(file);
   if (kind && kind !== 'note') return kind;
@@ -114,29 +99,11 @@ export function serializeMetadata(fields) {
   ].join('\n');
 }
 
-/** Normalize v1/v2 key name to v2 canonical lowercase form. */
-export function normalizeKey(key) {
-  const map = {
-    'Plan-Version': 'plan_version',
-    'Plan Version': 'plan_version',
-    'Version': 'version',
-    'Status': 'status',
-    'Branch': 'branch',
-    'Round': 'round',
-    'Verdict': 'verdict',
-    'Result': 'result',
-    'Updated': 'updated',
-    'Kind': 'kind',
-  };
-  return map[key] ?? key.toLowerCase().replace(/-/g, '_');
-}
-
 /**
- * Build a v2 metadata block from parsed v1/v2 metadata + H1 + legacy data.
+ * Build a v2 metadata block from parsed metadata.
  * Returns array of [key, value] pairs for serializeMetadata().
  */
 export function normalizeMetadataBlock({ kind, parsed, existing = null }) {
-  // existing: Map of already-known v2 fields (from prior conversion pass or body)
   const get = (k) => getArtifactField(parsed, k) ?? existing?.get(k) ?? null;
 
   const fields = [];
@@ -146,53 +113,44 @@ export function normalizeMetadataBlock({ kind, parsed, existing = null }) {
   }
 
   if (kind === 'plan') {
-    add('status', get('Status') ?? get('status') ?? 'draft');
-    const ver = get('Version') ?? get('version') ?? get('Plan-Version') ?? 'v1';
-    add('version', ver);
-    const branch = get('Branch') ?? get('branch');
+    add('status', get('status') ?? 'draft');
+    add('version', get('version') ?? 'v1');
+    const branch = get('branch');
     if (branch) add('branch', branch);
-    const updated = get('Updated') ?? get('updated');
+    const updated = get('updated');
     if (updated) add('updated', updated);
   } else if (kind === 'review') {
-    add('status', get('Status') ?? get('status') ?? 'active');
-    add('plan_version', get('Plan-Version') ?? get('plan_version') ?? get('Plan Version') ?? 'v1');
-    add('round', extractRoundId(get('Round') ?? get('round') ?? 'R1'));
-    add('verdict', get('Verdict') ?? get('verdict') ?? 'needs-revision');
-    const updated = get('Updated') ?? get('updated');
+    add('status', get('status') ?? 'active');
+    add('plan_version', get('plan_version') ?? 'v1');
+    add('round', extractRoundId(get('round') ?? 'R1'));
+    add('verdict', get('verdict') ?? 'needs-revision');
+    const updated = get('updated');
     if (updated) add('updated', updated);
   } else if (kind === 'implementation-report') {
-    add('status', get('Status') ?? get('status') ?? 'active');
-    add('plan_version', get('Plan-Version') ?? get('plan_version') ?? get('Plan Version') ?? 'v1');
-    add('round', get('Round') ?? get('round') ?? 'I1');
-    add('result', get('Result') ?? get('result') ?? 'implemented');
-    const updated = get('Updated') ?? get('updated');
+    add('status', get('status') ?? 'active');
+    add('plan_version', get('plan_version') ?? 'v1');
+    add('round', get('round') ?? 'I1');
+    add('result', get('result') ?? 'implemented');
+    const updated = get('updated');
     if (updated) add('updated', updated);
   } else if (kind === 'audit-report') {
-    add('status', get('Status') ?? get('status') ?? 'active');
-    add('round', get('Round') ?? get('round') ?? 'A1');
-    add('verdict', get('Verdict') ?? get('verdict') ?? 'ready');
-    const updated = get('Updated') ?? get('updated');
+    add('status', get('status') ?? 'active');
+    add('round', get('round') ?? 'A1');
+    add('verdict', get('verdict') ?? 'ready');
+    const updated = get('updated');
     if (updated) add('updated', updated);
   } else if (kind === 'context') {
-    const status = get('Status') ?? get('status');
+    const status = get('status');
     if (status) add('status', status);
-    // Explicit kind takes priority over legacy Artifact/Shape signals to avoid overwriting user preference.
     const existingKind = get('kind');
-    if (existingKind === 'brainstorm' || existingKind === 'research') {
-      add('kind', existingKind);
-    } else {
-      const artifact = get('Artifact');
-      const isResearch = artifact === 'research-context'
-        || get('Shape') === 'survey';
-      if (isResearch) add('kind', 'research');
-    }
-    const updated = get('Updated') ?? get('updated');
+    if (existingKind) add('kind', existingKind);
+    const updated = get('updated');
     if (updated) add('updated', updated);
   } else {
     // feature, retro, note, task
-    const status = get('Status') ?? get('status');
+    const status = get('status');
     if (status) add('status', status);
-    const updated = get('Updated') ?? get('updated');
+    const updated = get('updated');
     if (updated) add('updated', updated);
   }
 

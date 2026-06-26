@@ -159,15 +159,15 @@ Paste the following Minimal Context Template into the new file and fill in the b
 ```markdown
 # Context: [Short Title]
 
-Status: Draft
-Version: 1.0.0
-Created: YYYY-MM-DD
-Last Updated: YYYY-MM-DD
-Tags: #technical #domain/[name] #time/[current|historical|prospective]
+## Metadata
+
+- status: draft
+- updated: YYYY-MM-DD
 
 ## Description
 
-Brief overview: what this context covers and why it exists.
+Brief overview: what this context covers and why it exists. Cite related docs inline:
+`[Related Context](../contexts/other.context.md#@related)` or `[Plan](../plans/1-plan.plan.md#@source)`.
 
 ## Key Information
 
@@ -187,18 +187,6 @@ Brief overview: what this context covers and why it exists.
 ## Conclusions
 
 - [Key takeaways and recommendations]
-
-## Links to Related Documents
-
-- Related Contexts: [mdc:.pythia/contexts/...]
-- Related Tasks: [mdc:.pythia/workflows/tasks/task-YYYY-MM-topic.md]
-- Related Proposals/Decisions: [mdc:.pythia/workflows/proposals/...]
-
-## Change History
-
-| Date       | Change           | Author |
-| ---------- | ---------------- | ------ |
-| YYYY-MM-DD | Initial creation | Name   |
 ```
 
 Notes:

@@ -1,17 +1,10 @@
 # Task: {Title}
 
-## Overview
+## Metadata
 
-**Task ID**: task-YYYY-MM-descriptive-name  
-**Date Created**: YYYY-MM-DD  
-**Status**: Not Started / In Progress / Under Review / Blocked / Completed  
-**Priority**: High / Medium / Low  
-**Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
-**Owner**: {Name}  
-**Repository**: {repo-url-or-name}  
-**Branch**: feature|bugfix|hotfix/{slug-or-topic}  
-**PR**: [link-if-available]  
-**LLM Model**: {model-id}
+- status: draft
+- branch: feat/{git-branch-slug}
+- updated: YYYY-MM-DD
 
 <!-- Add no-archive tag here if the task should never be archived: [no-archive] -->
 

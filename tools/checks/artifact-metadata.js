@@ -39,14 +39,6 @@ if (!parsed.found) {
 } else {
   if (parsed.duplicate) diag(errors, parsed.startLine, 'duplicate_section', 'Expected exactly one ## Metadata section');
 
-  // v1 file (has Schema field) — flag only Schema and stop; no v2 checks on unmigrated files
-  if (parsed.fields.get('Schema')) {
-    diag(errors, parsed.fields.get('Schema').line, 'forbidden_key',
-      `File uses v1 metadata format (Schema: pythia-artifact-v1) — run migration to convert to v2`);
-    for (const e of errors) console.error(e);
-    process.exit(1);
-  }
-
   // ── V2 validation (path-inferred kind, list key:value) ─────────────────
   const isEmpty = parsed.entries.length === 0;
     const formatIssues = metadataFormatDiagnostics(parsed);

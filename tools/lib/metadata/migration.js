@@ -181,6 +181,16 @@ function legacyPlainMetadataFields(parsed) {
   return m;
 }
 
+/** Read v1 bold-bullet fields for migration input only. Runtime parse.js no longer handles these. */
+function legacyBoldBulletFields(parsed) {
+  const m = new Map();
+  for (const entry of parsed.metadataLines ?? []) {
+    const match = entry.text.match(/^\s*-\s+\*\*([^*]+)\*\*:\s*(.*)$/);
+    if (match) m.set(match[1].trim(), match[2].trim());
+  }
+  return m;
+}
+
 /**
  * Parse simple key:value pairs from YAML frontmatter text.
  * Only handles scalar values (not arrays/objects).
@@ -218,17 +228,20 @@ export function convertArtifactMetadata(file, content) {
   const stripped = stripFrontmatter(content);
   const parsed = parseArtifactMetadata(stripped);
   const legacyPlain = legacyPlainMetadataFields(parsed);
+  const legacyBold = legacyBoldBulletFields(parsed);
   const kind = inferArtifactKind(file);
 
   if (!kind) {
     return { changed: false, content, warnings: [`uncovered artifact: ${file}`] };
   }
 
-  // Get current v1 fields (for merge) — checks parsed metadata then frontmatter values
+  // Get current v1 fields (for merge) — checks parsed metadata then bold-bullet then frontmatter values
   const get = (...keys) => {
     const fromParsed = getField(parsed, ...keys);
     if (fromParsed) return fromParsed;
     for (const k of keys) {
+      const fromBold = legacyBold.get(k);
+      if (fromBold) return fromBold;
       const fromLegacyPlain = legacyPlain.get(k);
       if (fromLegacyPlain) return fromLegacyPlain;
       const v = fmValues.get(k) ?? fmValues.get(k.toLowerCase());

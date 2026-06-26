@@ -35,14 +35,14 @@ The `footer-presence` guardrail checker (`.pythia/runtime/checks/footer-presence
 
 **Plan**: {plan-slug} v{version}  
 **Round**: R{round}  
-**Verdict**: {READY | NEEDS_REVISION}  
+**Verdict**: {ready | needs-revision}  
 **Review File**: `{feature-dir}/reports/{plan-slug}.review.md` -> `## {plan-slug} R{round} - YYYY-MM-DD`
 
 ## Summary
 [2-3 sentence overview of review findings]
 
 ## Verdict
-**Status**: {READY | NEEDS_REVISION}
+**Status**: {ready | needs-revision}
 
 **Rationale**: [Why this verdict]
 
@@ -65,8 +65,8 @@ The `footer-presence` guardrail checker (`.pythia/runtime/checks/footer-presence
 - **Link**: [Full file path + section anchor]
 
 ## Next Steps
-{If NEEDS_REVISION}
-Review result: NEEDS_REVISION · source: R{round}
+{If needs-revision}
+Review result: needs-revision · source: R{round}
 
 **Actions**
 **[r]** Replan - choose this to launch Architect subagent to revise the plan using this review
@@ -83,8 +83,8 @@ Review result: NEEDS_REVISION · source: R{round}
 /review {feature-dir}/plans/{plan-slug}.plan.md
 ```
 
-{If READY}
-Review result: READY · source: R{round}
+{If ready}
+Review result: ready · source: R{round}
 
 **Actions**
 **[i]** Implement - choose this to launch Developer subagent to execute this reviewed plan
@@ -354,7 +354,7 @@ Revised plan saved: `{feature-dir}/plans/{plan-slug}.plan.md` v{version}
 
 ## Plan Update (if Verdict is "ready")
 - **File**: `{feature-dir}/plans/{plan-slug}.plan.md`
-- **Changes**: Document status updated to `Implemented`; step statuses and acceptance criteria updated as applicable
+- **Changes**: Document `status` updated to `implemented`; step statuses and acceptance criteria updated as applicable
 
 ## Feature Document Update (if Verdict is "ready")
 - **File**: `{feature-dir}/{feature-id}.md`

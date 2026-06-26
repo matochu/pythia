@@ -30,7 +30,7 @@ Choose any of the following:
 - **With FEATURE_ID**: Provide feature ID if context is unclear.
 - **Mode**: Default is plan execution. To run **refinement** (bug fixes, follow-up work by request): indicate that you want follow-up work or bug fixes on current implementation; the Developer will perform the work and record progress in the **last** Implementation Round's **Out-of-Plan Work** only — no new round is created.
 - **Audit fixes**: Use `/implement ... A{n}` after `/audit` returns `needs-fixes`; this keeps `/implement` active and records audit follow-up in the current implementation report.
-- **Gate check**: Skill will verify review pass (Verdict: READY) before executing.
+- **Gate check**: Skill will verify review pass (Verdict: ready) before executing.
 
 ## Instructions for model
 
@@ -67,12 +67,12 @@ Parse the user's input using this order:
 ### Gate Logic (HARD GATE — must read file before proceeding)
 
 5. **You MUST read the actual file** `{feature-dir}/reports/{plan-slug}.review.md` from disk. Do NOT assume it exists based on chat history or inference.
-6. Parse review file for `Verdict: READY` (search for line starting with `Verdict:`).
+6. Parse review file for `Verdict: ready` (search for line starting with `Verdict:`).
 7. If no review file exists:
    - Output error: _"Cannot implement: review file not found at `reports/{plan-slug}.review.md`. Run `/review` first."_
    - **STOP immediately. Do NOT run `/review`, do NOT proceed, do NOT fall back to any other action.**
-8. If review file exists but verdict is not READY:
-   - Output error: _"Cannot implement: plan must have review pass (Verdict: READY). Current verdict: {verdict}. Run `/review` or `/replan` first."_
+8. If review file exists but verdict is not ready:
+   - Output error: _"Cannot implement: plan must have review pass (Verdict: ready). Current verdict: {verdict}. Run `/review` or `/replan` first."_
    - **STOP immediately.**
 9. If trigger is `A{n}`:
    - **You MUST read the actual file** `{feature-dir}/reports/{plan-slug}.audit.md` from disk.
@@ -80,7 +80,7 @@ Parse the user's input using this order:
    - If audit file or `A{n}` section/source is missing: output error and **STOP immediately**. Do NOT infer from chat or continue with a different audit round.
    - If verdict is not `needs-fixes`: output error and **STOP immediately**. Use `/replan` for `plan-fix` or `re-plan`; use `/retro`/finish for `ready`.
    - If `{feature-dir}/notes/{plan-slug}.problems.md` exists, read it. If audit mentions a problems file but it is missing, document the missing file as a blocker and STOP unless the audit findings are fully present in the audit report.
-10. If review pass confirmed (Verdict: READY) and audit trigger gate passes when applicable: proceed to Mandatory context load.
+10. If review pass confirmed (Verdict: ready) and audit trigger gate passes when applicable: proceed to Mandatory context load.
 
 ### Mandatory Context Load (before execution)
 
@@ -270,7 +270,7 @@ When the user chooses `[q]` after an implementation round:
 
 **Inputs integration**:
 
-- Cite dependencies as markdown links in the report body (plan, contexts, feature doc). Never hand-write or edit trailing `## References` / `## Used by`.
+- Cite dependencies inline in the report body where they fit naturally (plan, contexts, feature doc) — see [cross-document-links.md](../workflow/references/cross-document-links.md) for inline link rules, label vocabulary, and trailing-refs prohibition.
 - The implementation report auto-syncs on save. Run `.pythia/runtime/inputs.js check` on cited plan/context files when verifying grounding.
 
 ## Validation (before completing)
@@ -295,4 +295,4 @@ When the user chooses `[q]` after an implementation round:
 - Verify structured chat response includes status-aware `## Next Steps` and the active implementation footer from [response-formats.md](../workflow/references/response-formats.md).
 - Verify every `/implement` response with known context ends with `**Active context**: role: Developer · feat: {feat-id} · plan: {plan-slug} · implementation: I{round} · skill: /implement`.
 
-See also: Requires [/review skill](../review/SKILL.md) verdict READY before executing.
+See also: Requires [/review skill](../review/SKILL.md) verdict ready before executing.

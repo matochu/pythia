@@ -248,9 +248,9 @@ describe('.pythia/runtime/checks/artifact-metadata.js', () => {
     expect(r.status).toBe(0);
   });
 
-  it('exits 0 (advisory) for pre-schema plan without Schema field', () => {
+  it('exits 0 (advisory) for plan with missing required fields in non-strict mode', () => {
     const dest = join(workspaceDir, 'legacy.plan.md');
-    writeFileSync(dest, '# Plan\n\n## Metadata\n\n- **Status**: Draft\n\n## Goal\n\nGoal.\n', 'utf8');
+    writeFileSync(dest, '# Plan\n\n## Metadata\n\n- branch: main\n\n## Goal\n\nGoal.\n', 'utf8');
     const r = spawnSync('node', [checker(workspaceDir), dest], { encoding: 'utf8', cwd: workspaceDir });
     expect(r.status).toBe(0);
   });

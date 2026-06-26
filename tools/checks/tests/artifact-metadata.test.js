@@ -33,10 +33,6 @@ function metadataV2(fields) {
   return `# Fixture\n\n## Metadata\n\n${fieldLines}\n\n## Body\n\nFixture.\n`;
 }
 
-/** Create a v1 bold-bullet metadata file (for v1 compat tests). */
-function metadataV1(fields) {
-  return `# Fixture\n\n## Metadata\n\n${Object.entries(fields).map(([key, value]) => `- **${key}**: ${value}`).join('\n')}\n\n## Body\n\nFixture.\n`;
-}
 
 function withTempFile(name, content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'pythia-artifact-metadata-'));
@@ -71,14 +67,6 @@ describe('parseArtifactMetadata', () => {
       'non_canonical_format',
       'non_canonical_format',
     ]);
-  });
-
-  it('parses v1 bold bullet metadata fields', () => {
-    const content = metadataV1({ Schema: 'pythia-artifact-v1', Id: 'example', Artifact: 'note' });
-    const parsed = parseArtifactMetadata(content);
-    expect(parsed.found).toBe(true);
-    expect(parsed.fields.get('Id').value).toBe('example');
-    expect(parsed.format).toBe('v1');
   });
 
   it('detects duplicate metadata sections', () => {
@@ -228,16 +216,8 @@ describe('artifact-metadata.js', () => {
     });
   });
 
-  it('flags Schema as forbidden_key (v1 files must be migrated)', () => {
-    withTempFile('v1-compat.plan.md', metadataV1({
-      Schema: 'pythia-artifact-v1', Id: 'slug', Title: 'T', Artifact: 'plan',
-      Status: 'Draft', Version: 'v1', Branch: 'main', Round: 'none',
-    }), (file) => {
-      const r = run([file]);
-      expect(r.stderr).toMatch(/forbidden_key/);
-    });
-  });
 });
+
 
 // ── v2 enum validation ──────────────────────────────────────────────────────
 
@@ -279,23 +259,6 @@ describe('artifact-metadata.js: v2 enum validation', () => {
   });
 });
 
-// ── (v1 artifact_mismatch and Generator tests removed — v1 branch dropped) ──
-// v1 files should be migrated; checker treats them as v2 and flags Schema as forbidden_key.
-
-describe('artifact-metadata.js: legacy v1 file gets forbidden_key only', () => {
-  it('exits 1 with exactly one forbidden_key error mentioning migration — no v2 noise', () => {
-    withTempFile('ok-gen.plan.md', metadataV1({
-      Schema: 'pythia-artifact-v1', Id: 'slug', Title: 'T', Artifact: 'plan',
-      Status: 'Draft', Version: 'v1', Branch: 'main', Round: 'none', Generator: 'plan',
-    }), (file) => {
-      const r = run([file]);
-      expect(r.code).toBe(1);
-      expect(r.stderr).toMatch(/forbidden_key/);
-      expect(r.stderr).toMatch(/migration/);
-      expect(r.stderr.trim().split('\n')).toHaveLength(1);
-    });
-  });
-});
 
 // ── contract drift ─────────────────────────────────────────────────────────
 

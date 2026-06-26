@@ -72,8 +72,8 @@ For general context creation guidelines, structure, and templates, see [@create-
 
 **Linking:**
 
-- Context must reference feature: `**Related Feature**: [Feature Name](../feat-YYYY-MM-name.md)`
-- Feature should list contexts: In "Related Contexts" section
+- Context must reference feature: inline link `[feat-YYYY-MM-name](../feat-YYYY-MM-name.md#@related)` in the context body (not bold-bullet frontmatter)
+- Feature should link to context: inline prose link `[Context Title](contexts/filename#@related)` in the feature doc body
 
 ## Prerequisites
 
@@ -215,17 +215,16 @@ echo "✓ Created: $CONTEXT_FILE"
 
 When creating a feature context using the template from `@create-context.md`, ensure:
 
-1. **Metadata includes Related Feature link:**
+1. **Body includes feature backlink** (inline prose, not a metadata field):
 
    ```markdown
-   Related Feature: [feat-YYYY-MM-name](../feat-YYYY-MM-name.md)
+   Context for [feat-YYYY-MM-name](../feat-YYYY-MM-name.md#@related).
    ```
 
-2. **Links to Related Documents section includes:**
-   - Related Feature (required - use relative path `../feat-YYYY-MM-name.md`)
-   - Related Plans (if applicable - use relative path `../plans/N-plan-name.plan.md`)
-   - Related Contexts (other feature contexts - use relative path `./other-context.context.md`)
-   - Code references specific to this feature
+2. **Body links to related documents inline** where they fit naturally:
+   - Feature (required): `[feat-YYYY-MM-name](../feat-YYYY-MM-name.md#@related)`
+   - Related plans (if applicable): `[Plan title](../plans/N-plan-name.plan.md#@source)`
+   - Sibling contexts: `[Other context](./other-context.context.md#@related)`
 
 3. **Content focuses on feature-specific analysis:**
    - Technical analysis supporting feature implementation
@@ -258,19 +257,13 @@ FEATURE_FILE="$FEATURE_DIR/$FEATURE_ID.md"
 
 **Location in Feature Document:**
 
-- Add to `## Related Contexts` section
-- List contexts with brief descriptions
-- Use relative path from feature directory
-- Group by type if multiple contexts exist
-
-**Example:**
+Add the context as an inline link in the feature doc body where it fits naturally (e.g. under a relevant prose section or `## Contexts`). Use `#@related` when the relation type matters for sync:
 
 ```markdown
-## Related
-
-- [Technical Analysis](contexts/technical-analysis.context.md#@related) — Communication protocol analysis
-- [Architecture Decisions](contexts/architecture-decisions.context.md#@related) — Analysis of implementation approaches
+See [Technical Analysis](contexts/technical-analysis.context.md#@related) for communication protocol details.
 ```
+
+Do **not** create a `## Related Contexts` or standalone `## Related` section — `## Related` is a migration artifact only. Place links inline in prose. Machine-owned `## References` / `## Used by` are written by `inputs.js sync`; never add them manually.
 
 ## Step 6: Add Cross-References
 
@@ -281,25 +274,23 @@ Ensure bidirectional linking:
 ```markdown
 # Context: Technical Analysis
 
-Status: Draft
-Version: 1.0.0
-Created: YYYY-MM-DD
-Last Updated: YYYY-MM-DD
-Tags: #technical #domain #topic
+## Metadata
 
-## Links to Related Documents
+- status: draft
+- updated: YYYY-MM-DD
+- tags: technical, domain, topic
 
-- Related Feature: [feat-2025-10-feature-name](../feat-2025-10-feature-name.md)
-- Related Plan: [1-implementation-phase.plan.md](../plans/1-implementation-phase.plan.md)
-- Related Context: [architecture-decisions.context.md](./architecture-decisions.context.md)
+Context for [feat-2025-10-feature-name](../feat-2025-10-feature-name.md#@related).
+See also [architecture-decisions.context.md](./architecture-decisions.context.md) and
+[1-implementation-phase.plan.md](../plans/1-implementation-phase.plan.md).
 ```
 
 ### In Feature Document
 
-```markdown
-## Related
+Add inline in the relevant prose section — not as a standalone `## Related` block:
 
-- [Technical Analysis](contexts/technical-analysis.context.md#@related) — Analysis of implementation approaches
+```markdown
+The [Technical Analysis](contexts/technical-analysis.context.md#@related) context covers implementation approach decisions.
 ```
 
 ## Step 7: Validation and Verification
@@ -462,18 +453,16 @@ Before completing this command, verify:
 
 ### Feature-Specific Template Additions
 
-When using the template from `@create-context.md`, ensure the **Links to Related Documents** section includes:
+When using the template from `@create-context.md`, replace the `## Links to Related Documents` section with **inline prose links** in the body — no dedicated section. Required links:
 
 ```markdown
-## Links to Related Documents
+Context for [feat-YYYY-MM-name](../feat-YYYY-MM-name.md#@related).
 
-- Related Feature: [feat-YYYY-MM-name](../feat-YYYY-MM-name.md) # REQUIRED for feature contexts
-- Related Plans: [N-plan-name.plan.md](../plans/N-plan-name.plan.md)
-- Related Contexts: [other-context.context.md](./other-context.context.md)
-- Code Reference: `path/to/file.rs` - Description
+See also [N-plan-name.plan.md](../plans/N-plan-name.plan.md#@source) and
+[other-context.context.md](./other-context.context.md#@related).
 ```
 
-**Note**: The feature link is **required** for feature contexts and should use relative path `../feat-YYYY-MM-name.md`.
+**Note**: The feature backlink is **required** for feature contexts. Use `#@related` for the feature link and sibling contexts; use `#@source` when this context was built from a plan. Never use a standalone `## Links to Related Documents` section — that is a legacy v1 pattern replaced by inline prose links.
 
 ## Related Documents
 

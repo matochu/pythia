@@ -1,17 +1,10 @@
-# Feature: {Title}
+# Feature Template
 
-## Overview
+## Metadata
 
-**Feature ID**: feat-YYYY-MM-descriptive-name  
-**Date Created**: YYYY-MM-DD  
-**Status**: Not Started / In Progress / Under Review / Blocked / Completed  
-**Priority**: High / Medium / Low  
-**Complexity**: 🔴 High (Features are complex by definition)  
-**Owner**: {Name}  
-**Repository**: {repo-url-or-name}  
-**Branch**: feature/{slug-or-topic}  
-**PR**: [link-if-available]  
-**LLM Model**: {model-id}
+- status: draft
+- tags: [tag1]
+- updated: YYYY-MM-DD
 
 <!-- Add no-archive tag here if the feature should never be archived: [no-archive] -->
 
@@ -48,14 +41,12 @@ feat-YYYY-MM-name/
 ### How to Work with This Feature
 
 1. **Before Starting**:
-
    - [ ] Review all Context Documents in contexts/
    - [ ] Review all Implementation Plans in plans/
    - [ ] Check Dependencies section for blockers
    - [ ] Set up Change Tracking
 
 2. **During Implementation**:
-
    - [ ] Update Progress Tracking after each phase
    - [ ] Document key decisions in context documents
    - [ ] Create progress reports in reports/
@@ -63,7 +54,6 @@ feat-YYYY-MM-name/
    - [ ] Add research notes to notes/
 
 3. **Quality Control Phase**:
-
    - [ ] Add/Update tests for all new/changed code
    - [ ] Run coverage and capture summary (target ≥ 85%)
    - [ ] Run AI Solution Analysis (use @analyze-ai-solutions.md)
@@ -193,21 +183,9 @@ High-level breakdown of implementation phases within this feature document:
 **Creating New Plans:**
 Use [@create-feature-plan.md](mdc:commands/create-feature-plan.md) command to create detailed implementation plans for specific phases.
 
-## Related
-
-Link cross-document relations here using typed `#@label` fragments (labels from `.pythia/config/relation.md`):
-
-- [Context: Topic Name](contexts/topic-name.context.md#@related) — Brief description
-
 ### Context Documentation
 
-Context documents provide:
-
-- Technical analysis and research
-- Architecture decisions and rationale
-- Domain knowledge and background
-- Risk assessment and mitigation strategies
-
+Context documents provide analysis and domain knowledge. Create them in `contexts/` as needed.
 Use [@create-context.md](mdc:commands/create-context.md) to create new context documents.
 
 ## Progress Reports
@@ -273,17 +251,14 @@ List any dependencies that might affect this feature:
 Clearly define what it means for this feature to be successfully completed:
 
 - [ ] **Functional Criteria**:
-
   - [ ] [Specific functional requirement 1]
   - [ ] [Specific functional requirement 2]
 
 - [ ] **Technical Criteria**:
-
   - [ ] [Specific technical requirement 1]
   - [ ] [Specific technical requirement 2]
 
 - [ ] **Quality Criteria**:
-
   - [ ] Tests are present for all new/changed code
   - [ ] Coverage meets target (≥ 85%) or deviation justified
   - [ ] AI Solution Analysis passed
@@ -297,12 +272,10 @@ Clearly define what it means for this feature to be successfully completed:
 Describe the expected outcomes and impact of completing this feature:
 
 - [ ] **User/Developer Experience Improvements**:
-
   - [Improvement 1]
   - [Improvement 2]
 
 - [ ] **Performance Improvements**:
-
   - [Improvement 1]
   - [Improvement 2]
 
@@ -390,11 +363,6 @@ If this feature should never be archived, add the `no-archive` tag in the Overvi
 - [Create Context](mdc:commands/create-context.md) - Context documentation
 - [Manage Task](mdc:commands/manage-task.md) - Task management workflow
 - [Feature Template](mdc:templates/feature-template.md) - This template
-
-## Related
-
-- [Related Feature 1](path-to-feature.md#@related)
-- [External Resource 1](https://example.com#@source)
 
 ---
 

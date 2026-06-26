@@ -31,8 +31,8 @@ This order lets checkers read the current metadata/input snapshot. It is still a
 | After edit | Typical nudge |
 |------------|----------------|
 | `*.plan.md` | Plan newer than review → `/review` |
-| `*.review.md` | `NEEDS_REVISION` → `/replan`; `READY` → `/implement`; round ≥ 2 → escalate to user |
-| `*.implementation.md` | Review not READY → warning; impl newer than audit → `/audit` |
+| `*.review.md` | `needs-revision` → `/replan`; `ready` → `/implement`; round ≥ 2 → escalate to user |
+| `*.implementation.md` | Review not ready → warning; impl newer than audit → `/audit` |
 | `*.audit.md` | Verdict routing → `/implement`, `/replan`, `/plan`, or done |
 
 **`/loop` orchestrator**: reconcile nudges with **State Detection** (artifact files are authoritative). When working **outside** `/loop`, treat nudges as routing hints and run the suggested skill or spawn the correct subagent.

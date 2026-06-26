@@ -787,10 +787,10 @@ describe('verify: invalid workflow doc fails closed via materialized runtime', (
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: schema-weak
-- **Title**: Schema Weak
-- **Artifact**: plan
+- status: draft
+- version: v1
+- Schema: pythia-artifact-v1
+- Id: schema-weak
 
 ## Plan revision log
 

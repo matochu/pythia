@@ -27,8 +27,8 @@ let failed = false;
 
 const parsedMetadata = parseArtifactMetadata(content);
 
-// (a) Version exists
-const planVersion = getArtifactField(parsedMetadata, 'Version') ?? extractMetaValue(content, 'Plan-Version');
+// (a) Version exists (v2: lowercase 'version'; legacy fallbacks removed)
+const planVersion = getArtifactField(parsedMetadata, 'version') ?? getArtifactField(parsedMetadata, 'Version');
 if (!planVersion) {
   console.error(`${file}:0: [plan-version-log.missing_version] Version not found in ## Metadata`);
   failed = true;

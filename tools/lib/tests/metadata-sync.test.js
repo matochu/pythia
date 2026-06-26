@@ -39,14 +39,9 @@ function makePlan({ version = 'v1', round = 'Initial plan — no review yet', ro
 
 ## Metadata
 
-- **Schema**: pythia-artifact-v1
-- **Id**: slug
-- **Title**: Plan
-- **Artifact**: plan
-- **Status**: Draft
-- **Version**: ${version}
-- **Branch**: main
-- **Round**: ${round}
+- status: draft
+- version: ${version}
+- branch: main
 
 ## Plan revision log
 
@@ -126,7 +121,7 @@ describe('computeMetadataSync: plan', () => {
       ],
     });
     const sync = computeMetadataSync('slug.plan.md', content);
-    expect(sync?.updates.Version).toBe('v2');
+    expect(sync?.updates.version).toBe('v2');
     // v2: plan metadata Round is NOT synced (round lives in revision log body only)
     expect(sync?.updates.round).toBeUndefined();
   });
@@ -492,14 +487,6 @@ describe('normalizeMetadataBlock — kind precedence', () => {
     const fields = normalizeMetadataBlock({ kind: 'context', parsed });
     const kindField = fields.find(([k]) => k === 'kind');
     expect(kindField?.[1]).toBe('brainstorm');
-  });
-
-  it('Artifact: research-context sets kind: research when no explicit kind', () => {
-    const content = `# My Context\n\n## Metadata\n\n- **Artifact**: research-context\n\nBody.\n`;
-    const parsed = parseArtifactMetadata(content);
-    const fields = normalizeMetadataBlock({ kind: 'context', parsed });
-    const kindField = fields.find(([k]) => k === 'kind');
-    expect(kindField?.[1]).toBe('research');
   });
 
   it('explicit kind: research is preserved over Shape: survey', () => {

@@ -289,12 +289,6 @@ Link to all implementation plans for this feature:
 
 Use [@create-feature-plan.md](mdc:commands/create-feature-plan.md) command to create detailed implementation plans.
 
-## Related
-
-Link cross-document relations using typed `#@label` fragments (vocabulary in `.pythia/config/relation.md`):
-
-- [Context: Topic Name](contexts/topic-name.context.md#@related)
-
 ### Context Documentation
 
 Context documents provide:
@@ -380,17 +374,8 @@ Any additional information, caveats, or considerations:
 - Note 1
 - Note 2
 
-## References
-
-### Core Management
-
-- [Manage Task](mdc:commands/manage-task.md) - Task management workflow
-- [Create Feature Plan](mdc:commands/create-feature-plan.md) - Plan creation
-- [Feature Template](mdc:templates/feature-template.md) - Template reference
-
-## Related
-
-- [Related Feature/Task](path-to-document.md#@related)
+Cross-references to related features or contexts belong inline in the body prose above,
+not in a standalone `## Related` section. Use `[text](path#@label)` when the relation type matters.
 
 ---
 
@@ -438,27 +423,7 @@ mkdir -p "$FEATURE_DIR/notes"
 
 ## Step 5: Add Cross-References
 
-Update related documents to reference this new feature:
-
-```markdown
-## References
-
-### Core Management
-
-- [Manage Task](mdc:commands/manage-task.md) - Task management workflow
-- [Create Feature Plan](mdc:commands/create-feature-plan.md) - Plan creation
-- [Feature Template](mdc:templates/feature-template.md) - Template reference
-
-### Context Integration
-
-- [Create Context Document](mdc:commands/create-context.md) - Context creation
-
-## Status History
-
-| Date       | Status | Notes            |
-| ---------- | ------ | ---------------- |
-| YYYY-MM-DD | New    | Initial creation |
-```
+Cite related features, contexts, and plans **inline in the body prose** of the feature document where they fit naturally. Use `[text](path#@label)` when the relation type matters for sync/backlinks (labels: `source`, `based-on`, `related`). Do **not** create a standalone `## Related` section — see [cross-document-links.md](../skills/workflow/references/cross-document-links.md).
 
 ## Step 6: Generate Workflows Report
 

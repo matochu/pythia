@@ -1,14 +1,10 @@
-# Exploration: {Topic Name}
+# Exploration: {Title}
 
-## Overview
+## Metadata
 
-**Exploration ID**: exploration-descriptive-name  
-**Date Created**: YYYY-MM-DD  
-**Last Updated**: YYYY-MM-DD  
-**Status**: In Progress / Completed  
-**Complexity**: 🟢 Low / 🟡 Medium / 🔴 High  
-**Author**: {Name}  
-**Related Idea**: [Link to the idea](path/to/idea.md)
+- status: draft
+- category: technical
+- updated: YYYY-MM-DD
 
 ## Executive Summary
 
@@ -219,17 +215,6 @@ const exampleFunction = () => {
 };
 ```
 
-### External Resources
-
-- [Resource 1](link)
-- [Resource 2](link)
-- [Resource 3](link)
-
-## Related Documents
-
-- [Document 1](path/to/document.md)
-- [Document 2](path/to/document.md)
-- [Document 3](path/to/document.md)
 
 ---
 

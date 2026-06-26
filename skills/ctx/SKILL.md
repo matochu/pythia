@@ -51,10 +51,12 @@ Choose any of the following:
 - Contexts are created as needed during implementation or research
 - Contexts contain analysis and knowledge not in main feature document
 
-**Linking:**
+**Metadata** (optional fields — see [artifact-metadata.md](../workflow/references/artifact-metadata.md) `### Context`):
+- `kind` — `research` or `brainstorm`
+- `category` — free string domain classifier (e.g. `technical`, `architecture`, `domain-knowledge`)
+- `tags`, `status`, `updated`
 
-- When citing other docs inline, use `#@label` fragments: `[text](path#@label)`. Vocabulary: `.pythia/config/relation.md`.
-- Never edit the trailing `## References` / `## Used by` region — machine-owned.
+**Cross-document links and trailing refs**: see [cross-document-links.md](../workflow/references/cross-document-links.md).
 
 ### Research-type context
 
