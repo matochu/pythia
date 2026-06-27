@@ -650,7 +650,16 @@ function writePythiaPackageJson(target, projectName, frameworkVersion, dryRun) {
       'migrate:check': 'node runtime/migrate/check.js',
       'migrate:verify': 'node runtime/migrate/verify.js',
       'migrate:commit': 'node runtime/migrate/commit.js',
-      'migrate:restore': 'node runtime/migrate/restore.js'
+      'migrate:restore': 'node runtime/migrate/restore.js',
+      'refs:sync': 'node runtime/inputs.js sync',
+      'refs:check': 'node runtime/inputs.js check',
+      'refs:rdeps': 'node runtime/inputs.js rdeps',
+      'refs:owned': 'node runtime/checks/refs-owned.js',
+      'check:metadata': 'node runtime/checks/artifact-metadata.js --strict',
+      'check:structure': 'node runtime/checks/structure.js',
+      'check:links': 'node runtime/checks/links.js',
+      'check:cross-refs': 'node runtime/checks/cross-refs.js',
+      'check:role-boundary': 'node runtime/checks/role-boundary.js'
     }
   };
   if (!dryRun) {
@@ -1226,7 +1235,9 @@ export async function doUpdate(opts) {
     const from = lifecycle.migrationBaseline;
     const to = lifecycle.frameworkVersion;
     if (from && to && from !== to) {
-      console.log(`\n  Ask your agent to verify the migration (skill invocation):\n`);
+      console.log(
+        `\n  Ask your agent to verify the migration (skill invocation):\n`
+      );
       console.log(`    /migrate check ${from} to ${to}\n`);
     }
   }

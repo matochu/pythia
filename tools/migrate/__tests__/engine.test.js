@@ -781,6 +781,12 @@ describe('one-step update: old .pythia without manifest', () => {
     await doUpdate(makeWorkspaceOpts(tmpDir));
     const pkg = JSON.parse(readFileSync(join(tmpDir, '.pythia', 'package.json'), 'utf8'));
     expect(pkg.scripts['migrate:check']).toBe('node runtime/migrate/check.js');
+    expect(pkg.scripts['refs:sync']).toBe('node runtime/inputs.js sync');
+    expect(pkg.scripts['refs:check']).toBe('node runtime/inputs.js check');
+    expect(pkg.scripts['refs:rdeps']).toBe('node runtime/inputs.js rdeps');
+    expect(pkg.scripts['refs:owned']).toBe('node runtime/checks/refs-owned.js');
+    expect(pkg.scripts['check:refs-owned']).toBeUndefined();
+    expect(pkg.scripts['check:refs-fresh']).toBeUndefined();
     for (const script of Object.values(pkg.scripts)) {
       expect(script).not.toContain('--target');
     }

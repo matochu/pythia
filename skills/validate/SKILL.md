@@ -31,9 +31,9 @@ If the basename does not end with one of these suffixes, pass `--type plan|revie
 Do **not** redirect command output into the repo (no `> file.txt` / `tee`).
 
 ```bash
-node .pythia/runtime/checks/structure.js /absolute/path/to/file.md
-node .pythia/runtime/checks/structure.js file1.md file2.md
-node .pythia/runtime/checks/structure.js --type plan /path/to/unusual.md
+npm --prefix .pythia run check:structure -- /absolute/path/to/file.md
+npm --prefix .pythia run check:structure -- file1.md file2.md
+npm --prefix .pythia run check:structure -- --type plan /path/to/unusual.md
 ```
 
 ### Paths

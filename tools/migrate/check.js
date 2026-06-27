@@ -193,7 +193,7 @@ export async function maybeApplySync(targetRoot, staleFiles) {
   if (!staleFiles.length) return null;
   console.log('\nProposed sync batch:');
   for (const item of staleFiles) {
-    console.log(`  node .pythia/runtime/inputs.js sync ${item.file}`);
+    console.log(`  npm --prefix .pythia run refs:sync -- ${item.file}`);
   }
   console.log('\nDry-run preview:');
   for (const item of staleFiles) {
@@ -236,7 +236,10 @@ export function canApplySync({ staleFiles, metadataIssues, refsOwnedIssues }) {
 }
 
 export function isSyncableRefsOwnedIssue(issue) {
-  return issue.message.includes('[refs-owned.phantom_reference]');
+  // Syncable only when ALL error codes are phantom_reference — not phantom_used_by or relation.unknown,
+  // which require manual body-link/relation inspection before sync.
+  const codes = issue.message.match(/\[refs-owned\.[^\]]+\]/g) ?? [];
+  return codes.length > 0 && codes.every((c) => c === '[refs-owned.phantom_reference]');
 }
 
 export function buildSyncBatch(staleFiles, refsOwnedIssues) {
@@ -255,7 +258,7 @@ export async function main() {
   const positional = args.filter((a) => !a.startsWith('-'));
   const [from, to] = positional;
   if (!from || !to || compareSemver(from, to) >= 0) {
-    console.error('Usage: node .pythia/runtime/migrate/check.js <from> <to> [--apply-sync]');
+    console.error('Usage: npm --prefix .pythia run migrate:check -- <from> <to> [--apply-sync]');
     process.exit(2);
   }
 
@@ -328,7 +331,7 @@ export async function main() {
     if (syncBlocked) {
       console.log('\nSync skipped: fix metadata or non-syncable refs-owned warnings before applying inputs sync.');
     } else {
-      console.log('\nFollow-up available: rerun with --apply-sync to preview and approve inputs.js sync for stale or syncable phantom-reference artifacts.');
+      console.log('\nFollow-up available: rerun with --apply-sync to preview and approve refs:sync for stale or syncable phantom-reference artifacts.');
     }
   }
 

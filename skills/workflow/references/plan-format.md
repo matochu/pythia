@@ -237,7 +237,7 @@ _{What does NOT change — e.g. "Wire format unchanged. Plugin call site unchang
 
 From the Pythia repository root, run:
 
-`node .pythia/runtime/checks/structure.js --type plan <path-to-plan.md>`
+`npm --prefix .pythia run check:structure -- --type plan <path-to-plan.md>`
 
 The script checks required sections, metadata keys (including **Status** against **Plan document status**), Navigation step links, and required fields inside each `### Step N` block.
 

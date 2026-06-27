@@ -203,10 +203,10 @@ node .pythia/runtime/migrate/check.js <from> <to>
 The helper:
 
 1. **Collects changed files** — reads `changedPaths` from `.pythia/backups/<version>/state.json` for each version in `(from, to]`, merges and deduplicates them, and reports missing state as WARN only when the version has a migration file.
-2. **Runs verify** — `node .pythia/runtime/migrate/verify.js <to>` validates the current materialized runtime contract. Only `<to>` is available on disk.
-3. **Checks changed files** — strict artifact metadata for workflow markdown plus paths.md invariants for `.pythia/config/paths.md`.
-4. **Checks machine-owned refs** — `refs-owned.js` reports phantom `## References` / `## Used by` entries in changed markdown.
-5. **Checks reference freshness** — `node .pythia/runtime/inputs.js check --all` reports STALE/INVALID refs across all sync-zone `.pythia/` markdown.
+2. **Runs verify** — `npm --prefix .pythia run migrate:verify -- <to>` validates the current materialized runtime contract. Only `<to>` is available on disk.
+3. **Checks changed files** — `npm --prefix .pythia run check:metadata -- --strict <file>` for workflow markdown plus paths.md invariants for `.pythia/config/paths.md`.
+4. **Checks machine-owned refs** — `npm --prefix .pythia run refs:owned -- <file>` reports phantom `## References` / `## Used by` entries in changed markdown.
+5. **Checks reference freshness** — `npm --prefix .pythia run refs:check -- --all` reports STALE/INVALID refs across all sync-zone `.pythia/` markdown.
 6. **Groups STALE refs** — reports root causes such as a changed `.pythia/config/paths.md` or source doc hash.
 7. **Reports terminal state** — `PASS`, `WARN`, or `FAIL`.
 
@@ -218,7 +218,7 @@ For safe remediation, rerun with `--apply-sync`:
 npm --prefix .pythia run migrate:check -- <from> <to> --apply-sync
 ```
 
-`--apply-sync` still prompts before writing. It prints the proposed `inputs.js sync <file>` commands, runs `inputs.js sync <file> --dry-run` previews, asks `Approve sync? [y/n]`, then reruns freshness and refs-owned checks and reports the git owner for `.pythia` (`.pythia` can be its own git repo). Sync is allowed for STALE refs and `refs-owned.phantom_reference` because sync removes trailing refs not backed by body links. Sync is blocked while metadata, `refs-owned.phantom_used_by`, or unknown-relation warnings remain; inspect those files and propose body/frontmatter fixes first. Trailing `## References` and `## Used by` sections are machine-owned; never edit them manually.
+`--apply-sync` still prompts before writing. It prints the proposed `refs:sync -- <file>` commands, runs `refs:sync -- <file> --dry-run` previews, asks `Approve sync? [y/n]`, then reruns freshness and refs-owned checks and reports the git owner for `.pythia` (`.pythia` can be its own git repo). Sync is allowed for STALE refs and `refs-owned.phantom_reference` because sync removes trailing refs not backed by body links. Sync is blocked while metadata, `refs-owned.phantom_used_by`, or unknown-relation warnings remain; inspect those files and propose body/frontmatter fixes first. Trailing `## References` and `## Used by` sections are machine-owned; never edit them manually.
 
 The skill is defined in `skills/migrate/SKILL.md § /migrate check`.
 

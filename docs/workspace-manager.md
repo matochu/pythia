@@ -59,7 +59,7 @@ In the common case — project git at `{project-root}/.git` — both resolve to 
 
 Hooks stay git-based for historical host compatibility (`event.cwd`, Claude `CLAUDE_PROJECT_DIR`). Unifying on manifest-based `projectRoot()` is a future cleanup, not required for 0.3.6.
 
-### `inputs.js check --all`
+### Reference freshness (`refs:check`)
 
 Batch freshness pass over the sync zone (default tree: `.pythia/`):
 
@@ -70,12 +70,33 @@ Batch freshness pass over the sync zone (default tree: `.pythia/`):
 Does not modify files — read-only audit. Run explicitly when you care about document consistency:
 
 ```bash
-node .pythia/runtime/inputs.js check --all
+npm --prefix .pythia run refs:check -- --all
 ```
 
-Single-file check: `node .pythia/runtime/inputs.js check path/to/doc.md`.
+Single-file check: `npm --prefix .pythia run refs:check -- path/to/doc.md`.
 
 **Not** part of `pythia health` — stale or missing refs during active editing are normal; health only verifies the inputs runtime is installed and executable.
+
+Reference commands are grouped under `refs:*` in the materialized `.pythia/package.json`:
+
+```bash
+npm --prefix .pythia run refs:sync -- path/to/doc.md
+npm --prefix .pythia run refs:sync -- path/to/doc.md --dry-run
+npm --prefix .pythia run refs:check -- --all
+npm --prefix .pythia run refs:rdeps -- path/to/doc.md
+npm --prefix .pythia run refs:owned -- path/to/doc.md
+```
+
+The scripts are wrappers over materialized runtime files, so direct `node` calls also work from the workspace root:
+
+```bash
+node .pythia/runtime/inputs.js sync path/to/doc.md --dry-run
+node .pythia/runtime/inputs.js check --all
+node .pythia/runtime/inputs.js rdeps path/to/doc.md
+node .pythia/runtime/checks/refs-owned.js path/to/doc.md
+```
+
+Prefer `npm --prefix .pythia run ...` in skills/docs because it is the stable workspace contract; use direct `node .pythia/runtime/...` when debugging or when npm scripts are unavailable.
 
 ## Commands
 

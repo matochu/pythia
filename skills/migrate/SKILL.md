@@ -177,9 +177,9 @@ The helper:
 - merges and deduplicates changedPaths
 - runs `migrate:verify` for `<to>`
 - scans changed markdown with strict artifact metadata checks
-- scans changed markdown with `refs-owned.js` for phantom `## References` / `## Used by`
+- scans changed markdown with `refs:owned` for phantom `## References` / `## Used by`
 - checks `.pythia/config/paths.md` with the paths invariant checker
-- runs `inputs.js check --all`
+- runs `refs:check -- --all`
 - groups STALE refs by changed dependency/root cause
 - reports `PASS`, `WARN`, or `FAIL`
 
@@ -223,7 +223,7 @@ node .pythia/runtime/migrate/check.js <from> <to> --apply-sync
 ```
 
 `--apply-sync` still prompts before writing. It prints:
-- proposed `inputs.js sync <file>` commands
+- proposed `refs:sync -- <file>` commands
 - `sync --dry-run` preview for every stale or syncable phantom-reference artifact
 - `Approve sync? [y/n]`
 - before/after inputs freshness counts
@@ -242,7 +242,7 @@ Decision rules:
 | `refs-owned.phantom_used_by` or unknown relation | Do not sync automatically; inspect the files and propose a body-link/relation fix |
 | verify FAIL | Stop |
 
-Never edit trailing `## References` or `## Used by` manually. They are machine-owned and must be changed only by `inputs.js sync`.
+Never edit trailing `## References` or `## Used by` manually. They are machine-owned and must be changed only via `refs:sync`.
 
 If the user approves a format fix, edit only the document body/frontmatter required by the artifact contract, then rerun `migrate:check`. If trailing refs become stale or phantom-reference-only after that body edit, use the sync approval flow.
 
@@ -277,18 +277,18 @@ git -C .pythia rev-parse --show-toplevel 2>/dev/null
 3. Merge and deduplicate all `changedPaths`.
 4. Run:
    ```bash
-   node .pythia/runtime/migrate/verify.js <to>
-   node .pythia/runtime/inputs.js check --all
+   npm --prefix .pythia run migrate:verify -- <to>
+   npm --prefix .pythia run refs:check -- --all
    ```
 5. For changed workflow artifact markdown, run:
    ```bash
-   node .pythia/runtime/checks/artifact-metadata.js --strict <file>
-   node .pythia/runtime/checks/refs-owned.js <file>
+   npm --prefix .pythia run check:metadata -- --strict <file>
+   npm --prefix .pythia run refs:owned -- <file>
    ```
 6. For `.pythia/config/paths.md`, verify `role-boundary.js` is present and `doc-structure.js` is absent.
 7. For STALE refs, use dry-run before asking for approval:
    ```bash
-   node .pythia/runtime/inputs.js sync <file> --dry-run
+   npm --prefix .pythia run refs:sync -- <file> --dry-run
    ```
 
 **6. Report format**
@@ -321,7 +321,7 @@ refs-owned scan: OK
 inputs check: WARN — 7 STALE, 0 INVALID
   stale root: ../../../../config/paths.md (7)
 
-Follow-up: rerun with --apply-sync to preview and approve inputs.js sync.
+Follow-up: rerun with --apply-sync to preview and approve refs:sync.
 Summary: migration valid; refs need follow-up
 ```
 
