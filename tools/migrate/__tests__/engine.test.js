@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync, existsSync, cpSync, realpathSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -591,6 +591,63 @@ describe('update: auto-only migration', () => {
   });
 });
 
+// ─── post-update /migrate check hint ──────────────────────────────────────────
+
+describe('update: post-update /migrate check hint', () => {
+  it('prints /migrate check hint after all-auto migrations complete', async () => {
+    await doInit(makeWorkspaceOpts(tmpDir));
+    writeManifest(tmpDir, { migratedVersion: '0.0.0' }, false);
+    const migrDir = join(tmpDir, '.pythia', 'runtime', 'migrations');
+    mkdirSync(migrDir, { recursive: true });
+    cpSync(join(fixturesDir, 'auto-only-migration.md'), join(migrDir, '0.0.1.md'));
+
+    const logs = [];
+    const spy = vi.spyOn(console, 'log').mockImplementation((...args) => logs.push(args.join(' ')));
+    try {
+      await doUpdate(makeWorkspaceOpts(tmpDir));
+    } finally {
+      spy.mockRestore();
+    }
+
+    const combined = logs.join('\n');
+    expect(combined).toMatch(/\/migrate check 0\.0\.0 to /);
+  });
+
+  it('does NOT print hint when no migrations ran', async () => {
+    await doInit(makeWorkspaceOpts(tmpDir));
+
+    const logs = [];
+    const spy = vi.spyOn(console, 'log').mockImplementation((...args) => logs.push(args.join(' ')));
+    try {
+      await doUpdate(makeWorkspaceOpts(tmpDir));
+    } finally {
+      spy.mockRestore();
+    }
+
+    const combined = logs.join('\n');
+    expect(combined).not.toMatch(/\/migrate check/);
+  });
+
+  it('does NOT print hint when LLM steps are pending (completedAllPending=false)', async () => {
+    await doInit(makeWorkspaceOpts(tmpDir));
+    writeManifest(tmpDir, { migratedVersion: '0.0.0' }, false);
+    const migrDir = join(tmpDir, '.pythia', 'runtime', 'migrations');
+    mkdirSync(migrDir, { recursive: true });
+    cpSync(join(fixturesDir, 'mixed-migration.md'), join(migrDir, '0.0.2.md'));
+
+    const logs = [];
+    const spy = vi.spyOn(console, 'log').mockImplementation((...args) => logs.push(args.join(' ')));
+    try {
+      await doUpdate(makeWorkspaceOpts(tmpDir));
+    } finally {
+      spy.mockRestore();
+    }
+
+    const combined = logs.join('\n');
+    expect(combined).not.toMatch(/\/migrate check/);
+  });
+});
+
 // ─── update: mixed migration flow ─────────────────────────────────────────────
 
 describe('update: mixed migration (auto+llm)', () => {
@@ -620,6 +677,26 @@ describe('update: mixed migration (auto+llm)', () => {
     expect(state.llmRemaining).toBe(true);
 
     // The mixed migration 0.0.2 is NOT committed — it stays as an unresolved mixed state.
+    expect(findUnresolvedMixedStates(tmpDir).map((s) => s.migrationVersion)).toContain('0.0.2');
+  });
+
+  it('auto migration before LLM migration: auto commits, LLM does not advance migratedVersion', async () => {
+    await doInit(makeWorkspaceOpts(tmpDir));
+
+    const migrDir = join(tmpDir, '.pythia', 'runtime', 'migrations');
+    mkdirSync(migrDir, { recursive: true });
+    // 0.0.1 = auto-only, 0.0.2 = mixed (LLM)
+    cpSync(join(fixturesDir, 'auto-only-migration.md'), join(migrDir, '0.0.1.md'));
+    cpSync(join(fixturesDir, 'mixed-migration.md'), join(migrDir, '0.0.2.md'));
+    writeManifest(tmpDir, { migratedVersion: '0.0.0' }, false);
+
+    await doUpdate(makeWorkspaceOpts(tmpDir));
+
+    // Auto migration 0.0.1 must be committed
+    expect(readManifest(tmpDir).migratedVersion).toBe('0.0.1');
+    // LLM migration 0.0.2 state: llmRemaining = true
+    expect(readState(tmpDir, '0.0.2')?.llmRemaining).toBe(true);
+    // 0.0.2 is unresolved
     expect(findUnresolvedMixedStates(tmpDir).map((s) => s.migrationVersion)).toContain('0.0.2');
   });
 

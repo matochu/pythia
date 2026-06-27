@@ -140,3 +140,88 @@ If unresolved mixed state exists and the runtime version differs from `manifest.
 ## No preview / dry-run for llm steps
 
 Preview mode: describe what changes you would make but write nothing. Do not commit.
+
+---
+
+## /migrate check
+
+Post-update manual verification. Run after `pythia update` to confirm the migration applied correctly.
+
+### Trigger
+
+```
+/migrate check <from> to <to>
+```
+
+Example: `/migrate check 0.3.6 to 0.3.8`
+
+`<from>` = version before update, `<to>` = version after update.
+
+### Procedure
+
+**1. Collect changedPaths**
+
+For each version between `<from>` and `<to>`, read state if available:
+
+```bash
+cat .pythia/backups/<version>/state.json
+```
+
+Merge `changedPaths` from all found state files. If state.json is missing for a version — note as WARN and continue.
+
+If **no state.json exists at all**: skip manual file enumeration — verify (step 2) and inputs check (step 4) cover all relevant files automatically.
+
+**2. Run verify for the current (`<to>`) version**
+
+```bash
+node .pythia/runtime/migrate/verify.js <to>
+```
+
+Only `<to>` — only the current runtime is on disk. Output shows [OK]/[FAIL] per file. If verify script is unavailable — note as WARN.
+
+**3. Check changedPaths manually (when available)**
+
+For each file in the merged changedPaths list (sample: up to 10 files per type when >50 total):
+
+| File type | What to verify |
+|---|---|
+| `*.plan.md`, `*.review.md`, `*.implementation.md`, `*.audit.md` | `## Metadata` exists, `- status:` lowercase, no `Schema:` / `Artifact:` / `Feature:` keys |
+| `*.context.md`, `feat-*.md`, `*.retro.md` | v2 metadata, no phantom `## References` (entries without body citation) |
+| `.pythia/config/paths.md` | checker lists current: `role-boundary.js` present, `doc-structure.js` absent |
+| `*.ctx.md` | no bold-bullet metadata (`- **Key**:` format) |
+
+**4. Check inputs freshness**
+
+```bash
+node .pythia/runtime/inputs.js check --all
+```
+
+Scans all data files under `.pythia/` (excludes runtime/config/backups automatically). STALE / INVALID entries = WARN.
+
+**5. Resolve issues**
+
+- **STALE refs** — apply sync with user consent:
+  ```bash
+  node .pythia/runtime/inputs.js sync <file>
+  ```
+- **Metadata errors** (forbidden keys, wrong format) — do not touch; describe the problem and recommend `/migrate` or manual fix
+- **verify FAIL / critical** — stop and report to user
+
+**6. Report**
+
+```
+migrate check 0.3.6 → 0.3.8
+
+State: 0.3.8 (102 files) | 0.3.7: no state — verify covers all
+verify 0.3.8: OK
+
+File checks (102 files):
+  ✓ .pythia/config/paths.md
+  ✓ .pythia/workflows/.../feat-example/contexts/example.context.md
+  ⚠ .pythia/workflows/.../feat-example/notes/feat-example.retro.md
+      bare Date: and Feature: in preamble — run /migrate to fix
+
+inputs check: 10 STALE (paths.md hash changed) → synced
+
+Summary: verify OK · 1 warning (needs /migrate) · 10 stale refs (fixed)
+```

@@ -1,15 +1,33 @@
 import { createHash } from 'crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, readdirSync, rmSync } from 'fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  cpSync,
+  readdirSync,
+  rmSync
+} from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
-import { loadZonesForBootstrap, deriveSurfacesAndSubstitutions, loadZones, forEachWorkflowChecker, SURFACE_KEY_MAP, DEFAULT_SURFACE_PATHS } from '../lib/paths.js';
+import {
+  loadZonesForBootstrap,
+  deriveSurfacesAndSubstitutions,
+  loadZones,
+  forEachWorkflowChecker,
+  SURFACE_KEY_MAP,
+  DEFAULT_SURFACE_PATHS
+} from '../lib/paths.js';
 import {
   refreshRegistryCheck,
-  printRegistryUpdateNotice,
+  printRegistryUpdateNotice
 } from './registry-check.js';
 import { printUpdateHealthReport } from './health.js';
-import { isPythiaManagedHook, isPythiaManagedHookEntry } from '../lib/hook-detect.js';
+import {
+  isPythiaManagedHook,
+  isPythiaManagedHookEntry
+} from '../lib/hook-detect.js';
 import { mergeHooksJson } from '../lib/merge-hooks-json.js';
 export { readManifest, writeManifest } from '../migrate/manifest.js';
 import { readManifest, writeManifest } from '../migrate/manifest.js';
@@ -61,7 +79,6 @@ function hasProtectedArtifacts(target) {
   return entries.some((e) => e !== '.DS_Store' && e !== '.git');
 }
 
-
 function readPackageVersion(packageRoot) {
   const pkgPath = join(packageRoot, 'package.json');
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
@@ -72,11 +89,19 @@ function readPackageVersion(packageRoot) {
 function renderInstructions(source, tool, skillsPath, file = '') {
   if (file === 'AGENTS.md') {
     return source
-      .replace(/^# Project Instructions \(\{tool\}\)/m, '# Project Instructions')
-      .replace(/Single source of \{tool\} instructions/g, 'Single source of agent instructions')
+      .replace(
+        /^# Project Instructions \(\{tool\}\)/m,
+        '# Project Instructions'
+      )
+      .replace(
+        /Single source of \{tool\} instructions/g,
+        'Single source of agent instructions'
+      )
       .replace(/\{skillsPath\}/g, skillsPath);
   }
-  return source.replace(/\{tool\}/g, tool).replace(/\{skillsPath\}/g, skillsPath);
+  return source
+    .replace(/\{tool\}/g, tool)
+    .replace(/\{skillsPath\}/g, skillsPath);
 }
 
 function seedIfMissing(target, relpath, content, dryRun) {
@@ -95,7 +120,12 @@ function seedIfMissing(target, relpath, content, dryRun) {
 function backupManagedOverwrite(target, relpath, currentContent) {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const safeRel = relpath.replace(/\//g, '--');
-  const backupRel = join('.pythia', 'backups', 'managed-overwrites', `${safeRel}.${stamp}`);
+  const backupRel = join(
+    '.pythia',
+    'backups',
+    'managed-overwrites',
+    `${safeRel}.${stamp}`
+  );
   const backupDest = join(target, backupRel);
   mkdirSync(dirname(backupDest), { recursive: true });
   writeFileSync(backupDest, currentContent, 'utf8');
@@ -115,7 +145,9 @@ function writeManaged(target, relpath, content, existingManifest, dryRun) {
 
     if (isModified) {
       if (dryRun) {
-        console.log(`  [backup+overwrite] ${relpath} (local modifications detected)`);
+        console.log(
+          `  [backup+overwrite] ${relpath} (local modifications detected)`
+        );
       } else {
         backupManagedOverwrite(target, relpath, currentContent);
         writeFileSync(dest, content, 'utf8');
@@ -162,7 +194,13 @@ function installSkills(packageRoot, target, surfaces, dryRun) {
 // Prune ONLY skills pythia previously installed and that are now gone from the package.
 // `previousInstalled` is the manifest's installedSkills list. Skills pythia never installed
 // (user's own custom skills in a surface) are never touched.
-function pruneSkills(packageRoot, target, surfaces, dryRun, previousInstalled = []) {
+function pruneSkills(
+  packageRoot,
+  target,
+  surfaces,
+  dryRun,
+  previousInstalled = []
+) {
   const skillsSource = join(packageRoot, 'skills');
   if (!existsSync(skillsSource)) return;
   const sourceSkills = new Set(readdirSync(skillsSource));
@@ -194,10 +232,17 @@ function packageSkillNames(packageRoot) {
 
 const _packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
 const _registryZones = loadZonesForBootstrap(_packageRoot);
-const { defaultSurfaces: DEFAULT_SURFACES, substitutions: SUBSTITUTIONS } = deriveSurfacesAndSubstitutions(_registryZones);
+const { defaultSurfaces: DEFAULT_SURFACES, substitutions: SUBSTITUTIONS } =
+  deriveSurfacesAndSubstitutions(_registryZones);
 
 export async function doInit(opts) {
-  const { target, dryRun, packageRoot, reconfigure = false, yes = false } = opts;
+  const {
+    target,
+    dryRun,
+    packageRoot,
+    reconfigure = false,
+    yes = false
+  } = opts;
 
   const existingManifestData = readManifest(target);
   const { surfaces, gitStrategy } = await resolveSurfacesAndGit(
@@ -229,7 +274,7 @@ export async function doInit(opts) {
     adopted,
     noMigrate: false,
     registryFetch: opts.registryFetch,
-    label: 'init',
+    label: 'init'
   });
 
   console.log(`[init] done — workspace ready${dryRun ? ' (dry-run)' : ''}`);
@@ -242,7 +287,9 @@ function materializeHookRuntime(packageRoot, target, dryRun) {
   if (!existsSync(hooksSourceDir)) return null;
 
   if (dryRun) {
-    console.log('  [materialize] hook runtime → .pythia/runtime/{lib,checks,hooks,package-paths.md}');
+    console.log(
+      '  [materialize] hook runtime → .pythia/runtime/{lib,checks,hooks,package-paths.md}'
+    );
     return null;
   }
 
@@ -250,14 +297,14 @@ function materializeHookRuntime(packageRoot, target, dryRun) {
   for (const [src, dst] of [
     [libSourceDir, join(runtimeDir, 'lib')],
     [checksSourceDir, join(runtimeDir, 'checks')],
-    [hooksSourceDir, join(runtimeDir, 'hooks')],
+    [hooksSourceDir, join(runtimeDir, 'hooks')]
   ]) {
     if (existsSync(src)) {
       mkdirSync(dst, { recursive: true });
       cpSync(src, dst, {
         recursive: true,
         force: true,
-        filter: (s) => !s.includes('/tests/') && !s.includes('/__tests__/'),
+        filter: (s) => !s.includes('/tests/') && !s.includes('/__tests__/')
       });
     }
   }
@@ -269,18 +316,38 @@ main();
     mkdirSync(runtimeDir, { recursive: true });
     writeFileSync(join(runtimeDir, 'inputs.js'), inputsStub, 'utf8');
   }
-  const packagePathsSrc = join(packageRoot, 'assets', 'base', 'config', 'paths.md');
+  const packagePathsSrc = join(
+    packageRoot,
+    'assets',
+    'base',
+    'config',
+    'paths.md'
+  );
   if (existsSync(packagePathsSrc)) {
     mkdirSync(runtimeDir, { recursive: true });
-    cpSync(packagePathsSrc, join(runtimeDir, 'package-paths.md'), { force: true });
+    cpSync(packagePathsSrc, join(runtimeDir, 'package-paths.md'), {
+      force: true
+    });
   }
-  const contractRefSrc = join(packageRoot, 'skills', 'workflow', 'references', 'artifact-metadata.md');
+  const contractRefSrc = join(
+    packageRoot,
+    'skills',
+    'workflow',
+    'references',
+    'artifact-metadata.md'
+  );
   if (existsSync(contractRefSrc)) {
     const contractDoc = readFileSync(contractRefSrc, 'utf8');
-    const contractMatch = contractDoc.match(/```json artifact-metadata-contract\n([\s\S]*?)\n```/);
+    const contractMatch = contractDoc.match(
+      /```json artifact-metadata-contract\n([\s\S]*?)\n```/
+    );
     if (contractMatch) {
       mkdirSync(runtimeDir, { recursive: true });
-      writeFileSync(join(runtimeDir, 'metadata-contract.json'), contractMatch[1], 'utf8');
+      writeFileSync(
+        join(runtimeDir, 'metadata-contract.json'),
+        contractMatch[1],
+        'utf8'
+      );
     }
   }
   ensurePythiaGitignore(target, dryRun);
@@ -298,17 +365,25 @@ function materializeMigrateRuntime(packageRoot, target, dryRun) {
 
   if (!dryRun) {
     mkdirSync(engineDst, { recursive: true });
-    cpSync(engineSrc, engineDst, { recursive: true, force: true, filter: (src) => !src.includes('__tests__') });
+    cpSync(engineSrc, engineDst, {
+      recursive: true,
+      force: true,
+      filter: (src) => !src.includes('__tests__')
+    });
     if (existsSync(migrationsSrc)) {
       mkdirSync(migrationsDst, { recursive: true });
       for (const f of readdirSync(migrationsSrc)) {
         if (/^\d+\.\d+\.\d+\.md$/.test(f)) {
-          cpSync(join(migrationsSrc, f), join(migrationsDst, f), { force: true });
+          cpSync(join(migrationsSrc, f), join(migrationsDst, f), {
+            force: true
+          });
         }
       }
     }
   } else {
-    console.log('  [materialize] migrate runtime → .pythia/runtime/{migrate,migrations}');
+    console.log(
+      '  [materialize] migrate runtime → .pythia/runtime/{migrate,migrations}'
+    );
   }
 }
 
@@ -316,7 +391,10 @@ function ensurePythiaGitignore(target, dryRun) {
   if (dryRun) return;
   const gitignorePath = join(target, '.pythia', '.gitignore');
   const required = 'runtime/\nbackups/\n';
-  if (!existsSync(gitignorePath) || !readFileSync(gitignorePath, 'utf8').includes('runtime/')) {
+  if (
+    !existsSync(gitignorePath) ||
+    !readFileSync(gitignorePath, 'utf8').includes('runtime/')
+  ) {
     mkdirSync(dirname(gitignorePath), { recursive: true });
     writeFileSync(gitignorePath, required, 'utf8');
   }
@@ -328,7 +406,9 @@ function installHooks(packageRoot, target, surfaces, dryRun, hooksAbsDir) {
 
   const hooksDir = hooksAbsDir ?? join(target, '.pythia', 'runtime', 'hooks');
   if (!hooksAbsDir && !dryRun && !existsSync(hooksDir)) {
-    throw new Error('installHooks: hook runtime not materialized — call materializeHookRuntime first');
+    throw new Error(
+      'installHooks: hook runtime not materialized — call materializeHookRuntime first'
+    );
   }
 
   if (dryRun) {
@@ -340,8 +420,15 @@ function installHooks(packageRoot, target, surfaces, dryRun, hooksAbsDir) {
 
   if (surfaces.some((s) => s.includes('claude'))) {
     mergeClaudeHooks(packageRoot, target, hooksAbsPath, dryRun);
-    stripRetiredPythiaHookEvents(join(target, '.claude', 'settings.json'), dryRun);
-    stripLegacyClaudePostToolUse(join(target, '.claude', 'settings.json'), hooksAbsPath, dryRun);
+    stripRetiredPythiaHookEvents(
+      join(target, '.claude', 'settings.json'),
+      dryRun
+    );
+    stripLegacyClaudePostToolUse(
+      join(target, '.claude', 'settings.json'),
+      hooksAbsPath,
+      dryRun
+    );
   }
 
   if (surfaces.some((s) => s.includes('agents'))) {
@@ -356,7 +443,14 @@ function installHooks(packageRoot, target, surfaces, dryRun, hooksAbsDir) {
 }
 
 function refreshManagedCodexRules(packageRoot, target, dryRun) {
-  const rulesTemplate = join(packageRoot, 'tools', 'hooks', 'wiring', 'codex-rules', 'default.rules');
+  const rulesTemplate = join(
+    packageRoot,
+    'tools',
+    'hooks',
+    'wiring',
+    'codex-rules',
+    'default.rules'
+  );
   if (!existsSync(rulesTemplate)) return;
   const rulesTarget = join(target, '.codex', 'rules', 'default.rules');
   const managedHeader = '# Pythia workspace guardrails\n';
@@ -384,22 +478,26 @@ function stripLegacyClaudePostToolUse(settingsPath, hooksAbsDir, dryRun) {
   if (!settings.hooks?.PostToolUse) return;
 
   const managedCommands = new Set(
-    ['pre.js', 'post.js', 'stop.js', 'cursor-post.js'].map((f) => resolve(join(hooksAbsDir, f)))
+    ['pre.js', 'post.js', 'stop.js', 'cursor-post.js'].map((f) =>
+      resolve(join(hooksAbsDir, f))
+    )
   );
 
   let removed = 0;
   for (const group of settings.hooks.PostToolUse) {
     if (!group.hooks) continue;
-    const groupManaged = group._managed === 'pythia' || group._managed === 'pythia-managed';
+    const groupManaged =
+      group._managed === 'pythia' || group._managed === 'pythia-managed';
     const before = group.hooks.length;
     group.hooks = group.hooks.filter((h) => {
-      if (h._managed === 'pythia' || h._managed === 'pythia-managed') return true;
+      if (h._managed === 'pythia' || h._managed === 'pythia-managed')
+        return true;
       const cmdParts = [];
       if (h.command) cmdParts.push(String(h.command));
       if (Array.isArray(h.args)) cmdParts.push(...h.args.map(String));
       const targetsManagedScript =
-        cmdParts.some((part) => managedCommands.has(resolve(part)))
-        || cmdParts.some((p) => p.includes('.pythia/runtime/hooks'));
+        cmdParts.some((part) => managedCommands.has(resolve(part))) ||
+        cmdParts.some((p) => p.includes('.pythia/runtime/hooks'));
       if (!targetsManagedScript) return true;
       // Keep inner hooks in the group mergeClaudeHooks just wrote; strip legacy duplicates elsewhere.
       if (groupManaged) return true;
@@ -407,7 +505,9 @@ function stripLegacyClaudePostToolUse(settingsPath, hooksAbsDir, dryRun) {
     });
     removed += before - group.hooks.length;
   }
-  settings.hooks.PostToolUse = settings.hooks.PostToolUse.filter((g) => g.hooks?.length > 0);
+  settings.hooks.PostToolUse = settings.hooks.PostToolUse.filter(
+    (g) => g.hooks?.length > 0
+  );
 
   if (removed > 0 && !dryRun) {
     writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
@@ -418,11 +518,17 @@ function stripLegacyClaudePostToolUse(settingsPath, hooksAbsDir, dryRun) {
 function installCursorHooks(packageRoot, target, hooksAbsDir, dryRun) {
   mergeHooksJson({
     targetPath: join(target, '.cursor', 'hooks.json'),
-    templatePath: join(packageRoot, 'tools', 'hooks', 'wiring', 'cursor-hooks.json'),
+    templatePath: join(
+      packageRoot,
+      'tools',
+      'hooks',
+      'wiring',
+      'cursor-hooks.json'
+    ),
     hooksAbsDir,
     dryRun,
     logLabel: '.cursor/hooks.json',
-    defaultDoc: { version: 1, hooks: {} },
+    defaultDoc: { version: 1, hooks: {} }
   });
 }
 
@@ -433,23 +539,37 @@ function warnMissingCheckers(target, label = 'update') {
   forEachWorkflowChecker(zones, (base) => {
     const checkPath = join(checksDir, base);
     if (!existsSync(checkPath)) {
-      console.warn(`[${label}] paths.md references checker ${base} but it is missing from .pythia/runtime/checks/`);
+      console.warn(
+        `[${label}] paths.md references checker ${base} but it is missing from .pythia/runtime/checks/`
+      );
     }
   });
 }
 
 function mergeClaudeHooks(packageRoot, target, hooksAbsDir, dryRun) {
   const settingsPath = join(target, '.claude', 'settings.json');
-  const templatePath = join(packageRoot, 'tools', 'hooks', 'wiring', 'claude-settings.json');
+  const templatePath = join(
+    packageRoot,
+    'tools',
+    'hooks',
+    'wiring',
+    'claude-settings.json'
+  );
   if (!existsSync(templatePath)) return;
-  const wiring = JSON.parse(readFileSync(templatePath, 'utf8').replace(/{{HOOKS_DIR}}/g, hooksAbsDir));
+  const wiring = JSON.parse(
+    readFileSync(templatePath, 'utf8').replace(/{{HOOKS_DIR}}/g, hooksAbsDir)
+  );
   _mergeClaudeHooks(settingsPath, wiring.hooks, dryRun);
 }
 
 function _mergeClaudeHooks(settingsPath, newHooks, dryRun) {
   let settings = {};
   if (existsSync(settingsPath)) {
-    try { settings = JSON.parse(readFileSync(settingsPath, 'utf8')); } catch { /* malformed */ }
+    try {
+      settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+    } catch {
+      /* malformed */
+    }
   }
 
   if (!settings.hooks) settings.hooks = {};
@@ -457,7 +577,9 @@ function _mergeClaudeHooks(settingsPath, newHooks, dryRun) {
   for (const [event, entries] of Object.entries(newHooks)) {
     if (!settings.hooks[event]) settings.hooks[event] = [];
     // Remove previously managed entries (marker check)
-    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
+    settings.hooks[event] = settings.hooks[event].filter(
+      (h) => !isPythiaManagedHookEntry(h)
+    );
     // Add new managed entries with marker
     for (const entry of entries) {
       settings.hooks[event].push({ ...entry, _managed: 'pythia' });
@@ -487,7 +609,9 @@ function stripRetiredPythiaHookEvents(settingsPath, dryRun) {
   for (const event of retiredEvents) {
     if (!settings.hooks[event]) continue;
     const before = settings.hooks[event].length;
-    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
+    settings.hooks[event] = settings.hooks[event].filter(
+      (h) => !isPythiaManagedHookEntry(h)
+    );
     if (settings.hooks[event].length !== before) changed = true;
     if (settings.hooks[event].length === 0) delete settings.hooks[event];
   }
@@ -501,10 +625,16 @@ function stripRetiredPythiaHookEvents(settingsPath, dryRun) {
 function installCodexHooks(packageRoot, target, hooksAbsDir, dryRun) {
   mergeHooksJson({
     targetPath: join(target, 'hooks.json'),
-    templatePath: join(packageRoot, 'tools', 'hooks', 'wiring', 'codex-hooks.json'),
+    templatePath: join(
+      packageRoot,
+      'tools',
+      'hooks',
+      'wiring',
+      'codex-hooks.json'
+    ),
     hooksAbsDir,
     dryRun,
-    logLabel: 'hooks.json',
+    logLabel: 'hooks.json'
   });
 }
 
@@ -519,14 +649,16 @@ function writePythiaPackageJson(target, projectName, frameworkVersion, dryRun) {
       'migrate:apply': 'node runtime/migrate/apply.js',
       'migrate:verify': 'node runtime/migrate/verify.js',
       'migrate:commit': 'node runtime/migrate/commit.js',
-      'migrate:restore': 'node runtime/migrate/restore.js',
-    },
+      'migrate:restore': 'node runtime/migrate/restore.js'
+    }
   };
   if (!dryRun) {
     mkdirSync(dirname(pkgPath), { recursive: true });
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
   } else {
-    console.log(`  [write] .pythia/package.json (frameworkVersion=${frameworkVersion})`);
+    console.log(
+      `  [write] .pythia/package.json (frameworkVersion=${frameworkVersion})`
+    );
   }
 }
 
@@ -537,7 +669,7 @@ const MANAGED_PRE_UPDATE_BACKUP = [
   '.claude',
   '.agents',
   '.codex',
-  '.cursor',
+  '.cursor'
 ];
 
 function createPreUpdateBackup(target, dryRun, reason) {
@@ -566,8 +698,11 @@ function createPreUpdateBackup(target, dryRun, reason) {
   const snapshotDir = join(backupDir, '.pythia');
   mkdirSync(snapshotDir, { recursive: true });
   for (const entry of readdirSync(pythiaDir)) {
-    if (entry === '.git' || entry === 'runtime' || entry === 'backups') continue;
-    cpSync(join(pythiaDir, entry), join(snapshotDir, entry), { recursive: true });
+    if (entry === '.git' || entry === 'runtime' || entry === 'backups')
+      continue;
+    cpSync(join(pythiaDir, entry), join(snapshotDir, entry), {
+      recursive: true
+    });
   }
 
   for (const rel of MANAGED_PRE_UPDATE_BACKUP) {
@@ -581,7 +716,9 @@ function createPreUpdateBackup(target, dryRun, reason) {
   const gitignorePath = join(target, '.pythia', 'backups', '.gitignore');
   if (!existsSync(gitignorePath)) writeFileSync(gitignorePath, '*\n', 'utf8');
 
-  console.log(`  backed up pre-update .pythia + managed surfaces → ${relBackupDir}`);
+  console.log(
+    `  backed up pre-update .pythia + managed surfaces → ${relBackupDir}`
+  );
   return relBackupDir;
 }
 
@@ -599,33 +736,68 @@ async function finalizeWorkspaceLifecycle(opts) {
     label = 'update',
     previousInstalled = [],
     existingGenerated = {},
-    preUpdateBackup = null,
+    preUpdateBackup = null
   } = opts;
 
   const assetsDir = join(packageRoot, 'assets');
-  if (!existsSync(assetsDir)) throw new Error(`assets/ not found at ${assetsDir}`);
+  if (!existsSync(assetsDir))
+    throw new Error(`assets/ not found at ${assetsDir}`);
   if (!existsSync(join(packageRoot, 'skills'))) {
     throw new Error(`skills/ not found at ${join(packageRoot, 'skills')}`);
   }
 
-  const instructionSource = readFileSync(join(assetsDir, 'instructions.md'), 'utf8');
+  const instructionSource = readFileSync(
+    join(assetsDir, 'instructions.md'),
+    'utf8'
+  );
   const frameworkVersion = readPackageVersion(packageRoot);
 
   ensureGitStrategy(target, gitStrategy, dryRun);
 
   const baseDir = join(assetsDir, 'base');
-  seedIfMissing(target, '.pythia/config/settings.md', readFileSync(join(baseDir, 'config/settings.md'), 'utf8'), dryRun);
-  seedIfMissing(target, '.pythia/README.md', readFileSync(join(baseDir, 'README.md'), 'utf8'), dryRun);
-  seedIfMissing(target, '.pythia/config/paths.md', readFileSync(join(baseDir, 'config/paths.md'), 'utf8'), dryRun);
-  seedIfMissing(target, '.pythia/config/relation.md', readFileSync(join(baseDir, 'config/relation.md'), 'utf8'), dryRun);
+  seedIfMissing(
+    target,
+    '.pythia/config/settings.md',
+    readFileSync(join(baseDir, 'config/settings.md'), 'utf8'),
+    dryRun
+  );
+  seedIfMissing(
+    target,
+    '.pythia/README.md',
+    readFileSync(join(baseDir, 'README.md'), 'utf8'),
+    dryRun
+  );
+  seedIfMissing(
+    target,
+    '.pythia/config/paths.md',
+    readFileSync(join(baseDir, 'config/paths.md'), 'utf8'),
+    dryRun
+  );
+  seedIfMissing(
+    target,
+    '.pythia/config/relation.md',
+    readFileSync(join(baseDir, 'config/relation.md'), 'utf8'),
+    dryRun
+  );
   seedIfMissing(target, '.pythia/workflows/.gitkeep', '', dryRun);
 
   const manifest = {};
   const activeSurfaces = [];
   for (const sub of SUBSTITUTIONS) {
     if (!surfaces.includes(sub.skillsPath)) continue;
-    const content = renderInstructions(instructionSource, sub.tool, sub.skillsPath, sub.file);
-    const hash = writeManaged(target, sub.file, content, existingGenerated, dryRun);
+    const content = renderInstructions(
+      instructionSource,
+      sub.tool,
+      sub.skillsPath,
+      sub.file
+    );
+    const hash = writeManaged(
+      target,
+      sub.file,
+      content,
+      existingGenerated,
+      dryRun
+    );
     manifest[sub.file] = dryRun ? sha256(content) : hash;
     activeSurfaces.push(sub.skillsPath);
   }
@@ -645,8 +817,15 @@ async function finalizeWorkspaceLifecycle(opts) {
   installHooks(packageRoot, target, activeSurfaces, dryRun, hooksAbsDir);
   materializeMigrateRuntime(packageRoot, target, dryRun);
 
-  const pkgJson = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'));
-  writePythiaPackageJson(target, pkgJson.name ?? 'project', frameworkVersion, dryRun);
+  const pkgJson = JSON.parse(
+    readFileSync(join(packageRoot, 'package.json'), 'utf8')
+  );
+  writePythiaPackageJson(
+    target,
+    pkgJson.name ?? 'project',
+    frameworkVersion,
+    dryRun
+  );
 
   const manifestData = {
     frameworkVersion,
@@ -655,12 +834,13 @@ async function finalizeWorkspaceLifecycle(opts) {
     surfaces: activeSurfaces,
     gitStrategy,
     installedSkills: packageSkillNames(packageRoot),
-    generated: manifest,
+    generated: manifest
   };
-  if (existingManifest?.registryCheck) manifestData.registryCheck = existingManifest.registryCheck;
+  if (existingManifest?.registryCheck)
+    manifestData.registryCheck = existingManifest.registryCheck;
   writeManifest(target, manifestData, dryRun);
 
-  await applyMigrations(
+  const migrationResult = await applyMigrations(
     packageRoot,
     target,
     { ...manifestData, migratedVersion: migrationBaseline },
@@ -677,58 +857,91 @@ async function finalizeWorkspaceLifecycle(opts) {
     const registryCheck = refreshRegistryCheck(target, {
       dryRun: false,
       force: true,
-      fetchLatest: registryFetch,
+      fetchLatest: registryFetch
     });
     printRegistryUpdateNotice(target, frameworkVersion, registryCheck);
     printUpdateHealthReport(target);
   }
+  return { migrationBaseline, frameworkVersion, migrationResult };
 }
 
 /** Print a rollback offer after a migration did not complete. Does NOT auto-roll back. */
-function offerMigrationRollback(target, version, label, preUpdateBackup, reason) {
+function offerMigrationRollback(
+  target,
+  version,
+  label,
+  preUpdateBackup,
+  reason
+) {
   console.error('');
   console.error(`[${label}] migration ${version} did not complete: ${reason}`);
-  console.error(`[${label}] Changes were NOT rolled back automatically — migrated files are kept as-is, version not bumped.`);
+  console.error(
+    `[${label}] Changes were NOT rolled back automatically — migrated files are kept as-is, version not bumped.`
+  );
   if (preUpdateBackup) {
     console.error(`[${label}] To roll back to the pre-update state, run:`);
     console.error(`    npm --prefix .pythia run migrate:restore -- ${version}`);
-    console.error(`[${label}] (restores .pythia data + surfaces from ${preUpdateBackup}; runtime regenerates on next update)`);
+    console.error(
+      `[${label}] (restores .pythia data + surfaces from ${preUpdateBackup}; runtime regenerates on next update)`
+    );
   } else {
-    console.error(`[${label}] No pre-update backup available — fix the reported files and re-run update, or restore from git.`);
+    console.error(
+      `[${label}] No pre-update backup available — fix the reported files and re-run update, or restore from git.`
+    );
   }
   process.exitCode = 1;
 }
 
-async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate, label = 'update', preUpdateBackup = null) {
-  const { inPendingRange, sortVersions } = await import('../migrate/semver.js').catch(() => ({}));
-  const { findUnresolvedMixedStates, writeState, readState } = await import('../migrate/state.js').catch(() => ({}));
-  const { parseMigration, migrationHasLlm } = await import('../migrate/parse.js').catch(() => ({}));
+async function applyMigrations(
+  packageRoot,
+  target,
+  manifest,
+  dryRun,
+  noMigrate,
+  label = 'update',
+  preUpdateBackup = null
+) {
+  const { inPendingRange, sortVersions } =
+    await import('../migrate/semver.js').catch(() => ({}));
+  const { findUnresolvedMixedStates, writeState, readState } =
+    await import('../migrate/state.js').catch(() => ({}));
+  const { parseMigration, migrationHasLlm } =
+    await import('../migrate/parse.js').catch(() => ({}));
   const { runOp } = await import('../migrate/ops.js').catch(() => ({}));
 
-  const { commitMigrationVersion } = await import('../migrate/commit.js').catch(() => ({}));
+  const { commitMigrationVersion } = await import('../migrate/commit.js').catch(
+    () => ({})
+  );
 
-  if (!inPendingRange || !findUnresolvedMixedStates) return;
+  const noOp = { ranMigrations: false, completedAllPending: true };
+
+  if (!inPendingRange || !findUnresolvedMixedStates) return noOp;
 
   const migratedVersion = manifest.migratedVersion ?? '0.0.0';
   const frameworkVersion = manifest.frameworkVersion;
   const migrationsDir = join(target, '.pythia', 'runtime', 'migrations');
 
-  if (!existsSync(migrationsDir)) return;
+  if (!existsSync(migrationsDir)) return noOp;
 
-  const files = readdirSync(migrationsDir).filter((f) => /^\d+\.\d+\.\d+\.md$/.test(f));
+  const files = readdirSync(migrationsDir).filter((f) =>
+    /^\d+\.\d+\.\d+\.md$/.test(f)
+  );
   const versions = sortVersions(files.map((f) => f.replace('.md', '')));
-  const pending = versions.filter((v) => inPendingRange(v, migratedVersion, frameworkVersion));
+  const pending = versions.filter((v) =>
+    inPendingRange(v, migratedVersion, frameworkVersion)
+  );
 
   if (pending.length === 0) {
     if (!dryRun && migratedVersion !== frameworkVersion) {
       writeManifest(target, { migratedVersion: frameworkVersion }, dryRun);
     }
-    return;
+    return noOp;
   }
 
   if (noMigrate) {
-    for (const v of pending) console.log(`[update] pending migration: ${v} (skipped by --no-migrate)`);
-    return;
+    for (const v of pending)
+      console.log(`[update] pending migration: ${v} (skipped by --no-migrate)`);
+    return noOp;
   }
 
   let completedAllPending = true;
@@ -740,7 +953,9 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
     const autoSteps = steps.filter((s) => s.kind === 'auto');
     const llmRemaining = migrationHasLlm(steps);
 
-    console.log(`[${label}] applying migration ${v}${llmRemaining ? ' (mixed: auto part only)' : ''}...`);
+    console.log(
+      `[${label}] applying migration ${v}${llmRemaining ? ' (mixed: auto part only)' : ''}...`
+    );
 
     const changedPaths = [];
     const appliedSteps = [];
@@ -769,34 +984,62 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
       changedPaths,
       appliedSteps,
       llmRemaining,
-      preUpdateBackup,
+      preUpdateBackup
     };
 
     if (!dryRun) writeState(target, state, dryRun);
 
     // Migration did not complete: report + offer rollback (user-decided). No auto-rollback, no throw.
     if (opError) {
-      offerMigrationRollback(target, v, label, preUpdateBackup, `step failed: ${opError}`);
+      offerMigrationRollback(
+        target,
+        v,
+        label,
+        preUpdateBackup,
+        `step failed: ${opError}`
+      );
       completedAllPending = false;
       break;
     }
 
     if (!llmRemaining) {
-      const verifyScript = join(target, '.pythia', 'runtime', 'migrate', 'verify.js');
+      const verifyScript = join(
+        target,
+        '.pythia',
+        'runtime',
+        'migrate',
+        'verify.js'
+      );
       if (!dryRun) {
         if (existsSync(verifyScript)) {
-          const verifyResult = spawnSync('node', [verifyScript, v], { encoding: 'utf8' });
+          const verifyResult = spawnSync('node', [verifyScript, v], {
+            encoding: 'utf8'
+          });
           if (verifyResult.stdout) process.stdout.write(verifyResult.stdout);
           if (verifyResult.stderr) process.stderr.write(verifyResult.stderr);
           if (verifyResult.status !== 0) {
-            offerMigrationRollback(target, v, label, preUpdateBackup, 'verification failed (see report above)');
+            offerMigrationRollback(
+              target,
+              v,
+              label,
+              preUpdateBackup,
+              'verification failed (see report above)'
+            );
             completedAllPending = false;
             break;
           }
         } else {
-          const missing = changedPaths.filter((p) => !existsSync(join(target, p)));
+          const missing = changedPaths.filter(
+            (p) => !existsSync(join(target, p))
+          );
           if (missing.length) {
-            offerMigrationRollback(target, v, label, preUpdateBackup, `missing files: ${missing.join(', ')}`);
+            offerMigrationRollback(
+              target,
+              v,
+              label,
+              preUpdateBackup,
+              `missing files: ${missing.join(', ')}`
+            );
             completedAllPending = false;
             break;
           }
@@ -823,6 +1066,7 @@ async function applyMigrations(packageRoot, target, manifest, dryRun, noMigrate,
   if (completedAllPending && !dryRun) {
     writeManifest(target, { migratedVersion: frameworkVersion }, dryRun);
   }
+  return { ranMigrations: pending.length > 0, completedAllPending };
 }
 
 // Resolve which surfaces (LLM hosts) and git strategy to use, for both init and update,
@@ -842,16 +1086,26 @@ async function resolveSurfacesAndGit(existing, opts) {
   const interactive = process.stdin.isTTY && !opts.yes && !opts.dryRun;
   if (interactive) {
     const { createInterface } = await import('readline/promises');
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
     try {
       if (!surfaces) {
-        const ans = await rl.question('Surfaces to install [claude,codex,cursor] (default: claude,codex): ');
-        surfaces = ans.trim() ? parseSurfacesList(ans.trim()) : [...DEFAULT_SURFACES];
+        const ans = await rl.question(
+          'Surfaces to install [claude,codex,cursor] (default: claude,codex): '
+        );
+        surfaces = ans.trim()
+          ? parseSurfacesList(ans.trim())
+          : [...DEFAULT_SURFACES];
       }
       if (!gitStrategy) {
-        const ans = await rl.question('Git strategy [shared|pythia|ignore] (default: pythia): ');
+        const ans = await rl.question(
+          'Git strategy [shared|pythia|ignore] (default: pythia): '
+        );
         const valid = ['shared', 'pythia', 'ignore'];
-        gitStrategy = ans.trim() && valid.includes(ans.trim()) ? ans.trim() : 'pythia';
+        gitStrategy =
+          ans.trim() && valid.includes(ans.trim()) ? ans.trim() : 'pythia';
       }
     } finally {
       rl.close();
@@ -866,9 +1120,13 @@ async function resolveSurfacesAndGit(existing, opts) {
 // `shared` requires a git repo already at target; fall back to `ignore` if absent.
 function validateGitStrategy(target, surfaces, gitStrategy) {
   if (gitStrategy === 'shared') {
-    const r = spawnSync('git', ['-C', target, 'rev-parse', '--git-dir'], { encoding: 'utf8' });
+    const r = spawnSync('git', ['-C', target, 'rev-parse', '--git-dir'], {
+      encoding: 'utf8'
+    });
     if (r.status !== 0) {
-      console.warn(`  [git] shared strategy requires a git repo in target; falling back to ignore`);
+      console.warn(
+        `  [git] shared strategy requires a git repo in target; falling back to ignore`
+      );
       gitStrategy = 'ignore';
     }
   }
@@ -889,7 +1147,9 @@ function ensureGitStrategy(target, gitStrategy, dryRun) {
   const pythiaGitDir = join(target, '.pythia', '.git');
   if (existsSync(pythiaGitDir)) return;
   mkdirSync(join(target, '.pythia'), { recursive: true });
-  const r = spawnSync('git', ['init', join(target, '.pythia')], { encoding: 'utf8' });
+  const r = spawnSync('git', ['init', join(target, '.pythia')], {
+    encoding: 'utf8'
+  });
   if (r.status === 0) console.log(`  [git] initialized .pythia/.git`);
 }
 
@@ -901,10 +1161,18 @@ export async function doUpdate(opts) {
     const unresolved = findUnresolvedMixedStates(target);
     if (unresolved.length > 0) {
       for (const s of unresolved) {
-        console.error(`[update] BLOCKED: migration ${s.migrationVersion} has unresolved llm steps.`);
-        console.error(`  Run the migrate skill to commit or restore version ${s.migrationVersion} before updating.`);
-        console.error(`  Command: npm --prefix .pythia run migrate:restore -- ${s.migrationVersion}`);
-        console.error(`         or: npm --prefix .pythia run migrate:commit -- ${s.migrationVersion}`);
+        console.error(
+          `[update] BLOCKED: migration ${s.migrationVersion} has unresolved llm steps.`
+        );
+        console.error(
+          `  Run the migrate skill to commit or restore version ${s.migrationVersion} before updating.`
+        );
+        console.error(
+          `  Command: npm --prefix .pythia run migrate:restore -- ${s.migrationVersion}`
+        );
+        console.error(
+          `         or: npm --prefix .pythia run migrate:commit -- ${s.migrationVersion}`
+        );
       }
       if (!dryRun) process.exit(1);
       return;
@@ -917,7 +1185,10 @@ export async function doUpdate(opts) {
   const existingGenerated = existing?.generated ?? {};
   const frameworkVersion = readPackageVersion(packageRoot);
   const migrationBaseline = existing?.migratedVersion ?? '0.0.0';
-  const { surfaces: activeSurfaces, gitStrategy } = await resolveSurfacesAndGit(existing, opts);
+  const { surfaces: activeSurfaces, gitStrategy } = await resolveSurfacesAndGit(
+    existing,
+    opts
+  );
   const previousInstalled = existing?.installedSkills ?? [];
 
   console.log(`[update] target: ${target}`);
@@ -925,9 +1196,13 @@ export async function doUpdate(opts) {
   // Always snapshot pre-update state (data + surfaces, excluding regenerable runtime) so a
   // failed migration can be rolled back. Surfaces (.claude/.agents/.cursor) live outside
   // .pythia/.git, so git alone cannot restore them — this single snapshot is the rollback source.
-  const preUpdateBackup = createPreUpdateBackup(target, dryRun, 'pre-update snapshot for rollback');
+  const preUpdateBackup = createPreUpdateBackup(
+    target,
+    dryRun,
+    'pre-update snapshot for rollback'
+  );
 
-  await finalizeWorkspaceLifecycle({
+  const lifecycle = await finalizeWorkspaceLifecycle({
     target,
     packageRoot,
     dryRun,
@@ -940,10 +1215,20 @@ export async function doUpdate(opts) {
     label: 'update',
     previousInstalled,
     existingGenerated,
-    preUpdateBackup,
+    preUpdateBackup
   });
 
   console.log(`[update] done${dryRun ? ' (dry-run)' : ''}`);
+
+  const mr = lifecycle?.migrationResult;
+  if (!dryRun && mr?.ranMigrations && mr?.completedAllPending) {
+    const from = lifecycle.migrationBaseline;
+    const to = lifecycle.frameworkVersion;
+    if (from && to && from !== to) {
+      console.log(`\n  To verify migration results, run:\n`);
+      console.log(`    /migrate check ${from} to ${to}\n`);
+    }
+  }
 }
 
 function removePythiaHooksFromSettings(settingsPath, dryRun, label) {
@@ -959,13 +1244,17 @@ function removePythiaHooksFromSettings(settingsPath, dryRun, label) {
   let removed = 0;
   for (const event of Object.keys(settings.hooks)) {
     const before = settings.hooks[event].length;
-    settings.hooks[event] = settings.hooks[event].filter((h) => !isPythiaManagedHookEntry(h));
+    settings.hooks[event] = settings.hooks[event].filter(
+      (h) => !isPythiaManagedHookEntry(h)
+    );
     removed += before - settings.hooks[event].length;
   }
 
   if (removed > 0) {
     if (dryRun) {
-      console.log(`  [uninstall] would remove pythia hooks from ${label} (${removed} entries)`);
+      console.log(
+        `  [uninstall] would remove pythia hooks from ${label} (${removed} entries)`
+      );
     } else {
       writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
       console.log(`  removed pythia hooks from ${label}`);
@@ -987,11 +1276,16 @@ export async function doUninstall({ target, dryRun = false, yes = false }) {
 
   if (!yes && !dryRun) {
     if (!process.stdin.isTTY) {
-      console.error('[uninstall] error: non-interactive uninstall requires --yes (or use --dry-run to preview)');
+      console.error(
+        '[uninstall] error: non-interactive uninstall requires --yes (or use --dry-run to preview)'
+      );
       return 1;
     }
     const { createInterface } = await import('readline/promises');
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
     let answer;
     try {
       answer = await rl.question(
@@ -1006,7 +1300,9 @@ export async function doUninstall({ target, dryRun = false, yes = false }) {
 
   const manifest = readManifest(target);
   if (!manifest) {
-    console.error('[uninstall] error: manifest missing or unparseable — nothing removed');
+    console.error(
+      '[uninstall] error: manifest missing or unparseable — nothing removed'
+    );
     return 1;
   }
 
@@ -1028,7 +1324,9 @@ export async function doUninstall({ target, dryRun = false, yes = false }) {
           console.log(`  removed: ${relpath}`);
         }
       } catch (err) {
-        console.warn(`  [uninstall] warning: could not remove ${relpath}: ${err.message}`);
+        console.warn(
+          `  [uninstall] warning: could not remove ${relpath}: ${err.message}`
+        );
         hadErrors = true;
       }
     }
@@ -1045,7 +1343,9 @@ export async function doUninstall({ target, dryRun = false, yes = false }) {
           rmSync(skillPath, { recursive: true, force: true });
           console.log(`  removed: ${surface}/${skill}`);
         } catch (err) {
-          console.warn(`  [uninstall] warning: could not remove ${surface}/${skill}: ${err.message}`);
+          console.warn(
+            `  [uninstall] warning: could not remove ${surface}/${skill}: ${err.message}`
+          );
           hadErrors = true;
         }
       }
@@ -1060,14 +1360,28 @@ export async function doUninstall({ target, dryRun = false, yes = false }) {
       rmSync(runtimeDir, { recursive: true, force: true });
       console.log('  removed: .pythia/runtime/');
     } catch (err) {
-      console.warn(`  [uninstall] warning: could not remove .pythia/runtime/: ${err.message}`);
+      console.warn(
+        `  [uninstall] warning: could not remove .pythia/runtime/: ${err.message}`
+      );
       hadErrors = true;
     }
   }
 
-  removePythiaHooksFromSettings(join(target, '.claude', 'settings.json'), dryRun, '.claude/settings.json');
-  removePythiaHooksFromSettings(join(target, 'hooks.json'), dryRun, 'hooks.json');
-  removePythiaHooksFromSettings(join(target, '.cursor', 'hooks.json'), dryRun, '.cursor/hooks.json');
+  removePythiaHooksFromSettings(
+    join(target, '.claude', 'settings.json'),
+    dryRun,
+    '.claude/settings.json'
+  );
+  removePythiaHooksFromSettings(
+    join(target, 'hooks.json'),
+    dryRun,
+    'hooks.json'
+  );
+  removePythiaHooksFromSettings(
+    join(target, '.cursor', 'hooks.json'),
+    dryRun,
+    '.cursor/hooks.json'
+  );
 
   const codexRulesPath = join(target, '.codex', 'rules', 'default.rules');
   if (existsSync(codexRulesPath)) {
@@ -1082,7 +1396,9 @@ export async function doUninstall({ target, dryRun = false, yes = false }) {
         }
       }
     } catch (err) {
-      console.warn(`  [uninstall] warning: could not remove .codex/rules/default.rules: ${err.message}`);
+      console.warn(
+        `  [uninstall] warning: could not remove .codex/rules/default.rules: ${err.message}`
+      );
       hadErrors = true;
     }
   }
@@ -1096,7 +1412,9 @@ export async function doUninstall({ target, dryRun = false, yes = false }) {
         rmSync(dest, { force: true });
         console.log(`  removed: ${rel}`);
       } catch (err) {
-        console.warn(`  [uninstall] warning: could not remove ${rel}: ${err.message}`);
+        console.warn(
+          `  [uninstall] warning: could not remove ${rel}: ${err.message}`
+        );
         hadErrors = true;
       }
     }

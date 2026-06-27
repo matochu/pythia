@@ -180,6 +180,29 @@ All auto ops:
 
 Fully-auto migration commits use shared `commitMigrationVersion` (verify → bump → prune backups).
 
+## Post-Update Verification (`/migrate check`)
+
+After `pythia update` completes with at least one migration applied, the CLI prints:
+
+```
+[update] done
+
+  To verify migration results, run:
+
+    /migrate check <from> to <to>
+```
+
+Running `/migrate check <from> to <to>` in the agent instructs the LLM to verify that the migration applied correctly. The agent:
+
+1. **Collects changed files** — reads `changedPaths` from `.pythia/backups/<version>/state.json` for each version in the range. If no state file exists for a version (e.g. it completed without backup), verify and inputs check still cover the workspace automatically.
+2. **Runs verify** — `node .pythia/runtime/migrate/verify.js <to>` validates metadata and paths.md for the current (latest) version. Only `<to>` is available on disk.
+3. **Checks files by type** — for each changed file (or a sample when there are many): v2 metadata presence and format, lowercase status values, absence of forbidden keys (`Schema`, `Artifact`, `Feature`), no phantom `## References` entries, paths.md checker lists.
+4. **Checks reference freshness** — `node .pythia/runtime/inputs.js check --all` reports STALE/INVALID refs across all `.pythia/` data files.
+5. **Resolves** — applies `inputs.js sync` for STALE refs (with consent); reports metadata or verify failures without touching files.
+6. **Reports** — summary with per-file ✓ / ⚠ / ✗ results and recommended next actions.
+
+The skill is defined in `skills/migrate/SKILL.md § /migrate check`.
+
 ## Migration File Format
 
 See [migrations.md](../assets/migrations/README.md) for the full authoring contract and the `next.md` release flow.
