@@ -1054,4 +1054,24 @@ Body.
     const parsed = parseTrailingRefs(readFileSync(ctx, 'utf8'));
     expect(parsed?.usedBy?.some((u) => u.path.includes('real.plan'))).toBeFalsy();
   });
+
+  it('sync drops phantom ## References entry that has no body citation (even with old hash)', () => {
+    // Simulate a legacy-inputs migration artifact: ## References entry exists but no body link.
+    // Before the fix, shouldPreserveMissingWorkflowRef returned true via oldRef?.hash, keeping
+    // the phantom alive across sync runs. After the fix it is dropped on the first sync.
+    const target = writeDoc(wf('contexts/target.context.md'), '# Target\n\nBody.\n');
+    const consumer = writeDoc(wf('contexts/consumer.context.md'), `# Consumer
+
+Body with no link to target.
+
+## References
+
+- [context] [Target](target.context.md) abc12345
+`);
+    runInputs(['sync', consumer]);
+    const after = readFileSync(consumer, 'utf8');
+    const parsed = parseTrailingRefs(after);
+    // Phantom entry must be gone — no body citation
+    expect(parsed?.references?.some((r) => r.path.includes('target.context.md'))).toBe(false);
+  });
 });

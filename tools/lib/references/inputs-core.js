@@ -729,11 +729,9 @@ function findManualHash(manualEntries, file, dep, root) {
   return null;
 }
 
-function shouldPreserveMissingWorkflowRef(file, dep, root, { oldRefs, bodyDepKeys, manualEntries }) {
+function shouldPreserveMissingWorkflowRef(file, dep, root, { oldRefs: _oldRefs, bodyDepKeys, manualEntries }) {
   if (!isWorkflowConsumerFile(file, root)) return false;
   if (findManualHash(manualEntries, file, dep, root)) return true;
-  const oldRef = findOldRef(oldRefs, file, dep, root);
-  if (oldRef?.hash) return true;
   return isDepCitedInBody(file, dep, bodyDepKeys, root);
 }
 

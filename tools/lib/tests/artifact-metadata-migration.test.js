@@ -138,10 +138,11 @@ Implemented.
     expect(result.content).toContain('- plan_version: v2');
     expect(result.content).toContain('- round: I1');
     expect(result.content).toContain('- result: implemented');
-    // Plan/Review header lines stripped (moved to metadata in v1, now dropped — body links remain)
+    // Plan/Review/Date header lines stripped (moved to metadata)
     expect(result.content).not.toMatch(/^Plan: /m);
     expect(result.content).not.toMatch(/^Review: /m);
-    expect(result.content).toContain('Date: 2026-06-21');
+    expect(result.content).not.toMatch(/^Date: /m);
+    expect(result.content).toContain('- updated: 2026-06-21');
     // No v1 bold bullets
     expect(result.content).not.toContain('- **Artifact**');
     expect(result.content).not.toContain('- **Result**');
@@ -596,8 +597,8 @@ Body content.
       before,
     );
     expect(result.content).toContain('- updated: 2026-05-06');
-    // Date: in round body must not be stripped
-    expect(result.content).toContain('\nDate: 2026-05-06\n');
+    // Date: in round body (inside ## Implementation Round I1) must not be stripped
+    expect(result.content).toMatch(/## Implementation Round I1[\s\S]*?\nDate: 2026-05-06\n/);
   });
 
   it('fixes wrong-casing canonical prefix (e.g. # report: → # Report:)', () => {
@@ -684,5 +685,89 @@ Body.
     expect(result.content).not.toMatch(/^Implementation: /m);
     expect(result.content).toContain('- round: A1');
     expect(result.content).toContain('- verdict: ready');
+  });
+
+  it('migrates retro file with bare Date: and Feature: preamble keys to v2 metadata', () => {
+    const before = `# Feature Retrospective: feat-2026-05-example
+
+Date: 2026-05-07
+Feature: [feat-2026-05-example.md](../feat-2026-05-example.md)
+Previous retro: 2026-05-06
+
+## Executive Summary
+
+Summary.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat-2026-05-example/notes/feat-2026-05-example.retro.md',
+      before,
+    );
+    expect(result.changed).toBe(true);
+    // Date migrated to updated in metadata
+    expect(result.content).toContain('- updated: 2026-05-07');
+    // Feature: forbidden key removed from body
+    expect(result.content).not.toMatch(/^Feature: /m);
+    // Date: preamble line stripped
+    expect(result.content).not.toMatch(/^Date: 2026-05-07$/m);
+    // Body content preserved
+    expect(result.content).toContain('Previous retro: 2026-05-06');
+    expect(result.content).toContain('## Executive Summary');
+  });
+
+  it('migrates retro file preamble idempotently after first migration', () => {
+    // Already-migrated state: ## Metadata contains only v2 fields; no bare preamble keys remain
+    const before = `# Retrospective: feat-2026-05-example
+
+## Metadata
+
+- updated: 2026-05-07
+
+## Executive Summary
+
+Summary.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat-2026-05-example/notes/feat-2026-05-example.retro.md',
+      before,
+    );
+    expect(result.changed).toBe(false);
+  });
+
+  it('strips bare Date: body line in implementation report and captures it as updated', () => {
+    const before = `# Report: 1-example
+
+## Metadata
+
+- status: active
+- plan_version: v3
+- round: I1
+- result: implemented
+
+Date: 2026-06-15
+
+## Plan–Implementation Compatibility
+
+| Round | Version | Date | Result |
+| --- | --- | --- | --- |
+| I1 | v3 | 2026-06-15 | ok |
+
+## Implementation Round I1
+
+### Summary
+
+Date: 2026-06-15
+
+Content.
+`;
+    const result = convertArtifactMetadata(
+      '.pythia/workflows/features/feat/reports/1-example.implementation.md',
+      before,
+    );
+    expect(result.changed).toBe(true);
+    expect(result.content).toContain('- updated: 2026-06-15');
+    // Header-level Date: (between ## Metadata and next ##) stripped
+    expect(result.content).not.toMatch(/^## Metadata[\s\S]*?^Date: 2026-06-15\n[\s\S]*?^## Plan/m);
+    // Date: inside round body NOT stripped
+    expect(result.content).toMatch(/## Implementation Round I1[\s\S]*?Date: 2026-06-15/);
   });
 });

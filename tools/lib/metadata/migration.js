@@ -181,6 +181,34 @@ function legacyPlainMetadataFields(parsed) {
   return m;
 }
 
+/**
+ * Extract bare Key: value lines from the document preamble (content before the first ## heading).
+ * Handles retro files and other artifacts that store metadata as bare lines at the top without
+ * a ## Metadata section (e.g. `Date: 2026-05-07`, `Feature: [link](path)`).
+ */
+function legacyPreambleFields(content) {
+  const m = new Map();
+  for (const line of content.split('\n')) {
+    if (/^## /.test(line)) break;
+    const match = line.match(/^([A-Za-z][a-zA-Z0-9 _-]*):\s*(.+)\s*$/);
+    if (match) m.set(match[1].trim(), match[2].trim());
+  }
+  return m;
+}
+
+/**
+ * Strip bare `Key: value` preamble lines for given keys (after capturing their values).
+ * Used to remove forbidden keys (Feature:) and migrated date lines (Date:) from retro preambles.
+ */
+function stripPreambleBareKeys(content, keysToStrip) {
+  let result = content;
+  for (const key of keysToStrip) {
+    const re = new RegExp(`^${key}:\\s+.+\\n?`, 'gm');
+    result = result.replace(re, '');
+  }
+  return result.replace(/\n{3,}/g, '\n\n');
+}
+
 /** Read v1 bold-bullet fields for migration input only. Runtime parse.js no longer handles these. */
 function legacyBoldBulletFields(parsed) {
   const m = new Map();
@@ -229,13 +257,14 @@ export function convertArtifactMetadata(file, content) {
   const parsed = parseArtifactMetadata(stripped);
   const legacyPlain = legacyPlainMetadataFields(parsed);
   const legacyBold = legacyBoldBulletFields(parsed);
+  const legacyPreamble = legacyPreambleFields(stripped);
   const kind = inferArtifactKind(file);
 
   if (!kind) {
     return { changed: false, content, warnings: [`uncovered artifact: ${file}`] };
   }
 
-  // Get current v1 fields (for merge) — checks parsed metadata then bold-bullet then frontmatter values
+  // Get current v1 fields — checks parsed metadata, bold-bullet, preamble bare keys, frontmatter
   const get = (...keys) => {
     const fromParsed = getField(parsed, ...keys);
     if (fromParsed) return fromParsed;
@@ -244,6 +273,8 @@ export function convertArtifactMetadata(file, content) {
       if (fromBold) return fromBold;
       const fromLegacyPlain = legacyPlain.get(k);
       if (fromLegacyPlain) return fromLegacyPlain;
+      const fromPreamble = legacyPreamble.get(k);
+      if (fromPreamble) return fromPreamble;
       const v = fmValues.get(k) ?? fmValues.get(k.toLowerCase());
       if (v) return v;
     }
@@ -255,11 +286,31 @@ export function convertArtifactMetadata(file, content) {
 
   let body = ensureH1(stripped, legacyTitle);
   body = normalizeH1(body, kind, slugFromFile(file));
+
+  // Strip forbidden/migrated preamble bare keys: Feature: is a forbidden metadata key;
+  // Date: is captured into metadata.updated and must be removed from body.
+  if (legacyPreamble.size > 0) {
+    const preambleKeysToStrip = [...legacyPreamble.keys()].filter(
+      (k) => k === 'Feature' || k === 'Date',
+    );
+    if (preambleKeysToStrip.length > 0) body = stripPreambleBareKeys(body, preambleKeysToStrip);
+  }
+
   // Capture body links BEFORE stripping so extractBodyLink sees them regardless of layout.
   const preStripLinks = kind === 'audit-report'
     ? { plan: extractBodyLink(body, 'Plan'), implementation: extractBodyLink(body, 'Implementation') }
+    : kind === 'implementation-report'
+    ? { date: extractBodyLink(body, 'Date') }
     : null;
   body = stripImplementationHeaderLines(body, file);
+
+  // For implementation reports: strip the bare `Date: <value>` header line (between sections,
+  // not inside ## round bodies) now that its value is captured in preStripLinks.date.
+  if (kind === 'implementation-report' && preStripLinks?.date) {
+    const escaped = preStripLinks.date.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    body = body.replace(new RegExp(`^Date: ${escaped}\\n`, 'm'), '');
+    body = body.replace(/\n{3,}/g, '\n\n');
+  }
 
   const bodyParsed = parseArtifactMetadata(body);
   const existing = new Map([
@@ -321,7 +372,12 @@ function buildFields({ kind, get, body, fmValues, base, preStripLinks = null }) 
       ['round', get('Round', 'round') ?? firstRound(body, 'I')],
       ['result', implementationResult(body)],
     ];
-    addUpdated(fields, get);
+    // Date: appears as a bare body line after ## Metadata in some reports; captured before stripping.
+    addField(fields, 'updated',
+      get('Updated', 'updated', 'Date', 'date')
+      ?? preStripLinks?.date
+      ?? get('created', 'Created'),
+    );
     return fields;
   }
 

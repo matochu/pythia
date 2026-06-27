@@ -24,6 +24,7 @@ const MIGRATION_TOLERATED_LEGACY_FIELDS = new Set([
 const targetRoot = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../../..'));
 const args = process.argv.slice(2);
 const version = args.find((a) => !a.startsWith('-') && /^\d+\.\d+\.\d+$/.test(a));
+const verbose = args.includes('--verbose') || args.includes('-v');
 
 if (!version) {
   console.error('Usage: migrate:verify <version>');
@@ -151,13 +152,13 @@ for (const relpath of changedPaths) {
   if (isWorkflowDoc(relpath)) {
     const result = validateWorkflowDoc(content, relpath);
     if (result.ok) {
-      console.log(`  [OK] ${relpath}`);
+      if (verbose) console.log(`  [OK] ${relpath}`);
     } else {
       console.error(`  [FAIL] ${relpath}: ${result.reason}`);
       allOk = false;
     }
   } else {
-    console.log(`  [OK] ${relpath} (existence confirmed)`);
+    if (verbose) console.log(`  [OK] ${relpath} (existence confirmed)`);
   }
 }
 

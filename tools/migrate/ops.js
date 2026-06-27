@@ -3,7 +3,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, readdirSync, statSync } from 'fs';
 import { join, dirname, relative, resolve, isAbsolute } from 'path';
 import { createHash } from 'crypto';
-import { migrateWorkflowInputs } from '../lib/references/inputs-core.js';
+import { migrateWorkflowInputs, cmdSync } from '../lib/references/inputs-core.js';
 import { isPythiaSyncMarkdownRelPath, splitBodyAndRegion, renderTrailingRegion } from '../lib/references/refs.js';
 import { convertArtifactMetadata, convertLegacyRelations } from '../lib/metadata/migration.js';
 import { artifactMetadataMigrationScopes, isArtifactMetadataScopeFile } from '../lib/metadata/scope.js';
@@ -264,6 +264,26 @@ export function syncLegacyInputs(targetRoot, op, _backups, dryRun, _migrationVer
   return migrateWorkflowInputs(targetRoot, { dryRun, globRoot });
 }
 
+// Op: sync-workflow-refs — re-sync all workflow markdown files to drop phantom ## References
+// entries that have no corresponding body citation (created by legacy inputs: migration).
+export function syncWorkflowRefs(targetRoot, op, _backups, dryRun, _migrationVersion) {
+  const root = op.root ?? '.pythia';
+  assertInProtectedZone(targetRoot, root);
+  const absRoot = join(targetRoot, root);
+  const changed = [];
+  for (const abs of walkFiles(absRoot)) {
+    const rel = relative(targetRoot, abs).replace(/\\/g, '/');
+    if (!isPythiaSyncMarkdownRelPath(rel)) continue;
+    if (dryRun) { changed.push(rel); continue; }
+    const before = readFileSync(abs, 'utf8');
+    cmdSync(abs, { root: targetRoot });
+    const after = readFileSync(abs, 'utf8');
+    if (after !== before) changed.push(rel);
+  }
+  if (changed.length === 0) return { status: 'skipped', reason: 'no phantom refs found' };
+  return { status: 'applied', changedPaths: changed };
+}
+
 function splitCheckers(value) {
   return String(value ?? '')
     .split(',')
@@ -512,6 +532,7 @@ const OP_MAP = {
   'replace-once': replaceOnce,
   'replace-section': replaceSection,
   'sync-legacy-inputs': syncLegacyInputs,
+  'sync-workflow-refs': syncWorkflowRefs,
   'merge-checker-basenames': mergeCheckerBasenames,
   'migrate-artifact-metadata': migrateArtifactMetadata,
   'migrate-legacy-relations': migrateLegacyRelations,
