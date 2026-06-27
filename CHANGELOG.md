@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.8] - 2026-06-27
+
+### Features
+
+- **Typed relation links** — body links may carry a `#@label` relation fragment (`path#@based-on`, `path#anchor@source`, `https://...#@source`). The vocabulary is defined in `.pythia/config/relation.md` (columns `label · description · reverse`; defaults: `source`, `related`, `based-on`). Sync renders typed `[kind:relType]` trailing reference entries and `[kind:reverseLabel]` reverse `## Used by` backlinks. The checker validates labels against the configured vocabulary.
+- **Canonical `## Related` body section** — cross-document relations are authored as typed items in a `## Related` section (`- [text](path#@label) — description`). All legacy section forms (`## Related Documents`, `## Sources`, `## Related Contexts`, `**Builds on**`, `**Canonical Criteria**`, `builds_on` metadata) are migrated to `## Related` in Step 3 of the 0.3.8 migration. **Authoring rule** (post-migration): prefer inline prose links over a standalone `## Related` section — the section is a migration output form, not the recommended authoring pattern. See `skills/workflow/references/cross-document-links.md`.
+- **Backtick-path reference capture** — backtick-quoted `.md` paths (e.g. `` `tools/lib/md.js` ``) that resolve to existing files on disk are added to the computed `## References` region on sync (no hash; same treatment as external URLs).
+- **Artifact metadata contract** — workflow artifacts now use a shared inferred-path metadata schema with runtime validation and schema/reference drift checks.
+- **Machine-owned workflow references** — `refs-owned.js` detects phantom `## References` and `## Used by` entries, and hooks warn before agents hand-edit sync-owned trailing reference blocks.
+- **`kind: brainstorm` context sub-kind** — `artifact-metadata.md` and `metadata-contract.json` include `brainstorm` alongside `research` as valid context sub-kinds.
+- **`migrate:check` post-update helper** — after `pythia update`, run `/migrate check <from> to <to>` or `npm --prefix .pythia run migrate:check -- <from> <to>` to verify migration results: state summaries, `migrate:verify`, strict metadata checks, `refs:owned` phantom checks, paths.md invariants, reference freshness, STALE grouping, and PASS/WARN/FAIL reporting. `--apply-sync` runs `refs:sync --dry-run` previews, asks for approval, syncs STALE refs and `refs-owned.phantom_reference` files when metadata/non-syncable refs-owned checks are clean, reruns checks, and reports the git owner for `.pythia`.
+- **Post-update verification hint** — `pythia update` now prints an agent-facing `/migrate check <from> to <to>` skill invocation after all migrations complete successfully.
+- **`/migrate check` skill** — new section in `skills/migrate/SKILL.md` with full verification procedure: state collection, verify, metadata scan, refs-owned scan, inputs freshness, STALE grouping by root cause, PASS/WARN/FAIL terminal states, and remediation flow with sync consent batch.
+- **npm script taxonomy** — `.pythia/package.json` now ships a consistent set of named scripts: `refs:sync`, `refs:check`, `refs:rdeps`, `refs:owned` (reference graph); `check:metadata`, `check:structure`, `check:links`, `check:cross-refs`, `check:role-boundary` (artifact validators). All skills and docs use `npm --prefix .pythia run <script>` — no direct `node .pythia/runtime/` commands in agent-facing instructions.
+
+### Changed
+
+- Reference/input runtime modules moved under `tools/lib/references/`, with compatibility wrappers preserved for existing materialized runtime imports.
+- Workflow path config now wires `refs-owned.js` alongside freshness, structure, and metadata checkers.
+- Inputs sync now treats sync-zone references as derived from body links and cleans stale reverse `Used by` backlinks when consumers stop citing targets.
+- `refs:sync -- <file> --dry-run` (`inputs.js sync --dry-run`) previews primary-file, legacy frontmatter, and reverse `## Used by` changes without writing.
+- Artifact metadata v2 is rendered as markdown list items (`- key: value`) so Markdown renderers preserve one field per line; legacy bare `key: value` metadata is treated as non-canonical and fails strict checks/migration verification.
+- Producer skill/reference docs now point agents to the canonical metadata contract and machine-owned reference boundary.
+- Canonical H1 prefixes: `# Implementation Report:` → `# Report:`, `# Architect Audit:` → `# Audit:`, `# Feature Retrospective:` → `# Retrospective:`; migration normalizes legacy prefixes; bare-slug review H1s get `# Review: {slug}`.
+- `Date:` bare body line removed from implementation report template; `updated` in `## Metadata` is the single date source.
+- `cross-document-links.md` added as single source of truth for inline link rules, label vocabulary, trailing-refs prohibition, and the label decision tree. Producer skills now point to this reference instead of duplicating the block.
+- `audit-format.md` and `response-formats.md` updated to lowercase v2 status values (`status: implemented`, `· status: implemented`).
+- v1 bold-bullet parsing removed from runtime `parse.js` and `artifact-metadata.js` checker. Migration tool (`migration.js`) retains its own `legacyBoldBulletFields` for converting remaining v1 docs. `plan-version-log.js` checker updated to read lowercase `version` field.
+- `verify.js` `[OK]` lines suppressed by default; pass `--verbose` to restore them.
+
+### Fixed
+
+- Migration maps YAML `type: research` to `kind: research` (previously only `type: research-context` was handled); `type: brainstorm-context` maps to `kind: brainstorm`.
+- Migration `updated` fallback: `Updated` → `Date` (Title-case bare key in metadata section) → `created` (YAML frontmatter); `legacyPlainMetadataFields` now accepts Title-case keys.
+- Migration moves `Plan:` and `Implementation:` body lines in audit files into `- plan:` / `- implementation:` metadata fields; bare body lines are removed after capture.
+- **Retro preamble bare keys** — `convertArtifactMetadata` now reads `Date:` and `Feature:` bare key-value lines from the document preamble (before the first `##` heading), captures `Date` as `- updated:`, and strips both from the body (`Feature:` is a forbidden key).
+- **`Date:` after `## Metadata` in implementation reports** — bare `Date: YYYY-MM-DD` lines between `## Metadata` and the next section are now captured as `- updated:` and stripped; `Date:` inside round bodies is preserved.
+- **Phantom `## References`** — `inputs.js sync` no longer preserves entries that have no body citation and no `inputs:` frontmatter (`oldRef?.hash` guard removed from `shouldPreserveMissingWorkflowRef`). Phantom entries left by the `sync-legacy-inputs` migration are cleaned on the next sync run.
+- **plan-format.md and skills aligned to lowercase v2 status enums** — `draft`, `active`, `implemented`, `blocked`, `archived`, `cancelled` (was Title-case). Migration tool already normalised these; prompt docs now match the contract.
+- `applyMigrations` always returns `{ ranMigrations, completedAllPending }` on all exit paths (was `undefined` on early returns).
+- `isSyncableRefsOwnedIssue` now requires all `refs-owned.*` codes in a message to be `phantom_reference`; files with `phantom_used_by` or `relation.unknown` are excluded from the auto-sync batch and must be resolved manually.
+- `inputs.js sync --dry-run` — new flag previews primary-file refs, legacy frontmatter stripping, and reverse `## Used by` backlink changes without writing any files.
+
+### Migration
+
+- **0.3.8 migration** — updates `.pythia/config/paths.md` checker lists, migrates existing `.pythia` data markdown to list-form artifact metadata (including H1 normalization, YAML `type` → `kind` mapping, and `updated` recovery), converts legacy `inputs:` frontmatter, adds `refs-owned.js` to workflow artifact checks, converts all legacy relation expressions (`## Related Documents`, `## Sources`, `**Builds on**`, `builds_on`) to canonical `## Related` typed sections (Step 3), and rewrites bare `## References` / `## Used by` paths to canonical format: `/-absolute` for project-root targets (e.g. `/tools/lib/foo.js`), doc-relative for intra-`.pythia/` targets (Step 6).
+
 ## [0.3.7] - 2026-06-20
 
 ### Fixed
