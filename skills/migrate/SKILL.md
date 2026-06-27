@@ -118,6 +118,7 @@ No `--target` flag — engine commands always run from their materialized locati
 ```bash
 npm --prefix .pythia run migrate:status
 npm --prefix .pythia run migrate:apply    -- <version>   [--dry-run]
+npm --prefix .pythia run migrate:check    -- <from> <to> [--apply-sync]
 npm --prefix .pythia run migrate:verify   -- <version>
 npm --prefix .pythia run migrate:commit   -- <version>   [--retention <n>]
 npm --prefix .pythia run migrate:restore  -- <version>   [--dry-run]
@@ -128,6 +129,7 @@ Or directly (when package may be unavailable):
 ```bash
 node .pythia/runtime/migrate/status.js
 node .pythia/runtime/migrate/apply.js    <version>
+node .pythia/runtime/migrate/check.js    <from> <to> [--apply-sync]
 node .pythia/runtime/migrate/verify.js   <version>
 node .pythia/runtime/migrate/commit.js   <version>
 node .pythia/runtime/migrate/restore.js  <version>
@@ -145,7 +147,7 @@ Preview mode: describe what changes you would make but write nothing. Do not com
 
 ## /migrate check
 
-Post-update manual verification. Run after `pythia update` to confirm the migration applied correctly.
+Post-update structured verification. Run after `pythia update` to confirm the migration applied correctly and identify safe follow-up sync work.
 
 ### Trigger
 
@@ -159,69 +161,191 @@ Example: `/migrate check 0.3.6 to 0.3.8`
 
 ### Procedure
 
-**1. Collect changedPaths**
+**1. Run the structured check helper**
 
-For each version between `<from>` and `<to>`, read state if available:
-
-```bash
-cat .pythia/backups/<version>/state.json
-```
-
-Merge `changedPaths` from all found state files. If state.json is missing for a version — note as WARN and continue.
-
-If **no state.json exists at all**: skip manual file enumeration — verify (step 2) and inputs check (step 4) cover all relevant files automatically.
-
-**2. Run verify for the current (`<to>`) version**
+Prefer the materialized runtime helper:
 
 ```bash
-node .pythia/runtime/migrate/verify.js <to>
+npm --prefix .pythia run migrate:check -- <from> <to>
+# or directly:
+node .pythia/runtime/migrate/check.js <from> <to>
 ```
 
-Only `<to>` — only the current runtime is on disk. Output shows [OK]/[FAIL] per file. If verify script is unavailable — note as WARN.
+The helper:
+- finds the workspace from `.pythia/runtime/migrate/check.js`
+- reads migration files and available `.pythia/backups/<version>/state.json`
+- merges and deduplicates changedPaths
+- runs `migrate:verify` for `<to>`
+- scans changed markdown with strict artifact metadata checks
+- scans changed markdown with `refs-owned.js` for phantom `## References` / `## Used by`
+- checks `.pythia/config/paths.md` with the paths invariant checker
+- runs `inputs.js check --all`
+- groups STALE refs by changed dependency/root cause
+- reports `PASS`, `WARN`, or `FAIL`
 
-**3. Check changedPaths manually (when available)**
+The helper is triage, not a replacement for agent review. When it reports `WARN`, inspect the reported files, identify the concrete format/content drift, and propose the exact remediation to the user before editing or syncing.
 
-For each file in the merged changedPaths list (sample: up to 10 files per type when >50 total):
+If `migrate:check` is unavailable because the runtime is older, use the manual fallback below.
 
-| File type | What to verify |
+**2. Interpret terminal state**
+
+`/migrate check` always ends in exactly one of:
+
+| State | Meaning |
 |---|---|
-| `*.plan.md`, `*.review.md`, `*.implementation.md`, `*.audit.md` | `## Metadata` exists, `- status:` lowercase, no `Schema:` / `Artifact:` / `Feature:` keys |
-| `*.context.md`, `feat-*.md`, `*.retro.md` | v2 metadata, no phantom `## References` (entries without body citation) |
-| `.pythia/config/paths.md` | checker lists current: `role-boundary.js` present, `doc-structure.js` absent |
-| `*.ctx.md` | no bold-bullet metadata (`- **Key**:` format) |
+| **PASS** | No issues; migration verified clean |
+| **WARN** | Migration valid; follow-up available (stale refs, metadata advisories) |
+| **FAIL** | Migration invalid; stop; do not commit further changes |
 
-**4. Check inputs freshness**
+Severity rules:
+
+| Result | Severity | Action |
+|---|---|---|
+| `verify.js` failure | **FAIL — stop** | Report to user; no sync/remediation |
+| metadata/schema errors | **WARN** | Describe; recommend `/migrate` or manual repair; do not auto-fix |
+| `refs-owned` phantom refs | **WARN** | Read the file; propose body-link or sync remediation; never edit trailing refs manually |
+| `inputs check` INVALID | **WARN — investigate** | Read the file; may need manual repair |
+| `inputs check` STALE | **WARN — syncable** | Offer sync remediation when safe |
+
+`inputs check --all` exits 1 when STALE or INVALID refs exist. This is a WARN unless `migrate:check` also reports verify failure.
+`migrate:check` exits `0` for PASS and WARN, and `1` only for FAIL, so do not treat shell success as a clean migration; read the printed status line.
+
+**3. Remediation flow for STALE refs**
+
+`/migrate check` never silently fixes files.
+
+If the helper reports STALE artifacts and no FAIL/metadata blockers, ask for explicit permission before applying sync:
 
 ```bash
-node .pythia/runtime/inputs.js check --all
+npm --prefix .pythia run migrate:check -- <from> <to> --apply-sync
+# or directly:
+node .pythia/runtime/migrate/check.js <from> <to> --apply-sync
 ```
 
-Scans all data files under `.pythia/` (excludes runtime/config/backups automatically). STALE / INVALID entries = WARN.
+`--apply-sync` still prompts before writing. It prints:
+- proposed `inputs.js sync <file>` commands
+- `sync --dry-run` preview for every stale or syncable phantom-reference artifact
+- `Approve sync? [y/n]`
+- before/after inputs freshness counts
+- `.pythia` git owner and changed files after sync
 
-**5. Resolve issues**
+Decision rules:
 
-- **STALE refs** — apply sync with user consent:
-  ```bash
-  node .pythia/runtime/inputs.js sync <file>
-  ```
-- **Metadata errors** (forbidden keys, wrong format) — do not touch; describe the problem and recommend `/migrate` or manual fix
-- **verify FAIL / critical** — stop and report to user
+| Condition | Action |
+|---|---|
+| STALE only | Offer `--apply-sync` |
+| `refs-owned.phantom_reference` only | Offer `--apply-sync`; sync removes trailing refs not backed by body links |
+| STALE + `refs-owned.phantom_reference` | Offer `--apply-sync`; batch includes both stale and phantom-reference files |
+| STALE + INVALID | Offer sync only for STALE; report INVALID separately |
+| INVALID only | Do not sync; investigate |
+| metadata/schema errors | Do not sync; inspect files and propose explicit format updates |
+| `refs-owned.phantom_used_by` or unknown relation | Do not sync automatically; inspect the files and propose a body-link/relation fix |
+| verify FAIL | Stop |
 
-**6. Report**
+Never edit trailing `## References` or `## Used by` manually. They are machine-owned and must be changed only by `inputs.js sync`.
+
+If the user approves a format fix, edit only the document body/frontmatter required by the artifact contract, then rerun `migrate:check`. If trailing refs become stale or phantom-reference-only after that body edit, use the sync approval flow.
+
+**4. Git ownership guard**
+
+When reporting remediation results, do not assume the workspace root owns `.pythia`.
+
+Detect ownership first:
+
+```bash
+git -C .pythia rev-parse --show-toplevel 2>/dev/null
+```
+
+- If this returns `.pythia`, report status with `git -C .pythia status --short`
+- If it fails but the workspace root is a git repo, use `git status --short -- .pythia`
+- If neither works, report `WARN: .pythia git root not found; cannot show diff guard`
+
+`migrate:check --apply-sync` performs this guard automatically after approved sync.
+
+**5. Manual fallback when `migrate:check` is unavailable**
+
+1. List runtime migration files and backup state:
+   ```bash
+   ls .pythia/runtime/migrations
+   ls .pythia/backups
+   ```
+2. For versions in `(from, to]`, read existing state summaries:
+   ```bash
+   cat .pythia/backups/<version>/state.json
+   ```
+   Missing state for a version that has a migration file = WARN. No migration file for an intermediate semver gap = INFO.
+3. Merge and deduplicate all `changedPaths`.
+4. Run:
+   ```bash
+   node .pythia/runtime/migrate/verify.js <to>
+   node .pythia/runtime/inputs.js check --all
+   ```
+5. For changed workflow artifact markdown, run:
+   ```bash
+   node .pythia/runtime/checks/artifact-metadata.js --strict <file>
+   node .pythia/runtime/checks/refs-owned.js <file>
+   ```
+6. For `.pythia/config/paths.md`, verify `role-boundary.js` is present and `doc-structure.js` is absent.
+7. For STALE refs, use dry-run before asking for approval:
+   ```bash
+   node .pythia/runtime/inputs.js sync <file> --dry-run
+   ```
+
+**6. Report format**
+
+**PASS example:**
 
 ```
 migrate check 0.3.6 → 0.3.8
 
-State: 0.3.8 (102 files) | 0.3.7: no state — verify covers all
+status: PASS
+state: 0.3.8 (102 files, 9 types)
 verify 0.3.8: OK
+metadata scan: OK
+refs-owned scan: OK
+inputs check: OK
 
-File checks (102 files):
-  ✓ .pythia/config/paths.md
-  ✓ .pythia/workflows/.../feat-example/contexts/example.context.md
-  ⚠ .pythia/workflows/.../feat-example/notes/feat-example.retro.md
-      bare Date: and Feature: in preamble — run /migrate to fix
+Summary: no issues found
+```
 
-inputs check: 10 STALE (paths.md hash changed) → synced
+**WARN example (migration valid, sync available):**
 
-Summary: verify OK · 1 warning (needs /migrate) · 10 stale refs (fixed)
+```
+migrate check 0.3.6 → 0.3.8
+
+status: WARN
+state: 0.3.8 (102 files)
+verify 0.3.8: OK
+metadata scan: OK
+refs-owned scan: OK
+inputs check: WARN — 7 STALE, 0 INVALID
+  stale root: ../../../../config/paths.md (7)
+
+Follow-up: rerun with --apply-sync to preview and approve inputs.js sync.
+Summary: migration valid; refs need follow-up
+```
+
+**WARN example after approved sync:**
+
+```
+Before: 7 STALE, 0 INVALID
+After:  0 STALE, 0 INVALID
+Refs-owned after sync: OK
+Git owner: .pythia repo
+Changed files:
+  M workflows/features/.../file1.context.md
+
+Summary: migration valid; stale refs synced
+```
+
+**FAIL example:**
+
+```
+migrate check 0.3.6 → 0.3.8
+
+status: FAIL
+verify 0.3.8: FAIL
+  [FAIL] .pythia/workflows/.../1-example.plan.md: missing required field: status
+
+Summary: stop; do not sync or proceed
 ```

@@ -12,7 +12,7 @@ import {
   getBodyContent,
   renderTrailingRegion,
 } from '../lib/references/refs.js';
-import { deriveDeps, hashFile, isWorkflowConsumerFile, migrateWorkflowInputs } from '../lib/references/inputs-core.js';
+import { cmdSync, deriveDeps, hashFile, isWorkflowConsumerFile, migrateWorkflowInputs } from '../lib/references/inputs-core.js';
 import { seedInputsFreshnessMigrationCorpus } from '../cli/tests/helpers/inputs-migration-corpus.js';
 import { TEST_FEATURE_ID, seedPythiaProjectRegistration } from '../cli/tests/helpers/workflow-paths.js';
 
@@ -41,6 +41,18 @@ function runInputs(args) {
     encoding: 'utf8',
     cwd: root,
   });
+}
+
+function captureLog(fn) {
+  const lines = [];
+  const oldLog = console.log;
+  try {
+    console.log = (...args) => lines.push(args.join(' '));
+    const value = fn();
+    return { value, output: lines.join('\n') };
+  } finally {
+    console.log = oldLog;
+  }
 }
 
 beforeEach(() => {
@@ -228,6 +240,32 @@ Inline [dep](../dep.md) stays.
     expect(depContent).toContain('## Used by');
     expect(depContent).toContain('plan.plan.md');
     expect(runInputs(['check', plan]).status).toBe(0);
+  });
+
+  it('dry-run reports changes without writing primary file or backlinks', () => {
+    const dep = writeDoc(wf('dep.md'), 'dep\n');
+    const plan = writeDoc(wf('plans/plan.plan.md'), '# Plan\n\n[dep](../dep.md)\n');
+    const beforePlan = readFileSync(plan, 'utf8');
+    const beforeDep = readFileSync(dep, 'utf8');
+
+    const r = runInputs(['sync', plan, '--dry-run']);
+
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('[dry-run]');
+    expect(readFileSync(plan, 'utf8')).toBe(beforePlan);
+    expect(readFileSync(dep, 'utf8')).toBe(beforeDep);
+  });
+
+  it('cmdSync dry-run reports no changes after a real sync', () => {
+    writeDoc(wf('dep.md'), 'dep\n');
+    const plan = writeDoc(wf('plans/plan.plan.md'), '# Plan\n\n[dep](../dep.md)\n');
+    expect(cmdSync(plan, { root })).toBe(0);
+
+    const before = readFileSync(plan, 'utf8');
+    const result = captureLog(() => cmdSync(plan, { root, dryRun: true }));
+    expect(result.value).toBe(0);
+    expect(result.output).toContain('no changes');
+    expect(readFileSync(plan, 'utf8')).toBe(before);
   });
 
   it('migrates and strips frontmatter inputs', () => {

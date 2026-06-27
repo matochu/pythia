@@ -647,6 +647,7 @@ function writePythiaPackageJson(target, projectName, frameworkVersion, dryRun) {
     scripts: {
       'migrate:status': 'node runtime/migrate/status.js',
       'migrate:apply': 'node runtime/migrate/apply.js',
+      'migrate:check': 'node runtime/migrate/check.js',
       'migrate:verify': 'node runtime/migrate/verify.js',
       'migrate:commit': 'node runtime/migrate/commit.js',
       'migrate:restore': 'node runtime/migrate/restore.js'
@@ -1225,7 +1226,7 @@ export async function doUpdate(opts) {
     const from = lifecycle.migrationBaseline;
     const to = lifecycle.frameworkVersion;
     if (from && to && from !== to) {
-      console.log(`\n  To verify migration results, run:\n`);
+      console.log(`\n  Ask your agent to verify the migration (skill invocation):\n`);
       console.log(`    /migrate check ${from} to ${to}\n`);
     }
   }

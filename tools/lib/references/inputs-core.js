@@ -5,7 +5,7 @@
  * Usage:
  *   node tools/bin/inputs.js check <file.md>
  *   node tools/bin/inputs.js check --all [glob]
- *   node tools/bin/inputs.js sync <file.md> [--verbose]
+ *   node tools/bin/inputs.js sync <file.md> [--verbose] [--dry-run]
  *   node tools/bin/inputs.js rdeps <file.md>
  * Exit: 0 = ok, 1 = stale/error, 2 = usage error
  */
@@ -43,7 +43,7 @@ function usage() {
   console.error(`Usage:
   node tools/bin/inputs.js check <file.md>
   node tools/bin/inputs.js check --all [glob]
-  node tools/bin/inputs.js sync <file.md> [--verbose]
+  node tools/bin/inputs.js sync <file.md> [--verbose] [--dry-run]
   node tools/bin/inputs.js rdeps <file.md>`);
 }
 
@@ -112,7 +112,7 @@ function validateEntry(entry) {
   return /^[^/\s][^\s]*:[0-9a-f]{8}$/.test(entry) && !entry.startsWith('/');
 }
 
-function stripFrontmatterInputs(file) {
+function stripFrontmatterInputs(file, { dryRun = false } = {}) {
   const content = readFileSync(file, 'utf8');
   if (!hasFrontmatter(content)) return content;
   const fmEnd = content.indexOf('\n---\n', 4);
@@ -132,11 +132,11 @@ function stripFrontmatterInputs(file) {
   const rest = content.slice(fmEnd);
   if (!trimmed) {
     const body = rest.startsWith('\n---\n') ? rest.slice(5) : rest.replace(/^\n/, '');
-    writeFileSync(file, body, 'utf8');
+    if (!dryRun) writeFileSync(file, body, 'utf8');
     return body;
   }
   const updated = `---\n${newFm}${rest}`;
-  writeFileSync(file, updated, 'utf8');
+  if (!dryRun) writeFileSync(file, updated, 'utf8');
   return updated;
 }
 
@@ -263,10 +263,10 @@ function removeBodyDuplicateListItems(file, bodyContent, refPaths, root) {
   return out.join('\n');
 }
 
-function addUsedByBacklink(targetFile, sourceFile, { relType } = {}) {
-  if (!existsSync(targetFile)) return;
+function addUsedByBacklink(targetFile, sourceFile, { relType, dryRun = false, dryRunChanges = null } = {}) {
+  if (!existsSync(targetFile)) return false;
   const root = repoRoot(targetFile);
-  if (!isPythiaSyncMarkdownFile(targetFile, root)) return;
+  if (!isPythiaSyncMarkdownFile(targetFile, root)) return false;
   const content = readFileSync(targetFile, 'utf8');
   const rel = repoOrDocRelativePath(targetFile, sourceFile, root);
   const kind = kindForPath(rel, { targetAbs: sourceFile, root });
@@ -283,20 +283,57 @@ function addUsedByBacklink(targetFile, sourceFile, { relType } = {}) {
     const existing = usedBy[existingIdx];
     const textNeedsUpdate = isAutoPlaceholderRefText(existing.text, existing.path);
     const relTypeChanged = existing.relType !== reverseRelType;
-    if (textNeedsUpdate || relTypeChanged) {
-      usedBy[existingIdx] = {
-        ...existing,
-        ...(textNeedsUpdate ? { text } : {}),
-        relType: reverseRelType,
-      };
+    if (!textNeedsUpdate && !relTypeChanged) {
+      if (dryRun) recordDryRunBacklinkNoop(dryRunChanges, workflowRelPath(targetFile, root));
+      return false;
     }
-    writeTrailingRefs(targetFile, { references: parsed?.references ?? [], usedBy, regionTrail });
-    return;
+    usedBy[existingIdx] = {
+      ...existing,
+      ...(textNeedsUpdate ? { text } : {}),
+      relType: reverseRelType,
+    };
+    if (dryRun) recordDryRunBacklinkWrite(dryRunChanges, workflowRelPath(targetFile, root));
+    else writeTrailingRefs(targetFile, { references: parsed?.references ?? [], usedBy, regionTrail });
+    return true;
   }
 
   usedBy.push({ kind, relType: reverseRelType, text, path: rel });
   const refs = parsed?.references ?? [];
-  writeTrailingRefs(targetFile, { references: refs, usedBy, regionTrail });
+  if (dryRun) recordDryRunBacklinkWrite(dryRunChanges, workflowRelPath(targetFile, root));
+  else writeTrailingRefs(targetFile, { references: refs, usedBy, regionTrail });
+  return true;
+}
+
+function dryRunBacklinkRecord(dryRunChanges, rel) {
+  if (!dryRunChanges) return null;
+  let record = dryRunChanges.get(rel);
+  if (!record) {
+    record = { removals: 0, noopExisting: 0, writes: 0 };
+    dryRunChanges.set(rel, record);
+  }
+  return record;
+}
+
+function recordDryRunBacklinkRemoval(dryRunChanges, rel, count) {
+  const record = dryRunBacklinkRecord(dryRunChanges, rel);
+  if (record) record.removals += count;
+}
+
+function recordDryRunBacklinkNoop(dryRunChanges, rel) {
+  const record = dryRunBacklinkRecord(dryRunChanges, rel);
+  if (record) record.noopExisting += 1;
+}
+
+function recordDryRunBacklinkWrite(dryRunChanges, rel) {
+  const record = dryRunBacklinkRecord(dryRunChanges, rel);
+  if (record) record.writes += 1;
+}
+
+function dryRunBacklinkChangedFiles(dryRunChanges) {
+  if (!dryRunChanges) return [];
+  return [...dryRunChanges.entries()]
+    .filter(([, record]) => record.writes > 0 || record.removals > record.noopExisting)
+    .map(([rel]) => rel);
 }
 
 const PYTHIA_SYNC_SKIP_DIRS = new Set(['runtime', 'backups', '.git', 'node_modules']);
@@ -689,7 +726,7 @@ function collectSyncDeps(file, root, { oldRefs, manualEntries }) {
   return [...map.values()].sort();
 }
 
-function removeUsedByBacklinksForSource(sourceFile, root) {
+function removeUsedByBacklinksForSource(sourceFile, root, { dryRun = false, dryRunChanges = null } = {}) {
   const allMd = collectMarkdownFiles(resolve(root, '.pythia')).filter((abs) =>
     isPythiaSyncMarkdownRelPath(relative(root, abs).replace(/\\/g, '/')),
   );
@@ -702,11 +739,14 @@ function removeUsedByBacklinksForSource(sourceFile, root) {
       (u) => !usedByLinksToConsumer([u], targetFile, sourceFile, root),
     );
     if (usedBy.length === parsed.usedBy.length) continue;
-    writeTrailingRefs(targetFile, {
-      references: parsed.references,
-      usedBy,
-      regionTrail: parsed.regionTrail ?? [],
-    });
+    if (dryRun) recordDryRunBacklinkRemoval(dryRunChanges, workflowRelPath(targetFile, root), parsed.usedBy.length - usedBy.length);
+    else {
+      writeTrailingRefs(targetFile, {
+        references: parsed.references,
+        usedBy,
+        regionTrail: parsed.regionTrail ?? [],
+      });
+    }
   }
 }
 
@@ -735,7 +775,7 @@ function shouldPreserveMissingWorkflowRef(file, dep, root, { oldRefs: _oldRefs, 
   return isDepCitedInBody(file, dep, bodyDepKeys, root);
 }
 
-export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverride, verbose = false, rdepsIndex = null } = {}) {
+export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverride, verbose = false, rdepsIndex = null, dryRun = false } = {}) {
   const root = rootOverride ?? repoRoot(file);
   if (!isPythiaSyncMarkdownFile(file, root)) {
     console.error(`sync: skipped — not .pythia markdown (runtime excluded): ${workflowRelPath(file, root)}`);
@@ -762,13 +802,14 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
   let bodyContent = removeBodyDuplicateListItems(file, getBodyContent(content), allDeps, root);
   bodyContent = bodyContent.replace(/\n+$/, '');
 
-  removeUsedByBacklinksForSource(file, root);
+  const dryRunBacklinks = new Map();
+  removeUsedByBacklinksForSource(file, root, { dryRun, dryRunChanges: dryRunBacklinks });
 
   for (const dep of allDeps) {
     const targetAbs = resolveDocLink(file, dep, root);
     if (targetAbs) {
       const depRelType = bodyRelTypes.get(canonicalDepKey(file, dep, root));
-      addUsedByBacklink(targetAbs, file, { relType: depRelType });
+      addUsedByBacklink(targetAbs, file, { relType: depRelType, dryRun, dryRunChanges: dryRunBacklinks });
     }
   }
 
@@ -847,10 +888,27 @@ export function cmdSync(file, { keepManual: _keepManual = false, root: rootOverr
   const out = regionStr
     ? (bodyContent ? `${bodyContent}\n\n${regionStr}` : regionStr)
     : bodyContent;
-  writeFileSync(file, out, 'utf8');
+  if (dryRun) {
+    const targetChanged = out !== content;
+    const frontmatterWillStrip = Boolean(manualEntries?.length);
+    const rel = workflowRelPath(file, root);
+    const changedBacklinks = dryRunBacklinkChangedFiles(dryRunBacklinks);
+    if (!targetChanged && !frontmatterWillStrip && changedBacklinks.length === 0) {
+      console.log(`[dry-run] ${rel} — no changes`);
+    } else {
+      console.log(`[dry-run] ${rel}`);
+      console.log(`  ## References: ${references.length} entries${changed ? ` (${changed} changed/new)` : ''}`);
+      if (frontmatterWillStrip) console.log('  frontmatter: inputs: block would be stripped');
+      for (const backlink of changedBacklinks.sort()) {
+        console.log(`  ## Used by: ${backlink} would change`);
+      }
+    }
+  } else {
+    writeFileSync(file, out, 'utf8');
+  }
 
   if (manualEntries?.length) {
-    stripFrontmatterInputs(file);
+    stripFrontmatterInputs(file, { dryRun });
   }
 
   if (verbose) {
@@ -1122,11 +1180,12 @@ function main() {
 
   const keepManual = args.includes('--keep-manual');
   const verbose = args.includes('--verbose');
+  const dryRun = args.includes('--dry-run');
   let code = 0;
 
   switch (cmd) {
     case 'check': code = cmdCheck(file); break;
-    case 'sync': code = cmdSync(file, { keepManual, verbose }); break;
+    case 'sync': code = cmdSync(file, { keepManual, verbose, dryRun }); break;
     case 'rdeps': code = cmdRdeps(file); break;
     case 'update': code = cmdUpdate(file); break;
     case 'add': code = cmdAdd(file, args.slice(2)); break;

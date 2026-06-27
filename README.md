@@ -114,7 +114,7 @@ npm run test:workflow-doc  # workflow-document format validator tests
 npm run release:check-migrations
 ```
 
-The CLI lives in `tools/cli/`. The migration engine lives in `tools/migrate/` (materialized into `.pythia/runtime/migrate/` in each workspace on `init`/`update`). Canonical skills source is `skills/`; `.claude/skills`, `.agents/skills`, and opt-in `.cursor/skills` are installed surfaces generated on `pythia init`.
+The CLI lives in `tools/cli/`. The migration engine lives in `tools/migrate/` (materialized into `.pythia/runtime/migrate/` in each workspace on `init`/`update`), including `migrate:check` for post-update verification. Canonical skills source is `skills/`; `.claude/skills`, `.agents/skills`, and opt-in `.cursor/skills` are installed surfaces generated on `pythia init`.
 
 ## Concept
 

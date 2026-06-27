@@ -253,4 +253,5 @@ See [docs/migrations.md](migrations.md) for the full runtime contract:
 - Skill invokes engine via `npm --prefix .pythia run migrate:<sub>` (never npx)
 - State-file protocol at `.pythia/backups/<version>/state.json`
 - Stage ownership: `update` = auto steps + fully-auto commit; migrate skill = llm steps + completion verify + commit/restore
+- Post-update verification helper: `npm --prefix .pythia run migrate:check -- <from> <to> [--apply-sync]`
 - Migration file format and authoring/release flow: see [assets/migrations/README.md](../assets/migrations/README.md)

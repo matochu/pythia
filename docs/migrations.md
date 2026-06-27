@@ -187,19 +187,38 @@ After `pythia update` completes with at least one migration applied, the CLI pri
 ```
 [update] done
 
-  To verify migration results, run:
+  Ask your agent to verify the migration (skill invocation):
 
     /migrate check <from> to <to>
 ```
 
-Running `/migrate check <from> to <to>` in the agent instructs the LLM to verify that the migration applied correctly. The agent:
+Running `/migrate check <from> to <to>` in the agent instructs the LLM to verify that the migration applied correctly. Current runtimes also expose the same structured helper directly:
 
-1. **Collects changed files** — reads `changedPaths` from `.pythia/backups/<version>/state.json` for each version in the range. If no state file exists for a version (e.g. it completed without backup), verify and inputs check still cover the workspace automatically.
-2. **Runs verify** — `node .pythia/runtime/migrate/verify.js <to>` validates metadata and paths.md for the current (latest) version. Only `<to>` is available on disk.
-3. **Checks files by type** — for each changed file (or a sample when there are many): v2 metadata presence and format, lowercase status values, absence of forbidden keys (`Schema`, `Artifact`, `Feature`), no phantom `## References` entries, paths.md checker lists.
-4. **Checks reference freshness** — `node .pythia/runtime/inputs.js check --all` reports STALE/INVALID refs across all `.pythia/` data files.
-5. **Resolves** — applies `inputs.js sync` for STALE refs (with consent); reports metadata or verify failures without touching files.
-6. **Reports** — summary with per-file ✓ / ⚠ / ✗ results and recommended next actions.
+```bash
+npm --prefix .pythia run migrate:check -- <from> <to>
+# or:
+node .pythia/runtime/migrate/check.js <from> <to>
+```
+
+The helper:
+
+1. **Collects changed files** — reads `changedPaths` from `.pythia/backups/<version>/state.json` for each version in `(from, to]`, merges and deduplicates them, and reports missing state as WARN only when the version has a migration file.
+2. **Runs verify** — `node .pythia/runtime/migrate/verify.js <to>` validates the current materialized runtime contract. Only `<to>` is available on disk.
+3. **Checks changed files** — strict artifact metadata for workflow markdown plus paths.md invariants for `.pythia/config/paths.md`.
+4. **Checks machine-owned refs** — `refs-owned.js` reports phantom `## References` / `## Used by` entries in changed markdown.
+5. **Checks reference freshness** — `node .pythia/runtime/inputs.js check --all` reports STALE/INVALID refs across all sync-zone `.pythia/` markdown.
+6. **Groups STALE refs** — reports root causes such as a changed `.pythia/config/paths.md` or source doc hash.
+7. **Reports terminal state** — `PASS`, `WARN`, or `FAIL`.
+
+`WARN` exits `0` so post-update scripts can continue, but it is still reportable. Agents must read the status line, inspect reported files, and propose concrete body/frontmatter fixes before editing.
+
+For safe remediation, rerun with `--apply-sync`:
+
+```bash
+npm --prefix .pythia run migrate:check -- <from> <to> --apply-sync
+```
+
+`--apply-sync` still prompts before writing. It prints the proposed `inputs.js sync <file>` commands, runs `inputs.js sync <file> --dry-run` previews, asks `Approve sync? [y/n]`, then reruns freshness and refs-owned checks and reports the git owner for `.pythia` (`.pythia` can be its own git repo). Sync is allowed for STALE refs and `refs-owned.phantom_reference` because sync removes trailing refs not backed by body links. Sync is blocked while metadata, `refs-owned.phantom_used_by`, or unknown-relation warnings remain; inspect those files and propose body/frontmatter fixes first. Trailing `## References` and `## Used by` sections are machine-owned; never edit them manually.
 
 The skill is defined in `skills/migrate/SKILL.md § /migrate check`.
 

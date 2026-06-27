@@ -780,6 +780,7 @@ describe('one-step update: old .pythia without manifest', () => {
     mkdirSync(join(tmpDir, '.pythia', 'workflows'), { recursive: true });
     await doUpdate(makeWorkspaceOpts(tmpDir));
     const pkg = JSON.parse(readFileSync(join(tmpDir, '.pythia', 'package.json'), 'utf8'));
+    expect(pkg.scripts['migrate:check']).toBe('node runtime/migrate/check.js');
     for (const script of Object.values(pkg.scripts)) {
       expect(script).not.toContain('--target');
     }
